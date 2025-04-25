@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: Suggest an idea for this project
-title: ''
+title: "#️⃣(이슈 번호) (이슈 제목)"
 labels: ''
 assignees: ''
 
