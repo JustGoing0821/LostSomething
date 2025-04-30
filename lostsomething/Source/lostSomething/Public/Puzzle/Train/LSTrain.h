@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LSTrainStage.generated.h"
+#include "LSTrain.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class LOSTSOMETHING_API ALSTrainStage : public AActor
+class LOSTSOMETHING_API ALSTrain : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	ALSTrainStage();
+public:
+	ALSTrain();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -28,5 +30,4 @@ public:
 
 	UFUNCTION()
 	void OnRep_ServerTrainMove();
-
 };

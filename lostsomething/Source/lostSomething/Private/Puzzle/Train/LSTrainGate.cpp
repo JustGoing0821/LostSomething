@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Stage/LSTrainGate.h"
+#include "Puzzle/Train/LSTrainGate.h"
 #include "lostSomething.h"
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"

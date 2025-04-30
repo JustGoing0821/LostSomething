@@ -1,14 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Stage/LSTrainStage.h"
+#include "Puzzle/Train/LSTrain.h"
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
 
-// Sets default values
-ALSTrainStage::ALSTrainStage()
+ALSTrain::ALSTrain()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Mesh
@@ -26,8 +25,7 @@ ALSTrainStage::ALSTrainStage()
 	bReplicates = true;
 }
 
-// Called every frame
-void ALSTrainStage::Tick(float DeltaTime)
+void ALSTrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -39,16 +37,15 @@ void ALSTrainStage::Tick(float DeltaTime)
 	}
 }
 
-void ALSTrainStage::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALSTrainStage, ServerTrainMove);
+	DOREPLIFETIME(ALSTrain, ServerTrainMove);
 }
 
-void ALSTrainStage::OnRep_ServerTrainMove()
+void ALSTrain::OnRep_ServerTrainMove()
 {
 	FVector CurrentLocation = ServerTrainMove;
 	SetActorLocation(CurrentLocation);
 }
-

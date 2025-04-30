@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Stage/LSStepItemUseVolume.h"
+#include "Puzzle/Train/LSTrainStep.h"
 #include "lostSomething.h"
 #include "EngineUtils.h"
 #include "Components/BoxComponent.h"
@@ -9,7 +9,7 @@
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
-ALSStepItemUseVolume::ALSStepItemUseVolume()
+ALSTrainStep::ALSTrainStep()
 {
 	// Stage Section
 	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionCollision"));
@@ -40,14 +40,14 @@ ALSStepItemUseVolume::ALSStepItemUseVolume()
 
 }
 
-void ALSStepItemUseVolume::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ALSTrainStep::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALSStepItemUseVolume, bIsStepInstalled);
+	DOREPLIFETIME(ALSTrainStep, bIsStepInstalled);
 }
 
-void ALSStepItemUseVolume::BeginPlay()
+void ALSTrainStep::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -71,7 +71,7 @@ void ALSStepItemUseVolume::BeginPlay()
 	}
 }
 
-void ALSStepItemUseVolume::InteractionProcess(APlayerController* InPlayerController)
+void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 {
 	if (bIsStepInstalled)
 	{
@@ -93,14 +93,14 @@ void ALSStepItemUseVolume::InteractionProcess(APlayerController* InPlayerControl
 	}
 }
 
-void ALSStepItemUseVolume::ServerRPCSetVisibility_Implementation(uint8 bInStepInstalled)
+void ALSTrainStep::ServerRPCSetVisibility_Implementation(uint8 bInStepInstalled)
 {
 	bIsStepInstalled = bInStepInstalled;
 	LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
 	MulticastRPCSetVisibility();
 }
 
-void ALSStepItemUseVolume::MulticastRPCSetVisibility_Implementation()
+void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
 {
 	MeshComponent->SetVisibility(bIsStepInstalled);
 	LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
