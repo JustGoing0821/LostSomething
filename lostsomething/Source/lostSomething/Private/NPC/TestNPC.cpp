@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include <Net/UnrealNetwork.h>
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
+#include "Interface/LSTakeDamageInterface.h"
 #include <NPC/AI/TestNPCAIController.h>
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -214,7 +215,7 @@ void ATestNPC::MultiAttackHitCheck_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
-		ILTTakeDamageInterface* HitResult = Cast<ILTTakeDamageInterface>(OutHitResult.GetActor());
+		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
 		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 	}
 

@@ -7,11 +7,12 @@
 #include "Interface/TestNPCInterface.h"
 #include "Interface/TestNPCAttackInterface.h"
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
+#include "Interface/LSTakeDamageInterface.h"
 #include "TestNPC.generated.h"
 
 
 UCLASS()
-class LOSTSOMETHING_API ATestNPC : public ACharacter, public ITestNPCInterface, public ITestNPCAttackInterface, public ILTTakeDamageInterface
+class LOSTSOMETHING_API ATestNPC : public ACharacter, public ITestNPCInterface, public ITestNPCAttackInterface, public ILTTakeDamageInterface, public ILSTakeDamageInterface
 {
     GENERATED_BODY()
 
