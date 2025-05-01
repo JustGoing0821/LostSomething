@@ -19,11 +19,7 @@ void ULSCharacterStatComponent::BeginPlay()
 	SetHP(MaxHP);
 }
 
-void ULSCharacterStatComponent::SetHP(float NewHP)
-{
-	CurrentHP = FMath::Clamp<float>(NewHP, 0.0f, MaxHP);
-	OnHpChanged.Broadcast(CurrentHP);
-}
+
 
 
 float ULSCharacterStatComponent::ApplyDamage(float InDamage)
@@ -40,5 +36,9 @@ float ULSCharacterStatComponent::ApplyDamage(float InDamage)
 	return ActualDamage;
 }
 
-
+void ULSCharacterStatComponent::SetHP(float NewHP)
+{
+	CurrentHP = FMath::Clamp<float>(NewHP, 0.0f, MaxHP);
+	OnHpChanged.Broadcast(CurrentHP);
+}
 
