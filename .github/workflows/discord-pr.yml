@@ -1,7 +1,7 @@
 name: Discord Notification
 
 on:
-  workflow_dispatch:  # 수동 트리거 유지
+  workflow_dispatch:
   push:
     branches: [main, dev]
   pull_request:
@@ -12,94 +12,48 @@ jobs:
   discord-notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send notification
+      - name: Push notification
+        if: github.event_name == 'push'
         run: |
-          EVENT="${{ github.event_name }}"
-          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          AUTHOR="${{ github.event.pusher.name }}"
+          MESSAGE="🏷️ [커밋 푸시] $BRANCH 브랜치 - 👤 $AUTHOR"
           
-          # 현재 시간을 HH:MM 형식으로 가져오기
-          CURRENT_TIME=$(date +"%H:%M")
-          
-          if [ "$EVENT" = "push" ]; then
-            BRANCH="${{ github.ref_name }}"
-            AUTHOR="${{ github.event.pusher.name }}"
-            
-            # 푸시 이벤트용 JSON 생성
-            cat > payload.json << EOF
-            {
-              "username": "GitHub Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "embeds": [
-                {
-                  "color": 3447003,
-                  "description": "🏷️ 커밋 푸시 알림: ${BRANCH}\\n👤\\n💬",
-                  "footer": {
-                    "text": "GitHub Actions - Push 이벤트 • 오늘 오후 ${CURRENT_TIME}"
-                  }
-                }
-              ]
-            }
-            EOF
-          
-          elif [ "$EVENT" = "pull_request" ]; then
-            PR_ACTION="${{ github.event.action }}"
-            PR_TITLE="${{ github.event.pull_request.title }}"
-            PR_USER="${{ github.event.pull_request.user.login }}"
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            
-            # PR 제목 이스케이프 처리
-            PR_TITLE=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
-            
-            # PR 상태 아이콘 및 텍스트 설정
-            if [ "$PR_ACTION" = "opened" ]; then
-              STATUS_ICON="⚠️"
-              STATUS_TEXT="새 PR이 열렸어요!"
-            elif [ "$PR_ACTION" = "reopened" ]; then
-              STATUS_ICON="⚠️"
-              STATUS_TEXT="PR이 다시 열렸어요!"
-            elif [ "$PR_ACTION" = "closed" ]; then
-              if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-                STATUS_ICON="✅"
-                STATUS_TEXT="PR이 병합되었어요!"
-              else
-                STATUS_ICON="❌"
-                STATUS_TEXT="PR이 닫혔어요!"
-              fi
-            else
-              STATUS_ICON="ℹ️"
-              STATUS_TEXT="PR 이벤트: $PR_ACTION"
-            fi
-            
-            # PR 이벤트용 JSON 생성
-            cat > payload.json << EOF
-            {
-              "username": "GitHub Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "embeds": [
-                {
-                  "color": 5814783,
-                  "description": "${PR_USER}\\n\\n🔷 #${PR_NUMBER} ${PR_TITLE}\\n${STATUS_ICON} ${STATUS_TEXT}",
-                  "footer": {
-                    "text": "GitHub Actions PR 알림 • 오늘 오후 ${CURRENT_TIME}"
-                  }
-                }
-              ]
-            }
-            EOF
-          
-          else
-            # 기타 이벤트
-            cat > payload.json << EOF
-            {
-              "username": "github-pr",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "content": "GitHub 알림: $EVENT 이벤트가 발생했습니다."
-            }
-            EOF
-          fi
-          
-          # Discord로 전송
           curl -X POST \
             -H "Content-Type: application/json" \
-            --data @payload.json \
+            -d "{\"username\":\"GitHub Bot\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",\"content\":\"$MESSAGE\"}" \
+            ${{ secrets.DISCORD_WEBHOOK }}
+      
+      - name: PR notification
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_ACTION="${{ github.event.action }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_USER="${{ github.event.pull_request.user.login }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          # 제목에 특수문자가 있을 경우 대비
+          PR_TITLE=$(echo "$PR_TITLE" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
+          
+          # PR 상태 설정
+          if [ "$PR_ACTION" = "opened" ]; then
+            STATUS="⚠️ 새 PR이 열렸어요!"
+          elif [ "$PR_ACTION" = "reopened" ]; then
+            STATUS="⚠️ PR이 다시 열렸어요!"
+          elif [ "$PR_ACTION" = "closed" ]; then
+            if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+              STATUS="✅ PR이 병합되었어요!"
+            else
+              STATUS="❌ PR이 닫혔어요!"
+            fi
+          else
+            STATUS="ℹ️ PR 이벤트: $PR_ACTION"
+          fi
+          
+          MESSAGE="$PR_USER 님의 PR: #$PR_NUMBER $PR_TITLE
+$STATUS"
+          
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"GitHub Bot\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",\"content\":\"$MESSAGE\"}" \
             ${{ secrets.DISCORD_WEBHOOK }}
