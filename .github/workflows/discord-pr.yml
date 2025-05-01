@@ -1,4 +1,4 @@
-name: Basic Discord Notification
+name: Discord Notification
 
 on:
   workflow_dispatch:  # 수동 트리거 유지
@@ -12,35 +12,50 @@ jobs:
   discord-notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send simple notification
+      - name: Send notification
         run: |
           EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
           
           if [ "$EVENT" = "push" ]; then
             BRANCH="${{ github.ref_name }}"
-            MESSAGE="📦 [Push 알림] \`$BRANCH\` 브랜치에 새 커밋이 푸시되었습니다."
+            AUTHOR="${{ github.event.pusher.name }}"
+            COMMIT_COUNT="${{ github.event.commits.size }}"
+            
+            # 최근 커밋 메시지 (첫 번째 줄만)
+            COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
+            
+            if [ "$COMMIT_COUNT" = "1" ]; then
+              # 단일 커밋인 경우
+              MESSAGE="📦 **Push**: \`$BRANCH\` - 👤 $AUTHOR - 💬 $COMMIT_MSG"
+            else
+              # 여러 커밋인 경우
+              MESSAGE="📦 **Push**: \`$BRANCH\` - 👤 $AUTHOR - 📝 $COMMIT_COUNT개 커밋 - 💬 최근: $COMMIT_MSG"
+            fi
           
           elif [ "$EVENT" = "pull_request" ]; then
             PR_ACTION="${{ github.event.action }}"
             PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_USER="${{ github.event.pull_request.user.login }}"
             PR_URL="${{ github.event.pull_request.html_url }}"
+            PR_BASE="${{ github.event.pull_request.base.ref }}"
+            PR_HEAD="${{ github.event.pull_request.head.ref }}"
             
             if [ "$PR_ACTION" = "opened" ]; then
-              STATUS="🔔 새 PR이 열렸습니다"
+              STATUS="🔔 새 PR"
             elif [ "$PR_ACTION" = "reopened" ]; then
-              STATUS="♻️ PR이 다시 열렸습니다"
+              STATUS="♻️ 재오픈된 PR"
             elif [ "$PR_ACTION" = "closed" ]; then
               if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-                STATUS="✅ PR이 병합되었습니다"
+                STATUS="✅ 병합된 PR"
               else
-                STATUS="❌ PR이 닫혔습니다"
+                STATUS="❌ 닫힌 PR"
               fi
             else
               STATUS="ℹ️ PR 이벤트: $PR_ACTION"
             fi
             
-            MESSAGE="📌 [PR 알림] $STATUS - $PR_TITLE - $PR_URL"
+            MESSAGE="📌 **$STATUS**: $PR_TITLE (\`$PR_HEAD\` → \`$PR_BASE\`) - 👤 $PR_USER - $PR_URL"
           
           else
             MESSAGE="🔔 GitHub 알림: $EVENT 이벤트가 발생했습니다."
