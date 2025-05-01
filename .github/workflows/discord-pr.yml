@@ -18,27 +18,48 @@ jobs:
           EVENT_NAME="${{ github.event_name }}"
 
           if [ "$EVENT_NAME" = "push" ]; then
-            # 🟢 Push 이벤트 처리
-            COMMIT_MESSAGE="${{ github.head_commit.message }}"
-            COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-            COMMIT_AUTHOR="${{ github.head_commit.author.name }}"
-            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
+            echo "📦 Sending PR-style push message..."
+            python3 - <<EOF
+import os, json, datetime, urllib.request
 
-            curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{
-              \"username\": \"GitHub Bot\",
-              \"avatar_url\": \"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",
-              \"embeds\": [{
-                \"title\": \"📦 커밋 푸시 알림: ${BRANCH_NAME}\",
-                \"description\": \"💬 ${COMMIT_MESSAGE}\n👤 ${COMMIT_AUTHOR}\",
-                \"url\": \"${COMMIT_URL}\",
-                \"color\": 3447003,
-                \"footer\": { \"text\": \"GitHub Actions - Push 이벤트\" },
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-              }]
-            }" $DISCORD_WEBHOOK
+# GitHub 이벤트 데이터 파싱
+event = json.loads(os.getenv('GITHUB_EVENT', '{}'))
+commits = event.get("commits", [])
+pusher = event.get("pusher", {}).get("name", "알 수 없음")
+ref = os.getenv("GITHUB_REF", "")
+branch = ref.replace("refs/heads/", "")
+repo = os.getenv("GITHUB_REPOSITORY", "")
+last_commit_url = f"https://github.com/{repo}/commit/{event.get('after')}"
 
+# 커밋 메시지 리스트 구성
+commit_list = ""
+for c in commits[:10]:
+    msg = c.get("message", "").split('\n')[0]
+    commit_list += f"• `{msg}`\n"
+if len(commits) > 10:
+    commit_list += f"…외 {len(commits) - 10}개 커밋 더 있음\n"
+
+# 디스코드 메시지 페이로드
+payload = {
+  "username": "GitHub Bot",
+  "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+  "embeds": [{
+    "title": f"\ud83d\udce6 \ucee4\ubc84\ud2b8 \ud478\uc2dc \uc54c\ub9bc: `{branch}` \ube0c\ub79c\uce58",
+    "description": f"\ud83d\udc64 \ud478\uc2dc\ud55c \uc0ac\ub78c: **{pusher}**\n\n**\ucee4\ubc84\ud2b8 \ubaa9\ub85d:**\n{commit_list}\n\ucd1d {len(commits)}\uac1c \ucee4\ubc84\ud2b8\uac00 \ud478\uc2dc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.\n[\ud83d\udd17 \ucee4\ubc84\ud2b8 \ubcf4\uae30]({last_commit_url})",
+    "color": 3447003,
+    "footer": { "text": "GitHub Actions - Push \uc54c\ub9bc" },
+    "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+  }]
+}
+
+req = urllib.request.Request(
+  os.environ["DISCORD_WEBHOOK"],
+  data=json.dumps(payload).encode(),
+  headers={"Content-Type": "application/json"}
+)
+with urllib.request.urlopen(req) as resp:
+  print(f"\u2705 Discord response: {resp.status}")
+EOF
           elif [ "$EVENT_NAME" = "pull_request" ]; then
             # 🟡 PR 이벤트 처리
             PR_TITLE="${{ github.event.pull_request.title }}"
@@ -53,21 +74,21 @@ jobs:
             PR_MERGED="${{ github.event.pull_request.merged }}"
 
             if [ "$PR_STATE" = "opened" ]; then
-              STATUS="🔔 새 PR이 열렸습니다!"
+              STATUS="\ud83d\udd14 \uc0c8 PR\uc774 \uc5f4\ub838\uc2b5\ub2c8\ub2e4!"
             elif [ "$PR_STATE" = "reopened" ]; then
-              STATUS="♻️ PR이 다시 열렸습니다!"
+              STATUS="\u267b\ufe0f PR\uc774 \ub2e4\uc2dc \uc5f4\ub838\uc2b5\ub2c8\ub2e4!"
             elif [ "$PR_STATE" = "closed" ]; then
               if [ "$PR_MERGED" = "true" ]; then
-                STATUS="✅ PR이 병합되었습니다!"
+                STATUS="\u2705 PR\uc774 \ubc31\ud569\ub418\uc5c8\uc2b5\ub2c8\ub2e4!"
               else
-                STATUS="❌ PR이 닫혔습니다!"
+                STATUS="\u274c PR\uc774 \ub2eb\ud788\uc5c8\uc2b5\ub2c8\ub2e4!"
               fi
             else
-              STATUS="ℹ️ PR 이벤트: $PR_STATE"
+              STATUS="\u2139\ufe0f PR \uc774\ubca4\ud2b8: $PR_STATE"
             fi
 
             if [ -z "$PR_BODY" ]; then
-              PR_BODY="(내용 없음)"
+              PR_BODY="(\ub0b4\uc6a9 \uc5c6\uc74c)"
             fi
 
             curl -H "Content-Type: application/json" \
@@ -76,35 +97,38 @@ jobs:
               \"username\": \"GitHub Bot\",
               \"avatar_url\": \"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",
               \"embeds\": [{
-                \"title\": \"📌 PR 제목: ${PR_TITLE}\",
+                \"title\": \"\ud83d\udccc PR \uc81c\ubaa9: ${PR_TITLE}\",
                 \"url\": \"${PR_URL}\",
-                \"description\": \"${STATUS}\n👤 작성자: [${PR_USER}](https://github.com/${PR_USER})\",
+                \"description\": \"${STATUS}\\n\ud83d\udc64 \uc791\uc131\uc790: [${PR_USER}](https://github.com/${PR_USER})\",
                 \"color\": 5814783,
                 \"fields\": [
                   {
-                    \"name\": \"📂 브랜치\",
-                    \"value\": \"\`${PR_HEAD}\` → \`${PR_BASE}\`\",
+                    \"name\": \"\ud83d\udcc2 \ube0c\ub79c\uce58\",
+                    \"value\": \"\\`${PR_HEAD}\\` → \\`${PR_BASE}\\`\",
                     \"inline\": true
                   },
                   {
-                    \"name\": \"🧾 변경된 파일 수\",
-                    \"value\": \"${PR_FILES}개\",
+                    \"name\": \"\ud83d\udcdf \ubcc0\uacbd\ub41c \ud30c\uc77c \uc218\",
+                    \"value\": \"${PR_FILES}\uac1c\",
                     \"inline\": true
                   },
                   {
-                    \"name\": \"📝 커밋 수\",
-                    \"value\": \"${PR_COMMITS}개\",
+                    \"name\": \"\ud83d\udcdd \ucee4\ubc84\ud2b8 \uc218\",
+                    \"value\": \"${PR_COMMITS}\uac1c\",
                     \"inline\": true
                   },
                   {
-                    \"name\": \"💬 PR 내용\",
+                    \"name\": \"\ud83d\udcac PR \ub0b4\uc6a9\",
                     \"value\": \"${PR_BODY}\"
                   }
                 ],
                 \"footer\": {
-                  \"text\": \"GitHub Actions - Pull Request 알림\"
+                  \"text\": \"GitHub Actions - Pull Request \uc54c\ub9bc\"
                 },
                 \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
               }]
             }" $DISCORD_WEBHOOK
           fi
+        shell: bash
+        env:
+          GITHUB_EVENT: ${{ toJson(github.event) }}
