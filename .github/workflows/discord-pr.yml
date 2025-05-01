@@ -14,6 +14,7 @@ jobs:
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          GITHUB_EVENT: ${{ toJson(github.event) }}
         run: |
           EVENT_NAME="${{ github.event_name }}"
 
