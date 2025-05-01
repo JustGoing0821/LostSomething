@@ -20,10 +20,11 @@ ATestNPC::ATestNPC()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// 메시 설정
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("SkeletalMesh'/Game/Asset/NPC/CemeteryUndead_Mummy/meshes/SM_Mummy.SM_Mummy'"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("SkeletalMesh'/Game/Asset/NPC/puppet_animals/crochet_bear/Mesh/SK_crochet_bear.SK_crochet_bear'"));
+
 	if (tempMesh.Succeeded()) {
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(-40, 0, -85), FRotator(0, -90, 0));
+		GetMesh()->SetRelativeLocationAndRotation(FVector(-20, 0, -86.6), FRotator(0, -90, 0));
 	}
 
 	// 이동 속도 설정
