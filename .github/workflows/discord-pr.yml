@@ -31,7 +31,7 @@ jobs:
               STATUS="🔔 새 PR이 열렸습니다!"
               ;;
             closed)
-              if $PR_MERGED; then
+              if [ "$PR_MERGED" = "true" ]; then
                 STATUS="✅ PR이 병합되었습니다!"
               else
                 STATUS="❌ PR이 닫혔습니다!"
