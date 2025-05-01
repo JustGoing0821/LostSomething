@@ -16,6 +16,8 @@ void ULSHpBarWidget::NativeConstruct()
 
 	HpProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("PbHpBar")));
 	ensure(HpProgressBar);
+
+
 }
 
 void ULSHpBarWidget::UpdateHpBar(float NewCurrentHp)
