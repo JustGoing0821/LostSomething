@@ -3,6 +3,8 @@ name: Notify Discord on Pull Request
 on:
   pull_request:
     types: [opened, closed, reopened]
+    branches:
+      - dev
 
 jobs:
   discord-notify:
