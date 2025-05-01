@@ -1,4 +1,4 @@
-name: Discord Notification
+name: Basic Discord Notification
 
 on:
   workflow_dispatch:  # 수동 트리거 유지
@@ -12,120 +12,42 @@ jobs:
   discord-notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify webhook
+      - name: Send simple notification
         run: |
-          if [ -n "${{ secrets.DISCORD_WEBHOOK }}" ]; then
-            echo "✅ DISCORD_WEBHOOK is set"
-          else
-            echo "❌ DISCORD_WEBHOOK is NOT set"
-            exit 1
-          fi
-      
-      - name: Send notification for push event
-        if: github.event_name == 'push'
-        run: |
-          # 브랜치 이름 추출
-          BRANCH="${{ github.ref_name }}"
+          EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
-          COMMIT_URL="https://github.com/$REPO/commit/${{ github.sha }}"
-          PUSHER="${{ github.event.pusher.name }}"
-          COMMIT_COUNT="${{ github.event.commits.size }}"
           
-          # 커밋 메시지 추출 (최대 5개)
-          COMMIT_MESSAGES=""
-          COUNT=0
+          if [ "$EVENT" = "push" ]; then
+            BRANCH="${{ github.ref_name }}"
+            MESSAGE="📦 [Push 알림] \`$BRANCH\` 브랜치에 새 커밋이 푸시되었습니다."
           
-          for i in $(seq 0 4); do
-            if [ -n "${{ github.event.commits[$i].message }}" ]; then
-              MSG=$(echo "${{ github.event.commits[$i].message }}" | head -n 1)
-              COMMIT_MESSAGES="$COMMIT_MESSAGES\n• $MSG"
-              COUNT=$((COUNT + 1))
+          elif [ "$EVENT" = "pull_request" ]; then
+            PR_ACTION="${{ github.event.action }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            
+            if [ "$PR_ACTION" = "opened" ]; then
+              STATUS="🔔 새 PR이 열렸습니다"
+            elif [ "$PR_ACTION" = "reopened" ]; then
+              STATUS="♻️ PR이 다시 열렸습니다"
+            elif [ "$PR_ACTION" = "closed" ]; then
+              if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+                STATUS="✅ PR이 병합되었습니다"
+              else
+                STATUS="❌ PR이 닫혔습니다"
+              fi
             else
-              break
+              STATUS="ℹ️ PR 이벤트: $PR_ACTION"
             fi
-          done
+            
+            MESSAGE="📌 [PR 알림] $STATUS - $PR_TITLE - $PR_URL"
           
-          if [ "$COUNT" -lt "$COMMIT_COUNT" ]; then
-            COMMIT_MESSAGES="$COMMIT_MESSAGES\n...외 $((COMMIT_COUNT - COUNT))개 커밋 더 있음"
-          fi
-          
-          # JSON 생성 및 전송
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d '{
-              "username": "GitHub Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "embeds": [{
-                "title": "📦 커밋 푸시 알림: '"$BRANCH"' 브랜치",
-                "description": "👤 푸시한 사람: **'"$PUSHER"'**\n\n**커밋 목록:**'"$COMMIT_MESSAGES"'\n\n총 '"$COMMIT_COUNT"'개 커밋이 푸시되었습니다.\n[🔗 커밋 보기]('"$COMMIT_URL"')",
-                "color": 3447003,
-                "footer": {"text": "GitHub Actions - Push 알림"}
-              }]
-            }' \
-            ${{ secrets.DISCORD_WEBHOOK }}
-      
-      - name: Send notification for PR event
-        if: github.event_name == 'pull_request'
-        run: |
-          # PR 정보 추출
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_USER="${{ github.event.pull_request.user.login }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_ACTION="${{ github.event.action }}"
-          PR_HEAD="${{ github.event.pull_request.head.ref }}"
-          PR_BASE="${{ github.event.pull_request.base.ref }}"
-          PR_FILES="${{ github.event.pull_request.changed_files }}"
-          PR_COMMITS="${{ github.event.pull_request.commits }}"
-          PR_MERGED="${{ github.event.pull_request.merged }}"
-          
-          # PR 내용 추출 및 길이 제한
-          PR_BODY="${{ github.event.pull_request.body }}"
-          if [ -z "$PR_BODY" ]; then
-            PR_BODY="(내용 없음)"
-          fi
-          
-          # 상태 문구 설정
-          if [ "$PR_ACTION" = "opened" ]; then
-            STATUS="🔔 새 PR이 열렸습니다!"
-          elif [ "$PR_ACTION" = "reopened" ]; then
-            STATUS="♻️ PR이 다시 열렸습니다!"
-          elif [ "$PR_ACTION" = "closed" ]; then
-            if [ "$PR_MERGED" = "true" ]; then
-              STATUS="✅ PR이 병합되었습니다!"
-            else
-              STATUS="❌ PR이 닫혔습니다!"
-            fi
           else
-            STATUS="ℹ️ PR 이벤트: $PR_ACTION"
+            MESSAGE="🔔 GitHub 알림: $EVENT 이벤트가 발생했습니다."
           fi
           
-          # PR 내용이 너무 길면 잘라내기
-          if [ ${#PR_BODY} -gt 1500 ]; then
-            PR_BODY="${PR_BODY:0:1500}... (더 보려면 PR 링크 클릭)"
-          fi
-          
-          # 특수문자 이스케이프
-          PR_BODY=$(echo "$PR_BODY" | sed 's/`/\\`/g' | sed 's/"/\\"/g')
-          PR_TITLE=$(echo "$PR_TITLE" | sed 's/"/\\"/g')
-          
-          # JSON 생성 및 전송
+          # 단순 텍스트 메시지 전송
           curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{
-              "username": "GitHub Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "embeds": [{
-                "title": "📌 PR 제목: '"$PR_TITLE"'",
-                "url": "'"$PR_URL"'",
-                "description": "'"$STATUS"'\n👤 작성자: ['"$PR_USER"'](https://github.com/'"$PR_USER"')",
-                "color": 5814783,
-                "fields": [
-                  { "name": "📂 브랜치", "value": "`'"$PR_HEAD"'` → `'"$PR_BASE"'`", "inline": true },
-                  { "name": "🧾 변경된 파일 수", "value": "'"$PR_FILES"'개", "inline": true },
-                  { "name": "📝 커밋 수", "value": "'"$PR_COMMITS"'개", "inline": true },
-                  { "name": "💬 PR 내용", "value": "'"$PR_BODY"'" }
-                ],
-                "footer": {"text": "GitHub Actions - Pull Request 알림"}
-              }]
-            }' \
+            -d "{\"content\":\"$MESSAGE\"}" \
             ${{ secrets.DISCORD_WEBHOOK }}
