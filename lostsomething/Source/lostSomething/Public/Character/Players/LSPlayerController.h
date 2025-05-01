@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Character/UI/LSHUDWidget.h"
 #include "LSPlayerController.generated.h"
 
 
@@ -13,6 +14,19 @@ class LOSTSOMETHING_API ALSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-	void BeginPlay();
+public:
+	ALSPlayerController();
+
+protected:
+	virtual void BeginPlay() override;
+
+	// HUD Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
+	TSubclassOf<class ULSHUDWidget> LSHUDWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
+	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
+
 
 };
