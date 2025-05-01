@@ -10,7 +10,6 @@ UENUM(BlueprintType)
 enum class ETrainSpawnState : uint8
 {
 	Spawned = 0,
-	Waited,
 	Despawned
 };
 
@@ -36,6 +35,9 @@ protected:
 	TSubclassOf<class ALSTrain> TrainClass;
 
 	ETrainSpawnState CurrentState;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
 	UFUNCTION()
 	void OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

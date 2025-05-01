@@ -7,6 +7,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Puzzle/Train/LSTrain.h"
 #include "LevelTest/Player/LTPlayerCharacter.h"
+#include "Physics/LSCollisionProfile.h"
 
 // Sets default values
 ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
@@ -14,14 +15,26 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	// Stage Section
 	StageTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("StageTrigger"));
 	RootComponent = StageTrigger;
-	StageTrigger->SetBoxExtent(FVector(500.0, 500.0f, 300.0f));
-	StageTrigger->SetCollisionProfileName(TEXT("LSTrigger"));
+	StageTrigger->SetBoxExtent(FVector(100.0, 1000.0f, 200.0f));
+	StageTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
 	StageTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap);
 	StageTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap);
 
 	// Spawn Train
 	TrainClass = ALSTrain::StaticClass();
 	CurrentState = ETrainSpawnState::Despawned;
+
+	// Mesh
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetWorldScale3D(FVector(2.0, 20.0f, 1.0f));
+	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
+	MeshComponent->SetRelativeLocation(FVector(-100.0f,-1000.0f, -200.0f));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Puzzle/Train/TrainMeshTest.TrainMeshTest"));
+	if (ItemMeshRef.Object)
+	{
+		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -39,17 +52,8 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 		switch (CurrentState)
 		{
 		case ETrainSpawnState::Spawned:
-			LS_LOG(LogLS, Log, TEXT("CurrentState : %s"), *EnumString);
-			CurrentState = ETrainSpawnState::Waited;
 			break;
-
-		case ETrainSpawnState::Waited:
-			LS_LOG(LogLS, Log, TEXT("CurrentState : %s"), *EnumString);
-			CurrentState = ETrainSpawnState::Despawned;
-			break;
-
 		case ETrainSpawnState::Despawned:
-			LS_LOG(LogLS, Log, TEXT("CurrentState : %s"), *EnumString);
 			CurrentState = ETrainSpawnState::Spawned;
 			if (HasAuthority())
 			{
@@ -58,11 +62,17 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 				FTimerHandle Handle;
 				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 					{
-						FVector NewLocation = FVector(-90.0f, -900.0f, 50.0f);
+						FVector SpawnLocation = MeshComponent->GetSocketLocation("TrainSpawn");
 
 						if (TrainClass)
 						{
-							AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &NewLocation, &FRotator::ZeroRotator);
+							AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &FRotator::ZeroRotator);
+							ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
+							if (LSTrain)
+							{
+								LSTrain->WaitLocation = MeshComponent->GetSocketLocation("TrainStop");
+								LSTrain->LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 100.0f, 0.0f);
+							}
 						}
 					}
 				), 1.f, false, DelayTime);
@@ -78,10 +88,12 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ALSTrain* OverlapEndActor = Cast<ALSTrain>(OtherActor);
 	if (OverlapEndActor)
 	{
 		OverlapEndActor->Destroy();
+		CurrentState = ETrainSpawnState::Despawned;
 		LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
 	}
 	else

@@ -6,6 +6,15 @@
 #include "GameFramework/Actor.h"
 #include "LSTrain.generated.h"
 
+UENUM(BlueprintType)
+enum class ETrainState : uint8
+{
+	Comming = 0,
+	Waiting,
+	Stop,
+	Leaving
+};
+
 /**
  * 
  */
@@ -23,11 +32,26 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UBoxComponent> TrainTrigger;
+
 	//Train Move
 public:
-	UPROPERTY(ReplicatedUsing = OnRep_ServerTrainMove)
+	float CurrentAlpha = 0.0f;
+	float LerpSpeed = 2.0f;
+
+	UPROPERTY(Replicated)
+	FVector LeaveLocation;
+
+	UPROPERTY(Replicated)
+	FVector WaitLocation;
+
+	UPROPERTY(Replicated)
+	ETrainState CurrentTrainState;
+
+	//UPROPERTY(ReplicatedUsing = OnRep_ServerTrainMove)
 	FVector ServerTrainMove;
 
-	UFUNCTION()
-	void OnRep_ServerTrainMove();
+	//UFUNCTION()
+	//void OnRep_ServerTrainMove();
 };
