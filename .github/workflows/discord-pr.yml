@@ -1,89 +1,201 @@
-name: Notify Discord on Pull Request
+name: Notify Discord on Push and Pull Request (Debug)
 
 on:
+  push:
+    branches: [main, dev]           # ← main·dev 브랜치에 커밋 올 때
   pull_request:
     types: [opened, closed, reopened]
-    branches:
-      - dev
+    branches: [main, dev]           # ← main·dev 대상으로 PR 열릴 때
 
 jobs:
   discord-notify:
     runs-on: ubuntu-latest
+
+    # ✅ 한 번만 선언 – 두 값 모두 필요
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      GITHUB_EVENT: ${{ toJson(github.event) }}
+
     steps:
-      - name: Send PR info to Discord
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Debug environment
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_USER="${{ github.event.pull_request.user.login }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_STATE="${{ github.event.action }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-          PR_HEAD="${{ github.event.pull_request.head.ref }}"
-          PR_BASE="${{ github.event.pull_request.base.ref }}"
-          PR_FILES="${{ github.event.pull_request.changed_files }}"
-          PR_COMMITS="${{ github.event.pull_request.commits }}"
-          PR_MERGED="${{ github.event.pull_request.merged }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Webhook exists: ${{ secrets.DISCORD_WEBHOOK != '' }}"
 
-          # 상태 메시지 정의
-          case "$PR_STATE" in
-            opened)
-              STATUS="🔔 새 PR이 열렸습니다!"
-              ;;
-            closed)
-              if $PR_MERGED; then
-                STATUS="✅ PR이 병합되었습니다!"
-              else
-                STATUS="❌ PR이 닫혔습니다!"
-              fi
-              ;;
-            reopened)
-              STATUS="♻️ PR이 다시 열렸습니다!"
-              ;;
-            *)
-              STATUS="ℹ️ PR 이벤트 발생: $PR_STATE"
-              ;;
-          esac
+      - name: Send Discord notification
+        shell: bash
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          echo "📢 Processing event: $EVENT_NAME"
 
-          # 본문이 없을 경우 대체 문구 설정
-          if [ -z "$PR_BODY" ]; then
-            PR_BODY="(내용 없음)"
+          ###############################################################
+          # 1) push 알림 – 여러 커밋 목록을 PR 스타일로 예쁘게 전송
+          ###############################################################
+          if [ "$EVENT_NAME" = "push" ]; then
+            python3 - <<'PY'
+import os, json, datetime, urllib.request, sys, html
+
+print("🔍 Starting push notification process...")
+print("🔑 Checking webhook availability...")
+webhook = os.getenv("DISCORD_WEBHOOK")
+if not webhook:
+    sys.exit("❌ DISCORD_WEBHOOK not set or empty!")
+print("✅ Webhook found")
+
+try:
+    print("📋 Parsing event data...")
+    evt = json.loads(os.environ.get('GITHUB_EVENT', '{}'))
+    commits = evt.get("commits", [])
+    print(f"📊 Found {len(commits)} commits")
+    
+    pusher = evt.get("pusher", {}).get("name", "알 수 없음")
+    branch = os.getenv("GITHUB_REF", "").replace("refs/heads/", "")
+    repo = os.getenv("GITHUB_REPOSITORY", "")
+    after = evt.get("after")
+    
+    if not after:
+        print("⚠️ Warning: 'after' is missing from event data")
+        print("📖 Event keys available:", list(evt.keys()))
+    
+    commit_url = f"https://github.com/{repo}/commit/{after}" if after else f"https://github.com/{repo}"
+    
+    # ── 커밋 메시지 10개까지만 정리
+    lines = "\n".join(f"• `{html.escape(c.get('message','').splitlines()[0])}`" for c in commits[:10])
+    if len(commits) > 10:
+        lines += f"\n…외 {len(commits)-10}개 커밋 더 있음"
+    
+    print("🔨 Building payload...")
+    payload = {
+      "username": "GitHub Bot",
+      "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+      "embeds": [{
+          "title": f"📦 커밋 푸시 알림: `{branch}` 브랜치",
+          "description": (
+              f"👤 푸시한 사람: **{html.escape(pusher)}**\n\n"
+              f"**커밋 목록:**\n{lines}\n"
+              f"총 {len(commits)}개 커밋이 푸시되었습니다.\n"
+              f"[🔗 커밋 보기]({commit_url})"
+          ),
+          "color": 3447003,
+          "footer": {"text": "GitHub Actions - Push 알림"},
+          "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+      }]
+    }
+    
+    print("📤 Sending to Discord...")
+    req = urllib.request.Request(
+        webhook,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json", "User-Agent": "GitHub-Action-Discord-Notifier/1.0"}
+    )
+    
+    with urllib.request.urlopen(req) as response:
+        print(f"✅ Discord push notify: {response.status} {response.reason}")
+        print(f"📝 Response: {response.read().decode()[:100]}")
+
+except Exception as e:
+    print(f"❌ Error in push notification: {str(e)}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+PY
+
+          ###############################################################
+          # 2) pull_request 알림 – opened / closed / reopened
+          ###############################################################
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            python3 - <<'PY'
+import os, json, datetime, urllib.request, sys, html, re
+
+print("🔍 Starting PR notification process...")
+print("🔑 Checking webhook availability...")
+webhook = os.getenv("DISCORD_WEBHOOK")
+if not webhook:
+    sys.exit("❌ DISCORD_WEBHOOK not set or empty!")
+print("✅ Webhook found")
+
+try:
+    print("📋 Parsing event data...")
+    evt = json.loads(os.environ.get('GITHUB_EVENT', '{}'))
+    action = evt.get("action", "")
+    print(f"🏷️ PR action: {action}")
+    
+    pr = evt.get("pull_request", {})
+    if not pr:
+        print("⚠️ Warning: pull_request data missing")
+        print("📖 Event keys available:", list(evt.keys()))
+    
+    pr_title = pr.get("title", "")
+    pr_user = pr.get("user", {}).get("login", "")
+    pr_url = pr.get("html_url", "")
+    pr_body = pr.get("body", "") or "(내용 없음)"
+    pr_head = pr.get("head", {}).get("ref", "")
+    pr_base = pr.get("base", {}).get("ref", "")
+    pr_files = pr.get("changed_files", 0)
+    pr_commits = pr.get("commits", 0)
+    pr_merged = pr.get("merged", False)
+    
+    # 상태 문구
+    if action == "opened":
+        status = "🔔 새 PR이 열렸습니다!"
+    elif action == "reopened":
+        status = "♻️ PR이 다시 열렸습니다!"
+    elif action == "closed":
+        if pr_merged:
+            status = "✅ PR이 병합되었습니다!"
+        else:
+            status = "❌ PR이 닫혔습니다!"
+    else:
+        status = f"ℹ️ PR 이벤트: {action}"
+    
+    # PR 내용 이스케이프 처리 및 길이 제한
+    max_body_length = 1500
+    if len(pr_body) > max_body_length:
+        pr_body = pr_body[:max_body_length] + "... (더 보려면 PR 링크 클릭)"
+    
+    # Discord 마크다운 문법에서 문제 일으킬 수 있는 문자 처리
+    pr_body = pr_body.replace('`', '\'')
+    pr_body = re.sub(r'(\[|\]|\(|\))', r'\\\1', pr_body)
+    
+    print("🔨 Building payload...")
+    payload = {
+      "username": "GitHub Bot",
+      "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+      "embeds": [{
+          "title": f"📌 PR 제목: {html.escape(pr_title)}",
+          "url": pr_url,
+          "description": f"{status}\n👤 작성자: [{html.escape(pr_user)}](https://github.com/{pr_user})",
+          "color": 5814783,
+          "fields": [
+              {"name": "📂 브랜치", "value": f"`{html.escape(pr_head)}` → `{html.escape(pr_base)}`", "inline": True},
+              {"name": "🧾 변경된 파일 수", "value": f"{pr_files}개", "inline": True},
+              {"name": "📝 커밋 수", "value": f"{pr_commits}개", "inline": True},
+              {"name": "💬 PR 내용", "value": pr_body}
+          ],
+          "footer": {"text": "GitHub Actions - Pull Request 알림"},
+          "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+      }]
+    }
+    
+    print("📤 Sending to Discord...")
+    req = urllib.request.Request(
+        webhook,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json", "User-Agent": "GitHub-Action-Discord-Notifier/1.0"}
+    )
+    
+    with urllib.request.urlopen(req) as response:
+        print(f"✅ Discord PR notify ({action}): {response.status} {response.reason}")
+        print(f"📝 Response: {response.read().decode()[:100]}")
+
+except Exception as e:
+    print(f"❌ Error in PR notification: {str(e)}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+PY
+          else
+            echo "⚠️ Unsupported event: $EVENT_NAME"
           fi
-
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{
-            \"username\": \"GitHub Bot\",
-            \"avatar_url\": \"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",
-            \"embeds\": [{
-              \"title\": \"📌 PR 제목: ${PR_TITLE}\",
-              \"url\": \"${PR_URL}\",
-              \"description\": \"${STATUS}\n👤 작성자: [${PR_USER}](https://github.com/${PR_USER})\",
-              \"color\": 5814783,
-              \"fields\": [
-                {
-                  \"name\": \"📂 브랜치\",
-                  \"value\": \"\`${PR_HEAD}\` → \`${PR_BASE}\`\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"🧾 변경된 파일 수\",
-                  \"value\": \"${PR_FILES}개\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"📝 커밋 수\",
-                  \"value\": \"${PR_COMMITS}개\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"💬 PR 내용\",
-                  \"value\": \"${PR_BODY}\"
-                }
-              ],
-              \"footer\": {
-                \"text\": \"GitHub Actions - dev 브랜치 PR 알림\"
-              },
-              \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-            }]
-          }" $DISCORD_WEBHOOK
