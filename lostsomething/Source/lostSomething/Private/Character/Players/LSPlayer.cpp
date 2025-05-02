@@ -4,7 +4,7 @@
 #include "lostSomething.h"
 #include "InputMappingContext.h"
 #include "Interface/LSInteractionInterface.h"
-#include "Components/WidgetComponent.h"
+#include "Character/UI/LSWidgetComponent.h"
 #include "Character/Stat/LSCharacterStatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Blueprint/UserWidget.h"
@@ -26,7 +26,7 @@ ALSPlayer::ALSPlayer()
 	Stat = CreateDefaultSubobject<ULSCharacterStatComponent>(TEXT("Stat"));
 
 	// Widget Component 
-	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	HpBar = CreateDefaultSubobject<ULSWidgetComponent>(TEXT("Widget"));
 	HpBar->SetupAttachment(GetMesh());
 	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/Players/UI/WBP_HpBar.WBP_HpBar_C"));
@@ -74,6 +74,12 @@ ALSPlayer::ALSPlayer()
 
 }
 
+void ALSPlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//Stat->OnHpZero.AddUObject(this, &ALSPlayer::SetDead);
+}
+
 // Called when the game starts or when spawned
 void ALSPlayer::BeginPlay()
 {
@@ -93,7 +99,21 @@ void ALSPlayer::Tick(float DeltaTime)
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	LS_LOG(LogLS, Warning, TEXT("Take Damage : %f"), DamageAmount);
+	Stat->ApplyDamage(DamageAmount);
 	return 0.0f;
+}
+
+//Widget
+void ALSPlayer::SetupCharacterWidget(ULSUserWidget* InUserWidget)
+{
+	ULSHpBarWidget* HpBarWidget = Cast<ULSHpBarWidget>(InUserWidget);
+	if (HpBarWidget)
+	{
+		HpBarWidget->SetMaxHp(Stat->GetMaxHP());
+		HpBarWidget->UpdateHpBar(Stat->GetCurrentHP());
+		Stat->OnHpChanged.AddUObject(HpBarWidget, &ULSHpBarWidget::UpdateHpBar);
+	}
+
 }
 
 
