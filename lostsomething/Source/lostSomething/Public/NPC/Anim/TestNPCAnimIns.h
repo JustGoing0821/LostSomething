@@ -33,6 +33,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DamageMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bShouldChase = false;
 
 private:
 
