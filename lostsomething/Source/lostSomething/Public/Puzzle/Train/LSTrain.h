@@ -35,10 +35,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TrainTrigger;
 
-	//Train Move
+//Train Move
 public:
 	float CurrentAlpha = 0.0f;
-	float LerpSpeed = 2.0f;
+	float LerpSpeed = 0.5f;
 
 	UPROPERTY(Replicated)
 	FVector LeaveLocation;
@@ -49,9 +49,28 @@ public:
 	UPROPERTY(Replicated)
 	ETrainState CurrentTrainState;
 
-	//UPROPERTY(ReplicatedUsing = OnRep_ServerTrainMove)
 	FVector ServerTrainMove;
 
-	//UFUNCTION()
-	//void OnRep_ServerTrainMove();
+//Gates
+protected:
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UStaticMeshComponent>> Gates;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UBoxComponent>> GateTriggers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
+	int32 CurrentOpenGate;
+
+	UFUNCTION()
+	void OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void GateOpen();
+
+	void GateClose();
+
+public:
+	UFUNCTION()
+	void OnRep_CurrentOpenGate();
+
 };

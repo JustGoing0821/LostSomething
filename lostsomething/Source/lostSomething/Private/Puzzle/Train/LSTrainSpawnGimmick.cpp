@@ -30,7 +30,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	MeshComponent->SetWorldScale3D(FVector(2.0, 20.0f, 1.0f));
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	MeshComponent->SetRelativeLocation(FVector(-100.0f,-1000.0f, -200.0f));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Puzzle/Train/TrainMeshTest.TrainMeshTest"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Puzzle/Train/TrainSpawnMeshTest.TrainSpawnMeshTest"));
 	if (ItemMeshRef.Object)
 	{
 		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
@@ -62,16 +62,17 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 				FTimerHandle Handle;
 				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 					{
-						FVector SpawnLocation = MeshComponent->GetSocketLocation("TrainSpawn");
+						FVector SpawnLocation = MeshComponent->GetSocketLocation("TrainSpawn") + FVector(0.0f, 0.0f, 100.0f);
+						FRotator SpawnRotation = FRotator(0.f, 90.f, 0.f);
 
 						if (TrainClass)
 						{
-							AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &FRotator::ZeroRotator);
+							AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 							ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
 							if (LSTrain)
 							{
-								LSTrain->WaitLocation = MeshComponent->GetSocketLocation("TrainStop");
-								LSTrain->LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 100.0f, 0.0f);
+								LSTrain->WaitLocation = MeshComponent->GetSocketLocation("TrainStop") + FVector(0.0f, 0.0f, 100.0f);
+								LSTrain->LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 2000.0f, 100.0f);
 							}
 						}
 					}
@@ -88,17 +89,12 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ALSTrain* OverlapEndActor = Cast<ALSTrain>(OtherActor);
 	if (OverlapEndActor)
 	{
 		OverlapEndActor->Destroy();
 		CurrentState = ETrainSpawnState::Despawned;
 		LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
-	}
-	else
-	{
-		LS_LOG(LogLS, Log, TEXT("Player Overlap Ended."));
 	}
 }
 
