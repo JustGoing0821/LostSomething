@@ -6,23 +6,27 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"                    
+
 #include "GameFramework/SpringArmComponent.h"        
 #include "EnhancedInputComponent.h"                   
 #include "EnhancedInputSubsystems.h"                  
 #include "InputMappingContext.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include "Interface/LSCharacterWidgetInterface.h"
 #include "InputAction.h"
 #include "Character/Stat/LSCharacterStatComponent.h"
 #include "LSPlayer.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface
+class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ALSPlayer();
+
+	virtual void PostInitializeComponents() override;
 
 protected:
 	// APawn interface
@@ -87,9 +91,9 @@ protected:
 // UI Widget
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UWidgetComponent> HpBar;
+	TObjectPtr<class ULSWidgetComponent> HpBar;
 
-	//virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
+	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
 
 
 };
