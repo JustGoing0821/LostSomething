@@ -5,16 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interface/LSInteractionInterface.h"
-#include "LSStepItemUseVolume.generated.h"
+#include "LSTrainStep.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALSStepItemUseVolume : public AActor, public ILSInteractionInterface
+class LOSTSOMETHING_API ALSTrainStep : public AActor, public ILSInteractionInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ALSStepItemUseVolume();
+	ALSTrainStep();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
