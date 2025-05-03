@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "Character/UI/LSUserWidget.h"
 #include "LSHpBarWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ULSHpBarWidget : public UUserWidget
+class LOSTSOMETHING_API ULSHpBarWidget : public ULSUserWidget
 {
 	GENERATED_BODY()
 

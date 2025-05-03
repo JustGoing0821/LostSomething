@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Character/UI/LSHpBarWidget.h"
+#include "Interface/LSCharacterWidgetInterface.h"
 #include "Components/ProgressBar.h"
 
 ULSHpBarWidget::ULSHpBarWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -17,7 +17,11 @@ void ULSHpBarWidget::NativeConstruct()
 	HpProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("PbHpBar")));
 	ensure(HpProgressBar);
 
-
+	ILSCharacterWidgetInterface* CharacterWidget = Cast<ILSCharacterWidgetInterface>(OwningActor);
+	if (CharacterWidget)
+	{
+		CharacterWidget->SetupCharacterWidget(this);
+	}
 }
 
 void ULSHpBarWidget::UpdateHpBar(float NewCurrentHp)
