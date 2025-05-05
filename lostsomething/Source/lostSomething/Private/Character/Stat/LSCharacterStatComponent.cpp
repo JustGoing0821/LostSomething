@@ -15,7 +15,7 @@ void ULSCharacterStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//CurrentHP = MaxHP;
+	CurrentHP = MaxHP;
 	SetHP(MaxHP);
 }
 
