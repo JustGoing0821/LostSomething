@@ -143,16 +143,6 @@ void ATestNPC::NextComboCheck()
 
 		bCanNextCombo = false;
 		bIsAttacking = false;
-
-		/*if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
-		{
-			if (UBlackboardComponent* BB = AICon->GetBlackboardComponent())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("UBlackboardComponent* BB = AICon->GetBlackboardComponent()"));
-				//BB->SetValueAsBool(TEXT("bShouldChase"), true);
-				//BB->SetValueAsBool(TEXT("bIsAttacking"), false); // 공격 종료
-			}
-		}*/
 	}
 	else
 	{
@@ -189,20 +179,20 @@ void ATestNPC::MultiStopAttackMontage_Implementation()
 
 void ATestNPC::AttackHitCheck()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackHitCheck()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackHitCheck()"));
 	ServerAttackHitCheck();
 }
 
 void ATestNPC::ServerAttackHitCheck_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
 	MultiAttackHitCheck();
 
 }
 
 void ATestNPC::MultiAttackHitCheck_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttackHitCheck()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttackHitCheck()"));
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
@@ -214,7 +204,7 @@ void ATestNPC::MultiAttackHitCheck_Implementation()
 
 	if (HitDetected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
+		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
 		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
 		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);

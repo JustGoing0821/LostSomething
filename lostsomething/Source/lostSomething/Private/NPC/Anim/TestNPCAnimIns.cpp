@@ -34,6 +34,7 @@ void UTestNPCAnimIns::NativeUpdateAnimation(float DeltaSeconds)
         else
         {
             bShouldChase = false;
+            NPCCharacter->SetMaxWalkSpeed(150.0f);
         }
 	}
 }
