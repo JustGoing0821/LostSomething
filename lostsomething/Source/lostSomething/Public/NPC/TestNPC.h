@@ -84,6 +84,26 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxComboDistance = 300.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bShouldChase = false;
+
+    // Getter
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    FORCEINLINE bool GetShouldChase()
+    {
+        return bShouldChase;
+    }
+
+    // Setter (¿Œ∂Û¿Œ)
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    void SetShouldChase(bool bNewShouldChase)
+    {
+        bShouldChase = bNewShouldChase;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Movement")
+    void SetMaxWalkSpeed(float NewSpeed);
+
     UPROPERTY()
     AActor* TargetActor;
 

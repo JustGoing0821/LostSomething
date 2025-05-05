@@ -144,14 +144,15 @@ void ATestNPC::NextComboCheck()
 		bCanNextCombo = false;
 		bIsAttacking = false;
 
-		if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
+		/*if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
 		{
 			if (UBlackboardComponent* BB = AICon->GetBlackboardComponent())
 			{
-				BB->SetValueAsBool(TEXT("bShouldChase"), true);
-				BB->SetValueAsBool(TEXT("bIsAttacking"), false); // 공격 종료
+				UE_LOG(LogTemp, Warning, TEXT("UBlackboardComponent* BB = AICon->GetBlackboardComponent()"));
+				//BB->SetValueAsBool(TEXT("bShouldChase"), true);
+				//BB->SetValueAsBool(TEXT("bIsAttacking"), false); // 공격 종료
 			}
-		}
+		}*/
 	}
 	else
 	{
@@ -311,6 +312,11 @@ void ATestNPC::MultiDamage_Implementation()
 void ATestNPC::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
 	OnAttackFinished = InOnAttackFinished;
+}
+
+void ATestNPC::SetMaxWalkSpeed(float NewSpeed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
 
 //////////////////// Replicated 변수 할당
