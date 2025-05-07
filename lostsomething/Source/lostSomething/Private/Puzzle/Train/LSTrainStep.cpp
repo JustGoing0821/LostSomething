@@ -14,21 +14,22 @@ ALSTrainStep::ALSTrainStep()
 	// Stage Section
 	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionCollision"));
 	RootComponent = InteractionTrigger;
-	InteractionTrigger->SetBoxExtent(FVector(50.0, 50.0f, 50.0f));
+	InteractionTrigger->SetBoxExtent(FVector(80, 50, 80));
 	InteractionTrigger->SetCollisionProfileName(TEXT("LSItemTest"));
 
 	//Mesh
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	MeshComponent->SetRelativeLocation(FVector(-50.0f, -50.0f, -50.0f));
+	MeshComponent->SetRelativeScale3D(FVector(1.6f, 1.0f, 0.2f));
+	MeshComponent->SetRelativeLocation(FVector(-80.0f, -50.0f, -80.0f));
 	MeshComponent->SetVisibility(false);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	if (ItemMeshRef.Object)
 	{
 		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
 	}
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ItemMaterialRef(TEXT("/Script/Engine.MaterialInstanceConstant'/Game/LevelPrototyping/Materials/MI_Solid_Blue.MI_Solid_Blue'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ItemMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	if (ItemMaterialRef.Object)
 	{
 		MeshComponent->SetMaterial(0, ItemMaterialRef.Object);
@@ -65,7 +66,7 @@ void ALSTrainStep::BeginPlay()
 						break;
 					}
 				}
-				LS_LOG(LogLS, Log, TEXT("OwnerSetted."));
+				//LS_LOG(LogLS, Log, TEXT("OwnerSetted."));
 			}
 		), 2.0f, false, -1.0f);
 	}

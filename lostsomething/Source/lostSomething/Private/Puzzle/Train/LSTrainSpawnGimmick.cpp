@@ -15,7 +15,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	// Stage Section
 	StageTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("StageTrigger"));
 	RootComponent = StageTrigger;
-	StageTrigger->SetBoxExtent(FVector(100.0, 1000.0f, 200.0f));
+	StageTrigger->SetBoxExtent(FVector(300, 10000, 200));
 	StageTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
 	StageTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap);
 	StageTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap);
@@ -27,14 +27,15 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	// Mesh
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetWorldScale3D(FVector(2.0, 20.0f, 1.0f));
+	MeshComponent->SetWorldScale3D(FVector(6.0, 200.0f, 1.0f));
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	MeshComponent->SetRelativeLocation(FVector(-100.0f,-1000.0f, -200.0f));
+	MeshComponent->SetRelativeLocation(FVector(-300.0f,-10000.0f, -200.0f));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Puzzle/Train/TrainSpawnMeshTest.TrainSpawnMeshTest"));
 	if (ItemMeshRef.Object)
 	{
 		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +65,7 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 					{
 						FVector SpawnLocation = MeshComponent->GetSocketLocation("TrainSpawn") + FVector(0.0f, 0.0f, 100.0f);
 						FRotator SpawnRotation = FRotator(0.f, 90.f, 0.f);
+						//LS_LOG(LogLS, Log, TEXT("SpawnLocation : %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
 
 						if (TrainClass)
 						{
@@ -72,7 +74,9 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* Overl
 							if (LSTrain)
 							{
 								LSTrain->WaitLocation = MeshComponent->GetSocketLocation("TrainStop") + FVector(0.0f, 0.0f, 100.0f);
-								LSTrain->LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 2000.0f, 100.0f);
+								//LS_LOG(LogLS, Log, TEXT("WaitLocation : %f, %f, %f"), LSTrain->WaitLocation.X, LSTrain->WaitLocation.Y, LSTrain->WaitLocation.Z);
+								LSTrain->LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 2000.0f, 1000.0f);
+								//LS_LOG(LogLS, Log, TEXT("SpawnLocation : %f, %f, %f"), LSTrain->LeaveLocation.X, LSTrain->LeaveLocation.Y, LSTrain->LeaveLocation.Z);
 							}
 						}
 					}

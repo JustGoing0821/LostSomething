@@ -54,7 +54,10 @@ public:
 //Gates
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UStaticMeshComponent>> Gates;
+	TArray<TObjectPtr<class UStaticMeshComponent>> DoorLs;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UStaticMeshComponent>> DoorRs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
 	TArray<TObjectPtr<class UBoxComponent>> GateTriggers;
