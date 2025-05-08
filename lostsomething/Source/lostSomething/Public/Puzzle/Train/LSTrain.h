@@ -37,19 +37,14 @@ protected:
 
 //Train Move
 public:
-	float CurrentAlpha = 0.0f;
-	float LerpSpeed = 0.5f;
-
-	UPROPERTY(Replicated)
-	FVector LeaveLocation;
-
-	UPROPERTY(Replicated)
-	FVector WaitLocation;
-
 	UPROPERTY(Replicated)
 	ETrainState CurrentTrainState;
 
-	FVector ServerTrainMove;
+protected:
+	float CurrentAlpha = 0.0f;
+	float LerpSpeed = 0.5f;
+	FVector WaitLocation;
+	FVector LeaveLocation;
 
 //Gates
 protected:

@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Net/UnrealNetwork.h"
+#include "Physics/LSCollisionProfile.h"
 
 // Sets default values
 ALSTrainStep::ALSTrainStep()
@@ -15,7 +16,7 @@ ALSTrainStep::ALSTrainStep()
 	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionCollision"));
 	RootComponent = InteractionTrigger;
 	InteractionTrigger->SetBoxExtent(FVector(80, 50, 80));
-	InteractionTrigger->SetCollisionProfileName(TEXT("LSItemTest"));
+	InteractionTrigger->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
 
 	//Mesh
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));

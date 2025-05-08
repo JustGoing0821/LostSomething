@@ -21,13 +21,16 @@ ALSTrain::ALSTrain()
 	TrainTrigger->SetBoxExtent(FVector(1450.0f, 150.0f, 150.0f));
 	TrainTrigger->SetCollisionProfileName(CPROFILE_LSPAWN);
 
+	// Moving Location
+	WaitLocation = FVector(700, 50, 300);
+	LeaveLocation = FVector(700, 12050, 300);
+
 	// Mesh Ref
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> WallMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_wall_100_01.SM_ext_wall_100_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorFrameMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_wall_doorway_01.SM_wall_doorway_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoofMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_roof_200_01.SM_ext_roof_200_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
-	static FName GateNames[] = { TEXT("Gate1") , TEXT("Gate2"), TEXT("Gate3"), TEXT("Gate4"), TEXT("Gate5"), TEXT("Gate6") };
 	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
 
 	// Car Generate
@@ -111,8 +114,8 @@ void ALSTrain::Tick(float DeltaTime)
 		CurrentAlpha += DeltaTime * LerpSpeed;
 		CurrentAlpha = FMath::Clamp(CurrentAlpha, 0.0f, 1.0f);
 		FVector CurrentLocation = GetActorLocation();
-		ServerTrainMove = FMath::Lerp(CurrentLocation, WaitLocation, CurrentAlpha);
-		SetActorLocation(ServerTrainMove);
+		FVector NewLocation = FMath::Lerp(CurrentLocation, WaitLocation, CurrentAlpha);
+		SetActorLocation(NewLocation);
 
 		if (HasAuthority() && (CurrentAlpha==1.0f))
 		{
@@ -138,8 +141,8 @@ void ALSTrain::Tick(float DeltaTime)
 		CurrentAlpha += DeltaTime * LerpSpeed;
 		CurrentAlpha = FMath::Clamp(CurrentAlpha, 0.0f, 1.0f);
 		FVector CurrentLocation = GetActorLocation();
-		ServerTrainMove = FMath::Lerp(CurrentLocation, LeaveLocation, CurrentAlpha);
-		SetActorLocation(ServerTrainMove);
+		FVector NewLocation = FMath::Lerp(CurrentLocation, LeaveLocation, CurrentAlpha);
+		SetActorLocation(NewLocation);
 	}
 }
 
@@ -147,8 +150,6 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALSTrain, WaitLocation);
-	DOREPLIFETIME(ALSTrain, LeaveLocation);
 	DOREPLIFETIME(ALSTrain, CurrentTrainState);
 	DOREPLIFETIME(ALSTrain, CurrentOpenGate);
 }
