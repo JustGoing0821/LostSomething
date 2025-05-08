@@ -17,7 +17,7 @@
 // Sets default values
 ATestNPC::ATestNPC()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// 메시 설정
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("SkeletalMesh'/Game/Asset/NPC/puppet_animals/crochet_bear/Mesh/SK_crochet_bear.SK_crochet_bear'"));
@@ -50,6 +50,11 @@ void ATestNPC::BeginPlay()
 void ATestNPC::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsComboCheckWindowOpen && bIsAttacking)
+	{
+		NextComboCheck(); // 이 시점에서 거리 판단
+	}
 
 }
 
