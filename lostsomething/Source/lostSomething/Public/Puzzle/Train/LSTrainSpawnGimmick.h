@@ -13,6 +13,8 @@ enum class ETrainSpawnState : uint8
 	Despawned
 };
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
+
 UCLASS()
 class LOSTSOMETHING_API ALSTrainSpawnGimmick : public AActor
 {
@@ -61,4 +63,16 @@ public:
 
 protected:
 	void SpawnTrain();
+
+
+//Puzzle Section
+public:
+	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
+
+	FOnPuzzleCheckDelegate OnPuzzleCheck;
+
+protected:
+	int32 CorrectGate;
+
+	void CheckPuzzleCorrect();
 };

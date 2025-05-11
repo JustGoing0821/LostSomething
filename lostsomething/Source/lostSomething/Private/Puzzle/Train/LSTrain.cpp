@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
+#include "Puzzle/Train/LSTrainSpawnGimmick.h"
 
 ALSTrain::ALSTrain()
 {
@@ -119,9 +120,9 @@ void ALSTrain::Tick(float DeltaTime)
 
 		if (HasAuthority() && (CurrentAlpha==1.0f))
 		{
-			CurrentOpenGate = FMath::RandRange(0, 5);
-			LS_LOG(LogLS, Log, TEXT("CurrentOpenGate : %d"), CurrentOpenGate+1);
-			GateOpen();
+			OnTrainArrived.Broadcast();
+			CurrentOpenGate = CorrectGate - 1;
+			//MulticastRPCGateOpen();
 			CurrentAlpha = 0.0f;
 
 			//for (TObjectPtr<class UBoxComponent> GateTrigger : GateTriggers)
@@ -131,6 +132,13 @@ void ALSTrain::Tick(float DeltaTime)
 			//}
 
 			CurrentTrainState = ETrainState::Waiting;
+
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+				{
+					CurrentTrainState = ETrainState::Leaving;
+				}
+			), 1.f, false, 5.0f);
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
@@ -156,7 +164,7 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	LS_LOG(LogLS, Log, TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("Begin"));
 }
 
 void ALSTrain::GateOpen()
@@ -164,8 +172,14 @@ void ALSTrain::GateOpen()
 	FTimerHandle Handle1;
 	GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
 		{
-			DoorLs[CurrentOpenGate]->SetVisibility(false);
-			DoorRs[CurrentOpenGate]->SetVisibility(false);
+			for (UStaticMeshComponent* DoorL : DoorLs)
+			{
+				DoorL->SetVisibility(false);
+			}
+			for (UStaticMeshComponent* DoorR : DoorRs)
+			{
+				DoorR->SetVisibility(false);
+			}
 			GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 	), 1.f, false, 1.0f);
@@ -173,29 +187,54 @@ void ALSTrain::GateOpen()
 	FTimerHandle Handle2;
 	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
 		{
-			GateClose();
+			//GateClose();
+			MulticastRPCGateClose();
 		}
-	), 1.f, false, 5.0f);
+	), 1.f, false, 4.0f);
 }
 
 void ALSTrain::GateClose()
 {
-	DoorLs[CurrentOpenGate]->SetVisibility(true);
-	DoorRs[CurrentOpenGate]->SetVisibility(true);
-	GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	if (HasAuthority())
+	for (UStaticMeshComponent* DoorL : DoorLs)
 	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-			{
-				CurrentTrainState = ETrainState::Leaving;
-			}
-		), 1.f, false, 1.0f);
+		DoorL->SetVisibility(true);
+	}
+	for (UStaticMeshComponent* DoorR : DoorRs)
+	{
+		DoorR->SetVisibility(true);
+	}
+	GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ALSTrain::DelegateBind(ALSTrainSpawnGimmick* InGimmickClass)
+{
+	InGimmickClass->OnPuzzleCheck.AddUObject(this, &ALSTrain::PuzzleCheck);
+}
+
+void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
+{
+	if (bCorrect)
+	{
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
+		MulticastRPCGateOpen();
+	}
+	else
+	{
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
 	}
 }
 
 void ALSTrain::OnRep_CurrentOpenGate()
 {
+	//GateOpen();
+}
+
+void ALSTrain::MulticastRPCGateOpen_Implementation()
+{
 	GateOpen();
+}
+
+void ALSTrain::MulticastRPCGateClose_Implementation()
+{
+	GateClose();
 }

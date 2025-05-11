@@ -15,6 +15,8 @@ enum class ETrainState : uint8
 	Leaving
 };
 
+DECLARE_MULTICAST_DELEGATE(FOnTrainArrivedDelegate);
+
 /**
  * 
  */
@@ -35,10 +37,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TrainTrigger;
 
+
 //Train Move
 public:
 	UPROPERTY(Replicated)
 	ETrainState CurrentTrainState;
+
+	FOnTrainArrivedDelegate OnTrainArrived;
 
 protected:
 	float CurrentAlpha = 0.0f;
@@ -46,19 +51,25 @@ protected:
 	FVector WaitLocation;
 	FVector LeaveLocation;
 
+
 //Gates
+public:
+	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UStaticMeshComponent>> DoorLs;
+	TArray<UStaticMeshComponent*> DoorLs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UStaticMeshComponent>> DoorRs;
+	TArray<UStaticMeshComponent*> DoorRs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UBoxComponent>> GateTriggers;
+	TArray<UBoxComponent*> GateTriggers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
 	int32 CurrentOpenGate;
+	
+	int32 CorrectGate;
 
 	UFUNCTION()
 	void OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -67,8 +78,24 @@ protected:
 
 	void GateClose();
 
+//Puzzle
+public:
+	void DelegateBind(class ALSTrainSpawnGimmick* InGimmickClass);
+
+protected:
+	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
+
+//Network
 public:
 	UFUNCTION()
 	void OnRep_CurrentOpenGate();
+
+//Replicate
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCGateOpen();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCGateClose();
 
 };

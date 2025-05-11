@@ -153,8 +153,11 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	{
 		CurrentState = ETrainSpawnState::Spawned;
 
-		float DelayTime = FMath::FRandRange(2.f, 6.f);
-		//LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
+		CorrectGate = FMath::RandRange(1, 6);
+		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
+
+		float DelayTime = 10;// FMath::FRandRange(2.f, 6.f);
+		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
@@ -162,7 +165,26 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 				FVector SpawnLocation = FVector(700.0f, -9950.0f, 300.0f);
 				FRotator SpawnRotation = FRotator(0.f, 90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
+				ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
+				if (LSTrain)
+				{
+					LSTrain->SetCorrectGate(CorrectGate);
+					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
+					LSTrain->DelegateBind(this);
+				}
 			}
 		), 1.f, false, DelayTime);
+	}
+}
+
+void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
+{
+	if (CurrentOverlapTrigger[CorrectGate] == 2)
+	{
+		OnPuzzleCheck.Broadcast(true, CorrectGate);
+	}
+	else
+	{
+		OnPuzzleCheck.Broadcast(false, CorrectGate);
 	}
 }
