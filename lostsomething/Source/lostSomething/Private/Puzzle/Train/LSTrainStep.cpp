@@ -53,23 +53,35 @@ void ALSTrainStep::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+
 	//Set Owner - 3.0f delay
 	if (HasAuthority())
 	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		//FTimerHandle Handle;
+		//GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		//	{
+		//		for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+		//		{
+		//			if (PlayerController && !PlayerController->IsLocalController())
+		//			{
+		//				SetOwner(PlayerController);
+		//				break;
+		//			}
+		//		}
+		//		//LS_LOG(LogLS, Log, TEXT("OwnerSetted."));
+		//	}
+		//), 1.0f, false, 0.5f);
+
+		for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+		{
+			if (PlayerController && !PlayerController->IsLocalController())
 			{
-				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-				{
-					if (PlayerController && !PlayerController->IsLocalController())
-					{
-						SetOwner(PlayerController);
-						break;
-					}
-				}
-				//LS_LOG(LogLS, Log, TEXT("OwnerSetted."));
+				SetOwner(PlayerController);
+				break;
 			}
-		), 2.0f, false, -1.0f);
+		}
 	}
 }
 
@@ -98,13 +110,13 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 void ALSTrainStep::ServerRPCSetVisibility_Implementation(uint8 bInStepInstalled)
 {
 	bIsStepInstalled = bInStepInstalled;
-	LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
+	//LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
 	MulticastRPCSetVisibility();
 }
 
 void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
 {
 	MeshComponent->SetVisibility(bIsStepInstalled);
-	LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
+	//LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
 }
 

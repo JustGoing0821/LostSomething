@@ -32,6 +32,7 @@ ALSTrain::ALSTrain()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoofMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_roof_200_01.SM_ext_roof_200_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/Trash/SM_Trash.SM_Trash"));
 	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
 
 	// Car Generate
@@ -93,16 +94,26 @@ ALSTrain::ALSTrain()
 		DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		DoorRs.Add(DoorR);
 
-		FName GateTriggerName = *CarName.ToString().Append(TEXT("GateTrigger"));
-		UBoxComponent* GateTrigger = CreateDefaultSubobject<UBoxComponent>(GateTriggerName);
-		GateTrigger->SetupAttachment(Car);
-		GateTrigger->SetBoxExtent(FVector(80.0f, 20.0f, 110.0f));
-		GateTrigger->SetRelativeLocation(FVector(85, 20, 110));
-		GateTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
-		GateTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GateTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrain::OnGateTriggerBeginOverlap);
-		GateTrigger->ComponentTags.Add(GateTriggerName);
-		GateTriggers.Add(GateTrigger);
+		//FName GateTriggerName = *CarName.ToString().Append(TEXT("GateTrigger"));
+		//UBoxComponent* GateTrigger = CreateDefaultSubobject<UBoxComponent>(GateTriggerName);
+		//GateTrigger->SetupAttachment(Car);
+		//GateTrigger->SetBoxExtent(FVector(80.0f, 20.0f, 110.0f));
+		//GateTrigger->SetRelativeLocation(FVector(85, 20, 110));
+		//GateTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
+		//GateTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//GateTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrain::OnGateTriggerBeginOverlap);
+		//GateTrigger->ComponentTags.Add(GateTriggerName);
+		//GateTriggers.Add(GateTrigger);
+
+		FName CrowdName = *CarName.ToString().Append(TEXT("Crowd"));
+		UStaticMeshComponent* Crowd = CreateDefaultSubobject<UStaticMeshComponent>(CrowdName);
+		Crowd->SetupAttachment(Car);
+		Crowd->SetStaticMesh(CrowdMeshRef.Object);
+		Crowd->SetRelativeLocation(FVector(80,-40, 110));
+		Crowd->SetRelativeScale3D(FVector(2.f, 2.f, 2.f));
+		Crowd->SetVisibility(false);
+		Crowds.Add(Crowd);
+
 	}
 }
 
@@ -120,10 +131,15 @@ void ALSTrain::Tick(float DeltaTime)
 
 		if (HasAuthority() && (CurrentAlpha==1.0f))
 		{
-			OnTrainArrived.Broadcast();
-			CurrentOpenGate = CorrectGate - 1;
-			//MulticastRPCGateOpen();
-			CurrentAlpha = 0.0f;
+
+			FTimerHandle Handle1;
+			GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
+				{
+					OnTrainArrived.Broadcast();
+					CurrentOpenGate = CorrectGate - 1;
+					CurrentAlpha = 0.0f;
+				}
+			), 1, false, 1);
 
 			//for (TObjectPtr<class UBoxComponent> GateTrigger : GateTriggers)
 			//{
@@ -133,12 +149,12 @@ void ALSTrain::Tick(float DeltaTime)
 
 			CurrentTrainState = ETrainState::Waiting;
 
-			FTimerHandle Handle;
-			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			FTimerHandle Handle2;
+			GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
 				{
 					CurrentTrainState = ETrainState::Leaving;
 				}
-			), 1.f, false, 5.0f);
+			), 1.f, false, 6.0f);
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
@@ -162,6 +178,11 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ALSTrain, CurrentOpenGate);
 }
 
+void ALSTrain::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
@@ -169,25 +190,21 @@ void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponen
 
 void ALSTrain::GateOpen()
 {
-	FTimerHandle Handle1;
-	GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
-		{
-			for (UStaticMeshComponent* DoorL : DoorLs)
-			{
-				DoorL->SetVisibility(false);
-			}
-			for (UStaticMeshComponent* DoorR : DoorRs)
-			{
-				DoorR->SetVisibility(false);
-			}
-			GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
-	), 1.f, false, 1.0f);
+	for (UStaticMeshComponent* DoorL : DoorLs)
+	{
+		DoorL->SetVisibility(false);
+	}
+	for (UStaticMeshComponent* DoorR : DoorRs)
+	{
+		DoorR->SetVisibility(false);
+	}
+	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	FTimerHandle Handle2;
-	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 		{
 			//GateClose();
+			MulticastGetOnPassengers();
 			MulticastRPCGateClose();
 		}
 	), 1.f, false, 4.0f);
@@ -203,7 +220,7 @@ void ALSTrain::GateClose()
 	{
 		DoorR->SetVisibility(true);
 	}
-	GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ALSTrain::DelegateBind(ALSTrainSpawnGimmick* InGimmickClass)
@@ -213,14 +230,52 @@ void ALSTrain::DelegateBind(ALSTrainSpawnGimmick* InGimmickClass)
 
 void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 {
+	LS_LOG(LogLS, Log, TEXT("InCorrectGate : %d"), InCorrectGate);
+
 	if (bCorrect)
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
 		MulticastRPCGateOpen();
+		//GetOffPassengers(InCorrectGate - 1);
+		MulticastGetOffPassengers(InCorrectGate - 1);
 	}
 	else
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
+		MulticastRPCGateOpen();
+		//GetOffPassengers(-1);
+		MulticastGetOffPassengers(-1);
+	}
+}
+
+void ALSTrain::GetOffPassengers(int32 InCorrectGate)
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	for (int32 Num=0 ; Num< DoorLs.Num() ; Num++)
+	{
+		//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+		if (Num == InCorrectGate)
+		{
+			//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+			continue;
+		}
+		else
+		{
+			Crowds[Num]->SetVisibility(true);
+			Crowds[Num]->SetRelativeLocation(FVector(80, 40, 110));
+			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+		}
+	}
+}
+
+void ALSTrain::GetOnPassengers()
+{
+	for (int32 Num = 0; Num < DoorLs.Num(); Num++)
+	{
+		Crowds[Num]->SetVisibility(false);
+		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 110));
+		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 	}
 }
 
@@ -237,4 +292,14 @@ void ALSTrain::MulticastRPCGateOpen_Implementation()
 void ALSTrain::MulticastRPCGateClose_Implementation()
 {
 	GateClose();
+}
+
+void ALSTrain::MulticastGetOffPassengers_Implementation(int32 InCorrectGate)
+{
+	GetOffPassengers(InCorrectGate);
+}
+
+void ALSTrain::MulticastGetOnPassengers_Implementation()
+{
+	GetOnPassengers();
 }
