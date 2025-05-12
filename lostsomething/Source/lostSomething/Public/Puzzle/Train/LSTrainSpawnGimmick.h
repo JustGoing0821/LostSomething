@@ -14,6 +14,7 @@ enum class ETrainSpawnState : uint8
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
+DECLARE_DELEGATE(FOnTrainDespawnedDelegate);
 
 UCLASS()
 class LOSTSOMETHING_API ALSTrainSpawnGimmick : public AActor
@@ -25,23 +26,35 @@ public:
 	ALSTrainSpawnGimmick();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-//Trigger Section
+//Stage Section
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> StageTrigger;
 
-	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UBoxComponent>> WaitTriggers;
-
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class ALSTrain> TrainClass;
 
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class ALSTrainStep> StepTriggerClass;
+
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TArray<class UBoxComponent*> WaitTriggers;
+
 	TMap<int32, int32> CurrentOverlapTrigger;
+
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TArray<FVector> StepTriggerLocations;
+
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> PannelMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TArray<class UMaterialInterface*> PannelMaterials;
+
 
 	UFUNCTION()
 	void OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -60,6 +73,8 @@ protected:
 public:
 	UPROPERTY(Replicated)
 	ETrainSpawnState CurrentState;
+
+	FOnTrainDespawnedDelegate OnTrainDespawned;
 
 protected:
 	void SpawnTrain();

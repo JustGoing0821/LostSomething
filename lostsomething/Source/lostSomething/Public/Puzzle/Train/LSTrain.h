@@ -31,6 +31,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
@@ -63,8 +67,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
 	TArray<UStaticMeshComponent*> DoorRs;
 
+	//UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	//TArray<UBoxComponent*> GateTriggers;
+
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UBoxComponent*> GateTriggers;
+	TArray<UStaticMeshComponent*> Crowds;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
 	int32 CurrentOpenGate;
@@ -84,6 +91,8 @@ public:
 
 protected:
 	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
+	void GetOffPassengers(int32 InCorrectGate);
+	void GetOnPassengers();
 
 //Network
 public:
@@ -97,5 +106,11 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCGateClose();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGetOffPassengers(int32 InCorrectGate);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGetOnPassengers();
 
 };
