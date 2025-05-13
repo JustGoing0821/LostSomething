@@ -10,6 +10,7 @@
 #include "LevelTest/Player/LTPlayerCharacter.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Net/UnrealNetwork.h"
+#include "LevelTest/Player/LTPlayerController.h"
 
 
 // Sets default values
@@ -101,6 +102,9 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	{
 		PannelMesh->SetMaterial(0, PannelMaterials[0]);
 	}
+
+	//Puzzle
+	CorrectGate = -1;
 }
 
 void ALSTrainSpawnGimmick::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -108,6 +112,7 @@ void ALSTrainSpawnGimmick::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSTrainSpawnGimmick, CurrentState);
+	DOREPLIFETIME(ALSTrainSpawnGimmick, CorrectGate);
 }
 
 // Called when the game starts or when spawned
@@ -124,7 +129,15 @@ void ALSTrainSpawnGimmick::BeginPlay()
 	LS_LOG(LogLS, Log, TEXT("SpawnLocation : %f, %f, %f"), LeaveLocation.X, LeaveLocation.Y, LeaveLocation.Z);
 	*/
 
-	SpawnTrain();
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (HasAuthority())
+			{
+				SpawnTrain();
+			}
+		}
+	), 1.f, false, 3);
 }
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -197,7 +210,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		float DelayTime = 5;// FMath::FRandRange(2.f, 6.f);
 		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
-		PannelMesh->SetMaterial(0, PannelMaterials[CorrectGate]);
+		MulticastRPCSetPannelMonitor();
 
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
@@ -238,4 +251,27 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 	{
 		OnPuzzleCheck.Broadcast(false, CorrectGate);
 	}
+}
+
+void ALSTrainSpawnGimmick::SetPannelMonitor()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	ALTPlayerController* LSController = Cast<ALTPlayerController>(PlayerController);
+	if (LSController)
+	{
+		if (LSController->CharacterChoice == ECharacterChoice::IJae)
+		{
+			PannelMesh->SetMaterial(0, PannelMaterials[CorrectGate]);
+		}
+	}
+}
+
+void ALSTrainSpawnGimmick::OnRep_CorrectGate()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+}
+
+void ALSTrainSpawnGimmick::MulticastRPCSetPannelMonitor_Implementation()
+{
+	SetPannelMonitor();
 }
