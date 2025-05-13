@@ -86,8 +86,19 @@ public:
 
 	FOnPuzzleCheckDelegate OnPuzzleCheck;
 
-protected:
+	UPROPERTY(ReplicatedUsing = OnRep_CorrectGate)
 	int32 CorrectGate;
 
+protected:
 	void CheckPuzzleCorrect();
+	void SetPannelMonitor();
+
+
+//RPC Section
+public:
+	UFUNCTION()
+	void OnRep_CorrectGate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCSetPannelMonitor();
 };

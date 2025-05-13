@@ -32,7 +32,8 @@ ALSTrain::ALSTrain()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoofMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_roof_200_01.SM_ext_roof_200_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/Trash/SM_Trash.SM_Trash"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Level/Puzzle/Train/SM_SM_Crowd.SM_SM_Crowd"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> CrowdMaterialRef(TEXT("/Game/Level/Puzzle/Train/MALE.MALE"));
 	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
 
 	// Car Generate
@@ -109,9 +110,10 @@ ALSTrain::ALSTrain()
 		UStaticMeshComponent* Crowd = CreateDefaultSubobject<UStaticMeshComponent>(CrowdName);
 		Crowd->SetupAttachment(Car);
 		Crowd->SetStaticMesh(CrowdMeshRef.Object);
-		Crowd->SetRelativeLocation(FVector(80,-40, 110));
-		Crowd->SetRelativeScale3D(FVector(2.f, 2.f, 2.f));
+		Crowd->SetRelativeLocationAndRotation(FVector(80,-40, 0), FRotator(0,90,0));
+		Crowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 		Crowd->SetVisibility(false);
+		Crowd->SetMaterial(0, CrowdMaterialRef.Object);
 		Crowds.Add(Crowd);
 
 	}
@@ -263,7 +265,7 @@ void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 		else
 		{
 			Crowds[Num]->SetVisibility(true);
-			Crowds[Num]->SetRelativeLocation(FVector(80, 40, 110));
+			Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
 			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 		}
 	}
@@ -274,7 +276,7 @@ void ALSTrain::GetOnPassengers()
 	for (int32 Num = 0; Num < DoorLs.Num(); Num++)
 	{
 		Crowds[Num]->SetVisibility(false);
-		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 110));
+		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
 		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 	}
 }
