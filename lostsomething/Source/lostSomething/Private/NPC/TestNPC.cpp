@@ -323,4 +323,5 @@ void ATestNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATestNPC, bIsAttacking);
 	DOREPLIFETIME(ATestNPC, bCanNextCombo);
 	DOREPLIFETIME(ATestNPC, bIsComboCheckWindowOpen);
+	DOREPLIFETIME(ATestNPC, bShouldChase);
 }
