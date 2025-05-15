@@ -15,6 +15,8 @@ enum class ETrainState : uint8
 	Leaving
 };
 
+DECLARE_MULTICAST_DELEGATE(FOnTrainArrivedDelegate);
+
 /**
  * 
  */
@@ -29,38 +31,52 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TrainTrigger;
 
+
 //Train Move
 public:
-	float CurrentAlpha = 0.0f;
-	float LerpSpeed = 0.5f;
-
-	UPROPERTY(Replicated)
-	FVector LeaveLocation;
-
-	UPROPERTY(Replicated)
-	FVector WaitLocation;
-
 	UPROPERTY(Replicated)
 	ETrainState CurrentTrainState;
 
-	FVector ServerTrainMove;
+	FOnTrainArrivedDelegate OnTrainArrived;
+
+protected:
+	float CurrentAlpha = 0.0f;
+	float LerpSpeed = 0.5f;
+	FVector WaitLocation;
+	FVector LeaveLocation;
+
 
 //Gates
+public:
+	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UStaticMeshComponent>> Gates;
+	TArray<UStaticMeshComponent*> DoorLs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<class UBoxComponent>> GateTriggers;
+	TArray<UStaticMeshComponent*> DoorRs;
+
+	//UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	//TArray<UBoxComponent*> GateTriggers;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> Crowds;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
 	int32 CurrentOpenGate;
+	
+	int32 CorrectGate;
 
 	UFUNCTION()
 	void OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -69,8 +85,32 @@ protected:
 
 	void GateClose();
 
+//Puzzle
+public:
+	void DelegateBind(class ALSTrainSpawnGimmick* InGimmickClass);
+
+protected:
+	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
+	void GetOffPassengers(int32 InCorrectGate);
+	void GetOnPassengers();
+
+//Network
 public:
 	UFUNCTION()
 	void OnRep_CurrentOpenGate();
+
+//Replicate
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCGateOpen();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCGateClose();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGetOffPassengers(int32 InCorrectGate);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastGetOnPassengers();
 
 };

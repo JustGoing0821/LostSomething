@@ -11,7 +11,7 @@
 BT노드에서 Key 값 사용할 때
 #include "ATestNPCAIController.h"
 OwnerComp->GetBlackboardComponent()->GetValueAsVector(ATestNPCAIController::Key_HomePos)
-*/
+*/ 
 
 const FName ATestNPCAIController::Key_HomePos = FName("HomePos");
 const FName ATestNPCAIController::Key_PatrolPos = FName("PatrolPos");
@@ -51,11 +51,6 @@ void ATestNPCAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ATestNPC* NPC = Cast<ATestNPC>(GetPawn());
-	if (NPC && NPC->bIsComboCheckWindowOpen && NPC->bIsAttacking)
-	{
-		NPC->NextComboCheck(); // 이 시점에서 거리 판단
-	}
 }
 
 void ATestNPCAIController::StopAI()
@@ -65,3 +60,4 @@ void ATestNPCAIController::StopAI()
 
 	BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
 }
+ 
