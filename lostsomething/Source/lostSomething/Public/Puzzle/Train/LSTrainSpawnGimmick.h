@@ -92,6 +92,7 @@ public:
 protected:
 	void CheckPuzzleCorrect();
 	void SetPannelMonitor();
+	int32 CorrectPeopleCount;
 
 
 //RPC Section

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InteractionActor/LSInteractionActorBase.h"
+#include "Puzzle/VendingMachine/VendingMachineColor.h"
 #include "LSVendingMachine.generated.h"
 
 /**
@@ -25,33 +26,46 @@ protected:
 	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UMaterialInterface> SiJaeMaterial;
+	TMap<EVendingMachineColor, class UMaterialInterface*> MeshMaterials;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UMaterialInterface> WrongMaterial;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UMaterialInterface> CorrectMaterial;
-
-	//Interaction Section
+//Interaction Section
 public:
 	virtual void InteractionProcessSiJae() override;
 	virtual void InteractionProcessIJae() override;
 
-	//Visible Section
+//Visible Section
 protected:
 	virtual void SetVisibleSiJae() override;
 	virtual void SetVisibleIJae() override;
 
-	//Quest Section
+//Quest Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
 	uint8 bisCorrectMachine : 1;
 
 	void QuestClear();
 
-	//RPC Section
+//RPC Section
 public:
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCQuestClear();
+
+
+//Puzzle Section
+public:
+	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
+	void BindOnPhaseChanged(class ALSVendingMachineManager* InVendingMAchineManager);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
+	int32 MachineNumber;
+
+	int32 CurrentColorSet;
+
+	TArray<TArray<EVendingMachineColor>> VendingMachineColorSets;
+
+	EVendingMachineColor AnswerColor;
+
+	void SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet);
 };
