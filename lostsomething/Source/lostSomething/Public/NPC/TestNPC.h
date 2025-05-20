@@ -84,7 +84,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxComboDistance = 300.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
     bool bShouldChase = false;
 
     // Getter
