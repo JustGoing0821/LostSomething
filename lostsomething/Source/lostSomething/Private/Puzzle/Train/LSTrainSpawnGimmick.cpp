@@ -105,6 +105,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	//Puzzle
 	CorrectGate = -1;
+	CorrectPeopleCount = 2;
 }
 
 void ALSTrainSpawnGimmick::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -207,7 +208,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		CorrectGate = FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
-		float DelayTime = 5;// FMath::FRandRange(2.f, 6.f);
+		float DelayTime = 10;// FMath::FRandRange(2.f, 6.f);
 		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		MulticastRPCSetPannelMonitor();
@@ -232,7 +233,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 
 void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 {
-	if (CurrentOverlapTrigger[CorrectGate] == 1)
+	if (CurrentOverlapTrigger[CorrectGate] == CorrectPeopleCount)
 	{
 		OnPuzzleCheck.Broadcast(true, CorrectGate);
 		if (StepTriggerClass)
