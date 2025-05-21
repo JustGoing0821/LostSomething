@@ -138,7 +138,6 @@ void ALSTrain::Tick(float DeltaTime)
 			GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
 				{
 					OnTrainArrived.Broadcast();
-					CurrentOpenGate = CorrectGate - 1;
 					CurrentAlpha = 0.0f;
 				}
 			), 1, false, 1);
@@ -177,7 +176,6 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSTrain, CurrentTrainState);
-	DOREPLIFETIME(ALSTrain, CurrentOpenGate);
 }
 
 void ALSTrain::BeginPlay()
@@ -232,7 +230,7 @@ void ALSTrain::DelegateBind(ALSTrainSpawnGimmick* InGimmickClass)
 
 void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 {
-	LS_LOG(LogLS, Log, TEXT("InCorrectGate : %d"), InCorrectGate);
+	//LS_LOG(LogLS, Log, TEXT("InCorrectGate : %d"), InCorrectGate);
 
 	if (bCorrect)
 	{
@@ -279,11 +277,6 @@ void ALSTrain::GetOnPassengers()
 		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
 		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 	}
-}
-
-void ALSTrain::OnRep_CurrentOpenGate()
-{
-	//GateOpen();
 }
 
 void ALSTrain::MulticastRPCGateOpen_Implementation()

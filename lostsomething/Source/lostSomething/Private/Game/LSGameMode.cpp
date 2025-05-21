@@ -44,27 +44,38 @@ ALSGameMode::ALSGameMode()
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	APlayerController* ResultController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
 
 	ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(ResultController);
 	if (LSPlayerController)
 	{
-		LS_LOG(LogLS, Log, TEXT("Player Controller : %s"), *LSPlayerController->GetName());
 		if (LSPlayerController->GetName() == TEXT("LTPlayerController_0"))
 		{
 			LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
 			DefaultPawnClass = SiJaePawnClass;
+
+			//LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
+			//DefaultPawnClass = IJaePawnClass;
+
+			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 		else
 		{
 			LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
 			DefaultPawnClass = IJaePawnClass;
+			
+			//LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
+			//DefaultPawnClass = SiJaePawnClass;
+
+			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 	}
 
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	return ResultController;
 }
 

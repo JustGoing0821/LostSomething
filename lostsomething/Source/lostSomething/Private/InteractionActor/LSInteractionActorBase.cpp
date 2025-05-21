@@ -123,11 +123,12 @@ void ALSInteractionActorBase::BeginPlay()
 					if (PlayerController && !PlayerController->IsLocalController())
 					{
 						SetOwner(PlayerController);
+						LS_LOG(LogLS, Log, TEXT("%s"), TEXT("OwnerSetted"));
 						break;
 					}
 				}
 			}
-		), 3.0f, false, -1.0f);
+		), 1.0f, false, 3.0f);
 	}
 
 	//SiJae IJae Difference Setting
@@ -191,5 +192,39 @@ void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerCont
 void ALSInteractionActorBase::SetCurrentQuest(ELSInteractionEnum InCurrentQuest)
 {
 	CurrentQuest = InCurrentQuest;
+}
+
+void ALSInteractionActorBase::ChangeVisible()
+{
+	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	if (LocalPlayer)
+	{
+		ALTPlayerController* LSPlayer = Cast<ALTPlayerController>(LocalPlayer->GetPlayerController(GetWorld()));
+		if (LSPlayer)
+		{
+			if (LSPlayer->CharacterChoice != ECharacterChoice::None)
+			{
+				FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayer->CharacterChoice)).ToString();
+				//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+				if (LSPlayer->CharacterChoice == ECharacterChoice::SiJae)
+				{
+					SetVisibleSiJae();
+				}
+				else
+				{
+					SetVisibleIJae();
+				}
+			}
+		}
+		else
+		{
+			LS_LOG(LogLS, Error, TEXT("LocalPlayer Controller Not Found"));
+		}
+	}
+}
+
+void ALSInteractionActorBase::MulticastRPCChangeVisible_Implementation()
+{
+	ChangeVisible();
 }
 

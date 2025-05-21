@@ -73,8 +73,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
 	TArray<UStaticMeshComponent*> Crowds;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
-	int32 CurrentOpenGate;
+	//UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
+	//int32 CurrentOpenGate;
 	
 	int32 CorrectGate;
 
@@ -96,8 +96,8 @@ protected:
 
 //Network
 public:
-	UFUNCTION()
-	void OnRep_CurrentOpenGate();
+	//UFUNCTION()
+	//void OnRep_CurrentOpenGate();
 
 //Replicate
 public:
