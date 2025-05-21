@@ -14,4 +14,6 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual bool CanPushWheelchair() const override;
 };

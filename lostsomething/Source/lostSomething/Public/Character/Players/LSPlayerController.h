@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSScriptWidget.h"
 #include "LSPlayerController.generated.h"
 
 
@@ -28,5 +29,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
 
+private:
+	UPROPERTY()
+	class ULSScriptWidget* ScriptWidget;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class ULSScriptWidget> ScriptWidgetClass;
+
+public:
+	void ShowScript(const FString& ScriptText);
 };

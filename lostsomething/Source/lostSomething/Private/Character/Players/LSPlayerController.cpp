@@ -4,6 +4,7 @@
 #include "Character/Players/LSPlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSScriptWidget.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -30,5 +31,22 @@ void ALSPlayerController::BeginPlay()
 		LSHUDWidget->AddToViewport();
 	}
 
+	if (ScriptWidgetClass) 
+	{
+		ScriptWidget = CreateWidget<ULSScriptWidget>(this, ScriptWidgetClass);
+		if (ScriptWidget) 
+		{
+			ScriptWidget->AddToViewport(10);
+		}
+	}
+}
+
+void ALSPlayerController::ShowScript(const FString& ScriptText)
+{
+	if (ScriptWidget)
+	{
+		ScriptWidget->SetScriptText(ScriptText);
+		ScriptWidget->ShowScriptWidget();
+	}
 }
 

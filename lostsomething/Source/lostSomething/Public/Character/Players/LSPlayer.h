@@ -15,10 +15,11 @@
 #include "Interface/LSCharacterWidgetInterface.h"
 #include "InputAction.h"
 #include "Character/Stat/LSCharacterStatComponent.h"
+#include "Interface/LSWheelchairInterface.h"
 #include "LSPlayer.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSCharacterWidgetInterface
+class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSCharacterWidgetInterface, public ILSWheelchairInterface
 {
 	GENERATED_BODY()
 
@@ -95,5 +96,42 @@ protected:
 
 	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
 
+// Wheelchair
+protected:
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	bool bIsBeingPushed;
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<ACharacter> PusherCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<USkeletalMeshComponent> WheelchairMesh;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wheelchair")
+	bool bCanPushWheelchair;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRequestWheelchairInteraction(AActor* TargetActor);
+
+	virtual void StartPushingWheelchair_Implementation(ACharacter* Pusher) override;
+	virtual void StopPushingWheelchair_Implementation(ACharacter* Pusher) override;
+	virtual bool IsBeingPushed_Implementation() const override;
+	virtual bool CanPushWheelchair() const;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStartPushingWheelchair(ACharacter* Pusher);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopPushingWheelchair();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastWheelchairStateChanged(bool bPushing, ACharacter* Pusher);
+
+	void HandleWheelchairMovement();
+
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

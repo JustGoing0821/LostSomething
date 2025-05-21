@@ -3,3 +3,7 @@
 
 #include "Character/Players/LSPlayerIJae.h"
 
+bool ALSPlayerIJae::CanPushWheelchair() const
+{
+    return false;
+}
