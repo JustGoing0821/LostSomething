@@ -2,12 +2,19 @@
 
 
 #include "BossNPC/BossNPC.h"
+#include "BossNPC/AI/BossNPCAIController.h"
 
 // Sets default values
 ABossNPC::ABossNPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	// AIController 클래스를 설정
+	AIControllerClass = ABossNPCAIController::StaticClass();
+
+	// AIController가 자동으로 소환되도록 설정
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 }
 
