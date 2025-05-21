@@ -19,6 +19,9 @@ public:
 	ALSVendingMachine();
 
 protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CollisionBox;
 
@@ -57,11 +60,12 @@ public:
 	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
 	void BindOnPhaseChanged(class ALSVendingMachineManager* InVendingMAchineManager);
 
+	UPROPERTY(Replicated)
+	EVendingMachineColor CurrentVendingMachineColor;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	int32 MachineNumber;
-
-	int32 CurrentColorSet;
 
 	TArray<TArray<EVendingMachineColor>> VendingMachineColorSets;
 

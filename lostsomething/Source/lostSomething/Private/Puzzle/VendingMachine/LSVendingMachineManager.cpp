@@ -3,16 +3,57 @@
 
 #include "Puzzle/VendingMachine/LSVendingMachineManager.h"
 #include "lostSomething.h"
+#include "Physics/LSCollisionProfile.h"
+#include "Components/BoxComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Puzzle/VendingMachine/LSVendingMachine.h"
 #include "Kismet/GameplayStatics.h"
 
 ALSVendingMachineManager::ALSVendingMachineManager()
 {
-	CurrentPhase = ECurrentPhase::Phase1;
+	CurrentPhase = ECurrentPhase::NotStarted;
+	bReplicates = true;
+
+	//Collision
+	StartButton = CreateDefaultSubobject<UBoxComponent>(TEXT("StartButtonCollision"));
+	StartButton->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
+	StartButton->SetBoxExtent(FVector(55, 3, 80));
+	RootComponent = StartButton;
+
+	//Mesh
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
+	//MeshComponent->SetRelativeLocation(FVector(-50.0f, -50.0f, -50.0f));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/Cartels/SM_Cartel_02.SM_Cartel_02"));
+	if (ItemMeshRef.Object)
+	{
+		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
+	}
+
+	//Material
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RedMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelR.M_CartelR"));
+	if (RedMaterialRef.Object)
+	{
+		MeshMaterials.Add(EVendingMachineColor::Red, RedMaterialRef.Object);
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> GreenMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelG.M_CartelG"));
+	if (GreenMaterialRef.Object)
+	{
+		MeshMaterials.Add(EVendingMachineColor::Green, GreenMaterialRef.Object);
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BlueMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelB.M_CartelB"));
+	if (BlueMaterialRef.Object)
+	{
+		MeshMaterials.Add(EVendingMachineColor::Blue, BlueMaterialRef.Object);
+	}
+	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
 }
 
 void ALSVendingMachineManager::BeginPlay()
 {
+	Super::BeginPlay();
+
 	AActor* TargetActor = nullptr;
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSVendingMachine::StaticClass(), FoundActors);
@@ -30,40 +71,89 @@ void ALSVendingMachineManager::BeginPlay()
 				CurrentMachine++;
 			}
 		}
-		LS_LOG(LogLS, Log, TEXT("VendingMachines Found : %d"), VendingMachines.Num());
+		//LS_LOG(LogLS, Log, TEXT("VendingMachines Found : %d"), VendingMachines.Num());
 	}
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("No ALSVendingMachine"));
 	}
+}
 
+void ALSVendingMachineManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ALSVendingMachineManager, CurrentPhase);
+	DOREPLIFETIME(ALSVendingMachineManager, CurrentAnswerColor);
+}
+
+void ALSVendingMachineManager::SetVisibleIJae()
+{
+	if (CurrentPhase != ECurrentPhase::NotStarted)
+	{
+		MeshComponent->SetMaterial(1, MeshMaterials[CurrentAnswerColor]);
+		FString EnumString = StaticEnum<EVendingMachineColor>()->GetNameByValue(static_cast<int64>(CurrentAnswerColor)).ToString();
+	}
+}
+
+void ALSVendingMachineManager::InteractionProcessSiJae()
+{
 	if (HasAuthority())
 	{
 		StartPhase();
+	}
+	else
+	{
+		ServerRPCStartPhase();
+	}
+}
+
+void ALSVendingMachineManager::InteractionProcessIJae()
+{
+	if (HasAuthority())
+	{
+		StartPhase();
+	}
+	else
+	{
+		ServerRPCStartPhase();
 	}
 }
 
 void ALSVendingMachineManager::StartPhase()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	CurrentPhase = ECurrentPhase::Phase1;
 
-	int32 CurrentColor = -1;
+	//Set AnswerColors
+	int32 AddCurrentColor = -1;
 	for (int32 Num=0 ; Num < 4; Num++)
 	{
 		int32 NewColor = FMath::RandRange(0, 2);
-		while (NewColor == CurrentColor)
+		while (NewColor == AddCurrentColor)
 		{
 			NewColor = FMath::RandRange(0, 2);
 		}
-		AnswerColors.Add(static_cast<EVendingMachineColor>(NewColor));
-		CurrentColor = NewColor;
+		AnswerColors.Add(static_cast<ECurrentPhase>(Num+1), static_cast<EVendingMachineColor>(NewColor));
+		AddCurrentColor = NewColor;
 	}
 
-	for (EVendingMachineColor Color : AnswerColors)
-	{
+	//Print AnswerColors Log
+	for (int32 Num = 1; Num < 5; Num++)
+	{ 
+		EVendingMachineColor Color = AnswerColors[static_cast<ECurrentPhase>(Num)];
 		FString EnumString = StaticEnum<EVendingMachineColor>()->GetNameByValue(static_cast<int64>(Color)).ToString();
 		LS_LOG(LogLS, Log, TEXT("EVendingMachineColor : %s"), *EnumString);
 	}
 
-	OnPhaseChanged.Broadcast(AnswerColors[0], FMath::RandRange(0, 5));
+	//Set Start Material
+	CurrentAnswerColor = AnswerColors[CurrentPhase];
+	MulticastRPCChangeVisible();
+
+	//BroadCast
+	OnPhaseChanged.Broadcast(AnswerColors[CurrentPhase], FMath::RandRange(0, 5));
+}
+
+void ALSVendingMachineManager::ServerRPCStartPhase_Implementation()
+{
+	StartPhase();
 }

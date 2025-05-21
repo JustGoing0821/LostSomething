@@ -4,6 +4,7 @@
 #include "Puzzle/VendingMachine/LSVendingMachine.h"
 #include "lostSomething.h"
 #include "Physics/LSCollisionProfile.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "LevelTest/Player/LTPlayerController.h"
@@ -13,6 +14,8 @@
 
 ALSVendingMachine::ALSVendingMachine()
 {
+	bReplicates = true;
+
 	//Collision
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
@@ -69,6 +72,13 @@ ALSVendingMachine::ALSVendingMachine()
 	VendingMachineColorSets.Add({ EVendingMachineColor::Blue, EVendingMachineColor::Green, EVendingMachineColor::Red });
 
 	MachineNumber = 0;
+}
+
+void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ALSVendingMachine, CurrentVendingMachineColor);
 }
 
 
@@ -142,7 +152,7 @@ void ALSVendingMachine::SetVisibleIJae()
 {
 	Super::SetVisibleIJae();
 
-	MeshComponent->SetMaterial(0, MeshMaterials[VendingMachineColorSets[CurrentColorSet][MachineNumber]]);
+	MeshComponent->SetMaterial(0, MeshMaterials[CurrentVendingMachineColor]);
 }
 
 void ALSVendingMachine::QuestClear()
@@ -159,8 +169,8 @@ void ALSVendingMachine::BindOnPhaseChanged(ALSVendingMachineManager* InVendingMA
 void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet)
 {
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	CurrentVendingMachineColor = VendingMachineColorSets[InCurrentColorSet][MachineNumber];
 	AnswerColor = InAnswerColor;
-	CurrentColorSet = InCurrentColorSet;
 	if (HasAuthority())
 	{
 		MulticastRPCChangeVisible();
