@@ -31,7 +31,7 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 	if (UseBlackboard(BBAsset, BlackboardPtr))
 	{
 		// HomePos 값을 AI의 현재 위치로 초기화
-		Blackboard->SetValueAsEnum(FName("Key_Phase"), static_cast<uint8>(EPhaseType::Phase1));
+		Blackboard->SetValueAsEnum(FName("Key_Phase"), static_cast<uint8>(EPhaseType::Phase2));
 
 		/* 블랙보드 값 가져오는 법
 		uint8 PhaseValue = BlackboardComp->GetValueAsEnum(FName("Key_Phase"));

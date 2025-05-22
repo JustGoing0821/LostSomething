@@ -15,6 +15,9 @@ public:
 	// Sets default values for this character's properties
 	ABossNPC();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Obstacle")
+	TArray<USceneComponent*> ObstacleSpawnPoints;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
