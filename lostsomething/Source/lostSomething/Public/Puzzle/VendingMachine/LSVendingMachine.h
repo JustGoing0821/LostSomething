@@ -7,6 +7,8 @@
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
 #include "LSVendingMachine.generated.h"
 
+DECLARE_DELEGATE_OneParam(FOnVMPuzzleCheckDelegate, bool /*PuzzleCorrect*/);
+
 /**
  * 
  */
@@ -47,21 +49,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
 	uint8 bisCorrectMachine : 1;
 
-	void QuestClear();
-
-//RPC Section
-public:
-	UFUNCTION(Server, Unreliable)
-	void ServerRPCQuestClear();
-
-
 //Puzzle Section
 public:
 	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
-	void BindOnPhaseChanged(class ALSVendingMachineManager* InVendingMAchineManager);
+	void BindVendingMachine(class ALSVendingMachineManager* InVendingMachineManager);
 
 	UPROPERTY(Replicated)
 	EVendingMachineColor CurrentVendingMachineColor;
+
+	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
@@ -69,7 +65,16 @@ protected:
 
 	TArray<TArray<EVendingMachineColor>> VendingMachineColorSets;
 
-	EVendingMachineColor AnswerColor;
-
 	void SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet);
+	void PuzzleCheck();
+	void OnQuesetClear();
+
+
+//RPC Section
+public:
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCPuzzleCheck();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCOnQuesetClear();
 };

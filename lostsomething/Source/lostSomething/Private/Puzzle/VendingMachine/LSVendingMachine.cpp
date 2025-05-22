@@ -84,61 +84,41 @@ void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 void ALSVendingMachine::InteractionProcessSiJae()
 {
-	const TArray<FString>& Scripts = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
-	for (FString Script : Scripts)
+	//const TArray<FString>& Scripts = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
+	//for (FString Script : Scripts)
+	//{
+	//	LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
+	//}
+
+	if (HasAuthority())
 	{
-		LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
-	}
-	if (CurrentQuest == ELSInteractionEnum::Quest1)
-	{
-		if (bisCorrectMachine)
-		{
-			if (HasAuthority())
-			{
-				QuestClear();
-			}
-			else
-			{
-				ServerRPCQuestClear();
-			}
-		}
-		else
-		{
-			LS_LOG(LogLS, Log, TEXT("Wrong Machine"));
-		}
-	}
-	else if (CurrentQuest == ELSInteractionEnum::Quest2)
-	{
-		if (bisCorrectMachine)
-		{
-			if (HasAuthority())
-			{
-				QuestClear();
-			}
-			else
-			{
-				ServerRPCQuestClear();
-			}
-		}
-		else
-		{
-			LS_LOG(LogLS, Log, TEXT("Wrong Machine"));
-		}
+		PuzzleCheck();
 	}
 	else
 	{
-		return;
+		ServerRPCPuzzleCheck();
 	}
 }
 
 void ALSVendingMachine::InteractionProcessIJae()
 {
 	//Test Log Code
-	const TArray<FString>& Scripts = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest);
-	for (FString Script : Scripts)
-	{
-		LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
-	}
+	//const TArray<FString>& Scripts = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest);
+	//for (FString Script : Scripts)
+	//{
+	//	LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
+	//}
+
+	//if (HasAuthority())
+	//{
+	//	PuzzleCheck();
+	//}
+	//else
+	//{
+	//	ServerRPCPuzzleCheck();
+	//}
+
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
 }
 
 void ALSVendingMachine::SetVisibleSiJae()
@@ -155,29 +135,62 @@ void ALSVendingMachine::SetVisibleIJae()
 	MeshComponent->SetMaterial(0, MeshMaterials[CurrentVendingMachineColor]);
 }
 
-void ALSVendingMachine::QuestClear()
+void ALSVendingMachine::BindVendingMachine(ALSVendingMachineManager* InVendingMachineManager)
 {
-	ALSGameMode* GameMode = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode());
-	GameMode->QuestComplete();
-}
-
-void ALSVendingMachine::BindOnPhaseChanged(ALSVendingMachineManager* InVendingMAchineManager)
-{
-	InVendingMAchineManager->OnPhaseChanged.AddUObject(this, &ALSVendingMachine::SetMachineColor);
+	InVendingMachineManager->OnVMPhaseChanged.AddUObject(this, &ALSVendingMachine::SetMachineColor);
+	InVendingMachineManager->OnVMPuzzleEnd.AddUObject(this, &ALSVendingMachine::MulticastRPCOnQuesetClear);
 }
 
 void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentVendingMachineColor = VendingMachineColorSets[InCurrentColorSet][MachineNumber];
-	AnswerColor = InAnswerColor;
+
+	if (CurrentVendingMachineColor == InAnswerColor)
+	{
+		bisCorrectMachine = true;
+	}
+	else
+	{
+		bisCorrectMachine = false;
+	}
+
 	if (HasAuthority())
 	{
 		MulticastRPCChangeVisible();
 	}
 }
 
-void ALSVendingMachine::ServerRPCQuestClear_Implementation()
+void ALSVendingMachine::PuzzleCheck()
 {
-	QuestClear();
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (bisCorrectMachine)
+	{
+		OnVMPuzzleCheck.Execute(true);
+	}
+	else
+	{
+		OnVMPuzzleCheck.Execute(false);
+	}
+}
+
+void ALSVendingMachine::OnQuesetClear()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	OnVMPuzzleCheck.Unbind();
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
+}
+
+void ALSVendingMachine::ServerRPCPuzzleCheck_Implementation()
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	PuzzleCheck();
+}
+
+void ALSVendingMachine::MulticastRPCOnQuesetClear_Implementation()
+{
+	OnQuesetClear();
 }

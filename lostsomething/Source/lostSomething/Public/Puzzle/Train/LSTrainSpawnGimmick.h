@@ -13,7 +13,7 @@ enum class ETrainSpawnState : uint8
 	Despawned
 };
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTrainPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
 DECLARE_DELEGATE(FOnTrainDespawnedDelegate);
 
 UCLASS()
@@ -84,7 +84,7 @@ protected:
 public:
 	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
 
-	FOnPuzzleCheckDelegate OnPuzzleCheck;
+	FOnTrainPuzzleCheckDelegate OnPuzzleCheck;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CorrectGate)
 	int32 CorrectGate;
