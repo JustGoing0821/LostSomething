@@ -6,8 +6,9 @@
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Puzzle/VendingMachine/LSVendingMachine.h"
 #include "Kismet/GameplayStatics.h"
+#include "Puzzle/VendingMachine/LSVendingMachine.h"
+#include "LevelTest/Game/LTGameMode.h"
 
 ALSVendingMachineManager::ALSVendingMachineManager()
 {
@@ -65,9 +66,9 @@ void ALSVendingMachineManager::BeginPlay()
 			ALSVendingMachine* VendingMachine = Cast<ALSVendingMachine>(FoundActor);
 			if (VendingMachine)
 			{
-				VendingMachines.Add(VendingMachine);
 				VendingMachine->SetMachineNumber(CurrentMachine);
-				VendingMachine->BindOnPhaseChanged(this);
+				VendingMachine->BindVendingMachine(this);
+				VendingMachine->OnVMPuzzleCheck.BindUObject(this, &ALSVendingMachineManager::PuzzleCheck);
 				CurrentMachine++;
 			}
 		}
@@ -92,7 +93,6 @@ void ALSVendingMachineManager::SetVisibleIJae()
 	if (CurrentPhase != ECurrentPhase::NotStarted)
 	{
 		MeshComponent->SetMaterial(1, MeshMaterials[CurrentAnswerColor]);
-		FString EnumString = StaticEnum<EVendingMachineColor>()->GetNameByValue(static_cast<int64>(CurrentAnswerColor)).ToString();
 	}
 }
 
@@ -110,18 +110,20 @@ void ALSVendingMachineManager::InteractionProcessSiJae()
 
 void ALSVendingMachineManager::InteractionProcessIJae()
 {
-	if (HasAuthority())
-	{
-		StartPhase();
-	}
-	else
-	{
-		ServerRPCStartPhase();
-	}
+	//if (HasAuthority())
+	//{
+	//	StartPhase();
+	//}
+	//else
+	//{
+	//	ServerRPCStartPhase();
+	//}
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
 }
 
 void ALSVendingMachineManager::StartPhase()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentPhase = ECurrentPhase::Phase1;
 
 	//Set AnswerColors
@@ -138,22 +140,114 @@ void ALSVendingMachineManager::StartPhase()
 	}
 
 	//Print AnswerColors Log
+	/*
 	for (int32 Num = 1; Num < 5; Num++)
 	{ 
 		EVendingMachineColor Color = AnswerColors[static_cast<ECurrentPhase>(Num)];
 		FString EnumString = StaticEnum<EVendingMachineColor>()->GetNameByValue(static_cast<int64>(Color)).ToString();
 		LS_LOG(LogLS, Log, TEXT("EVendingMachineColor : %s"), *EnumString);
 	}
+	*/
 
 	//Set Start Material
 	CurrentAnswerColor = AnswerColors[CurrentPhase];
 	MulticastRPCChangeVisible();
 
 	//BroadCast
-	OnPhaseChanged.Broadcast(AnswerColors[CurrentPhase], FMath::RandRange(0, 5));
+	OnVMPhaseChanged.Broadcast(AnswerColors[CurrentPhase], FMath::RandRange(0, 5));
+}
+
+void ALSVendingMachineManager::ProceedPhase()
+{
+	//Set Answer
+	CurrentPhase = static_cast<ECurrentPhase>(static_cast<uint8>(CurrentPhase)+1);
+	FString EnumString = StaticEnum<ECurrentPhase>()->GetNameByValue(static_cast<int64>(CurrentPhase)).ToString();
+	LS_LOG(LogLS, Log, TEXT("CurrentPhase : %s"), *EnumString);
+
+	//Set Start Material
+	CurrentAnswerColor = AnswerColors[CurrentPhase];
+	MulticastRPCChangeVisible();
+
+	//BroadCast
+	OnVMPhaseChanged.Broadcast(AnswerColors[CurrentPhase], FMath::RandRange(0, 5));
+}
+
+void ALSVendingMachineManager::PuzzleCheck(bool bisPuzzleCorrect)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (HasAuthority())
+	{
+		if (bisPuzzleCorrect)
+		{
+			if (CurrentPhase != ECurrentPhase::Phase4)
+			{
+				ProceedPhase();
+			}
+			else
+			{
+				MulticastRPCQuestClear();
+			}
+		}
+		else
+		{
+			StartPhase();
+		}
+	}
+	else
+	{
+		if (bisPuzzleCorrect)
+		{
+			if (CurrentPhase != ECurrentPhase::Phase4)
+			{
+				ServerRPCProceedPhase();
+			}
+			else
+			{
+				ServerRPCQuestClear();
+			}
+		}
+		else
+		{
+			ServerRPCStartPhase();
+		}
+	}
+}
+
+void ALSVendingMachineManager::QuestClear()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		ALTGameMode* GameMode = Cast<ALTGameMode>(GetWorld()->GetAuthGameMode());
+		GameMode->QuestComplete();
+		OnVMPhaseChanged.Clear();
+		OnVMPuzzleEnd.Broadcast();
+		OnVMPuzzleEnd.Clear();
+	}
+
+	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
+	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ALSVendingMachineManager::MulticastRPCQuestClear_Implementation()
+{
+	QuestClear();
+}
+
+void ALSVendingMachineManager::ServerRPCQuestClear_Implementation()
+{
+	MulticastRPCQuestClear();
+}
+
+void ALSVendingMachineManager::ServerRPCProceedPhase_Implementation()
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	ProceedPhase();
 }
 
 void ALSVendingMachineManager::ServerRPCStartPhase_Implementation()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	StartPhase();
 }

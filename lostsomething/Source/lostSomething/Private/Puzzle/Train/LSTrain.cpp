@@ -33,7 +33,7 @@ ALSTrain::ALSTrain()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Level/Puzzle/Train/SM_SM_Crowd.SM_SM_Crowd"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> CrowdMaterialRef(TEXT("/Game/Level/Puzzle/Train/MALE.MALE"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> CrowdMaterialRef(TEXT("/Game/Level/Puzzle/Train/MALE.MALE"));
 	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
 
 	// Car Generate

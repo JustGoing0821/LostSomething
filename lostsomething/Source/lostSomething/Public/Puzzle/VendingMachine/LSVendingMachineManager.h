@@ -17,7 +17,8 @@ enum class ECurrentPhase : uint8
 	Phase4
 };
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPhaseChangedDelegate, EVendingMachineColor /*AnswerColor*/, int32 /*CurrentColorSet*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnVMPhaseChangedDelegate, EVendingMachineColor /*AnswerColor*/, int32 /*CurrentColorSet*/);
+DECLARE_MULTICAST_DELEGATE(FOnVMPuzzleEndDelegate);
 
 /**
  * 
@@ -55,14 +56,10 @@ public:
 	virtual void InteractionProcessIJae() override;
 
 
-//Vending Machine Section
-protected:
-	TArray<class ALSVendingMachine*> VendingMachines;
-
-
 //Puzzle Section
 public:
-	FOnPhaseChangedDelegate OnPhaseChanged;
+	FOnVMPhaseChangedDelegate OnVMPhaseChanged;
+	FOnVMPuzzleEndDelegate OnVMPuzzleEnd;
 
 	UPROPERTY(Replicated)
 	ECurrentPhase CurrentPhase;
@@ -75,10 +72,22 @@ protected:
 	TMap<ECurrentPhase, EVendingMachineColor> AnswerColors;
 
 	void StartPhase();
+	void ProceedPhase();
+	void PuzzleCheck(bool bisPuzzleCorrect);
+	void QuestClear();
 	
 
 //RPC Section
 public:
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCStartPhase();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCProceedPhase();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCQuestClear();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCQuestClear();
 };
