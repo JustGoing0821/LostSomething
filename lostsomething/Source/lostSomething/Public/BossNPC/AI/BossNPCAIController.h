@@ -31,7 +31,7 @@ public:
 
 
 	//BB Key º¯¼ö¸í
-	static const EPhaseType Key_Phase;
+	static const FName Key_Phase;
 
 
 private:
@@ -40,5 +40,6 @@ private:
 
 	UPROPERTY()
 	class UBlackboardData* BBAsset;
+
 	
 };

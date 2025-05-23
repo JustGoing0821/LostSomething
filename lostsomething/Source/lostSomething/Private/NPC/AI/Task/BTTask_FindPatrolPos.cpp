@@ -50,7 +50,7 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
     // HomePos 값이 너무 크거나 NaN인지 확인
     if (Origin.ContainsNaN())
     {
-        UE_LOG(LogTemp, Warning, TEXT("UBTTask_FindPatrolPos: Invalid Home Position Detected! Resetting to Pawn Location"));
+        //UE_LOG(LogTemp, Warning, TEXT("UBTTask_FindPatrolPos: Invalid Home Position Detected! Resetting to Pawn Location"));
         Origin = ControllingPawn->GetActorLocation();
     }
 
@@ -61,10 +61,10 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
     {
         // 순찰 위치 저장
         OwnerComp.GetBlackboardComponent()->SetValueAsVector(ATestNPCAIController::Key_PatrolPos, NextPatrol.Location);
-        UE_LOG(LogTemp, Log, TEXT("UBTTask_FindPatrolPos: Patrol Position Set To = %s"), *NextPatrol.Location.ToString());
+        //UE_LOG(LogTemp, Log, TEXT("UBTTask_FindPatrolPos: Patrol Position Set To = %s"), *NextPatrol.Location.ToString());
         return EBTNodeResult::Succeeded;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("UBTTask_FindPatrolPos: Failed to find a valid patrol position"));
+    //UE_LOG(LogTemp, Warning, TEXT("UBTTask_FindPatrolPos: Failed to find a valid patrol position"));
     return EBTNodeResult::Failed;
 }

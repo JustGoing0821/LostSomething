@@ -7,7 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 
-const EPhaseType ABossNPCAIController::Key_Phase = EPhaseType::Phase1;
+const FName ABossNPCAIController::Key_Phase = FName("Phase");
 
 ABossNPCAIController::ABossNPCAIController()
 {
@@ -27,18 +27,24 @@ ABossNPCAIController::ABossNPCAIController()
 void ABossNPCAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	UBlackboardComponent* BlackboardPtr = Blackboard.Get();
-	if (UseBlackboard(BBAsset, BlackboardPtr))
-	{
-		// HomePos 값을 AI의 현재 위치로 초기화
-		Blackboard->SetValueAsEnum(FName("Key_Phase"), static_cast<uint8>(EPhaseType::Phase2));
 
-		/* 블랙보드 값 가져오는 법
-		uint8 PhaseValue = BlackboardComp->GetValueAsEnum(FName("Key_Phase"));
-		EPhaseType Phase = static_cast<EPhaseType>(PhaseValue);
-		*/
+
+	UBlackboardComponent* RawBlackboardPtr = Blackboard.Get();
+
+	if (UseBlackboard(BBAsset, RawBlackboardPtr))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EPhaseType::Phase2 as uint8 = %d"), static_cast<uint8>(EPhaseType::Phase2));
+
+		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase2));
+
+		uint8 PhaseValue = Blackboard->GetValueAsEnum(Key_Phase);
+		UE_LOG(LogTemp, Warning, TEXT("[BossAI] Phase after setting: %d"), PhaseValue);
 
 		RunBehaviorTree(BTAsset);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed!"));
 	}
 }
 
