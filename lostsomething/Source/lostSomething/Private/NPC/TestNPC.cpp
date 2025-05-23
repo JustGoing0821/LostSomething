@@ -205,7 +205,7 @@ void ATestNPC::MultiAttackHitCheck_Implementation()
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, FCollisionShape::MakeSphere(AttackRadius), Params);
 
 	if (HitDetected)
 	{
@@ -278,7 +278,7 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
 	Damage();
 	return 0.0f;
 }
@@ -298,7 +298,7 @@ void ATestNPC::MultiDamage_Implementation()
 	{
 		if (AnimIns)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AnimIns->DamageMontagePlay();"));
+			//UE_LOG(LogTemp, Warning, TEXT("AnimIns->DamageMontagePlay();"));
 			AnimIns->DamageMontagePlay();
 		}
 	}
