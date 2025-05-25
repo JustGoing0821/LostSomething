@@ -34,7 +34,8 @@ void UBTTask_SpawnObstacles::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
     {
         if (CurrentSpawnCount < 3)
         {
-            SpawnObstacles(ControlledPawn.Get());
+            ABossNPC* BossPawn = Cast<ABossNPC>(ControlledPawn.Get());
+            BossPawn->SpawnObstacles();
             TimeSinceLastSpawn = 0.0f;
             CurrentSpawnCount++;
         }
@@ -42,31 +43,5 @@ void UBTTask_SpawnObstacles::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
         {
             FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
         }
-    }
-}
-
-void UBTTask_SpawnObstacles::SpawnObstacles(AActor* BossActor)
-{
-    ABossNPC* Boss = Cast<ABossNPC>(BossActor);
-    if (!Boss || Boss->ObstacleSpawnPoints.Num() < 3) return;
-
-    TArray<int32> Indexes = { 0, 1, 2 };
-    // 랜덤 셔플
-    for (int32 i = 0; i < Indexes.Num(); ++i)
-    {
-        int32 RandIdx = FMath::RandRange(i, Indexes.Num() - 1);
-        Indexes.Swap(i, RandIdx);
-    }
-
-    // 1 또는 2개 선택
-    int32 NumToSpawn = FMath::RandBool() ? 1 : 2;
-    for (int32 i = 0; i < NumToSpawn; ++i)
-    {
-        USceneComponent* SpawnPoint = Boss->ObstacleSpawnPoints[Indexes[i]];
-        FVector SpawnLocation = SpawnPoint->GetComponentLocation();
-        FRotator SpawnRotation = Boss->GetActorRotation(); // 보스의 정면 방향
-
-        FActorSpawnParameters Params;
-        Boss->GetWorld()->SpawnActor<ABossObstacle>(ABossObstacle::StaticClass(), SpawnLocation, SpawnRotation, Params);
     }
 }

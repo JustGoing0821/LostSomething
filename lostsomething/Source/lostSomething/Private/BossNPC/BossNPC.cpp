@@ -51,3 +51,44 @@ void ABossNPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(ABossNPC, bIsAttacking);
+
+}
+
+void ABossNPC::SpawnObstacles()
+{
+	ServerSpawnObstacles();
+}
+
+void ABossNPC::ServerSpawnObstacles_Implementation()
+{
+	MultiSpawnObstacles();
+}
+
+void ABossNPC::MultiSpawnObstacles_Implementation()
+{
+	TArray<int32> Indexes = { 0, 1, 2 };
+	// 랜덤 셔플
+	for (int32 i = 0; i < Indexes.Num(); ++i)
+	{
+		int32 RandIdx = FMath::RandRange(i, Indexes.Num() - 1);
+		Indexes.Swap(i, RandIdx);
+	}
+
+	// 1 또는 2개 선택
+	int32 NumToSpawn = FMath::RandBool() ? 1 : 2;
+	for (int32 i = 0; i < NumToSpawn; ++i)
+	{
+		USceneComponent* SpawnPoint = ObstacleSpawnPoints[Indexes[i]];
+		FVector SpawnLocation = SpawnPoint->GetComponentLocation();
+		FRotator SpawnRotation = GetActorRotation(); // 보스의 정면 방향
+
+		FActorSpawnParameters Params;
+		GetWorld()->SpawnActor<ABossObstacle>(ABossObstacle::StaticClass(), SpawnLocation, SpawnRotation, Params);
+	}
+}
+
