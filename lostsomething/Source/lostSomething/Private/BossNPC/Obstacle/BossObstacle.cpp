@@ -5,6 +5,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include <Interface/LSTakeDamageInterface.h>
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 ABossObstacle::ABossObstacle()
@@ -17,6 +19,13 @@ ABossObstacle::ABossObstacle()
 	CollisionComp->InitSphereRadius(32.0f);
 	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RootComponent = CollisionComp;
+
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABossObstacle::OnOverlapBegin);
+
 
 	// 메시 컴포넌트 초기화
 	ObstacleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObstacleMesh"));
@@ -53,3 +62,14 @@ void ABossObstacle::Tick(float DeltaTime)
 
 }
 
+void ABossObstacle::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		FDamageEvent DamageEvent;
+		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OtherActor);
+		HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
+
+	}
+}

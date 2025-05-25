@@ -24,7 +24,5 @@ protected:
     int32 CurrentSpawnCount;
     float TimeSinceLastSpawn;
     TWeakObjectPtr<AActor> ControlledPawn;
-
-    void SpawnObstacles(AActor* BossActor);
 	
 };

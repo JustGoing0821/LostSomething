@@ -29,4 +29,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SpawnObstacles();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnObstacles();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiSpawnObstacles();
+
 };
