@@ -4,7 +4,9 @@
 #include "Game/LSGameMode.h"
 #include "lostSomething.h"
 #include "Quest/LSQuestManager.h"
-#include "LevelTest/Player/LTPlayerController.h"
+#include "Character/Players/LSPlayerController.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 
 ALSGameMode::ALSGameMode()
 {
@@ -15,13 +17,13 @@ ALSGameMode::ALSGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
-	static ConstructorHelpers::FClassFinder<APawn> IJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerIJae.BP_LTPlayerIJae_C"));
+	static ConstructorHelpers::FClassFinder<APawn> IJaePawnClassRef(TEXT("/Game/Players/BluePrints/BP_LSPlayerIJae.BP_LSPlayerIJae_C"));
 	if (IJaePawnClassRef.Class != NULL)
 	{
 		IJaePawnClass = IJaePawnClassRef.Class;
 	}
 
-	static ConstructorHelpers::FClassFinder<APawn> SiJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerSiJae.BP_LTPlayerSiJae_C"));
+	static ConstructorHelpers::FClassFinder<APawn> SiJaePawnClassRef(TEXT("/Game/Players/BluePrints/BP_LSPlayerSiJae.BP_LSPlayerSiJae_C"));
 	if (SiJaePawnClassRef.Class != NULL)
 	{
 		SiJaePawnClass = SiJaePawnClassRef.Class;
@@ -31,7 +33,7 @@ ALSGameMode::ALSGameMode()
 	QuestManager = CreateDefaultSubobject<ALSQuestManager>(TEXT("Quest"));
 
 	//Player Controller Class
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/lostSomething.LTPlayerController"));
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/lostSomething.LSPlayerController"));
 	if (PlayerControllerClassRef.Class)
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
@@ -48,29 +50,41 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 
 	APlayerController* ResultController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
 
-	ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(ResultController);
+	ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(ResultController);
 	if (LSPlayerController)
 	{
-		if (LSPlayerController->GetName() == TEXT("LTPlayerController_0"))
+		if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
 		{
-			LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
-			DefaultPawnClass = SiJaePawnClass;
-
-			//LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
-			//DefaultPawnClass = IJaePawnClass;
-
-			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			if (bIsSiJaeServer)
+			{
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+				DefaultPawnClass = SiJaePawnClass;
+			}
+			else
+			{
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+				DefaultPawnClass = IJaePawnClass;
+			}
+			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 		else
 		{
-			LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
-			DefaultPawnClass = IJaePawnClass;
-			
-			//LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
-			//DefaultPawnClass = SiJaePawnClass;
-
-			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			if (bIsSiJaeServer)
+			{
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+				DefaultPawnClass = IJaePawnClass;
+			}
+			else
+			{
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+				DefaultPawnClass = SiJaePawnClass;
+			}
+			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 	}

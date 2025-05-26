@@ -41,6 +41,23 @@ void ALSPlayerController::BeginPlay()
 	}
 }
 
+void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
+}
+
+ELSCharacterChoice ALSPlayerController::GetCharacterChoice()
+{
+	return CharacterChoice;
+}
+
+void ALSPlayerController::SetCharacterChoice(ELSCharacterChoice InCharacterChoice)
+{
+	CharacterChoice = InCharacterChoice;
+}
+
 void ALSPlayerController::ShowScript(const FString& ScriptText)
 {
 	if (ScriptWidget)
