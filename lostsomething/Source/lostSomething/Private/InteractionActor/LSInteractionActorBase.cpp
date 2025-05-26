@@ -7,9 +7,10 @@
 #include "EngineUtils.h"
 #include "Interaction/LSInteractionScriptData.h"
 #include "Engine/AssetManager.h"
-#include "LevelTest/Player/LTPlayerController.h"
 #include "Game/LSGameMode.h"
 #include "Quest/LSQuestManager.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 
 // Sets default values
 ALSInteractionActorBase::ALSInteractionActorBase()
@@ -133,38 +134,35 @@ void ALSInteractionActorBase::BeginPlay()
 
 	//SiJae IJae Difference Setting
 	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if (LocalPlayer)
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
 	{
-		ALTPlayerController* LSPlayer = Cast<ALTPlayerController>(LocalPlayer->GetPlayerController(GetWorld()));
-		if (LSPlayer)
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
 		{
-			if (LSPlayer->CharacterChoice != ECharacterChoice::None)
-			{
-				FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayer->CharacterChoice)).ToString();
-				//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
-				if (LSPlayer->CharacterChoice == ECharacterChoice::SiJae)
-				{
-					SetVisibleSiJae();
-				}
-				else
-				{
-					SetVisibleIJae();
-				}
-			}
+			SetVisibleSiJae();
 		}
-		else
+		else if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::IJae)
 		{
-			LS_LOG(LogLS, Error, TEXT("LocalPlayer Controller Not Found"));
+			SetVisibleIJae();
 		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
 	}
 }
 
 void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerController)
 {
-	ALTPlayerController* PlayerController = Cast<ALTPlayerController>(InPlayerController);
-	if (PlayerController)
+	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
 	{
-		if (PlayerController->CharacterChoice == ECharacterChoice::SiJae)
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
 		{
 			if (bSiJaeCanInteraction)
 			{
@@ -175,7 +173,7 @@ void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerCont
 				LS_LOG(LogLS, Error, TEXT("Cannot do InteractionProcess"));
 			}
 		}
-		else
+		else if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::IJae)
 		{
 			if (bIJaeCanInteraction)
 			{
@@ -187,6 +185,10 @@ void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerCont
 			}
 		}
 	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+	}
 }
 
 void ALSInteractionActorBase::SetCurrentQuest(ELSInteractionEnum InCurrentQuest)
@@ -197,29 +199,23 @@ void ALSInteractionActorBase::SetCurrentQuest(ELSInteractionEnum InCurrentQuest)
 void ALSInteractionActorBase::ChangeVisible()
 {
 	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if (LocalPlayer)
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
 	{
-		ALTPlayerController* LSPlayer = Cast<ALTPlayerController>(LocalPlayer->GetPlayerController(GetWorld()));
-		if (LSPlayer)
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
 		{
-			if (LSPlayer->CharacterChoice != ECharacterChoice::None)
-			{
-				FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayer->CharacterChoice)).ToString();
-				//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
-				if (LSPlayer->CharacterChoice == ECharacterChoice::SiJae)
-				{
-					SetVisibleSiJae();
-				}
-				else
-				{
-					SetVisibleIJae();
-				}
-			}
+			SetVisibleSiJae();
 		}
-		else
+		else if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::IJae)
 		{
-			LS_LOG(LogLS, Error, TEXT("LocalPlayer Controller Not Found"));
+			SetVisibleIJae();
 		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
 	}
 }
 

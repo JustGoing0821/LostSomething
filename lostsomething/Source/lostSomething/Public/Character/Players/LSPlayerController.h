@@ -6,12 +6,13 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 #include "LSPlayerController.generated.h"
 
 
-
 UCLASS()
-class LOSTSOMETHING_API ALSPlayerController : public APlayerController
+class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface
 {
 	GENERATED_BODY()
 
@@ -20,8 +21,19 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	// HUD Section
+
+//CharacterChoice Section
+public:
+	virtual ELSCharacterChoice GetCharacterChoice() override;
+	virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override;
+
+protected:
+	UPROPERTY(EditAnywhere, Replicated)
+	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
+
+// HUD Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
 	TSubclassOf<class ULSHUDWidget> LSHUDWidgetClass;
@@ -29,7 +41,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
 
-private:
+protected:
 	UPROPERTY()
 	class ULSScriptWidget* ScriptWidget;
 
@@ -38,4 +50,8 @@ private:
 
 public:
 	void ShowScript(const FString& ScriptText);
+
+
+
+
 };

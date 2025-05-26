@@ -4,29 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 #include "LTPlayerController.generated.h"
-
-UENUM(BlueprintType)
-enum class ECharacterChoice : uint8
-{
-	None = 0,
-	SiJae,
-	IJae
-};
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerController : public APlayerController
+class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface
 {
 	GENERATED_BODY()
 	
 public:
 	ALTPlayerController();
 
+//CharacterChoice Section
+public:
+	virtual ELSCharacterChoice GetCharacterChoice() override;
+	virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override;
+
+protected:
 	UPROPERTY(EditAnywhere, Replicated)
-	ECharacterChoice CharacterChoice = ECharacterChoice::None;
+	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
