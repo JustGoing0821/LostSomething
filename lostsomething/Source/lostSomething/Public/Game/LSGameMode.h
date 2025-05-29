@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Interface/LSQuestInterface.h"
 #include "LSGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALSGameMode : public AGameModeBase
+class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface
 {
 	GENERATED_BODY()
 	
@@ -28,8 +29,8 @@ protected:
 
 // Quest Section
 public:
-	void QuestStart();
-	void QuestComplete();
+	void QuestStart() override;
+	void QuestComplete() override;
 
 	FORCEINLINE class ALSQuestManager* GetQuestManager() { return QuestManager; }
 

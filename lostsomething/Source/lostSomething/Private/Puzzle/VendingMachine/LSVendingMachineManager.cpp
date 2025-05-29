@@ -8,7 +8,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Puzzle/VendingMachine/LSVendingMachine.h"
-#include "LevelTest/Game/LTGameMode.h"
+#include "Interface/LSQuestInterface.h"
+#include "GameFramework/GameModeBase.h"
 
 ALSVendingMachineManager::ALSVendingMachineManager()
 {
@@ -219,8 +220,11 @@ void ALSVendingMachineManager::QuestClear()
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
-		ALTGameMode* GameMode = Cast<ALTGameMode>(GetWorld()->GetAuthGameMode());
-		GameMode->QuestComplete();
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->QuestComplete();
+		}
 		OnVMPhaseChanged.Clear();
 		OnVMPuzzleEnd.Broadcast();
 		OnVMPuzzleEnd.Clear();
