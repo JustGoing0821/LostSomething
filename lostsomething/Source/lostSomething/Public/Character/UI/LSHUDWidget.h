@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/ProgressBar.h"
 #include "Blueprint/UserWidget.h"
 #include "LSHUDWidget.generated.h"
 
@@ -13,5 +14,16 @@ UCLASS()
 class LOSTSOMETHING_API ULSHUDWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void NativeConstruct() override;
+
+
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> PbHpBar;
+
+	// 바인딩용 함수
+	void UpdateHpBar(float NewHp);
+
 };

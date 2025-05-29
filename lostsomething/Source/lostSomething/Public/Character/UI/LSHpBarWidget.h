@@ -15,20 +15,20 @@ class LOSTSOMETHING_API ULSHpBarWidget : public ULSUserWidget
 	GENERATED_BODY()
 
 
-public:
-	ULSHpBarWidget(const FObjectInitializer& ObjectInitializer);
-
-protected:
-	virtual void NativeConstruct() override;
-
-public:
-	FORCEINLINE void SetMaxHp(float NewMaxHp) { MaxHp = NewMaxHp; }
-	void UpdateHpBar(float NewCurrentHp);
-
-protected:
-	UPROPERTY()
-	TObjectPtr<class UProgressBar> HpProgressBar;
-
-	UPROPERTY()
-	float MaxHp;
+//public:
+//	ULSHpBarWidget(const FObjectInitializer& ObjectInitializer);
+//
+//protected:
+//	virtual void NativeConstruct() override;
+//
+//public:
+//	FORCEINLINE void SetMaxHp(float NewMaxHp) { MaxHp = NewMaxHp; }
+//	void UpdateHpBar(float NewCurrentHp);
+//
+//protected:
+//	UPROPERTY()
+//	TObjectPtr<class UProgressBar> HpProgressBar;
+//
+//	UPROPERTY()
+//	float MaxHp;*/
 };
