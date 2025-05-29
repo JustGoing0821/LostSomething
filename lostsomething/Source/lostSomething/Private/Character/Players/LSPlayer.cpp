@@ -364,7 +364,7 @@ void ALSPlayer::PickupCheck()
 		Params.AddIgnoredActor(this);
 
 		GetWorld()->LineTraceSingleByChannel(
-			PickupHitResult, ViewVector, PickupEnd, ECC_GameTraceChannel2, Params
+			PickupHitResult, ViewVector, PickupEnd, ECC_GameTraceChannel3, Params
 		);
 
 		if (InventoryWidget)
@@ -381,6 +381,8 @@ void ALSPlayer::PickupCheck()
 
 void ALSPlayer::Pickup()
 {
+	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Pickup() called"));
+
 	if (!ItemDatabase)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Pickup(): ItemDatabase is nullptr!"));

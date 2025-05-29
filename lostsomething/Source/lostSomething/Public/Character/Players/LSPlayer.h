@@ -144,8 +144,8 @@ protected:
 
 	//이렇게 쓰지 말기
 	/*ULSInventoryWidget* InventoryWidget;
-	ULSInventoryEntry* InventoryEntryWidget;*/
-
+	ULSInventoryEntry* InventoryEntryWidget;
+*/
 
 	UPROPERTY()
 	TObjectPtr<class ULSInventoryWidget> InventoryWidget;
