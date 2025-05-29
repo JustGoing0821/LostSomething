@@ -5,6 +5,8 @@
 #include "lostSomething.h"
 #include "Quest/LSQuestManager.h"
 #include "LevelTest/Player/LTPlayerController.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 
 ALTGameMode::ALTGameMode()
 {
@@ -57,30 +59,34 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 		{
 			if (bIsSiJaeServer)
 			{
-				LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
 			else
 			{
-				LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
-			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 		else
 		{
 			if (bIsSiJaeServer)
 			{
-				LSPlayerController->CharacterChoice = ECharacterChoice::IJae;
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
 			else
 			{
-				LSPlayerController->CharacterChoice = ECharacterChoice::SiJae;
+				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
-			FString EnumString = StaticEnum<ECharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->CharacterChoice)).ToString();
+			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 	}

@@ -10,7 +10,8 @@
 #include "LevelTest/Player/LTPlayerCharacter.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Net/UnrealNetwork.h"
-#include "LevelTest/Player/LTPlayerController.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 
 
 // Sets default values
@@ -256,14 +257,20 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 
 void ALSTrainSpawnGimmick::SetPannelMonitor()
 {
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	ALTPlayerController* LSController = Cast<ALTPlayerController>(PlayerController);
-	if (LSController)
+	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
 	{
-		if (LSController->CharacterChoice == ECharacterChoice::IJae)
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::IJae)
 		{
 			PannelMesh->SetMaterial(0, PannelMaterials[CorrectGate]);
 		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
 	}
 }
 

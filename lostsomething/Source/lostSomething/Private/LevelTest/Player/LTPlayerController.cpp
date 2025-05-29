@@ -8,6 +8,16 @@ ALTPlayerController::ALTPlayerController()
 {
 }
 
+ELSCharacterChoice ALTPlayerController::GetCharacterChoice()
+{
+	return CharacterChoice;
+}
+
+void ALTPlayerController::SetCharacterChoice(ELSCharacterChoice InCharacterChoice)
+{
+	CharacterChoice = InCharacterChoice;
+}
+
 void ALTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

@@ -23,6 +23,9 @@ protected:
 	TSubclassOf<APawn> IJaePawnClass;
 	TSubclassOf<APawn> SiJaePawnClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (AllowPrivateAccess = "true"))
+	bool bIsSiJaeServer;
+
 // Quest Section
 public:
 	void QuestStart();
