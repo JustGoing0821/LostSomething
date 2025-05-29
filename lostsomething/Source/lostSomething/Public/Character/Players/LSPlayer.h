@@ -18,7 +18,6 @@
 #include "Character/UI/LSInventoryWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "InputAction.h"
-#include "Interface/LSCharacterWidgetInterface.h"
 #include "Interface/LSWheelchairInterface.h"
 #include "LSPlayer.generated.h"
 
@@ -143,8 +142,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
 
-	ULSInventoryWidget* InventoryWidget;
-	ULSInventoryEntry* InventoryEntryWidget;
+	//이렇게 쓰지 말기
+	/*ULSInventoryWidget* InventoryWidget;
+	ULSInventoryEntry* InventoryEntryWidget;*/
+
+
+	UPROPERTY()
+	TObjectPtr<class ULSInventoryWidget> InventoryWidget;
+
+	UPROPERTY()
+	TObjectPtr<class ULSInventoryEntry> InventoryEntryWidget;
 
 
 //// Stat

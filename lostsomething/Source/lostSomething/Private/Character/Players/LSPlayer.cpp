@@ -4,11 +4,8 @@
 #include "lostSomething.h"
 #include "InputMappingContext.h"
 #include "Interface/LSInteractionInterface.h"
-#include "Character/UI/LSWidgetComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Blueprint/UserWidget.h"
-
-#include "Character/UI/LSHpBarWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DamageEvents.h"
