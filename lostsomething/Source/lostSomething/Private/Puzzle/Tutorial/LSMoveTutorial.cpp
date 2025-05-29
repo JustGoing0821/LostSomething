@@ -5,9 +5,9 @@
 #include "lostSomething.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
-#include "LevelTest/Game/LTGameMode.h"
-#include "Game/LSGameMode.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSQuestInterface.h"
 
 // Sets default values
 ALSMoveTutorial::ALSMoveTutorial()
@@ -55,18 +55,10 @@ void ALSMoveTutorial::QuestClear()
 {
 	if (HasAuthority())
 	{
-		ALSGameMode* LSGameMode = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode());
-		if (LSGameMode)
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
 		{
-			LSGameMode->QuestComplete();
-		}
-		else
-		{
-			ALTGameMode* LTGameMode = Cast<ALTGameMode>(GetWorld()->GetAuthGameMode());
-			if (LTGameMode)
-			{
-				LTGameMode->QuestComplete();
-			}
+			GameModeQuest->QuestComplete();
 		}
 	}
 }
