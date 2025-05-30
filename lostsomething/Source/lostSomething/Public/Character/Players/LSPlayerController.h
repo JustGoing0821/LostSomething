@@ -18,6 +18,10 @@ class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public I
 
 public:
 	ALSPlayerController();
+	//수정 게터함수
+	FORCEINLINE ULSHUDWidget* GetLSHUDWidget() const { return LSHUDWidget; }
+
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -35,6 +39,9 @@ protected:
 
 // HUD Section
 protected:
+	UPROPERTY()
+	ULSHUDWidget* HUDWidget;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
 	TSubclassOf<class ULSHUDWidget> LSHUDWidgetClass;
 

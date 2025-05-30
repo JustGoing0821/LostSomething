@@ -4,14 +4,12 @@
 #include "lostSomething.h"
 #include "InputMappingContext.h"
 #include "Interface/LSInteractionInterface.h"
-#include "Character/UI/LSWidgetComponent.h"
-#include "Character/Stat/LSCharacterStatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/UI/LSHpBarWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DamageEvents.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interface/LSTakeDamageInterface.h"
@@ -19,25 +17,37 @@
 #include "Character/Players/LSPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
+#include "Character/Item/Item.h"
+#include "Character/UI/LSInventoryWidget.h"
+
+#include "Interface/LSItemPickupInterface.h"
+#include "Character/UI/LSHUDWidget.h"
+#include "Character/Components/LSHpComponent.h"
+#include "Character/Item/LSProjectile.h" 
+
+#include "Character/Item/LSItemDataBase.h"
+
+#include <Character/UI/LSInventoryEntry.h>
+
 
 // Sets default values
 ALSPlayer::ALSPlayer()
 {
-	// Stat Component 
-	Stat = CreateDefaultSubobject<ULSCharacterStatComponent>(TEXT("Stat"));
+	//// Stat Component 
+	//Stat = CreateDefaultSubobject<ULSCharacterStatComponent>(TEXT("Stat"));
 
-	// Widget Component 
-	HpBar = CreateDefaultSubobject<ULSWidgetComponent>(TEXT("Widget"));
-	HpBar->SetupAttachment(GetMesh());
-	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
-	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/Players/UI/WBP_HpBar.WBP_HpBar_C"));
-	if (HpBarWidgetRef.Class)
-	{
-		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
-		HpBar->SetWidgetSpace(EWidgetSpace::Screen);
-		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
-		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	//// Widget Component 
+	//HpBar = CreateDefaultSubobject<ULSWidgetComponent>(TEXT("Widget"));
+	//HpBar->SetupAttachment(GetMesh());
+	//HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	//static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/Players/UI/WBP_HpBar.WBP_HpBar_C"));
+	//if (HpBarWidgetRef.Class)
+	//{
+	//	HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+	//	HpBar->SetWidgetSpace(EWidgetSpace::Screen);
+	//	HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+	//	HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//}
 
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -72,7 +82,12 @@ ALSPlayer::ALSPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
+	//hp
+	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
 
+
+	//wheelchair
 	WheelchairMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WheelchairMesh"));
 	WheelchairMesh->SetupAttachment(GetMesh());
 
@@ -85,14 +100,33 @@ ALSPlayer::ALSPlayer()
 void ALSPlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	//Stat->OnHpZero.AddUObject(this, &ALSPlayer::SetDead);
+	
 }
 
 // Called when the game starts or when spawned
 void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (HpComponent)
+	{
+		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
+		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
+
+		// 현재 체력값으로 HUD 초기화
+		OnHpChanged(HpComponent->GetHp());
+
+
+	}
+
+	//item
+	InventoryWidget = CreateWidget<ULSInventoryWidget>(Cast<APlayerController>(GetController()), InventoryWidgetClass);
+	InventoryEntryWidget = CreateWidget<ULSInventoryEntry>(Cast<APlayerController>(GetController()), InventoryEntryWidgetClass);
+
+	if (InventoryWidget || InventoryEntryWidget)
+	{
+		InventoryWidget->AddToViewport(0);
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 // Called every frame
@@ -110,23 +144,77 @@ void ALSPlayer::Tick(float DeltaTime)
 
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	LS_LOG(LogLS, Warning, TEXT("Take Damage : %f"), DamageAmount);
-	Stat->ApplyDamage(DamageAmount);
-	return 0.0f;
-}
+	LS_LOG(LogLS, Warning, TEXT("LSPLAYER  :: Take Damage : %f"), DamageAmount);
 
-//Widget
-void ALSPlayer::SetupCharacterWidget(ULSUserWidget* InUserWidget)
-{
-	ULSHpBarWidget* HpBarWidget = Cast<ULSHpBarWidget>(InUserWidget);
-	if (HpBarWidget)
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HpComponent)
 	{
-		HpBarWidget->SetMaxHp(Stat->GetMaxHP());
-		HpBarWidget->UpdateHpBar(Stat->GetCurrentHP());
-		Stat->OnHpChanged.AddUObject(HpBarWidget, &ULSHpBarWidget::UpdateHpBar);
+		const float NewHp = HpComponent->GetHp() - DamageAmount;
+		HpComponent->SetHp(NewHp);
+
+		//UI 업데이트 시도
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage: Attempting direct HUD update"));
+
+		// 손상을 입힌 컨트롤러가 있는 경우 확인
+		AController* ValidController = EventInstigator;
+		if (!ValidController)
+		{
+			// 없으면 현재 월드의 첫 번째 플레이어 컨트롤러 가져오기
+			if (GetWorld())
+			{
+				for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+				{
+					ValidController = It->Get();
+					if (ValidController)
+						break;
+				}
+			}
+		}
+
+		if (ValidController)
+		{
+			ALSPlayerController* LSController = Cast<ALSPlayerController>(ValidController);
+			if (LSController && LSController->GetLSHUDWidget())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Directly updating HUD with HP: %.1f"), NewHp);
+				LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Could not get LSPlayerController or HUDWidget"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No valid controller found for HUD update"));
+		}
 	}
 
+	return DamageAmount;
 }
+
+
+void ALSPlayer::OnHpChanged(float NewHp)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+
+	// 플레이어 컨트롤러 가져오기
+	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	if (LSController && LSController->GetLSHUDWidget())
+	{
+		// HUD 위젯의 HP 바 업데이트
+		LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+	}
+	else
+	{
+		if (!LSController)
+			UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
+
+	}
+}
+
 
 
 // Called to bind functionality to input
@@ -159,6 +247,13 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
+
+		//Pickup
+		EnhancedInputComponent->BindAction(PickupAction, ETriggerEvent::Triggered, this, &ALSPlayer::Pickup);
+
+		//projectile
+		EnhancedInputComponent->BindAction(FireProjectileAction, ETriggerEvent::Triggered, this, &ALSPlayer::FireProjectile);
+
 	}
 	else
 	{
@@ -250,6 +345,181 @@ void ALSPlayer::Attack()
 }
 
 
+
+void ALSPlayer::PickupCheck()
+{
+	if (!IsValid(this)) return;
+
+	APlayerController* BaseController = Cast<APlayerController>(GetController());
+	if (!IsValid(BaseController)) return;
+
+	if (ALSPlayerController* LSController = Cast<ALSPlayerController>(BaseController))
+	{
+		LSController->GetPlayerViewPoint(ViewVector, ViewRotation);
+
+		FVector VecDirection = ViewRotation.Vector() * 1000.f;
+		FVector PickupEnd = ViewVector + VecDirection;
+
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		GetWorld()->LineTraceSingleByChannel(
+			PickupHitResult, ViewVector, PickupEnd, ECC_GameTraceChannel3, Params
+		);
+
+		if (InventoryWidget)
+		{
+			InventoryWidget->OnOffPickupText(
+				Cast<AItem>(PickupHitResult.GetActor()) ?
+				ESlateVisibility::Visible : ESlateVisibility::Collapsed
+			);
+		}
+	}
+
+}
+
+
+void ALSPlayer::Pickup()
+{
+	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Pickup() called"));
+
+	if (!ItemDatabase)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Pickup(): ItemDatabase is nullptr!"));
+		return;
+	}
+
+	if (AItem* HitItem = Cast<AItem>(PickupHitResult.GetActor()))
+	{
+		FItemData* Data = ItemDatabase->Items.FindByPredicate([&](const FItemData& ItemData)
+			{
+				return ItemData.ItemName == HitItem->ItemName;
+			});
+
+		if (Data)
+		{
+			/*Inventory.Emplace(*Data);
+			InventoryWidget->RefreshInventory(Inventory);
+			HitItem->Destroy();*/
+
+			FItemData PickedItemData;
+			PickedItemData.ItemName = HitItem->ItemName;
+			PickedItemData.Class = HitItem->GetClass(); // 혹은 ItemDatabase에서 조회한 Class
+			PickedItemData.Mesh = HitItem->GetStaticMeshComponent()->GetStaticMesh(); // 이건 추가 필요
+
+			Inventory.Emplace(PickedItemData);
+			InventoryWidget->RefreshInventory(Inventory);
+			HitItem->Destroy();
+
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Pickup(): Matching item not found in ItemDatabase."));
+		}
+	}
+}
+
+void ALSPlayer::DropItem(FItemData ItemData)
+{
+	UE_LOG(LogTemp, Error, TEXT("ALSPlayer::DropItem(FItemData ItemData)"));
+
+	FVector Forward = GetActorForwardVector();
+	FVector PickupLocation = GetActorLocation() + Forward * 150.f + FVector(0, 0, 100.f);
+
+	// 스폰 파라미터
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AItem* DroppedItem = GetWorld()->SpawnActor<AItem>(
+		ItemData.Class, PickupLocation, FRotator::ZeroRotator, Params
+	);
+	DroppedItem->GetStaticMeshComponent()->SetStaticMesh(ItemData.Mesh);
+
+	if (!DroppedItem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DropItem(): SpawnActor failed! Class = %s"), *ItemData.Class->GetName());
+		return;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DropItem(): Spawned [%s] at location %s"),
+			*ItemData.ItemName.ToString(), *PickupLocation.ToString());
+	}
+
+	// 인벤토리 업데이트
+	Inventory.RemoveSingle(ItemData);
+	InventoryWidget->RefreshInventory(Inventory);
+}
+
+void ALSPlayer::FireProjectile()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::FireProjectile() called"));
+
+	// 컨트롤러 확인
+	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	if (!LSController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: Controller not found or not LSPlayerController"));
+		return;
+	}
+
+
+	// 프로젝타일 클래스 확인
+	if (!ProjectileClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: ProjectileClass not set"));
+		return;
+	}
+
+
+
+	// 카메라 위치와 방향 가져오기
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+	// 발사 위치 계산 (카메라 앞쪽)
+	const FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
+
+	// 발사 방향 (카메라 방향)
+	const FVector Direction = CameraRotation.Vector();
+
+	// 스폰 파라미터 설정
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+	// 월드 확인
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: World not found"));
+		return;
+	}
+
+	// 프로젝타일 생성
+	ALSProjectile* Projectile = World->SpawnActor<ALSProjectile>(
+		ProjectileClass,
+		SpawnLocation,
+		Direction.Rotation(),
+		SpawnParams
+	);
+
+	if (Projectile)
+	{
+		// 발사 방향 설정
+		Projectile->FireInDirection(Direction);
+		UE_LOG(LogTemp, Log, TEXT("FireProjectile: Projectile fired successfully"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: Failed to spawn projectile"));
+	}
+}
+
+
+//Wheelchair part
 void ALSPlayer::Interaction()
 {
 	// 로컬 컨트롤러가 있는지 확인
@@ -393,6 +663,8 @@ void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* Target
 	}
 }
 
+
+
 // 리플리케이션 설정
 void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -510,3 +782,17 @@ void ALSPlayer::HandleWheelchairMovement()
 		SetActorRotation(NewRotation);
 	}
 }
+
+
+//Widget
+//void ALSPlayer::SetupCharacterWidget(ULSUserWidget* InUserWidget)
+//{
+//	ULSHpBarWidget* HpBarWidget = Cast<ULSHpBarWidget>(InUserWidget);
+//	if (HpBarWidget)
+//	{
+//		HpBarWidget->SetMaxHp(Stat->GetMaxHP());
+//		HpBarWidget->UpdateHpBar(Stat->GetCurrentHP());
+//		Stat->OnHpChanged.AddUObject(HpBarWidget, &ULSHpBarWidget::UpdateHpBar);
+//	}
+//
+//}
