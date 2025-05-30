@@ -21,13 +21,17 @@ public:
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 protected:
+	virtual void BeginPlay() override;
+
+protected:
 	TSubclassOf<APawn> IJaePawnClass;
 	TSubclassOf<APawn> SiJaePawnClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	bool bIsSiJaeServer;
 
-	// Quest Section
+
+// Quest Section
 public:
 	void QuestStart() override;
 	void QuestComplete() override;

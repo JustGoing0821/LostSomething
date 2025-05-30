@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSGameMode.generated.h"
 
 /**
@@ -19,6 +20,9 @@ public:
 	ALSGameMode();
 
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+
+protected:
+	virtual void BeginPlay() override;
 
 protected:
 	TSubclassOf<APawn> IJaePawnClass;

@@ -7,6 +7,7 @@
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "UserInterface/LSQuestWidget.h"
 
 ALTGameMode::ALTGameMode()
 {
@@ -44,6 +45,13 @@ ALTGameMode::ALTGameMode()
 	}
 
 	bIsSiJaeServer = true;
+
+
+}
+
+void ALTGameMode::BeginPlay()
+{
+
 }
 
 APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)

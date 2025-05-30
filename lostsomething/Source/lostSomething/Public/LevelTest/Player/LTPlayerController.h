@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LTPlayerController.generated.h"
 
 /**
@@ -19,6 +20,9 @@ class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public I
 public:
 	ALTPlayerController();
 
+protected:
+	virtual void BeginPlay() override;
+
 //CharacterChoice Section
 public:
 	virtual ELSCharacterChoice GetCharacterChoice() override;
@@ -30,4 +34,15 @@ protected:
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
+// Quest Widget
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
+	TSubclassOf<class ULSQuestWidget> QuestWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
+	TObjectPtr<class ULSQuestWidget> QuestWidget;
+
+	void UpdateQuestWidget(struct FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
 };

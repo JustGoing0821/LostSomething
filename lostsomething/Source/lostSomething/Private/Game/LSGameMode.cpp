@@ -7,6 +7,7 @@
 #include "Character/Players/LSPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "UserInterface/LSQuestWidget.h"
 
 ALSGameMode::ALSGameMode()
 {
@@ -91,6 +92,11 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	return ResultController;
+}
+
+void ALSGameMode::BeginPlay()
+{
+	QuestStart();
 }
 
 void ALSGameMode::QuestStart()
