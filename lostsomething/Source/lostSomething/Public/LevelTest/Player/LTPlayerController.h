@@ -44,5 +44,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSQuestWidget> QuestWidget;
 
+public:
 	void UpdateQuestWidget(struct FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
 };

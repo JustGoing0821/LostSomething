@@ -28,11 +28,11 @@ void ALTPlayerController::BeginPlay()
 		if (QuestWidget)
 		{
 			QuestWidget->AddToViewport();
-			LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WidgetSetted."));
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WidgetSetted."));
 		}
 	}
 
-	if (IsLocalController())
+	/*if (IsLocalController())
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WidgetBinding Begin."));
 		ALTGameMode* GameMode = Cast<ALTGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -47,7 +47,7 @@ void ALTPlayerController::BeginPlay()
 				UpdateQuestWidget(CurrentQuest, CurrentQuest.CurrentQuestEnum);
 			}
 		}
-	}
+	}*/
 }
 
 ELSCharacterChoice ALTPlayerController::GetCharacterChoice()
