@@ -56,7 +56,7 @@ void ALTGameMode::BeginPlay()
 
 APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	APlayerController* ResultController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
 
@@ -97,6 +97,10 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
+
+		//Quest Widget Update Bind
+		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 	}
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
@@ -106,21 +110,6 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 void ALTGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	LS_LOG(LogLS, Log, TEXT("PostLogin called for %s"), *NewPlayer->GetName());
-
-	ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(NewPlayer);
-	if (LSPlayerController)
-	{
-		if (LSPlayerController->IsLocalController())
-		{
-			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
-			LS_LOG(LogLS, Log, TEXT("%s OnQuestStart Widget Binded."), *LSPlayerController->GetName());
-		}
-
-		LS_LOG(LogLS, Log, TEXT("%s IsLocal: %s"), *LSPlayerController->GetName(),
-			LSPlayerController->IsLocalController() ? TEXT("True") : TEXT("False"));
-	}
 }
 
 void ALTGameMode::QuestStart()

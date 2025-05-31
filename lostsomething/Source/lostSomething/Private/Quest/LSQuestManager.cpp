@@ -20,13 +20,13 @@ void ALSQuestManager::BeginPlay()
 
 void ALSQuestManager::QuestStart()
 {
-	LS_LOG(LogLS, Log, TEXT("Now QuestIndex : %d"), CurrentQuestIndex);
+	//LS_LOG(LogLS, Log, TEXT("Now QuestIndex : %d"), CurrentQuestIndex);
 
 	if (CurrentQuestIndex < ULSGameSingleton::Get().QuestMaxLevel)
 	{
 		SetCurrentQuest(ULSGameSingleton::Get().GetQuestData()[CurrentQuestIndex]);
-		LS_LOG(LogLS, Log, TEXT("QuestName : %s"), *CurrentQuestData.QuestName);
-		LS_LOG(LogLS, Log, TEXT("Description : %s"), *CurrentQuestData.Description);
+		//LS_LOG(LogLS, Log, TEXT("QuestName : %s"), *CurrentQuestData.QuestName);
+		//LS_LOG(LogLS, Log, TEXT("Description : %s"), *CurrentQuestData.Description);
 
 		OnQuestStart.Broadcast(CurrentQuestData, CurrentQuestData.CurrentQuestEnum);
 		OnInteractionChange.Broadcast(CurrentQuestData.CurrentQuestEnum);
@@ -41,7 +41,7 @@ void ALSQuestManager::QuestComplete()
 {
 	OnQuestComplete.Broadcast();
 	CurrentQuestIndex += 1;
-	LS_LOG(LogLS, Log, TEXT("Next QuestIndex : %d"), CurrentQuestIndex);
+	//LS_LOG(LogLS, Log, TEXT("Next QuestIndex : %d"), CurrentQuestIndex);
 
 	QuestStart();
 }

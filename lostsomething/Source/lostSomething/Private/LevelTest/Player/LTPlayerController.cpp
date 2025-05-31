@@ -31,23 +31,6 @@ void ALTPlayerController::BeginPlay()
 			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WidgetSetted."));
 		}
 	}
-
-	/*if (IsLocalController())
-	{
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WidgetBinding Begin."));
-		ALTGameMode* GameMode = Cast<ALTGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameMode)
-		{
-			ALSQuestManager* QuestManager = GameMode->GetQuestManager();
-			if (QuestManager)
-			{
-				QuestManager->OnQuestStart.AddUObject(this, &ALTPlayerController::UpdateQuestWidget);
-				LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Widget Update Binded"));
-				FLSQuestData CurrentQuest = QuestManager->GetCurrentQuest();
-				UpdateQuestWidget(CurrentQuest, CurrentQuest.CurrentQuestEnum);
-			}
-		}
-	}*/
 }
 
 ELSCharacterChoice ALTPlayerController::GetCharacterChoice()
@@ -69,13 +52,28 @@ void ALTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void ALTPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum)
 {
-	//Enum LogÀÛ¾÷
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
-	LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Begin"), *EnumString);
 
 	if (this->IsLocalController())
 	{
 		QuestWidget->UpdateQuestWidget(InQuestData);
-		LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+	}
+	else
+	{
+		ClientRPCUpdateQuestWidget(InQuestData);
+		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
+	}
+}
+
+void ALTPlayerController::ClientRPCUpdateQuestWidget_Implementation(FLSQuestData InQuestData)
+{
+	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
+	//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Begin"), *EnumString);
+
+	if (this->IsLocalController())
+	{
+		QuestWidget->UpdateQuestWidget(InQuestData);
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }

@@ -45,5 +45,10 @@ protected:
 	TObjectPtr<class ULSQuestWidget> QuestWidget;
 
 public:
-	void UpdateQuestWidget(struct FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
+	void UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
+
+//RPC
+public:
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCUpdateQuestWidget(FLSQuestData InQuestData);
 };
