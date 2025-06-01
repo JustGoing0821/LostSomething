@@ -107,9 +107,12 @@ void ALSPlayer::PostInitializeComponents()
 void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (HpComponent)
 	{
+		// HpComponent의 OnHpChanged 델리게이트에 우리의 OnHpChanged 함수를 바인딩
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
+
 		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
 
 		// 현재 체력값으로 HUD 초기화
@@ -117,6 +120,7 @@ void ALSPlayer::BeginPlay()
 
 
 	}
+
 
 	//item
 	InventoryWidget = CreateWidget<ULSInventoryWidget>(Cast<APlayerController>(GetController()), InventoryWidgetClass);
