@@ -33,12 +33,12 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 
 	if (UseBlackboard(BBAsset, RawBlackboardPtr))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EPhaseType::Phase2 as uint8 = %d"), static_cast<uint8>(EPhaseType::Phase2));
+		//UE_LOG(LogTemp, Warning, TEXT("EPhaseType::Phase2 as uint8 = %d"), static_cast<uint8>(EPhaseType::Phase2));
 
-		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase2));
+		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase3));
 
 		uint8 PhaseValue = Blackboard->GetValueAsEnum(Key_Phase);
-		UE_LOG(LogTemp, Warning, TEXT("[BossAI] Phase after setting: %d"), PhaseValue);
+		//UE_LOG(LogTemp, Warning, TEXT("[BossAI] Phase after setting: %d"), PhaseValue);
 
 		RunBehaviorTree(BTAsset);
 	}

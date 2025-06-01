@@ -38,4 +38,15 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiSpawnObstacles();
 
+	void EnterPhase3();
+	void SpawnPlatform();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnPlatform();
+
+	UPROPERTY()
+	class APlatformGenerator* PlatformGenerator;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APlatformGenerator> PlatformGeneratorClass;
 };

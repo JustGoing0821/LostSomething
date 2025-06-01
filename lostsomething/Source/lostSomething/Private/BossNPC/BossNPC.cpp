@@ -4,6 +4,7 @@
 #include "BossNPC/BossNPC.h"
 #include "BossNPC/AI/BossNPCAIController.h"
 #include "BossNPC/Obstacle/BossObstacle.h"
+#include "BossNPC/Platform/PlatformGenerator.h"
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -34,7 +35,8 @@ ABossNPC::ABossNPC()
 void ABossNPC::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HasAuthority = %s"), HasAuthority() ? TEXT("TRUE") : TEXT("FALSE"));
+	EnterPhase3();
 }
 
 // Called every frame
@@ -48,14 +50,6 @@ void ABossNPC::Tick(float DeltaTime)
 void ABossNPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	//DOREPLIFETIME(ABossNPC, bIsAttacking);
 
 }
 
@@ -92,3 +86,59 @@ void ABossNPC::MultiSpawnObstacles_Implementation()
 	}
 }
 
+void ABossNPC::EnterPhase3()
+{
+	if (HasAuthority() && PlatformGeneratorClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100);
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		PlatformGenerator = GetWorld()->SpawnActor<APlatformGenerator>(PlatformGeneratorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+
+		if (PlatformGenerator)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
+			SpawnPlatform();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to spawn PlatformGenerator"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnterPhase3 skipped - No Authority or GeneratorClass is null"));
+	}
+}
+
+void ABossNPC::SpawnPlatform()
+{
+	if (HasAuthority()) // 서버인지 확인
+	{
+		if (PlatformGenerator)
+		{
+			PlatformGenerator->GenerateMaze(); // 핵심 로직 호출
+		}
+	}
+	else
+	{
+		ServerSpawnPlatform(); // 클라일 경우 서버 RPC 요청
+
+	}
+}
+
+void ABossNPC::ServerSpawnPlatform_Implementation()
+{
+	SpawnPlatform();
+}
+
+void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(ABossNPC, bIsAttacking);
+}
