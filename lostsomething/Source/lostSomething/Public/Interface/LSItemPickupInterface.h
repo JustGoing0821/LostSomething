@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "LSCharacterWidgetInterface.generated.h"
+#include "LSItemPickupInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class ULSCharacterWidgetInterface : public UInterface
+class ULSItemPickupInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,11 +16,12 @@ class ULSCharacterWidgetInterface : public UInterface
 /**
  * 
  */
-class LOSTSOMETHING_API ILSCharacterWidgetInterface
+class LOSTSOMETHING_API ILSItemPickupInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) = 0;
+	
+	virtual void OnPickup(APlayerController* Picker) = 0;
 };
