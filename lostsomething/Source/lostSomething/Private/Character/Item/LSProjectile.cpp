@@ -35,7 +35,10 @@ ALSProjectile::ALSProjectile()
     ProjectileMovement->bShouldBounce = false;
     ProjectileMovement->ProjectileGravityScale = 0.0f;
 
-   
+    // 기본 속성 설정
+    Damage = 20.0f;
+    InitialSpeed = 3000.0f;
+    MaxLifetime = 3.0f;
    
     //n초 후 자동 제거
     InitialLifeSpan = 5.0f;
