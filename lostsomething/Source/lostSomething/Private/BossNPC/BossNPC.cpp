@@ -11,6 +11,7 @@ ABossNPC::ABossNPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	// AIController 클래스를 설정
 	AIControllerClass = ABossNPCAIController::StaticClass();
@@ -35,7 +36,7 @@ ABossNPC::ABossNPC()
 void ABossNPC::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HasAuthority = %s"), HasAuthority() ? TEXT("TRUE") : TEXT("FALSE"));
+	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HasAuthority = %s"), HasAuthority() ? TEXT("TRUE") : TEXT("FALSE"));
 	EnterPhase3();
 }
 

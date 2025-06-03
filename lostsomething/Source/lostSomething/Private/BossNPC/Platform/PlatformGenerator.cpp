@@ -39,60 +39,38 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
     for (int32 Row = 0; Row < NumRows; ++Row)
         specialMap[Row].Init(false, NumCols);
 
-    struct Coord { int32 Row, Col; };
-    TArray<Coord> Path;
+    int32 CurrentCol = 0;
+    int32 CurrentRow = FMath::RandRange(0, NumRows - 1);
+    specialMap[CurrentRow][CurrentCol] = true;
 
-    // 1. 시작점 선택
-    int32 StartCol = FMath::RandRange(0, NumCols - 1);
-    Path.Add({ 0, StartCol });
-    specialMap[0][StartCol] = true;
-
-    // 2. 경로 생성 (길이 >= NumRows)
-    while (true)
+    while (CurrentCol < NumCols - 1)
     {
-        Coord Current = Path.Last();
-
-        // 상하좌우 후보
-        TArray<Coord> Neighbors;
-        if (Current.Row > 0 && !specialMap[Current.Row - 1][Current.Col])
-            Neighbors.Add({ Current.Row - 1, Current.Col });
-        if (Current.Row < NumRows - 1 && !specialMap[Current.Row + 1][Current.Col])
-            Neighbors.Add({ Current.Row + 1, Current.Col });
-        if (Current.Col > 0 && !specialMap[Current.Row][Current.Col - 1])
-            Neighbors.Add({ Current.Row, Current.Col - 1 });
-        if (Current.Col < NumCols - 1 && !specialMap[Current.Row][Current.Col + 1])
-            Neighbors.Add({ Current.Row, Current.Col + 1 });
-
-        if (Neighbors.Num() == 0)
-            break; // 경로가 더 이상 확장 불가
-
-        Coord Next = Neighbors[FMath::RandRange(0, Neighbors.Num() - 1)];
-        specialMap[Next.Row][Next.Col] = true;
-        Path.Add(Next);
-
-        // 경로가 마지막 행에 도달하면 종료
-        if (Next.Row == NumRows - 1)
-            break;
-    }
-
-    // 3. 추가 특수 발판 랜덤으로 생성 (기존 경로 주변)
-    for (int32 Row = 0; Row < NumRows; ++Row)
-    {
-        for (int32 Col = 0; Col < NumCols; ++Col)
+        if (FMath::FRand() < 0.6f)
         {
-            if (specialMap[Row][Col])
-                continue;
+            TArray<int32> VOptions;
+            if (CurrentRow > 0) VOptions.Add(CurrentRow - 1);
+            if (CurrentRow < NumRows - 1) VOptions.Add(CurrentRow + 1);
 
-            // 주변에 특수 발판이 있는 경우만 고려
-            bool bNeighborHasSpecial = false;
-            if (Row > 0 && specialMap[Row - 1][Col]) bNeighborHasSpecial = true;
-            if (Row < NumRows - 1 && specialMap[Row + 1][Col]) bNeighborHasSpecial = true;
-            if (Col > 0 && specialMap[Row][Col - 1]) bNeighborHasSpecial = true;
-            if (Col < NumCols - 1 && specialMap[Row][Col + 1]) bNeighborHasSpecial = true;
+            if (VOptions.Num() > 0)
+            {
+                int32 NewRow = VOptions[FMath::RandRange(0, VOptions.Num() - 1)];
 
-            if (bNeighborHasSpecial && FMath::FRand() < 0.5f) // 확률적으로 추가
-                specialMap[Row][Col] = true;
+                int32 MinRow = FMath::Min(CurrentRow, NewRow);
+                int32 MaxRow = FMath::Max(CurrentRow, NewRow);
+
+                for (int32 Row = MinRow; Row <= MaxRow; ++Row)
+                {
+                    specialMap[Row][CurrentCol] = true;
+                }
+
+                CurrentRow = NewRow;
+            }
         }
+
+        int32 NextCol = CurrentCol + 1;
+        specialMap[CurrentRow][NextCol] = true;
+
+        CurrentCol = NextCol;
     }
 
     return specialMap;
@@ -100,13 +78,28 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
 
 void APlatformGenerator::SpawnTiles(const TArray<TArray<bool>>& specialMap)
 {
-    FVector StartLocation = GetActorLocation();
+    if (specialMap.Num() == 0) return;
 
-    for (int32 Row = 0; Row < NumRows; ++Row)
+    int32 Rows = specialMap.Num();
+    int32 Cols = specialMap[0].Num();
+
+    FVector StartLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
+
+    for (int32 Row = 0; Row < Rows; ++Row)
     {
-        for (int32 Col = 0; Col < NumCols; ++Col)
+        for (int32 Col = 0; Col < Cols; ++Col)
         {
-            FVector SpawnLocation = StartLocation + FVector(Col * TileSpacing, Row * TileSpacing, 0);
+            FVector SpawnLocation;
+            if (false)
+            {
+                // 전치된 배열이라서 X,Y 위치 계산을 바꿔야 함
+                SpawnLocation = StartLocation + FVector(Row * TileSpacing, Col * TileSpacing, 0);
+            }
+            else
+            {
+                SpawnLocation = StartLocation + FVector(Col * TileSpacing, Row * TileSpacing, 0);
+            }
+
             TSubclassOf<AActor> TileClass = specialMap[Row][Col] ? SpecialTileClass : NormalTileClass;
             GetWorld()->SpawnActor<AActor>(TileClass, SpawnLocation, FRotator::ZeroRotator);
         }
