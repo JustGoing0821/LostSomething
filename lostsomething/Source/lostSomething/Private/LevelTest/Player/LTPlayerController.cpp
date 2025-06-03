@@ -53,6 +53,7 @@ void ALTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void ALTPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum)
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
+	//LS_LOG(LogLS, Log, TEXT("%s Begin"), *EnumString);
 
 	if (this->IsLocalController())
 	{
@@ -62,18 +63,18 @@ void ALTPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 	else
 	{
 		ClientRPCUpdateQuestWidget(InQuestData);
-		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
+		LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
 	}
 }
 
 void ALTPlayerController::ClientRPCUpdateQuestWidget_Implementation(FLSQuestData InQuestData)
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
-	//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Begin"), *EnumString);
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (this->IsLocalController())
 	{
 		QuestWidget->UpdateQuestWidget(InQuestData);
-		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+		LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }

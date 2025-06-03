@@ -31,6 +31,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	bool bIsSiJaeServer;
 
+	int32 CurrentPlayerCount;
+
 
 // Quest Section
 public:
