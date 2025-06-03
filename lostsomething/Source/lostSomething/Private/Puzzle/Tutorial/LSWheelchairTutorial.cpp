@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
-#include "Interface/LSWheelchairInterface.h"
+#include "Interface/LSWheelchairTutorialInterface.h"
 
 // Sets default values
 ALSWheelchairTutorial::ALSWheelchairTutorial()
@@ -27,18 +27,18 @@ void ALSWheelchairTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* O
 	LS_LOG(LogLS, Log, TEXT("Begin"));
 	if (HasAuthority())
 	{
-		//ILSWheelchairInterface* WheelchairPlayer = Cast<ILSWheelchairInterface>(OtherActor);
-		//if (WheelchairPlayer)
-		//{
-		//	if (WheelchairPlayer->IsBeingPushed())
-		//	{
-		//		QuestClear();
-		//	}
-		//	else
-		//	{
-		//		LS_LOG(LogLS, Log, TEXT("Being Not Pushed."));
-		//	}
-		//}
+		ILSWheelchairTutorialInterface* WheelchairPlayer = Cast<ILSWheelchairTutorialInterface>(OtherActor);
+		if (WheelchairPlayer)
+		{
+			if (WheelchairPlayer->CheckWheelchairTutorial())
+			{
+				QuestClear();
+			}
+			else
+			{
+				LS_LOG(LogLS, Log, TEXT("Being Not Pushed."));
+			}
+		}
 	}
 
 }
