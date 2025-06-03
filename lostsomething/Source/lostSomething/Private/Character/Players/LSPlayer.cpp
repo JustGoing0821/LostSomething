@@ -258,11 +258,16 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//projectile
 		EnhancedInputComponent->BindAction(FireProjectileAction, ETriggerEvent::Triggered, this, &ALSPlayer::FireProjectile);
 
+		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		
+	
+		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
+		
 	}
-	else
-	{
-		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("인풋 실패"));
-	}
+
+
+
+	
 }
 
 void ALSPlayer::Move(const FInputActionValue& Value)
@@ -519,6 +524,36 @@ void ALSPlayer::FireProjectile()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: Failed to spawn projectile"));
+	}
+}
+
+void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
+
+	// PlayerController를 통해 HUD에 접근
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectNextSlot();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
+	}
+}
+
+void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
+
+	// PlayerController를 통해 HUD에 접근
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectPreviousSlot();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
 	}
 }
 

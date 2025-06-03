@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ProgressBar.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Border.h"
 #include "LSHUDWidget.generated.h"
 
 /**
@@ -25,5 +26,52 @@ public:
 
 	// 바인딩용 함수
 	void UpdateHpBar(float NewHp);
+
+
+	// 슬롯 선택 시스템 함수들
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ChangeSlot(int32 NewSlot);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 GetSelectedSlot() const { return SelectedSlot; }
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UpdateSlotBorderColors();
+
+protected:
+
+	// 슬롯 테두리 위젯들
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SlotBorder_0;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SlotBorder_1;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SlotBorder_2;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SlotBorder_3;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SlotBorder_4;
+
+	// 슬롯 선택 변수들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 SelectedSlot = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 MaxSlots = 4;
+
+	// 슬롯 색상 설정
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Colors")
+	FLinearColor SelectedSlotColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Colors")
+	FLinearColor UnselectedSlotColor = FLinearColor(0.2f, 0.2f, 0.2f, 1.0f);
+
+private:
+	// 특정 슬롯의 테두리 색상 설정
+	void SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color);
 
 };

@@ -21,6 +21,11 @@ public:
 	//수정 게터함수
 	FORCEINLINE ULSHUDWidget* GetLSHUDWidget() const { return LSHUDWidget; }
 
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SelectNextSlot();
+
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SelectPreviousSlot();
 
 
 protected:
@@ -58,6 +63,9 @@ protected:
 public:
 	void ShowScript(const FString& ScriptText);
 
+
+	// 마우스 휠 입력 처리 함수들
+private:
 
 
 

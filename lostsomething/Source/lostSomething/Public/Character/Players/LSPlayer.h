@@ -82,6 +82,9 @@ protected:
 	void Attack();
 	void FireProjectile();
 
+	void OnMouseWheelUp(const FInputActionValue& Value);
+	void OnMouseWheelDown(const FInputActionValue& Value);
+
 	/*************************************Property**************************************/
 
 
@@ -124,6 +127,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> FireProjectileAction;
+
+
+	// 마우스 휠 액션들 추가
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> MouseWheelUpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> MouseWheelDownAction;
 
 	UPROPERTY()
 	FHitResult PickupHitResult;
