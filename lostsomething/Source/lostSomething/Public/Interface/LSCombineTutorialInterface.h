@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "LSWheelchairTutorialInterface.generated.h"
+#include "LSCombineTutorialInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class ULSWheelchairTutorialInterface : public UInterface
+class ULSCombineTutorialInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,13 +16,13 @@ class ULSWheelchairTutorialInterface : public UInterface
 /**
  * 
  */
-class LOSTSOMETHING_API ILSWheelchairTutorialInterface
+class LOSTSOMETHING_API ILSCombineTutorialInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual bool CheckWheelchairTutorial() = 0;
+	virtual bool isCombining() = 0;
 };
 
-//#include "Interface/LSWheelchairTutorialInterface.h"
+//#include "Interface/LSCombineTutorialInterface.h"

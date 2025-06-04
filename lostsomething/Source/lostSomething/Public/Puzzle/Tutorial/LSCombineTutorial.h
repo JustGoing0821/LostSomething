@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LSWheelchairTutorial.generated.h"
+#include "LSCombineTutorial.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALSWheelchairTutorial : public AActor
+class LOSTSOMETHING_API ALSCombineTutorial : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ALSWheelchairTutorial();
+	ALSCombineTutorial();
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))

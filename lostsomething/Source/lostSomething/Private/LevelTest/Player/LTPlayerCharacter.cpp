@@ -125,7 +125,7 @@ float ALTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	return 0.0f;
 }
 
-bool ALTPlayerCharacter::CheckWheelchairTutorial()
+bool ALTPlayerCharacter::isCombining()
 {
 	return true;
 }

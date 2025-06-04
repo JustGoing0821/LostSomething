@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
-#include "Interface/LSWheelchairTutorialInterface.h"
+#include "Interface/LSCombineTutorialInterface.h"
 #include "LTPlayerCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerCharacter : public ATP_ThirdPersonCharacter, public ILTTakeDamageInterface, public ILSWheelchairTutorialInterface
+class LOSTSOMETHING_API ALTPlayerCharacter : public ATP_ThirdPersonCharacter, public ILTTakeDamageInterface, public ILSCombineTutorialInterface
 {
 	GENERATED_BODY()
 	
@@ -33,5 +33,5 @@ protected:
 
 //WheelChairTutorial
 public:
-	virtual bool CheckWheelchairTutorial() override;
+	virtual bool isCombining() override;
 };
