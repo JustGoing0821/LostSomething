@@ -194,6 +194,11 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	return DamageAmount;
 }
 
+bool ALSPlayer::isCombining()
+{
+	return bIsBeingPushed;
+}
+
 
 void ALSPlayer::OnHpChanged(float NewHp)
 {
