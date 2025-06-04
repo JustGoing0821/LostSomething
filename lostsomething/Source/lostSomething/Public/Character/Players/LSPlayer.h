@@ -19,9 +19,9 @@
 #include "Blueprint/UserWidget.h"
 #include "InputAction.h"
 #include "Interface/LSWheelchairInterface.h"
-#include "LSPlayer.generated.h"
 #include "Interface/LSCombineTutorialInterface.h"
 
+#include "LSPlayer.generated.h"
 class UInputAction;
 class UInputMappingContext;
 class UInventoryWidget;
