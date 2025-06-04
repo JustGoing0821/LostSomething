@@ -20,7 +20,7 @@ void ALSQuestManager::BeginPlay()
 
 void ALSQuestManager::QuestStart()
 {
-	LS_LOG(LogLS, Log, TEXT("Now QuestIndex : %d"), CurrentQuestIndex);
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (CurrentQuestIndex < ULSGameSingleton::Get().QuestMaxLevel)
 	{
@@ -41,7 +41,7 @@ void ALSQuestManager::QuestComplete()
 {
 	OnQuestComplete.Broadcast();
 	CurrentQuestIndex += 1;
-	LS_LOG(LogLS, Log, TEXT("Next QuestIndex : %d"), CurrentQuestIndex);
+	//LS_LOG(LogLS, Log, TEXT("Next QuestIndex : %d"), CurrentQuestIndex);
 
 	QuestStart();
 }

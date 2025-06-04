@@ -7,6 +7,7 @@
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "UserInterface/LSQuestWidget.h"
 
 ALTGameMode::ALTGameMode()
 {
@@ -44,6 +45,13 @@ ALTGameMode::ALTGameMode()
 	}
 
 	bIsSiJaeServer = true;
+	CurrentPlayerCount = 0;
+
+}
+
+void ALTGameMode::BeginPlay()
+{
+
 }
 
 APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -69,6 +77,8 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
+			CurrentPlayerCount++;
+
 			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
@@ -86,13 +96,37 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
+			CurrentPlayerCount++;
+
 			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
+
+		//Quest Widget Update Bind
+		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 	}
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	return ResultController;
+}
+
+void ALTGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	LS_LOG(LogLS, Log, TEXT("Begin"));
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			//Quest Start
+			if (CurrentPlayerCount == 2)
+			{
+				QuestStart();
+			}
+		}
+	), 1, false, 3.0f);
 }
 
 void ALTGameMode::QuestStart()
