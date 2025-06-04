@@ -30,9 +30,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* CollisionComponent;
 
-	//ItemInfo 변수 (Item Details 구조체)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
-	FItemDetails ItemInfo;
 
 	// 오버랩 이벤트 : 오버랩 범위에 들어가면 input 활성화, 나가면 입력 비활성화
 	UFUNCTION()
@@ -43,6 +40,11 @@ protected:
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+
+	//ItemInfo 변수 (Item Details 구조체)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
+	FItemDetails ItemInfo;
 
 
 public:	

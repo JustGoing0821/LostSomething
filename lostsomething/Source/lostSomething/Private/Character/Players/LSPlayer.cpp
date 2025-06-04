@@ -9,25 +9,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DamageEvents.h"
-
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include "EnhancedInputComponent.h"
 #include "Character/Players/LSPlayerController.h"
 #include "Net/UnrealNetwork.h"
-
-#include "Character/Item/Item.h"
-#include "Character/UI/LSInventoryWidget.h"
-
-#include "Interface/LSItemPickupInterface.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/Components/LSHpComponent.h"
-#include "Character/Item/LSProjectile.h" 
-
-#include "Character/Item/LSItemDataBase.h"
-
-#include <Character/UI/LSInventoryEntry.h>
 
 
 // Sets default values
@@ -121,16 +110,6 @@ void ALSPlayer::BeginPlay()
 
 	}
 
-
-	//item
-	InventoryWidget = CreateWidget<ULSInventoryWidget>(Cast<APlayerController>(GetController()), InventoryWidgetClass);
-	InventoryEntryWidget = CreateWidget<ULSInventoryEntry>(Cast<APlayerController>(GetController()), InventoryEntryWidgetClass);
-
-	if (InventoryWidget || InventoryEntryWidget)
-	{
-		InventoryWidget->AddToViewport(0);
-		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-	}
 }
 
 // Called every frame
@@ -219,6 +198,28 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	}
 }
 
+//아이템 픽업함수
+void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
+{
+	//// ItemInfoArray에서 빈 슬롯 찾기 (IsEmpty = true인 슬롯)
+	//for (int32 i = 0; i < ItemInfoArray.Num(); ++i)
+	//{
+	//	if (ItemInfoArray[i].IsEmpty)
+	//	{
+	//		// 빈 슬롯에 아이템 정보 저장
+	//		ItemInfoArray[i] = PickedItemInfo;
+	//		ItemInfoArray[i].IsEmpty = false;
+
+	//		UE_LOG(LogTemp, Warning, TEXT("Item picked up and stored in slot %d"), i);
+	//		return; // 첫 번째 빈 슬롯에 저장 후 함수 종료
+	//	}
+	//}
+
+	//// 빈 슬롯이 없는 경우
+	//UE_LOG(LogTemp, Warning, TEXT("Inventory is full! Cannot pick up item."));
+
+}
+
 
 
 // Called to bind functionality to input
@@ -251,18 +252,13 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
+		//Mouse
+		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
 		//Pickup
-		EnhancedInputComponent->BindAction(PickupAction, ETriggerEvent::Triggered, this, &ALSPlayer::Pickup);
+		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
 
-		//projectile
-		EnhancedInputComponent->BindAction(FireProjectileAction, ETriggerEvent::Triggered, this, &ALSPlayer::FireProjectile);
-
-		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
-		
-	
-		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
-		
 	}
 
 
@@ -355,176 +351,50 @@ void ALSPlayer::Attack()
 
 
 
-void ALSPlayer::PickupCheck()
+
+
+void ALSPlayer::PickUp()
 {
-	if (!IsValid(this)) return;
+	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
 
-	APlayerController* BaseController = Cast<APlayerController>(GetController());
-	if (!IsValid(BaseController)) return;
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+	const float AttackRange = 80.0f;
+	const float AttackRadius = 50.0f;
+	const float AttackDamage = 10.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+	FColor DrawColor;
 
-	if (ALSPlayerController* LSController = Cast<ALSPlayerController>(BaseController))
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	if (HitDetected)
 	{
-		LSController->GetPlayerViewPoint(ViewVector, ViewRotation);
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
-		FVector VecDirection = ViewRotation.Vector() * 1000.f;
-		FVector PickupEnd = ViewVector + VecDirection;
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		GetWorld()->LineTraceSingleByChannel(
-			PickupHitResult, ViewVector, PickupEnd, ECC_GameTraceChannel3, Params
-		);
-
-		if (InventoryWidget)
+		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		if (HitNPC)
 		{
-			InventoryWidget->OnOffPickupText(
-				Cast<AItem>(PickupHitResult.GetActor()) ?
-				ESlateVisibility::Visible : ESlateVisibility::Collapsed
-			);
+			FDamageEvent DamageEvent;
+			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawColor = FColor::Blue;
 		}
-	}
-
-}
-
-
-void ALSPlayer::Pickup()
-{
-	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Pickup() called"));
-
-	if (!ItemDatabase)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Pickup(): ItemDatabase is nullptr!"));
-		return;
-	}
-
-	if (AItem* HitItem = Cast<AItem>(PickupHitResult.GetActor()))
-	{
-		FItemData* Data = ItemDatabase->Items.FindByPredicate([&](const FItemData& ItemData)
-			{
-				return ItemData.ItemName == HitItem->ItemName;
-			});
-
-		if (Data)
-		{
-			/*Inventory.Emplace(*Data);
-			InventoryWidget->RefreshInventory(Inventory);
-			HitItem->Destroy();*/
-
-			FItemData PickedItemData;
-			PickedItemData.ItemName = HitItem->ItemName;
-			PickedItemData.Class = HitItem->GetClass(); // 혹은 ItemDatabase에서 조회한 Class
-			PickedItemData.Mesh = HitItem->GetStaticMeshComponent()->GetStaticMesh(); // 이건 추가 필요
-
-			Inventory.Emplace(PickedItemData);
-			InventoryWidget->RefreshInventory(Inventory);
-			HitItem->Destroy();
-
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Pickup(): Matching item not found in ItemDatabase."));
-		}
-	}
-}
-
-void ALSPlayer::DropItem(FItemData ItemData)
-{
-	UE_LOG(LogTemp, Error, TEXT("ALSPlayer::DropItem(FItemData ItemData)"));
-
-	FVector Forward = GetActorForwardVector();
-	FVector PickupLocation = GetActorLocation() + Forward * 150.f + FVector(0, 0, 100.f);
-
-	// 스폰 파라미터
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AItem* DroppedItem = GetWorld()->SpawnActor<AItem>(
-		ItemData.Class, PickupLocation, FRotator::ZeroRotator, Params
-	);
-	DroppedItem->GetStaticMeshComponent()->SetStaticMesh(ItemData.Mesh);
-
-	if (!DroppedItem)
-	{
-		UE_LOG(LogTemp, Error, TEXT("DropItem(): SpawnActor failed! Class = %s"), *ItemData.Class->GetName());
-		return;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DropItem(): Spawned [%s] at location %s"),
-			*ItemData.ItemName.ToString(), *PickupLocation.ToString());
+		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() - No hit detected"));
+
+		DrawColor = FColor::Red;
 	}
 
-	// 인벤토리 업데이트
-	Inventory.RemoveSingle(ItemData);
-	InventoryWidget->RefreshInventory(Inventory);
-}
+#if ENABLE_DRAW_DEBUG
 
-void ALSPlayer::FireProjectile()
-{
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::FireProjectile() called"));
-
-	// 컨트롤러 확인
-	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-	if (!LSController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: Controller not found or not LSPlayerController"));
-		return;
-	}
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
 
 
-	// 프로젝타일 클래스 확인
-	if (!ProjectileClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: ProjectileClass not set"));
-		return;
-	}
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 
-
-
-	// 카메라 위치와 방향 가져오기
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-	// 발사 위치 계산 (카메라 앞쪽)
-	const FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0, 0, 50.0f);
-
-	// 발사 방향 (카메라 방향)
-	const FVector Direction = CameraRotation.Vector();
-
-	// 스폰 파라미터 설정
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-	// 월드 확인
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: World not found"));
-		return;
-	}
-
-	// 프로젝타일 생성
-	ALSProjectile* Projectile = World->SpawnActor<ALSProjectile>(
-		ProjectileClass,
-		SpawnLocation,
-		Direction.Rotation(),
-		SpawnParams
-	);
-
-	if (Projectile)
-	{
-		// 발사 방향 설정
-		Projectile->FireInDirection(Direction);
-		UE_LOG(LogTemp, Log, TEXT("FireProjectile: Projectile fired successfully"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FireProjectile: Failed to spawn projectile"));
-	}
+#endif
 }
 
 void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)

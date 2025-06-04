@@ -6,18 +6,15 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"                    
-#include "Character/Item/LSItemDatabase.h"
-#include "Character/Item/LSItemBase.h"
-#include "Character/Item/Item.h"
 #include "GameFramework/SpringArmComponent.h"        
 #include "EnhancedInputComponent.h"                   
 #include "EnhancedInputSubsystems.h"                  
 #include "InputMappingContext.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include "Character/Components/LSHpComponent.h"
-#include "Character/UI/LSInventoryWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "InputAction.h"
+#include "Character/Item/LSItemStructures.h"
 #include "Interface/LSWheelchairInterface.h"
 #include "LSPlayer.generated.h"
 
@@ -57,14 +54,10 @@ public:
 	UFUNCTION()
 	void OnHpChanged(float NewHp);
 
-	void DropItem(FItemData ItemData);
+	// 아이템 픽업 함수_ Pick Item 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void PickItem(const FItemDetails& PickedItemInfo);
 
-	/*************************************Property**************************************/
-
-	TArray<FItemData> Inventory;
-
-	UPROPERTY(EditDefaultsOnly)
-	ULSItemDataBase* ItemDatabase;
 
 protected:
 	/*************************************Function**************************************/
@@ -76,11 +69,9 @@ protected:
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Pickup();
-	void PickupCheck();
 	void Interaction();
 	void Attack();
-	void FireProjectile();
+	void PickUp();
 
 	void OnMouseWheelUp(const FInputActionValue& Value);
 	void OnMouseWheelDown(const FInputActionValue& Value);
@@ -114,19 +105,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
 
-	
-	//줍기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> PickupAction;
+	TObjectPtr<class UInputAction> PickUpAction;
+	//줍기
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInventoryAction> InventoryAction;*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	ULSHpComponent* HpComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> FireProjectileAction;
 
 
 	// 마우스 휠 액션들 추가
@@ -136,33 +121,32 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MouseWheelDownAction;
 
-	UPROPERTY()
+	// 인벤토리 아이템 배열
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FItemDetails> ItemInfoArray;
+
+	/*UPROPERTY()
 	FHitResult PickupHitResult;
 	FVector ViewVector;
-	FRotator ViewRotation;
+	FRotator ViewRotation;*/
 
+//
+//	//투사체 클래스 참조?
+//	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+//	TSubclassOf<class ALSProjectile> ProjectileClass;
+//
+//	//item
+//	UPROPERTY(EditDefaultsOnly)
+//	TSubclassOf<UUserWidget> InventoryWidgetClass;
+//
+//	UPROPERTY(EditDefaultsOnly)
+//	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
+//
+//	//이렇게 쓰지 말기
+//	/*ULSInventoryWidget* InventoryWidget;
+//	ULSInventoryEntry* InventoryEntryWidget;
+//*/
 
-	//투사체 클래스 참조?
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<class ALSProjectile> ProjectileClass;
-
-	//item
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUserWidget> InventoryWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
-
-	//이렇게 쓰지 말기
-	/*ULSInventoryWidget* InventoryWidget;
-	ULSInventoryEntry* InventoryEntryWidget;
-*/
-
-	UPROPERTY()
-	TObjectPtr<class ULSInventoryWidget> InventoryWidget;
-
-	UPROPERTY()
-	TObjectPtr<class ULSInventoryEntry> InventoryEntryWidget;
 
 
 //// Stat
