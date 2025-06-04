@@ -46,7 +46,7 @@ protected:
 
 //Quest Section
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	uint8 bisCorrectMachine : 1;
 
 //Puzzle Section
@@ -54,7 +54,7 @@ public:
 	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
 	void BindVendingMachine(class ALSVendingMachineManager* InVendingMachineManager);
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	EVendingMachineColor CurrentVendingMachineColor;
 
 	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
