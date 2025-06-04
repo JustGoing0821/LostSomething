@@ -20,6 +20,7 @@
 #include "InputAction.h"
 #include "Interface/LSWheelchairInterface.h"
 #include "LSPlayer.generated.h"
+#include "Interface/LSCombineTutorialInterface.h"
 
 class UInputAction;
 class UInputMappingContext;
@@ -30,7 +31,7 @@ class UInventoryWidget;
 
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSWheelchairInterface
+class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSWheelchairInterface, public ILSCombineTutorialInterface
 {
 	GENERATED_BODY()
 
@@ -48,6 +49,7 @@ public:
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	virtual bool isCombining() override;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
