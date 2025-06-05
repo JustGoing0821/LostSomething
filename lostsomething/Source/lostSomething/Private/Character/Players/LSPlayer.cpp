@@ -201,6 +201,9 @@ void ALSPlayer::OnHpChanged(float NewHp)
 //아이템 픽업함수
 void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
 {
+	// Pick Item In Slot 함수 호출
+	PickItemInSlot(PickedItemInfo);
+
 	//// ItemInfoArray에서 빈 슬롯 찾기 (IsEmpty = true인 슬롯)
 	//for (int32 i = 0; i < ItemInfoArray.Num(); ++i)
 	//{
@@ -217,6 +220,97 @@ void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
 
 	//// 빈 슬롯이 없는 경우
 	//UE_LOG(LogTemp, Warning, TEXT("Inventory is full! Cannot pick up item."));
+
+}
+
+//슬롯에 아이템 넣기
+void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
+
+	// PlayerController를 통해 HUD에서 현재 선택된 슬롯 인덱스 가져오기
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			//SelectedSlots 변수
+			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+
+			// ItemInfoArray GET: CurrentSelectedSlot 인덱스로 현재 슬롯 아이템 가져오기
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+
+				//현재 슬롯 아이템의 IsEmpty 값 추출
+				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+				//IsEmpty 조건 확인
+				if (bCurrentSlotIsEmpty) 
+				{
+					// 선택된 슬롯에 새 아이템 저장
+					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
+
+					// Break ItemDetails에서 Item Icon 추출
+					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
+
+					// Set Icon: HUD의 Set Icon 이벤트 호출
+					// Current Slot: CurrentSelectedSlot, Item Icon: ItemIcon
+					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
+
+					//item class추출
+					TSubclassOf<AMasterItem> ItemClass = PickedItem.Item_Class;
+
+					// Spawn Actor: Item Class로 액터 생성
+					if (ItemClass)
+					{
+						FVector SpawnLocation = GetActorLocation();
+						FRotator SpawnRotation = GetActorRotation();
+						FActorSpawnParameters SpawnParams;
+						SpawnParams.Instigator = this;
+
+						AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+							ItemClass,
+							SpawnLocation,
+							SpawnRotation,
+							SpawnParams
+						);
+
+						if (SpawnedItem)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Item spawned: %s"));
+						}
+						else
+						{
+							UE_LOG(LogTemp, Error, TEXT("Failed to spawn item"));
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Item Class is null - no item to spawn"));
+					}
+
+					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d and icon updated"), CurrentSelectedSlot);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Slot %d is already occupied"), CurrentSelectedSlot);
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSelectedSlot);
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("HUD Widget not found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerController not found"));
+	}
+
 
 }
 

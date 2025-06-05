@@ -55,9 +55,14 @@ public:
 	void OnHpChanged(float NewHp);
 
 	// 아이템 픽업 함수_ Pick Item 
+	// 인풋 변수가 item details. 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void PickItem(const FItemDetails& PickedItemInfo);
 
+	//아이템 픽업후 슬롯에 넣기
+	//입력 파라미터 itemdetials 구조체
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void PickItemInSlot(const FItemDetails& PickedItem);
 
 protected:
 	/*************************************Function**************************************/

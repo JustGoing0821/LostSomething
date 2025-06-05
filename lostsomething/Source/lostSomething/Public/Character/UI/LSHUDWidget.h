@@ -6,6 +6,8 @@
 #include "Components/ProgressBar.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Border.h"
+#include "Engine/Texture2D.h"
+#include "Components/Image.h"
 #include "LSHUDWidget.generated.h"
 
 /**
@@ -38,7 +40,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UpdateSlotBorderColors();
 
+	// Set Icon함수
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon);
+
 protected:
+	// 슬롯 아이콘 이미지 위젯
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SlotIcon_0;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SlotIcon_1;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SlotIcon_2;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SlotIcon_3;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SlotIcon_4;
+
 
 	// 슬롯 테두리 위젯들
 	UPROPERTY(meta = (BindWidget))
