@@ -64,6 +64,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void PickItemInSlot(const FItemDetails& PickedItem);
 
+	// Drop Item 위치를 나타내는 Arrow 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UArrowComponent> DropItemLoc;
+
+	// 슬롯에서 아이템 드롭
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void DropItemFromSlot();
+
+	// 인벤토리 초기화 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void InitializeInventory();
+
 protected:
 	/*************************************Function**************************************/
 

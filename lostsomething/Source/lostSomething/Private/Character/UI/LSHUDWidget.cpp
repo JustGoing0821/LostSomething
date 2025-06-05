@@ -67,17 +67,58 @@ void ULSHUDWidget::UpdateSlotBorderColors()
 }
 
 //icon추가함수
+
+//void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::SetIcon() called - Slot: %d"), CurrentSlot);
+//
+//	if (!ItemIcon)
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("ItemIcon is null"));
+//		return;
+//	}
+//
+//	
+//	UImage* TargetSlotIcon = nullptr;
+//
+//	switch (CurrentSlot)
+//	{
+//	case 0:
+//		TargetSlotIcon = SlotIcon_0;
+//		break;
+//	case 1:
+//		TargetSlotIcon = SlotIcon_1;
+//		break;
+//	case 2:
+//		TargetSlotIcon = SlotIcon_2;
+//		break;
+//	case 3:
+//		TargetSlotIcon = SlotIcon_3;
+//		break;
+//	case 4:
+//		TargetSlotIcon = SlotIcon_4;
+//		break;
+//	default:
+//		UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSlot);
+//		return;
+//	}
+//
+//	
+//	if (TargetSlotIcon)
+//	{
+//		TargetSlotIcon->SetBrushFromTexture(ItemIcon, true); // true = Match Size
+//		UE_LOG(LogTemp, Warning, TEXT("Icon set for slot %d"), CurrentSlot);
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("SlotIcon_%d widget is null"), CurrentSlot);
+//	}
+//}
+
 void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::SetIcon() called - Slot: %d"), CurrentSlot);
 
-	if (!ItemIcon)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ItemIcon is null"));
-		return;
-	}
-
-	
 	UImage* TargetSlotIcon = nullptr;
 
 	switch (CurrentSlot)
@@ -97,24 +138,46 @@ void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 	case 4:
 		TargetSlotIcon = SlotIcon_4;
 		break;
+	
+		break;
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSlot);
 		return;
 	}
 
-	
 	if (TargetSlotIcon)
 	{
-		TargetSlotIcon->SetBrushFromTexture(ItemIcon, true); // true = Match Size
-		UE_LOG(LogTemp, Warning, TEXT("Icon set for slot %d"), CurrentSlot);
+		if (ItemIcon)
+		{
+			// 유효한 아이콘이 있을 때 - 아이템 아이콘 표시
+			TargetSlotIcon->SetBrushFromTexture(ItemIcon, true);
+			TargetSlotIcon->SetVisibility(ESlateVisibility::Visible);
+			UE_LOG(LogTemp, Warning, TEXT("Item icon set for slot %d"), CurrentSlot);
+		}
+		else
+		{
+			// 아이콘이 null일 때 - 기본 슬롯 아이콘 표시
+			UTexture2D* BlankIcon = DefaultSlotIcon.LoadSynchronous();
+			if (BlankIcon)
+			{
+				TargetSlotIcon->SetBrushFromTexture(BlankIcon, true);
+				TargetSlotIcon->SetVisibility(ESlateVisibility::Visible);
+				UE_LOG(LogTemp, Warning, TEXT("Default icon set for slot %d"), CurrentSlot);
+			}
+			else
+			{
+				// 기본 아이콘도 없으면 투명하게
+				TargetSlotIcon->SetBrushFromTexture(nullptr, true);
+				TargetSlotIcon->SetVisibility(ESlateVisibility::Hidden);
+				UE_LOG(LogTemp, Warning, TEXT("Slot %d hidden (no default icon)"), CurrentSlot);
+			}
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("SlotIcon_%d widget is null"), CurrentSlot);
+		UE_LOG(LogTemp, Error, TEXT("SlotImage_%d widget is null"), CurrentSlot);
 	}
 }
-
-
 
 void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color)
 {

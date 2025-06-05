@@ -46,6 +46,11 @@ public:
 
 protected:
 	// 슬롯 아이콘 이미지 위젯
+	// 
+	// 빈 슬롯 기본 아이콘
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Icons")
+	TSoftObjectPtr<UTexture2D> DefaultSlotIcon;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> SlotIcon_0;
 

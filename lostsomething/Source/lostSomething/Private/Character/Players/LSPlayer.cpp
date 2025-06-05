@@ -15,6 +15,8 @@
 #include "EnhancedInputComponent.h"
 #include "Character/Players/LSPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "Character/Item/MasterItem.h"
+#include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/Components/LSHpComponent.h"
 
@@ -75,6 +77,11 @@ ALSPlayer::ALSPlayer()
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
 
+	//item 방향 arrow
+	DropItemLoc = CreateDefaultSubobject<UArrowComponent>(TEXT("DropItemLoc"));
+	DropItemLoc->SetupAttachment(RootComponent);
+	// Arrow 위치 조정 (플레이어 앞쪽에 배치)
+	DropItemLoc->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 
 	//wheelchair
 	WheelchairMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WheelchairMesh"));
@@ -109,6 +116,9 @@ void ALSPlayer::BeginPlay()
 
 
 	}
+
+	//인벤토리 초기화
+	InitializeInventory();
 
 }
 
@@ -228,12 +238,52 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
 
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+				{
+					// 새 아이템 저장
+					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
+
+					// 아이콘 업데이트
+					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
+					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
+
+					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+				}
+				else  // 이미 차있는 슬롯인 경우
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+
+					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
+					DropItemFromSlot();
+				}
+			}
+		}
+	}
+}
+
+
+//아이템 drop
+void ALSPlayer::DropItemFromSlot()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
+
 	// PlayerController를 통해 HUD에서 현재 선택된 슬롯 인덱스 가져오기
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			//SelectedSlots 변수
+			// 블루프린트의 SelectedSlots 변수와 동일한 값
 			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
 
 			// ItemInfoArray GET: CurrentSelectedSlot 인덱스로 현재 슬롯 아이템 가져오기
@@ -241,30 +291,20 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 			{
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 
-				//현재 슬롯 아이템의 IsEmpty 값 추출
-				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+				// Break ItemDetails: IsEmpty와 Item Class 값 추출
+				bool bIsSlotEmpty = CurrentSlotItem.IsEmpty;
+				TSubclassOf<AMasterItem> ItemClass = CurrentSlotItem.Item_Class;
 
-				//IsEmpty 조건 확인
-				if (bCurrentSlotIsEmpty) 
+				// Branch: IsEmpty 조건 확인 (False 분기 - 슬롯이 차있을 때)
+				if (!bIsSlotEmpty)  // False 분기
 				{
-					// 선택된 슬롯에 새 아이템 저장
-					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
-
-					// Break ItemDetails에서 Item Icon 추출
-					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
-
-					// Set Icon: HUD의 Set Icon 이벤트 호출
-					// Current Slot: CurrentSelectedSlot, Item Icon: ItemIcon
-					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
-
-					//item class추출
-					TSubclassOf<AMasterItem> ItemClass = PickedItem.Item_Class;
-
-					// Spawn Actor: Item Class로 액터 생성
-					if (ItemClass)
+					// Spawn Actor: DropItemLoc 위치에 Item Class로 액터 생성
+					if (ItemClass && DropItemLoc)
 					{
-						FVector SpawnLocation = GetActorLocation();
-						FRotator SpawnRotation = GetActorRotation();
+						// Get World Location: DropItemLoc Arrow의 월드 위치 가져오기
+						FVector SpawnLocation = DropItemLoc->GetComponentLocation();
+						FRotator SpawnRotation = DropItemLoc->GetComponentRotation();
+
 						FActorSpawnParameters SpawnParams;
 						SpawnParams.Instigator = this;
 
@@ -277,23 +317,29 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 						if (SpawnedItem)
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Item spawned: %s"));
+							UE_LOG(LogTemp, Warning, TEXT("Item dropped: %s"), *SpawnedItem->GetName());
 						}
-						else
-						{
-							UE_LOG(LogTemp, Error, TEXT("Failed to spawn item"));
-						}
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Item Class is null - no item to spawn"));
 					}
 
-					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d and icon updated"), CurrentSelectedSlot);
+					// Set Array Element: 해당 슬롯을 빈 상태로 만들기
+					FItemDetails EmptySlot;
+					EmptySlot.IsEmpty = true;
+					EmptySlot.Item_Name = NAME_None;
+					EmptySlot.Item_Icon = nullptr;
+					EmptySlot.Item_Nature = EItemNature::IsConsumable;
+					EmptySlot.Item_Class = nullptr;
+
+					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
+
+					// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
+					UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
+					HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
+
+					UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Slot %d is already occupied"), CurrentSelectedSlot);
+					UE_LOG(LogTemp, Warning, TEXT("Slot %d is already empty - nothing to drop"), CurrentSelectedSlot);
 				}
 			}
 			else
@@ -310,11 +356,47 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 	{
 		UE_LOG(LogTemp, Error, TEXT("PlayerController not found"));
 	}
-
-
 }
 
+//인벤토리 초기화
+void ALSPlayer::InitializeInventory()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
 
+	// Empty Item 생성
+	FItemDetails EmptyItem;
+	EmptyItem.Item_Name = NAME_None;
+	EmptyItem.Item_Icon = nullptr;
+	EmptyItem.Item_Nature = EItemNature::IsConsumable;
+	EmptyItem.IsEmpty = true;
+	EmptyItem.Item_Class = nullptr;
+
+	// ItemInfoArray를 Empty Item으로 채움
+	const int32 MaxSlots = 5; //슬로수
+	ItemInfoArray.Empty(); //배열 비우기
+
+	for (int32 i = 0; i < MaxSlots; ++i)
+	{
+		ItemInfoArray.Add(EmptyItem);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Inventory initialized with %d empty slots"), MaxSlots);
+
+
+
+	// 초기화 후 모든 슬롯에 기본 아이콘 설정
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			for (int32 i = 0; i < MaxSlots; ++i)
+			{
+				HUD->SetIcon(i, nullptr); // null을 전달하면 기본 아이콘 표시
+			}
+		}
+	}
+
+}
 
 // Called to bind functionality to input
 void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -452,43 +534,55 @@ void ALSPlayer::PickUp()
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
 
 	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-	const float AttackRange = 80.0f;
-	const float AttackRadius = 50.0f;
-	const float AttackDamage = 10.0f;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
+	const float PickupRange = 200.0f;
+	const float PickupRadius = 100.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * AttackRange;
+	const FVector End = Start + GetActorForwardVector() * PickupRange;
 	FColor DrawColor;
 
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
+
 	if (HitDetected)
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		AActor* HitActor = OutHitResult.GetActor();
+		LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
 
-		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		if (HitNPC)
+		// MasterItem 픽업 처리
+		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
+		if (HitItem)
 		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
+			LS_LOG(LogLS, Warning, TEXT("MASTER ITEM FOUND: %s"), *HitItem->GetName());
+
+			// 아이템 픽업 (PickItem → PickItemInSlot 호출)
+			PickItem(HitItem->GetItemInfo());
+
+			// 아이템 제거
+			HitItem->Destroy();
+
+			LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
+			DrawColor = FColor::Green;
+			return; // 픽업했으면 함수 종료
+		}
+		else
+		{
+			LS_LOG(LogLS, Warning, TEXT("HIT ACTOR IS NOT MASTER ITEM: %s"), *HitActor->GetName());
+			DrawColor = FColor::Yellow;
 		}
 	}
-	else
-	{
-		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() - No hit detected"));
 
-		DrawColor = FColor::Red;
-	}
 
-#if ENABLE_DRAW_DEBUG
 
+	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
+	// 현재 선택된 슬롯의 아이템을 드롭
+	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
+	DropItemFromSlot();
+	DrawColor = FColor::Red;
+
+	// 디버그 라인
 	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = AttackRange * 0.5f;
-
-
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-#endif
+	float CapsuleHalfHeight = PickupRange * 0.5f;
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 }
 
 void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
