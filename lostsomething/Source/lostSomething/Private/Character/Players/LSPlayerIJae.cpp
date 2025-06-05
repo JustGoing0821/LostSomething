@@ -7,3 +7,8 @@ bool ALSPlayerIJae::CanPushWheelchair() const
 {
     return false;
 }
+
+void ALSPlayerIJae::Jump()
+{
+    return;
+}

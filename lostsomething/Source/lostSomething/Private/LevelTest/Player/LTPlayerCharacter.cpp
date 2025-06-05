@@ -124,3 +124,8 @@ float ALTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	LS_LOG(LogLS, Warning, TEXT("Take Damage : %f"), DamageAmount);
 	return 0.0f;
 }
+
+bool ALTPlayerCharacter::isCombining()
+{
+	return true;
+}
