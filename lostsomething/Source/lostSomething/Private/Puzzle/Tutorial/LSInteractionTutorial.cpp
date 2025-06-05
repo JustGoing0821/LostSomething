@@ -11,8 +11,6 @@
 // Sets default values
 ALSInteractionTutorial::ALSInteractionTutorial()
 {
-
-
 }
 
 // Called when the game starts or when spawned
@@ -43,7 +41,7 @@ void ALSInteractionTutorial::BeginPlay()
 
 void ALSInteractionTutorial::PuzzleCheck(bool isPuzzleCorrect)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (HasAuthority() && isPuzzleCorrect)
 	{
@@ -57,7 +55,7 @@ void ALSInteractionTutorial::PuzzleCheck(bool isPuzzleCorrect)
 
 void ALSInteractionTutorial::QuestClear()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));

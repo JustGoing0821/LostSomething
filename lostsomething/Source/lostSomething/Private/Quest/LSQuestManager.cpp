@@ -22,27 +22,29 @@ void ALSQuestManager::QuestStart()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
-	if (CurrentQuestIndex < ULSGameSingleton::Get().QuestMaxLevel)
-	{
-		SetCurrentQuest(ULSGameSingleton::Get().GetQuestData()[CurrentQuestIndex]);
-		//LS_LOG(LogLS, Log, TEXT("QuestName : %s"), *CurrentQuestData.QuestName);
-		//LS_LOG(LogLS, Log, TEXT("Description : %s"), *CurrentQuestData.Description);
+	SetCurrentQuest(ULSGameSingleton::Get().GetQuestData()[CurrentQuestIndex]);
+	LS_LOG(LogLS, Log, TEXT("QuestName : %s"), *CurrentQuestData.QuestName);
+	//LS_LOG(LogLS, Log, TEXT("Description : %s"), *CurrentQuestData.Description);
 
-		OnQuestStart.Broadcast(CurrentQuestData, CurrentQuestData.CurrentQuestEnum);
-		OnInteractionChange.Broadcast(CurrentQuestData.CurrentQuestEnum);
-	}
-	else
-	{
-		LS_LOG(LogLS, Error, TEXT("Quest Max Level : %s"), ULSGameSingleton::Get().QuestMaxLevel);
-	}
+	OnQuestStart.Broadcast(CurrentQuestData, CurrentQuestData.CurrentQuestEnum);
+	OnInteractionChange.Broadcast(CurrentQuestData.CurrentQuestEnum);
 }
 
 void ALSQuestManager::QuestComplete()
 {
-	OnQuestComplete.Broadcast();
-	CurrentQuestIndex += 1;
-	//LS_LOG(LogLS, Log, TEXT("Next QuestIndex : %d"), CurrentQuestIndex);
+	int32 QuestMaxLevel=0;
+	ULSGameSingleton& GameSingleton = ULSGameSingleton::Get();
+	QuestMaxLevel = GameSingleton.QuestMaxLevelIndex;
 
-	QuestStart();
+	if (CurrentQuestIndex < QuestMaxLevel)
+	{
+		OnQuestComplete.Broadcast();
+		CurrentQuestIndex += 1;
+		QuestStart();
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("Quest Max Level : %d"), QuestMaxLevel);
+	}
 }
 

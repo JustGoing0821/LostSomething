@@ -39,7 +39,7 @@ public:
 	void QuestStart() override;
 	void QuestComplete() override;
 
-	FORCEINLINE class ALSQuestManager* GetQuestManager() { return QuestManager; }
+	FORCEINLINE virtual class ALSQuestManager* GetQuestManager() override { return QuestManager; }
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))

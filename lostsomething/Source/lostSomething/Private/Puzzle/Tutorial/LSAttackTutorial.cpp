@@ -3,12 +3,15 @@
 
 #include "Puzzle/Tutorial/LSAttackTutorial.h"
 #include "lostSomething.h"
+#include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
-#include "Interface/LSCharacterChoiceInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSQuestInterface.h"
+#include "Quest/LSQuestManager.h"
 
 ALSAttackTutorial::ALSAttackTutorial()
 {
@@ -16,6 +19,7 @@ ALSAttackTutorial::ALSAttackTutorial()
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
 	CollisionBox->SetBoxExtent(FVector(50.0f, 40.0f, 100.0f));
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 	RootComponent = CollisionBox;
 
 	//Mesh
@@ -23,6 +27,7 @@ ALSAttackTutorial::ALSAttackTutorial()
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -100.0f));
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/SpendingMachines/SM_SpendingMachine_02.SM_SpendingMachine_02"));
 	if (ItemMeshRef.Object)
 	{
@@ -36,7 +41,34 @@ ALSAttackTutorial::ALSAttackTutorial()
 		MeshComponent->SetMaterial(0, BlueMaterialRef.Object);
 	}
 
+	bReplicates = true;
 	CorrectCauserCharacter = ELSCharacterChoice::None;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest4;
+}
+
+void ALSAttackTutorial::BeginPlay()
+{
+	if (HasAuthority())
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+				{
+					if (PlayerController && !PlayerController->IsLocalController())
+					{
+						SetOwner(PlayerController);
+						break;
+					}
+				}
+			}
+		), 1.0f, false, 2.0f);
+	}
+
+	if (HasAuthority())
+	{
+		BindQuestChange();
+	}
 }
 
 float ALSAttackTutorial::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -47,13 +79,14 @@ float ALSAttackTutorial::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	{
 		if (CauserController->GetCharacterChoice() == CorrectCauserCharacter)
 		{
+			OnAttackTutorial.Execute();
 			if (HasAuthority())
 			{
-				QuestClear();
+				MulticastRPCPuzzleDeactivate();
 			}
 			else
 			{
-				ServerRPCQuestClear();
+				ServerRPCPuzzleDeactivate();
 			}
 		}
 		else
@@ -65,20 +98,53 @@ float ALSAttackTutorial::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	return 0.0f;
 }
 
-void ALSAttackTutorial::QuestClear()
+void ALSAttackTutorial::BindQuestChange()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameModeQuest)
 		{
-			GameModeQuest->QuestComplete();
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSAttackTutorial::OnQuestChange);
 		}
 	}
 }
 
-void ALSAttackTutorial::ServerRPCQuestClear_Implementation()
+void ALSAttackTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	QuestClear();
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
+void ALSAttackTutorial::PuzzleActivate()
+{
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	MeshComponent->SetVisibility(true);
+}
+
+void ALSAttackTutorial::PuzzleDeactivate()
+{
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetVisibility(false);
+}
+
+void ALSAttackTutorial::MulticastRPCPuzzleActivate_Implementation()
+{
+	PuzzleActivate();
+}
+
+void ALSAttackTutorial::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
+}
+
+void ALSAttackTutorial::ServerRPCPuzzleDeactivate_Implementation()
+{
+	MulticastRPCPuzzleDeactivate();
 }

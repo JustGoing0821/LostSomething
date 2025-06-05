@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InteractionActor/LSInteractionActorBase.h"
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSVendingMachine.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnVMPuzzleCheckDelegate, bool /*PuzzleCorrect*/);
@@ -21,6 +22,7 @@ public:
 	ALSVendingMachine();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -65,9 +67,16 @@ protected:
 
 	TArray<TArray<EVendingMachineColor>> VendingMachineColorSets;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
+
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
 	void SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet);
 	void PuzzleCheck();
-	void OnQuesetClear();
 
 
 //RPC Section
@@ -76,5 +85,8 @@ public:
 	void ServerRPCPuzzleCheck();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCOnQuesetClear();
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
 };

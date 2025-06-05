@@ -6,9 +6,10 @@
 #include "InteractionActor/LSInteractionActorBase.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSAttackTutorial.generated.h"
 
-
+DECLARE_DELEGATE(FOnAttackTutorialDelegate);
 
 /**
  * 
@@ -22,6 +23,10 @@ public:
 	ALSAttackTutorial();
 
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CollisionBox;
 
@@ -30,15 +35,31 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	ELSCharacterChoice CorrectCauserCharacter;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
 	
 public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	FOnAttackTutorialDelegate OnAttackTutorial;
+
 protected:
-	void QuestClear();
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
+
 
 //RPC
 public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
+
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCQuestClear();
+	void ServerRPCPuzzleDeactivate();
 };
