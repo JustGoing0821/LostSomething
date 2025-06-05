@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InteractionActor/LSInteractionActorBase.h"
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSVendingMachineManager.generated.h"
 
 UENUM(BlueprintType)
@@ -71,10 +72,18 @@ protected:
 	int32 CurrentColorSet;
 	TMap<ECurrentPhase, EVendingMachineColor> AnswerColors;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
+
 	void StartPhase();
 	void ProceedPhase();
 	void PuzzleCheck(bool bisPuzzleCorrect);
 	void QuestClear();
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
 	
 
 //RPC Section
@@ -90,4 +99,10 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCQuestClear();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
 };

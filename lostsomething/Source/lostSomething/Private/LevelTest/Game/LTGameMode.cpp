@@ -8,6 +8,7 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "UserInterface/LSQuestWidget.h"
+#include "Game/LSGameInstance.h"
 
 ALTGameMode::ALTGameMode()
 {
