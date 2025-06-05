@@ -5,6 +5,7 @@
 #include "BossNPC/AI/BossNPCAIController.h"
 #include "BossNPC/Obstacle/BossObstacle.h"
 #include "BossNPC/Platform/PlatformGenerator.h"
+#include "lostSomething.h"
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -30,13 +31,14 @@ ABossNPC::ABossNPC()
 		ObstacleSpawnPoints.Add(SpawnPoint);
 	}
 
+	CurrentHP = MaxHP;
 }
 
 // Called when the game starts or when spawned
 void ABossNPC::BeginPlay()
 {
 	Super::BeginPlay();
-	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HasAuthority = %s"), HasAuthority() ? TEXT("TRUE") : TEXT("FALSE"));
+
 	EnterPhase3();
 }
 
@@ -52,6 +54,22 @@ void ABossNPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	SetHP(GetHP()-DamageAmount);
+	LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
+
+	ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
+	if (PC)
+	{
+		PC->ChangedHP();
+	}
+
+	return 0.0f;
 }
 
 void ABossNPC::SpawnObstacles()
