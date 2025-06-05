@@ -39,9 +39,6 @@ public:
 	void QuestComplete();
 
 protected:
-	UPROPERTY(Transient, VisibleInstanceOnly, Category = Quest)
-	int32 CurrentQuestIndex = 0;
-
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))
 	FLSQuestData CurrentQuestData;
 

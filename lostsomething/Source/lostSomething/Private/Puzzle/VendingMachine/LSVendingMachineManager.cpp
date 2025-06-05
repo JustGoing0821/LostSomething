@@ -10,6 +10,7 @@
 #include "Puzzle/VendingMachine/LSVendingMachine.h"
 #include "Interface/LSQuestInterface.h"
 #include "GameFramework/GameModeBase.h"
+#include "Quest/LSQuestManager.h"
 
 ALSVendingMachineManager::ALSVendingMachineManager()
 {
@@ -19,6 +20,7 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	//Collision
 	StartButton = CreateDefaultSubobject<UBoxComponent>(TEXT("StartButtonCollision"));
 	StartButton->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
+	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	StartButton->SetBoxExtent(FVector(55, 3, 80));
 	RootComponent = StartButton;
 
@@ -50,6 +52,8 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 		MeshMaterials.Add(EVendingMachineColor::Blue, BlueMaterialRef.Object);
 	}
 	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
+
+	PuzzleActivateEnum = ELSInteractionEnum::Quest5;
 }
 
 void ALSVendingMachineManager::BeginPlay()
@@ -78,6 +82,11 @@ void ALSVendingMachineManager::BeginPlay()
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("No ALSVendingMachine"));
+	}
+
+	if (HasAuthority())
+	{
+		BindQuestChange();
 	}
 }
 
@@ -234,6 +243,40 @@ void ALSVendingMachineManager::QuestClear()
 	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void ALSVendingMachineManager::BindQuestChange()
+{
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSVendingMachineManager::OnQuestChange);
+		}
+	}
+}
+
+void ALSVendingMachineManager::PuzzleActivate()
+{
+	StartButton->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ALSVendingMachineManager::PuzzleDeactivate()
+{
+	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ALSVendingMachineManager::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+{
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
 void ALSVendingMachineManager::MulticastRPCQuestClear_Implementation()
 {
 	QuestClear();
@@ -254,4 +297,14 @@ void ALSVendingMachineManager::ServerRPCStartPhase_Implementation()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	StartPhase();
+}
+
+void ALSVendingMachineManager::MulticastRPCPuzzleActivate_Implementation()
+{
+	PuzzleActivate();
+}
+
+void ALSVendingMachineManager::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
 }

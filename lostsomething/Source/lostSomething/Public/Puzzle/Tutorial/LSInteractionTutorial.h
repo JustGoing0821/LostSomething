@@ -4,24 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LevelTransferVolume.generated.h"
+#include "LSInteractionTutorial.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALevelTransferVolume : public AActor
+class LOSTSOMETHING_API ALSInteractionTutorial : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ALevelTransferVolume();
+	ALSInteractionTutorial();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+//Quest Section
+protected:
+	void PuzzleCheck(bool isPuzzleCorrect);
+	void QuestClear();
 
-private:
-	UPROPERTY()
-	TObjectPtr<class UBoxComponent> TransferVolume;
+//RPC Section
+public:
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCQuestClear();
 };

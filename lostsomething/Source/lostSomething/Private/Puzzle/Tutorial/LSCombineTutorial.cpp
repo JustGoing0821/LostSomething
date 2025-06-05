@@ -7,6 +7,8 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "Quest/LSQuestManager.h"
+#include "Net/UnrealNetwork.h"
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
 
@@ -17,14 +19,24 @@ ALSCombineTutorial::ALSCombineTutorial()
 	RootComponent = TutorialTrigger;
 	TutorialTrigger->SetBoxExtent(FVector(100, 100, 100));
 	TutorialTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
-	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	TutorialTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerBeginOverlap);
 	TutorialTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerEndOverlap);
+
+	PuzzleActivateEnum = ELSInteractionEnum::Quest2;
+}
+
+void ALSCombineTutorial::BeginPlay()
+{
+	if (HasAuthority())
+	{
+		BindQuestChange();
+	}
 }
 
 void ALSCombineTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	LS_LOG(LogLS, Log, TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSCombineTutorialInterface* WheelchairPlayer = Cast<ILSCombineTutorialInterface>(OtherActor);
@@ -47,6 +59,40 @@ void ALSCombineTutorial::OnTutorialTriggerEndOverlap(UPrimitiveComponent* Overla
 {
 }
 
+void ALSCombineTutorial::BindQuestChange()
+{
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSCombineTutorial::OnQuestChange);
+		}
+	}
+}
+
+void ALSCombineTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+{
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
+void ALSCombineTutorial::PuzzleActivate()
+{
+	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ALSCombineTutorial::PuzzleDeactivate()
+{
+	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 void ALSCombineTutorial::QuestClear()
 {
 	if (HasAuthority())
@@ -57,5 +103,15 @@ void ALSCombineTutorial::QuestClear()
 			GameModeQuest->QuestComplete();
 		}
 	}
+}
+
+void ALSCombineTutorial::MulticastRPCPuzzleActivate_Implementation()
+{
+	PuzzleActivate();
+}
+
+void ALSCombineTutorial::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
 }
 

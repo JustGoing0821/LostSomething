@@ -8,7 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Interface/LSInteractionInterface.h"
-#include "LevelTest/Interface/LTTakeDamageInterface.h"
+#include "Interface/LSTakeDamageInterface.h"
 #include "NPC/TestNPC.h"
 
 
@@ -95,7 +95,7 @@ void ALTPlayerCharacter::Interaction()
 			DrawColor = FColor::Green;
 		}
 
-		ILTTakeDamageInterface* HitNPC = Cast<ILTTakeDamageInterface>(OutHitResult.GetActor());
+		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
 		if (HitNPC)
 		{
 			FDamageEvent DamageEvent;

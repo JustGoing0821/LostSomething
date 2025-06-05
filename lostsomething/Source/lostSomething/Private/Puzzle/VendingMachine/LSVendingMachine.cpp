@@ -7,10 +7,13 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Interaction/LSInteractionScriptData.h"
 #include "Game/LSGameMode.h"
 #include "Puzzle/VendingMachine/LSVendingMachineManager.h"
+#include "Quest/LSQuestManager.h"
 
 ALSVendingMachine::ALSVendingMachine()
 {
@@ -20,6 +23,7 @@ ALSVendingMachine::ALSVendingMachine()
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
 	CollisionBox->SetBoxExtent(FVector(50.0f, 40.0f, 100.0f));
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RootComponent = CollisionBox;
 
 
@@ -72,6 +76,15 @@ ALSVendingMachine::ALSVendingMachine()
 	VendingMachineColorSets.Add({ EVendingMachineColor::Blue, EVendingMachineColor::Green, EVendingMachineColor::Red });
 
 	MachineNumber = 0;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest0;
+}
+
+void ALSVendingMachine::BeginPlay()
+{
+	if (HasAuthority())
+	{
+		BindQuestChange();
+	}
 }
 
 void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -138,7 +151,42 @@ void ALSVendingMachine::SetVisibleIJae()
 void ALSVendingMachine::BindVendingMachine(ALSVendingMachineManager* InVendingMachineManager)
 {
 	InVendingMachineManager->OnVMPhaseChanged.AddUObject(this, &ALSVendingMachine::SetMachineColor);
-	InVendingMachineManager->OnVMPuzzleEnd.AddUObject(this, &ALSVendingMachine::MulticastRPCOnQuesetClear);
+}
+
+void ALSVendingMachine::BindQuestChange()
+{
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSVendingMachine::OnQuestChange);
+		}
+	}
+}
+
+void ALSVendingMachine::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+{
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
+void ALSVendingMachine::PuzzleActivate()
+{
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ChangeVisible();
+}
+
+void ALSVendingMachine::PuzzleDeactivate()
+{
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
 }
 
 void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet)
@@ -163,7 +211,7 @@ void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int3
 
 void ALSVendingMachine::PuzzleCheck()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (bisCorrectMachine)
 	{
@@ -175,14 +223,6 @@ void ALSVendingMachine::PuzzleCheck()
 	}
 }
 
-void ALSVendingMachine::OnQuesetClear()
-{
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	OnVMPuzzleCheck.Unbind();
-	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
-}
-
 void ALSVendingMachine::ServerRPCPuzzleCheck_Implementation()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
@@ -190,7 +230,12 @@ void ALSVendingMachine::ServerRPCPuzzleCheck_Implementation()
 	PuzzleCheck();
 }
 
-void ALSVendingMachine::MulticastRPCOnQuesetClear_Implementation()
+void ALSVendingMachine::MulticastRPCPuzzleActivate_Implementation()
 {
-	OnQuesetClear();
+	PuzzleActivate();
+}
+
+void ALSVendingMachine::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
 }
