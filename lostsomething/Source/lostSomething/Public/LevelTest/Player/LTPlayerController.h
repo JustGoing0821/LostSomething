@@ -26,8 +26,8 @@ protected:
 
 //CharacterChoice Section
 public:
-	virtual ELSCharacterChoice GetCharacterChoice() override;
-	virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override;
+	FORCEINLINE virtual ELSCharacterChoice GetCharacterChoice() override { return CharacterChoice; }
+	FORCEINLINE virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override { CharacterChoice = InCharacterChoice; }
 
 protected:
 	UPROPERTY(EditAnywhere, Replicated)

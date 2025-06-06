@@ -4,7 +4,7 @@
 #include "LevelTest/Player/LTScriptWidget.h"
 #include "Components/TextBlock.h"
 
-DEFINE_LOG_CATEGORY(LogLSWidget);
+DEFINE_LOG_CATEGORY(LogLSWidgetLT);
 
 ULTScriptWidget::ULTScriptWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {

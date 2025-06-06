@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/TextBlock.h"
 #include "LSScriptWidget.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogLSWidget, Log, All);
 
 /**
  * 
@@ -15,25 +16,19 @@ class LOSTSOMETHING_API ULSScriptWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	ULSScriptWidget(const FObjectInitializer& ObjectInitializer);
+	
 protected:
 	virtual void NativeConstruct() override;
 	
 public:
-    UFUNCTION(BlueprintCallable, Category = "Script")
-    void SetScriptText(const FString& NewText);
-
-    UFUNCTION(BlueprintCallable, Category = "Script")
-    void ShowScriptWidget();
-
-    UFUNCTION(BlueprintCallable, Category = "Script")
-    void HideScriptWidget();
+	void UpdateScriptWidget(const FString& InScript);
+	void ClearScriptWidget();
 
 protected:
-    UPROPERTY(meta = (BindWidget))
-    UTextBlock* ScriptText;
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> Script;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Script")
-    float AutoHideDelay = 5.0f;
-
-    FTimerHandle AutoHideTimerHandle;
+	FTimerHandle ScriptTimerHandle;
 };
