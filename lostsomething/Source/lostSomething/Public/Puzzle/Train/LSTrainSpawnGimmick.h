@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSTrainSpawnGimmick.generated.h"
 
 UENUM(BlueprintType)
@@ -92,7 +93,16 @@ public:
 protected:
 	void CheckPuzzleCorrect();
 	void SetPannelMonitor();
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
+
 	int32 CorrectPeopleCount;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
 
 
 //RPC Section
@@ -102,4 +112,10 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSetPannelMonitor();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
 };

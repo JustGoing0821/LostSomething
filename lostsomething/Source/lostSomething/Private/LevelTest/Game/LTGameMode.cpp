@@ -8,6 +8,7 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "UserInterface/LSQuestWidget.h"
+#include "Game/LSGameInstance.h"
 
 ALTGameMode::ALTGameMode()
 {
@@ -104,7 +105,7 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 
 		//Quest Widget Update Bind
 		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 	}
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
@@ -115,7 +116,7 @@ void ALTGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	LS_LOG(LogLS, Log, TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("Begin"));
 
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]

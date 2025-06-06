@@ -22,7 +22,7 @@ ULSGameSingleton::ULSGameSingleton()
 			}
 		);
 
-		QuestMaxLevel = QuestDataTable.Num();
+		QuestMaxLevelIndex = QuestDataTable.Num()-1;
 		//LS_SINLOG(LogLS, Log, TEXT("Quest Data Table Loaded."));
 	}
 }

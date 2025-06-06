@@ -124,7 +124,7 @@ void ALSInteractionActorBase::BeginPlay()
 					if (PlayerController && !PlayerController->IsLocalController())
 					{
 						SetOwner(PlayerController);
-						LS_LOG(LogLS, Log, TEXT("%s"), TEXT("OwnerSetted"));
+						//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("OwnerSetted"));
 						break;
 					}
 				}

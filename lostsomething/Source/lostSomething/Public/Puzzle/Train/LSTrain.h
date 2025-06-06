@@ -52,7 +52,10 @@ public:
 protected:
 	float CurrentAlpha = 0.0f;
 	float LerpSpeed = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector WaitLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector LeaveLocation;
 
 

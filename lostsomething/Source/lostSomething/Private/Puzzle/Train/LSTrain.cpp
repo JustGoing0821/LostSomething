@@ -155,7 +155,7 @@ void ALSTrain::Tick(float DeltaTime)
 				{
 					CurrentTrainState = ETrainState::Leaving;
 				}
-			), 1.f, false, 6.0f);
+			), 1.f, false, 2.0f);
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
@@ -181,6 +181,9 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 void ALSTrain::BeginPlay()
 {
 	Super::BeginPlay();
+
+	WaitLocation = FVector(-560.0f, 20.0f, 590.0f);
+	LeaveLocation = FVector(7000.0f, 20.0f, 590.0f);
 }
 
 void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

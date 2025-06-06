@@ -24,6 +24,7 @@ class LOSTSOMETHING_API ILSQuestInterface
 public:
 	virtual void QuestStart()=0;
 	virtual void QuestComplete()=0;
+	virtual class ALSQuestManager* GetQuestManager() = 0;
 };
 
 //#include "Interface/LSQuestInterface.h"
