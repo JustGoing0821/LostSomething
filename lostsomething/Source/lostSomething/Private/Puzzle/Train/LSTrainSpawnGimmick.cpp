@@ -216,7 +216,8 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 				{
 					LSTrain->SetCorrectGate(CorrectGate);
 					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
-					LSTrain->DelegateBind(this);
+					OnPuzzleCheck.AddUObject(LSTrain, &ALSTrain::PuzzleCheck);
+					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::StopTrain);
 				}
 			}
 		), 1.f, false, DelayTime);
@@ -237,6 +238,11 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 				{
 					OpponentStepTrigger->Destroy();
 				});
+
+			ALSTrainStep* TrainStep = Cast<ALSTrainStep>(OpponentStepTrigger);
+			TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
+			OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
+
 			//LS_LOG(LogLS, Log, TEXT("SpawnLocation = %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
 			//LS_LOG(LogLS, Log, TEXT("SpawnGimmickLocation = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
 			//LS_LOG(LogLS, Log, TEXT("StepRelativeLocation = %f, %f, %f"), StepTriggerLocations[CorrectGate - 1].X, StepTriggerLocations[CorrectGate - 1].Y, StepTriggerLocations[CorrectGate - 1].Z);
@@ -298,6 +304,20 @@ void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
 	{
 		MulticastRPCPuzzleDeactivate();
 	}
+}
+
+void ALSTrainSpawnGimmick::QuestClear()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->QuestComplete();
+		}
+	}
+	OnTrainPuzzleCleared.Broadcast();
 }
 
 void ALSTrainSpawnGimmick::OnRep_CorrectGate()

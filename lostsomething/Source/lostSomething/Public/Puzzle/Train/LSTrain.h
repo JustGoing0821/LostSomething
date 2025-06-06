@@ -90,17 +90,26 @@ protected:
 
 //Puzzle
 public:
-	void DelegateBind(class ALSTrainSpawnGimmick* InGimmickClass);
+	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
+	void StopTrain();
 
 protected:
-	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
 	void GetOffPassengers(int32 InCorrectGate);
 	void GetOnPassengers();
 
-//Network
-public:
-	//UFUNCTION()
-	//void OnRep_CurrentOpenGate();
+
+	//Timer
+	FTimerHandle TrainTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category="Puzzle")
+	float TimeBeforeGateOpen;
+
+	UPROPERTY(EditAnywhere, Category = "Puzzle", Replicated)
+	float TimeTrainWait;
+
+	UPROPERTY(EditAnywhere, Category = "Puzzle")
+	float TimeBeforeTrainLeave;
+
 
 //Replicate
 public:
