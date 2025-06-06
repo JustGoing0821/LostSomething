@@ -15,6 +15,8 @@ ALSPlayerController::ALSPlayerController()
 	{
 		LSHUDWidgetClass = LSHUDWidgetRef.Class;
 	}
+
+
 }
 
 void ALSPlayerController::BeginPlay()
@@ -64,6 +66,42 @@ void ALSPlayerController::ShowScript(const FString& ScriptText)
 	{
 		ScriptWidget->SetScriptText(ScriptText);
 		ScriptWidget->ShowScriptWidget();
+	}
+}
+
+
+
+void ALSPlayerController::SelectNextSlot()
+{
+	if (LSHUDWidget)
+	{
+		int32 CurrentSlot = LSHUDWidget->GetSelectedSlot();
+		int32 NextSlot = CurrentSlot + 1;
+
+		LSHUDWidget->ChangeSlot(NextSlot);
+
+		UE_LOG(LogTemp, Warning, TEXT("Selected next slot: %d -> %d"), CurrentSlot, NextSlot);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectNextSlot"));
+	}
+}
+
+void ALSPlayerController::SelectPreviousSlot()
+{
+	if (LSHUDWidget)
+	{
+		int32 CurrentSlot = LSHUDWidget->GetSelectedSlot();
+		int32 PreviousSlot = CurrentSlot - 1;
+
+		LSHUDWidget->ChangeSlot(PreviousSlot);
+
+		UE_LOG(LogTemp, Warning, TEXT("Selected previous slot: %d -> %d"), CurrentSlot, PreviousSlot);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectPreviousSlot"));
 	}
 }
 

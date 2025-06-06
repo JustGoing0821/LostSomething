@@ -13,6 +13,7 @@
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "lostSomething.h"
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -190,14 +191,39 @@ void ATestNPC::AttackHitCheck()
 
 void ATestNPC::ServerAttackHitCheck_Implementation()
 {
+	LS_LOG(LogLS, Log, TEXT("ServerAttackHitCheck"));
+
 	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
-	MultiAttackHitCheck();
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+
+	if (HitDetected)
+	{
+		LS_LOG(LogLS, Log, TEXT("HitDetected"));
+		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
+		FDamageEvent DamageEvent;
+		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+	}
+
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Yellow : FColor::Blue;
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
 
 }
 
 void ATestNPC::MultiAttackHitCheck_Implementation()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttackHitCheck()"));
+	LS_LOG(LogLS, Log, TEXT("Begin"));
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
