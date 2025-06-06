@@ -520,8 +520,8 @@ void ALSPlayer::Attack()
 		}
 	}
 
-	// 아이템이 없으면 기존 공격 로직
-	LS_LOG(LogLS, Warning, TEXT("No item in selected slot - performing attack"));
+	// 아이템이 없으면
+	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 
 //
 //	FHitResult OutHitResult;
@@ -628,6 +628,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::SpawnThrowableItem() called"));
 
+
 	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
 	if (ItemClass && DropItemLoc)
 	{
@@ -645,49 +646,33 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 			SpawnParams
 		);
 
-	//	//데미지 설정
-	//	if (ThrownItem)
-	//	{
-	//		// 던진 아이템으로 설정
-	//		ThrownItem->bIsThrown = true;
-
-	//		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
-	//		{
-	//			ItemMesh->SetSimulatePhysics(true);
-
-	//			// Hit 이벤트를 위해 충돌 설정
-	//			ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-
-	//			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-	//			float ThrowForce = 1000.0f;
-
-	//			ItemMesh->AddImpulse(ThrowDirection * ThrowForce, NAME_None, true);
-
-	//			LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
-	//		}
-	//	}
-	//}
-
-
-
 		if (ThrownItem)
 		{
-			
-			//AddImpulse
+			// 던져진 아이템으로 설정
+			ThrownItem->bIsThrown = true;
+
 			if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 			{
 				// 물리 시뮬레이션 활성화
 				ItemMesh->SetSimulatePhysics(true);
+				// 이 부분들 추가:
+				ItemMesh->SetNotifyRigidBodyCollision(true); 
+			
+				// Hit 이벤트를 위해 충돌 설정
+				ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
-				// 던지는 방향과 힘 계산
-				FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f); // 약간 위쪽으로
-				float ThrowForce = 1000.0f; // 던지는 힘
+				// 던지는 방향과 힘 
+				FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
+				const float THROW_FORCE = 1000.0f;
 
 				// 임펄스 적용
-				ItemMesh->AddImpulse(ThrowDirection * ThrowForce, NAME_None, true);
+				ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
 
-				LS_LOG(LogLS, Warning, TEXT("Item thrown with physics: %s"), *ThrownItem->GetName());
+				// Hit 이벤트 바인딩 
+				ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
+
+				LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
 			}
 		}
 		else

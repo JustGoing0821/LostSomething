@@ -18,6 +18,19 @@ public:
 	// Sets default values for this actor's properties
 	AMasterItem();
 
+	// 던져진 아이템인지 확인하는 플래그
+	UPROPERTY(BlueprintReadWrite, Category = "Throwable")
+	bool bIsThrown = false;
+
+	// 던진 아이템의 데미지
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throwable")
+	float ThrowDamage = 30.0f;
+
+
+	// 던진 아이템의 충돌 처리
+	UFUNCTION()
+	void OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,UPrimitiveComponent* OtherComp, FVector NormalImpulse,const FHitResult& Hit);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -47,17 +60,7 @@ protected:
 	FItemDetails ItemInfo;
 
 
-	//// 던진 아이템의 충돌 처리
-	//UFUNCTION()
-	//void OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	//// 던져진 아이템인지 확인하는 플래그
-	//UPROPERTY(BlueprintReadWrite, Category = "Throwable")
-	//bool bIsThrown = false;
-
-	//// 던진 아이템의 데미지
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throwable")
-	//float ThrowDamage = 20.0f;
+	
 
 
 public:	

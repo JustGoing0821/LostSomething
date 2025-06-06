@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Character/Players/LSPlayer.h"
+#include "Engine/DamageEvents.h"
 #include "Character/Players/LSPlayerController.h"
 
 // Sets default values
@@ -112,32 +113,49 @@ void AMasterItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		}
 	}
 }
-//
-//void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-//{
-//	if (!bIsThrown) return; // 던진 아이템이 아니면 무시
-//
-//	UE_LOG(LogTemp, Warning, TEXT("Thrown item hit: %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
-//
-//	// TestNPC에게 데미지 주기
-//	if (ATestNPC* HitNPC = Cast<ATestNPC>(OtherActor))
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("Hit NPC: %s, dealing damage: %.1f"), *HitNPC->GetName(), ThrowDamage);
-//
-//		// 데미지 이벤트 생성
-//		FDamageEvent DamageEvent;
-//
-//		// NPC에게 데미지 적용
-//		HitNPC->TakeDamage(ThrowDamage, DamageEvent, nullptr, this);
-//
-//		bIsThrown = false;
-//		Destroy();
-//	}
-//
-//	// 플레이어나 다른 액터에게 맞은 경우
-//	else if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("Item hit player: %s"), *HitPlayer->GetName());
-//		
-//	}
-//}
+
+//onhit함수 item
+void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+	const FHitResult& Hit)
+{
+	if (!bIsThrown) return; // 던져진 아이템이 아니면 무시
+
+	UE_LOG(LogTemp, Warning, TEXT("Thrown item hit: %s"),
+		OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
+
+
+		  // 바닥이나 벽에 맞으면 Hit 이벤트 해제
+		if (!Cast<ILSTakeDamageInterface>(OtherActor) && !Cast<ALSPlayer>(OtherActor))
+		{
+			// Hit 이벤트 바인딩 해제
+			if (ItemMesh)
+			{
+				ItemMesh->OnComponentHit.RemoveAll(this);
+			}
+			bIsThrown = false; // 던져진 상태 해제
+			return;
+		}
+	// NPC에게 데미지
+	if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OtherActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit NPC: %s, dealing damage: %.1f"),
+			*OtherActor->GetName(), ThrowDamage);
+
+		// 데미지 이벤트 생성
+		FDamageEvent DamageEvent;
+
+		// NPC에게 데미지 적용
+		HitNPC->TakeDamage(ThrowDamage, DamageEvent, nullptr, this);
+
+		// 던져진 상태 해제하고 아이템 파괴
+		bIsThrown = false;
+		Destroy();
+	}
+	// 플레이어나 다른 액터에게 맞은 경우
+	else if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item hit player: %s"), *HitPlayer->GetName());
+		// 플레이어에게 맞았을 때
+	}
+}
