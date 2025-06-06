@@ -1,7 +1,18 @@
 ﻿Name,QuestName,Description,CurrentQuestEnum
 CLVL1,기본이동 튜토리얼,빨간색 빛이 있는 위치로 모두 이동하세요,Quest1
 CLVL2,합체 튜토리얼,시제가 F키를눌러 합체 후 파란 빛이 있는 위치로 이동하세요,Quest2
-CLVL3,상호작용 튜토리얼,시제가 E키를 눌러 파란색 자판기와 상호작용 하세요,Quest3
+CLVL3,상호작용 튜토리얼,시제가 F키를 눌러 파란색 자판기와 상호작용 하세요,Quest3
 CLVL4,공격 튜토리얼,왼쪽 마우스 버튼으로 공격하세요,Quest4
 CLVL5,자판기 퀘스트,패널과 상호작용해 패널에 맞는 색의 자판기와 상호작용하세요,Quest5
 CLVL6,지하철 퀘스트,사람이 붐비지 않는 문으로 지하철에 탑승하세요,Quest6
+CLVL7,지하철 탑승,지하철에 탑승하세요,Quest7
+CLVL8,,,
+CLVL9,,,
+CLVL10,,,
+CLVL11,,,
+CLVL12,,,
+CLVL13,,,
+CLVL14,,,
+CLVL15,,,
+CLVL16,,,
+CLVL17,,,
