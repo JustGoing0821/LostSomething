@@ -24,3 +24,5 @@ class LOSTSOMETHING_API ILSScriptWidgetInterface
 public:
 	virtual void UpdateScriptWidget(const FString& ScriptText)=0;
 };
+
+//#include "Interface/LSScriptWidgetInterface.h"

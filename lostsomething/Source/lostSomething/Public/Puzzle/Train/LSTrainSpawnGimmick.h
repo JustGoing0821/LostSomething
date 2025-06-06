@@ -16,6 +16,7 @@ enum class ETrainSpawnState : uint8
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTrainPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
 DECLARE_DELEGATE(FOnTrainDespawnedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnTrainPuzzleClearedDelegate);
 
 UCLASS()
 class LOSTSOMETHING_API ALSTrainSpawnGimmick : public AActor
@@ -86,6 +87,7 @@ public:
 	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
 
 	FOnTrainPuzzleCheckDelegate OnPuzzleCheck;
+	FOnTrainPuzzleClearedDelegate OnTrainPuzzleCleared;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CorrectGate)
 	int32 CorrectGate;
@@ -99,10 +101,16 @@ protected:
 	void PuzzleActivate();
 	void PuzzleDeactivate();
 
+	UPROPERTY(EditAnywhere, Category="Puzzle")
 	int32 CorrectPeopleCount;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
+
+
+//Queset Section
+protected:
+	void QuestClear();
 
 
 //RPC Section
