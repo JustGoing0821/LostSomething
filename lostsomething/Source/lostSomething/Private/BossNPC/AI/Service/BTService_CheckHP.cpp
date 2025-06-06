@@ -19,7 +19,7 @@ void UBTService_CheckHP::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Node
     if (!BlackboardComp) return;
 
     float CurrentHP = BlackboardComp->GetValueAsFloat(FName("CurrentHP"));
-    UE_LOG(LogTemp, Error, TEXT("UBTService_CheckHP : %f"), CurrentHP);
+    //UE_LOG(LogTemp, Error, TEXT("UBTService_CheckHP : %f"), CurrentHP);
 
     FName NewState;
     if (CurrentHP <= 30.0f)
