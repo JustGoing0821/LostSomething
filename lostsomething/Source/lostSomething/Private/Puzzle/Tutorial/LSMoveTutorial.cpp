@@ -7,10 +7,15 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/Controller.h"
 #include "Net/UnrealNetwork.h"
 #include "Interface/LSQuestInterface.h"
 #include "Quest/LSQuestManager.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Interface/LSScriptWidgetInterface.h"
+#include "Interface/LSCharacterChoiceInterface.h"
+#include "Character/Players/LSCharacterChoice.h"
 
 // Sets default values
 ALSMoveTutorial::ALSMoveTutorial()
@@ -43,10 +48,33 @@ void ALSMoveTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Overlap
 
 	if (HasAuthority())
 	{
-		CorrectPeopleCount++;
-		if (CorrectPeopleCount == 2)
+		ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
+		if (OverlapCharacter)
 		{
-			QuestClear();
+			ILSCharacterChoiceInterface* CharacterChoice = Cast<ILSCharacterChoiceInterface>(OverlapCharacter->GetController());
+			if (CharacterChoice)
+			{
+				CurrentTriggerPlayers++;
+				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				if (CurrentTriggerPlayers == 2)
+				{
+					QuestClear();
+					return;
+				}
+
+				ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(OverlapCharacter->GetController());
+				FString Script = "";
+				if (CharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+				{
+					Script = TEXT("Wait For IJae.");
+				}
+				else
+				{
+					Script = TEXT("Wait For SiJae.");
+				}
+				ScriptController->UpdateScriptWidget(Script);
+
+			}
 		}
 	}
 }
@@ -55,7 +83,16 @@ void ALSMoveTutorial::OnTutorialTriggerEndOverlap(UPrimitiveComponent* Overlappe
 {
 	if (HasAuthority())
 	{
-		CorrectPeopleCount--;
+		ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
+		if (OverlapCharacter)
+		{
+			ILSScriptWidgetInterface* LSCharacter = Cast<ILSScriptWidgetInterface>(OverlapCharacter->GetController());
+			if (LSCharacter)
+			{
+				CurrentTriggerPlayers--;
+				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+			}
+		}
 	}
 }
 
