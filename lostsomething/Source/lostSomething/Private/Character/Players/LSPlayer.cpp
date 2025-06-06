@@ -214,23 +214,6 @@ void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
 	// Pick Item In Slot 함수 호출
 	PickItemInSlot(PickedItemInfo);
 
-	//// ItemInfoArray에서 빈 슬롯 찾기 (IsEmpty = true인 슬롯)
-	//for (int32 i = 0; i < ItemInfoArray.Num(); ++i)
-	//{
-	//	if (ItemInfoArray[i].IsEmpty)
-	//	{
-	//		// 빈 슬롯에 아이템 정보 저장
-	//		ItemInfoArray[i] = PickedItemInfo;
-	//		ItemInfoArray[i].IsEmpty = false;
-
-	//		UE_LOG(LogTemp, Warning, TEXT("Item picked up and stored in slot %d"), i);
-	//		return; // 첫 번째 빈 슬롯에 저장 후 함수 종료
-	//	}
-	//}
-
-	//// 빈 슬롯이 없는 경우
-	//UE_LOG(LogTemp, Warning, TEXT("Inventory is full! Cannot pick up item."));
-
 }
 
 //슬롯에 아이템 넣기
@@ -398,6 +381,37 @@ void ALSPlayer::InitializeInventory()
 
 }
 
+void ALSPlayer::ThrowItem()
+{
+	
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+				if (!CurrentSlotItem.IsEmpty)
+				{
+					// 포물선으로 아이템 스폰 (나중에 구현)
+					SpawnThrowableItem(CurrentSlotItem);
+
+					// 슬롯 비우기 (DropItemFromSlot과 동일)
+					FItemDetails EmptySlot;
+					EmptySlot.IsEmpty = true;
+					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
+
+					// UI 아이콘 제거
+					HUD->SetIcon(CurrentSelectedSlot, nullptr);
+
+					UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
+				}
+			}
+		}
+	}
+}
+
 // Called to bind functionality to input
 void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -485,44 +499,67 @@ void ALSPlayer::Attack()
 {
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() called"));
 
-	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-	const float AttackRange = 80.0f;
-	const float AttackRadius = 50.0f;
-	const float AttackDamage = 10.0f;
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * AttackRange;
-	FColor DrawColor;
-
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
-	if (HitDetected)
+	// 현재 선택된 슬롯에 아이템이 있는지 확인
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-
-		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		if (HitNPC)
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
+			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
+				{
+					// 아이템이 있으면 던지기
+					LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
+					ThrowItem();
+					return;
+				}
+			}
 		}
 	}
-	else
-	{
-		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
-		
-		DrawColor = FColor::Red;
-	}
 
-#if ENABLE_DRAW_DEBUG
+	// 아이템이 없으면 기존 공격 로직
+	LS_LOG(LogLS, Warning, TEXT("No item in selected slot - performing attack"));
 
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = AttackRange * 0.5f;
-
-
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-#endif
+//
+//	FHitResult OutHitResult;
+//	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+//	const float AttackRange = 80.0f;
+//	const float AttackRadius = 50.0f;
+//	const float AttackDamage = 10.0f;
+//	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+//	const FVector End = Start + GetActorForwardVector() * AttackRange;
+//	FColor DrawColor;
+//
+//	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+//	if (HitDetected)
+//	{
+//		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+//
+//		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+//		if (HitNPC)
+//		{
+//			FDamageEvent DamageEvent;
+//			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+//			DrawColor = FColor::Blue;
+//		}
+//	}
+//	else
+//	{
+//		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
+//		
+//		DrawColor = FColor::Red;
+//	}
+//
+//#if ENABLE_DRAW_DEBUG
+//
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = AttackRange * 0.5f;
+//
+//
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//
+//#endif
 }
 
 
@@ -583,6 +620,83 @@ void ALSPlayer::PickUp()
 	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
 	float CapsuleHalfHeight = PickupRange * 0.5f;
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+}
+
+void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
+{
+	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::SpawnThrowableItem() called"));
+
+	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
+	if (ItemClass && DropItemLoc)
+	{
+		// 던지기 시작 위치 (플레이어 앞쪽)
+		FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
+		FRotator ThrowRotation = GetActorRotation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Instigator = this;
+
+		AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
+			ItemClass,
+			ThrowStartLocation,
+			ThrowRotation,
+			SpawnParams
+		);
+
+	//	//데미지 설정
+	//	if (ThrownItem)
+	//	{
+	//		// 던진 아이템으로 설정
+	//		ThrownItem->bIsThrown = true;
+
+	//		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
+	//		{
+	//			ItemMesh->SetSimulatePhysics(true);
+
+	//			// Hit 이벤트를 위해 충돌 설정
+	//			ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+	//			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
+	//			float ThrowForce = 1000.0f;
+
+	//			ItemMesh->AddImpulse(ThrowDirection * ThrowForce, NAME_None, true);
+
+	//			LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
+	//		}
+	//	}
+	//}
+
+
+
+		if (ThrownItem)
+		{
+			
+			//AddImpulse
+			if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
+			{
+				// 물리 시뮬레이션 활성화
+				ItemMesh->SetSimulatePhysics(true);
+
+				// 던지는 방향과 힘 계산
+				FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f); // 약간 위쪽으로
+				float ThrowForce = 1000.0f; // 던지는 힘
+
+				// 임펄스 적용
+				ItemMesh->AddImpulse(ThrowDirection * ThrowForce, NAME_None, true);
+
+				LS_LOG(LogLS, Warning, TEXT("Item thrown with physics: %s"), *ThrownItem->GetName());
+			}
+		}
+		else
+		{
+			LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
+		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
+	}
 }
 
 void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)

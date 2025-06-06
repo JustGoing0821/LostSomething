@@ -47,6 +47,19 @@ protected:
 	FItemDetails ItemInfo;
 
 
+	//// 던진 아이템의 충돌 처리
+	//UFUNCTION()
+	//void OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	//// 던져진 아이템인지 확인하는 플래그
+	//UPROPERTY(BlueprintReadWrite, Category = "Throwable")
+	//bool bIsThrown = false;
+
+	//// 던진 아이템의 데미지
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throwable")
+	//float ThrowDamage = 20.0f;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

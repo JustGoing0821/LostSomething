@@ -76,6 +76,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void InitializeInventory();
 
+	// 아이템 던지기
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ThrowItem();
+
 protected:
 	/*************************************Function**************************************/
 
@@ -89,6 +93,9 @@ protected:
 	void Interaction();
 	void Attack();
 	void PickUp();
+
+	//던지기 아이템 스폰
+	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
 
 	void OnMouseWheelUp(const FInputActionValue& Value);
 	void OnMouseWheelDown(const FInputActionValue& Value);

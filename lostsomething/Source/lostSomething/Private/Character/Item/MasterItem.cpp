@@ -48,6 +48,13 @@ void AMasterItem::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("MasterItem overlap events bound: %s"), *GetName());
 	}
 
+	//// 던진 아이템의 Hit 이벤트 바인딩
+	//if (ItemMesh && bIsThrown)
+	//{
+	//	ItemMesh->OnComponentHit.AddDynamic(this, &AMasterItem::OnItemHit);
+	//	UE_LOG(LogTemp, Warning, TEXT("Thrown item hit events bound: %s"), *GetName());
+	//}
+
 }
 
 
@@ -105,3 +112,32 @@ void AMasterItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		}
 	}
 }
+//
+//void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+//{
+//	if (!bIsThrown) return; // 던진 아이템이 아니면 무시
+//
+//	UE_LOG(LogTemp, Warning, TEXT("Thrown item hit: %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
+//
+//	// TestNPC에게 데미지 주기
+//	if (ATestNPC* HitNPC = Cast<ATestNPC>(OtherActor))
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Hit NPC: %s, dealing damage: %.1f"), *HitNPC->GetName(), ThrowDamage);
+//
+//		// 데미지 이벤트 생성
+//		FDamageEvent DamageEvent;
+//
+//		// NPC에게 데미지 적용
+//		HitNPC->TakeDamage(ThrowDamage, DamageEvent, nullptr, this);
+//
+//		bIsThrown = false;
+//		Destroy();
+//	}
+//
+//	// 플레이어나 다른 액터에게 맞은 경우
+//	else if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Item hit player: %s"), *HitPlayer->GetName());
+//		
+//	}
+//}

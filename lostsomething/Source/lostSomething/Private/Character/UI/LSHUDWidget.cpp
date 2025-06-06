@@ -166,7 +166,7 @@ void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 			}
 			else
 			{
-				// 기본 아이콘도 없으면 투명하게
+				
 				TargetSlotIcon->SetBrushFromTexture(nullptr, true);
 				TargetSlotIcon->SetVisibility(ESlateVisibility::Hidden);
 				UE_LOG(LogTemp, Warning, TEXT("Slot %d hidden (no default icon)"), CurrentSlot);
