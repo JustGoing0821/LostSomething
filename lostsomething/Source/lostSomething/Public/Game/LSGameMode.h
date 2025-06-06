@@ -4,13 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Interface/LSQuestInterface.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALSGameMode : public AGameModeBase
+class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface
 {
 	GENERATED_BODY()
 	
@@ -20,13 +22,19 @@ public:
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 protected:
+	virtual void BeginPlay() override;
+
+protected:
 	TSubclassOf<APawn> IJaePawnClass;
 	TSubclassOf<APawn> SiJaePawnClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (AllowPrivateAccess = "true"))
+	bool bIsSiJaeServer;
+
 // Quest Section
 public:
-	void QuestStart();
-	void QuestComplete();
+	void QuestStart() override;
+	void QuestComplete() override;
 
 	FORCEINLINE class ALSQuestManager* GetQuestManager() { return QuestManager; }
 

@@ -1,0 +1,241 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Character.h"
+#include "InputActionValue.h"
+#include "Camera/CameraComponent.h"                    
+#include "GameFramework/SpringArmComponent.h"        
+#include "EnhancedInputComponent.h"                   
+#include "EnhancedInputSubsystems.h"                  
+#include "InputMappingContext.h"
+#include "Interface/LSTakeDamageInterface.h"
+#include "Character/Components/LSHpComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "InputAction.h"
+#include "Character/Item/LSItemStructures.h"
+#include "Interface/LSWheelchairInterface.h"
+#include "Interface/LSCombineTutorialInterface.h"
+
+#include "LSPlayer.generated.h"
+class UInputAction;
+class UInputMappingContext;
+class UInventoryWidget;
+
+/*************************************Function**************************************/
+/*************************************Property**************************************/
+
+
+UCLASS()
+class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSWheelchairInterface, public ILSCombineTutorialInterface
+{
+	GENERATED_BODY()
+
+public:
+	/*************************************Function**************************************/
+
+
+	ALSPlayer();
+
+	virtual void PostInitializeComponents() override;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	//Take Damage Section
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual bool isCombining() override;
+
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	//수정
+	UFUNCTION()
+	void OnHpChanged(float NewHp);
+
+	// 아이템 픽업 함수_ Pick Item 
+	// 인풋 변수가 item details. 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void PickItem(const FItemDetails& PickedItemInfo);
+
+	//아이템 픽업후 슬롯에 넣기
+	//입력 파라미터 itemdetials 구조체
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void PickItemInSlot(const FItemDetails& PickedItem);
+
+	// Drop Item 위치를 나타내는 Arrow 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UArrowComponent> DropItemLoc;
+
+	// 슬롯에서 아이템 드롭
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void DropItemFromSlot();
+
+	// 인벤토리 초기화 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void InitializeInventory();
+
+	// 아이템 던지기
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ThrowItem();
+
+protected:
+	/*************************************Function**************************************/
+
+	// APawn interface
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void BeginPlay() override;
+
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Interaction();
+	void Attack();
+	void PickUp();
+
+	//던지기 아이템 스폰
+	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
+
+	void OnMouseWheelUp(const FInputActionValue& Value);
+	void OnMouseWheelDown(const FInputActionValue& Value);
+
+	/*************************************Property**************************************/
+
+
+	//camera
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FollowCamera;
+
+	//input
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> InteractAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> AttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> PickUpAction;
+	//줍기
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	ULSHpComponent* HpComponent;
+
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHp)
+	float CurrentHp;
+
+	UFUNCTION()
+	void OnRep_CurrentHp();
+
+	// 마우스 휠 액션들 추가
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> MouseWheelUpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> MouseWheelDownAction;
+
+	// 인벤토리 아이템 배열
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FItemDetails> ItemInfoArray;
+
+	/*UPROPERTY()
+	FHitResult PickupHitResult;
+	FVector ViewVector;
+	FRotator ViewRotation;*/
+
+//
+//	//투사체 클래스 참조?
+//	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+//	TSubclassOf<class ALSProjectile> ProjectileClass;
+//
+//	//item
+//	UPROPERTY(EditDefaultsOnly)
+//	TSubclassOf<UUserWidget> InventoryWidgetClass;
+//
+//	UPROPERTY(EditDefaultsOnly)
+//	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
+//
+//	//이렇게 쓰지 말기
+//	/*ULSInventoryWidget* InventoryWidget;
+//	ULSInventoryEntry* InventoryEntryWidget;
+//*/
+
+
+
+//// Stat
+//protected:
+//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+//	TObjectPtr<class ULSCharacterStatComponent> Stat;
+
+// UI Widget
+//protected:
+//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+//	TObjectPtr<class ULSWidgetComponent> HpBar;
+//
+//	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
+//
+
+
+
+
+
+// Wheelchair
+protected:
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	bool bIsBeingPushed;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<ACharacter> PusherCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<USkeletalMeshComponent> WheelchairMesh;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wheelchair")
+	bool bCanPushWheelchair;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRequestWheelchairInteraction(AActor* TargetActor);
+
+	virtual void StartPushingWheelchair_Implementation(ACharacter* Pusher) override;
+	virtual void StopPushingWheelchair_Implementation(ACharacter* Pusher) override;
+	virtual bool IsBeingPushed_Implementation() const override;
+	virtual bool CanPushWheelchair() const;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStartPushingWheelchair(ACharacter* Pusher);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopPushingWheelchair();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastWheelchairStateChanged(bool bPushing, ACharacter* Pusher);
+
+	void HandleWheelchairMovement();
+
+public:
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+};

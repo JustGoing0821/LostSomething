@@ -7,7 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/OverlapResult.h"
-#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
+//#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 UBTService_Detect::UBTService_Detect()
 {
@@ -29,8 +29,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	float DetectRadius = 400.0f;
 
 	// 블랙보드에서 현재 저장된 타겟 가져오기
-	UObject* CurrentTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(ATestNPCAIController::Key_Target);
-	ATP_ThirdPersonCharacter* ExistingTarget = Cast<ATP_ThirdPersonCharacter>(CurrentTarget);
+	//UObject* CurrentTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(ATestNPCAIController::Key_Target);
+	//ATP_ThirdPersonCharacter* ExistingTarget = Cast<ATP_ThirdPersonCharacter>(CurrentTarget);
 
 	// 감지된 오브젝트 목록
 	TArray<FOverlapResult> OverlapResults;
@@ -39,7 +39,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		OverlapResults,
 		Center,
 		FQuat::Identity,
-		ECollisionChannel::ECC_GameTraceChannel2,
+		ECollisionChannel::ECC_GameTraceChannel1,
 		FCollisionShape::MakeSphere(DetectRadius),
 		CollisionQueryParam
 	);
@@ -51,14 +51,21 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			APawn* Pawn = Cast<APawn>(OverlapResult.GetActor());
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
+				ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
+				TM->SetShouldChase(true);
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
+				OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), true);
 				
 				return;
 			}
 		}
 	}
 
+	ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
+	TM->SetShouldChase(false);
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
+	OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);
+	
 	//DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
 
 }

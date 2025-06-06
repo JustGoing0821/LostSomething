@@ -26,6 +26,16 @@ void UTestNPCAnimIns::NativeUpdateAnimation(float DeltaSeconds)
                 NPCCharacter->CheckShouldStopMontage(); // 상태도 정리
             }
         }
+        if (NPCCharacter->GetShouldChase())
+        {
+            bShouldChase = true;
+            NPCCharacter->SetMaxWalkSpeed(350.0f);
+        }
+        else
+        {
+            bShouldChase = false;
+            NPCCharacter->SetMaxWalkSpeed(150.0f);
+        }
 	}
 }
 
