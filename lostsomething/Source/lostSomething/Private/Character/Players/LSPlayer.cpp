@@ -24,21 +24,6 @@
 // Sets default values
 ALSPlayer::ALSPlayer()
 {
-	//// Stat Component 
-	//Stat = CreateDefaultSubobject<ULSCharacterStatComponent>(TEXT("Stat"));
-
-	//// Widget Component 
-	//HpBar = CreateDefaultSubobject<ULSWidgetComponent>(TEXT("Widget"));
-	//HpBar->SetupAttachment(GetMesh());
-	//HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
-	//static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/Players/UI/WBP_HpBar.WBP_HpBar_C"));
-	//if (HpBarWidgetRef.Class)
-	//{
-	//	HpBar->SetWidgetClass(HpBarWidgetRef.Class);
-	//	HpBar->SetWidgetSpace(EWidgetSpace::Screen);
-	//	HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
-	//	HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//}
 
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -76,6 +61,7 @@ ALSPlayer::ALSPlayer()
 	
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
+	CurrentHp = 100.0f;
 
 	//item 방향 arrow
 	DropItemLoc = CreateDefaultSubobject<UArrowComponent>(TEXT("DropItemLoc"));
@@ -134,6 +120,11 @@ void ALSPlayer::Tick(float DeltaTime)
 	}
 }
 
+void ALSPlayer::OnRep_CurrentHp()
+{
+	LS_LOG(LogLS, Log, TEXT("CurrentHp : %f"), CurrentHp);
+	HpComponent->SetHp(CurrentHp);
+}
 
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -144,7 +135,13 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	if (HpComponent)
 	{
 		const float NewHp = HpComponent->GetHp() - DamageAmount;
-		HpComponent->SetHp(NewHp);
+		//HpComponent->SetHp(NewHp);
+		CurrentHp -= DamageAmount;
+		if (HasAuthority())
+		{
+			HpComponent->SetHp(CurrentHp);
+		}
+
 
 		//UI 업데이트 시도
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage: Attempting direct HUD update"));

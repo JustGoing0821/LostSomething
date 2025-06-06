@@ -44,6 +44,8 @@ public:
 
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -138,6 +140,12 @@ protected:
 	ULSHpComponent* HpComponent;
 
 
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHp)
+	float CurrentHp;
+
+	UFUNCTION()
+	void OnRep_CurrentHp();
+
 	// 마우스 휠 액션들 추가
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MouseWheelUpAction;
@@ -227,5 +235,5 @@ protected:
 	void HandleWheelchairMovement();
 
 public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
