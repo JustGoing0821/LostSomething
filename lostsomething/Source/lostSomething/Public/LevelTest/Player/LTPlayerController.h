@@ -7,13 +7,14 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Interface/LSScriptWidgetInterface.h"
 #include "LTPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface
+class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface
 {
 	GENERATED_BODY()
 	
@@ -36,6 +37,19 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
+//Script Test
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class ULTScriptWidget> ScriptWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class ULTScriptWidget> ScriptWidget;
+
+public:
+	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
+
+
+
 // Quest Widget
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
@@ -51,4 +65,7 @@ public:
 public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCUpdateQuestWidget(FLSQuestData InQuestData);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCUpdateScriptWidget(const FString& ScriptText);
 };

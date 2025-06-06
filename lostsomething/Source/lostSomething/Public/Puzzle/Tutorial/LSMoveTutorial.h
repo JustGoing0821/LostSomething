@@ -23,7 +23,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TutorialTrigger;
 
-	int32 CorrectPeopleCount;
+	int32 CurrentTriggerPlayers;
 
 	UFUNCTION()
 	void OnTutorialTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
