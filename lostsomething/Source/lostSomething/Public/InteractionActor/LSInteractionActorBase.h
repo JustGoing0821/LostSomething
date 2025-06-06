@@ -50,12 +50,7 @@ protected:
 
 //Visible Section
 protected:
-	void ChangeVisible();
 	virtual void SetVisibleSiJae() {};
 	virtual void SetVisibleIJae() {};
 
-//RPC Section
-public:
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCChangeVisible();
 };

@@ -4,51 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Character/Players/LSCharacterChoice.h"
-#include "Interface/LSCharacterChoiceInterface.h"
-#include "Interaction/LSInteractionEnum.h"
 #include "LTPlayerController.generated.h"
+
+UENUM(BlueprintType)
+enum class ECharacterChoice : uint8
+{
+	None = 0,
+	SiJae,
+	IJae
+};
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface
+class LOSTSOMETHING_API ALTPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
 public:
 	ALTPlayerController();
 
-protected:
-	virtual void BeginPlay() override;
-
-//CharacterChoice Section
-public:
-	virtual ELSCharacterChoice GetCharacterChoice() override;
-	virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override;
-
-protected:
 	UPROPERTY(EditAnywhere, Replicated)
-	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
+	ECharacterChoice CharacterChoice = ECharacterChoice::None;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-
-// Quest Widget
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
-	TSubclassOf<class ULSQuestWidget> QuestWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
-	TObjectPtr<class ULSQuestWidget> QuestWidget;
-
-public:
-	void UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
-
-//RPC
-public:
-	UFUNCTION(Client, Unreliable)
-	void ClientRPCUpdateQuestWidget(FLSQuestData InQuestData);
 };

@@ -5,14 +5,13 @@
 #include "CoreMinimal.h"
 #include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
-#include "Interface/LSCombineTutorialInterface.h"
 #include "LTPlayerCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerCharacter : public ATP_ThirdPersonCharacter, public ILTTakeDamageInterface, public ILSCombineTutorialInterface
+class LOSTSOMETHING_API ALTPlayerCharacter : public ATP_ThirdPersonCharacter, public ILTTakeDamageInterface
 {
 	GENERATED_BODY()
 	
@@ -30,8 +29,4 @@ protected:
 
 //Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
-//WheelChairTutorial
-public:
-	virtual bool isCombining() override;
 };

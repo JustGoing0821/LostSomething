@@ -34,7 +34,7 @@ public:
 	const TArray<FLSQuestData>& GetQuestData();
 
 	UPROPERTY()
-	int32 QuestMaxLevelIndex;
+	int32 QuestMaxLevel;
 
 private:
 	TArray<FLSQuestData> QuestDataTable;

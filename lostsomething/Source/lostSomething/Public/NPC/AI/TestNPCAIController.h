@@ -25,6 +25,7 @@ public:
 	static const FName Key_PatrolPos;
 	static const FName Key_Target;
 	static const FName Key_bShouldChase;
+	static const FName Key_bIsAttacking;
 
 private:
 	UPROPERTY()

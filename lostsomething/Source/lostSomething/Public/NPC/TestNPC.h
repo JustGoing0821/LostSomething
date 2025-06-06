@@ -7,12 +7,11 @@
 #include "Interface/TestNPCInterface.h"
 #include "Interface/TestNPCAttackInterface.h"
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
-#include "Interface/LSTakeDamageInterface.h"
 #include "TestNPC.generated.h"
 
 
 UCLASS()
-class LOSTSOMETHING_API ATestNPC : public ACharacter, public ITestNPCInterface, public ITestNPCAttackInterface, public ILTTakeDamageInterface, public ILSTakeDamageInterface
+class LOSTSOMETHING_API ATestNPC : public ACharacter, public ITestNPCInterface, public ITestNPCAttackInterface, public ILTTakeDamageInterface
 {
     GENERATED_BODY()
 
@@ -83,26 +82,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxComboDistance = 300.0f;
-
-    UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
-    bool bShouldChase = false;
-
-    // Getter
-    UFUNCTION(BlueprintCallable, Category = "AI")
-    FORCEINLINE bool GetShouldChase()
-    {
-        return bShouldChase;
-    }
-
-    // Setter (¿Œ∂Û¿Œ)
-    UFUNCTION(BlueprintCallable, Category = "AI")
-    void SetShouldChase(bool bNewShouldChase)
-    {
-        bShouldChase = bNewShouldChase;
-    }
-
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void SetMaxWalkSpeed(float NewSpeed);
 
     UPROPERTY()
     AActor* TargetActor;

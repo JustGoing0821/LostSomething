@@ -97,15 +97,5 @@ public:
 	// 글자 바꿔주는 함수
 	FString StringBase64Encode(const FString& str);
 	FString StringBase64Decode(const FString& str);
-
-
-	//CurrentQuestSection
-public:
-	FORCEINLINE const int32 GetCurrentQuestIndex() { return CurrentQuestIndex; }
-	FORCEINLINE void SetCurrentQuestIndex(const int32 InQuestIndex) { CurrentQuestIndex = InQuestIndex; }
-
-protected:
-	UPROPERTY(Transient, VisibleInstanceOnly, Category = Quest)
-	int32 CurrentQuestIndex = 0;
 	
 };

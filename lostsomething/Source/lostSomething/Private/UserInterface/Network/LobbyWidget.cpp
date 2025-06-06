@@ -137,7 +137,7 @@ void ULobbyWidget::AddRoomInfoWidget(const FRoomInfo& roomInfo)
 void ULobbyWidget::SetFindActive(bool bActive)
 {
 	// bActive가 true라면
-	if (!bActive)
+	if (bActive)
 	{
 		// btn_doFindRoomList 버튼을 비활성화 하고싶다.
 		btn_DoFindRoomList->SetIsEnabled(false);

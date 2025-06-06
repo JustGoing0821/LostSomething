@@ -6,8 +6,7 @@
 UENUM(BlueprintType)
 enum class ELSInteractionEnum : uint8
 {
-	Quest0 = 0,
-	Quest1,
+	Quest1 = 0,
 	Quest2,
 	Quest3,
 	Quest4,

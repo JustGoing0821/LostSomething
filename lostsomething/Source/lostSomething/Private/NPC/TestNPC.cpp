@@ -8,17 +8,15 @@
 #include "Components/CapsuleComponent.h"
 #include <Net/UnrealNetwork.h>
 #include "LevelTest/Interface/LTTakeDamageInterface.h"
-#include "Interface/LSTakeDamageInterface.h"
 #include <NPC/AI/TestNPCAIController.h>
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "lostSomething.h"
 
 // Sets default values
 ATestNPC::ATestNPC()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// 메시 설정
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("SkeletalMesh'/Game/Asset/NPC/puppet_animals/crochet_bear/Mesh/SK_crochet_bear.SK_crochet_bear'"));
@@ -51,11 +49,6 @@ void ATestNPC::BeginPlay()
 void ATestNPC::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (bIsComboCheckWindowOpen && bIsAttacking)
-	{
-		NextComboCheck(); // 이 시점에서 거리 판단
-	}
 
 }
 
@@ -149,6 +142,15 @@ void ATestNPC::NextComboCheck()
 
 		bCanNextCombo = false;
 		bIsAttacking = false;
+
+		if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
+		{
+			if (UBlackboardComponent* BB = AICon->GetBlackboardComponent())
+			{
+				BB->SetValueAsBool(TEXT("bShouldChase"), true);
+				BB->SetValueAsBool(TEXT("bIsAttacking"), false); // 공격 종료
+			}
+		}
 	}
 	else
 	{
@@ -185,15 +187,21 @@ void ATestNPC::MultiStopAttackMontage_Implementation()
 
 void ATestNPC::AttackHitCheck()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackHitCheck()"));
+	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackHitCheck()"));
 	ServerAttackHitCheck();
 }
 
 void ATestNPC::ServerAttackHitCheck_Implementation()
 {
-	LS_LOG(LogLS, Log, TEXT("ServerAttackHitCheck"));
+	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
+	MultiAttackHitCheck();
 
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
+}
+
+void ATestNPC::MultiAttackHitCheck_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttackHitCheck()"));
+
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
@@ -204,40 +212,9 @@ void ATestNPC::ServerAttackHitCheck_Implementation()
 
 	if (HitDetected)
 	{
-		LS_LOG(LogLS, Log, TEXT("HitDetected"));
-		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
+		UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
-		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-	}
-
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = AttackRange * 0.5f;
-	FColor DrawColor = HitDetected ? FColor::Yellow : FColor::Blue;
-
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-
-}
-
-void ATestNPC::MultiAttackHitCheck_Implementation()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttackHitCheck()"));
-	LS_LOG(LogLS, Log, TEXT("Begin"));
-
-	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * AttackRange;
-
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3, FCollisionShape::MakeSphere(AttackRadius), Params);
-
-	if (HitDetected)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
-		FDamageEvent DamageEvent;
-		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		ILTTakeDamageInterface* HitResult = Cast<ILTTakeDamageInterface>(OutHitResult.GetActor());
 		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 	}
 
@@ -304,7 +281,7 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
+	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
 	Damage();
 	return 0.0f;
 }
@@ -324,7 +301,7 @@ void ATestNPC::MultiDamage_Implementation()
 	{
 		if (AnimIns)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("AnimIns->DamageMontagePlay();"));
+			UE_LOG(LogTemp, Warning, TEXT("AnimIns->DamageMontagePlay();"));
 			AnimIns->DamageMontagePlay();
 		}
 	}
@@ -333,11 +310,6 @@ void ATestNPC::MultiDamage_Implementation()
 void ATestNPC::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
 	OnAttackFinished = InOnAttackFinished;
-}
-
-void ATestNPC::SetMaxWalkSpeed(float NewSpeed)
-{
-	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
 
 //////////////////// Replicated 변수 할당
@@ -349,5 +321,4 @@ void ATestNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATestNPC, bIsAttacking);
 	DOREPLIFETIME(ATestNPC, bCanNextCombo);
 	DOREPLIFETIME(ATestNPC, bIsComboCheckWindowOpen);
-	DOREPLIFETIME(ATestNPC, bShouldChase);
 }
