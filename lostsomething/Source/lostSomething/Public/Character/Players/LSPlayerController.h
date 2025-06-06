@@ -7,12 +7,14 @@
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 #include "LSPlayerController.generated.h"
 
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface
+class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -35,12 +37,13 @@ protected:
 
 //CharacterChoice Section
 public:
-	virtual ELSCharacterChoice GetCharacterChoice() override;
-	virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override;
+	FORCEINLINE virtual ELSCharacterChoice GetCharacterChoice() override { return CharacterChoice; }
+	FORCEINLINE virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override { CharacterChoice = InCharacterChoice; }
 
 protected:
 	UPROPERTY(EditAnywhere, Replicated)
 	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
+
 
 // HUD Section
 protected:
@@ -53,20 +56,36 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
 
-protected:
-	UPROPERTY()
-	class ULSScriptWidget* ScriptWidget;
 
+//Script Section
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class ULSScriptWidget> ScriptWidgetClass;
 
+	UPROPERTY()
+	TObjectPtr<class ULSScriptWidget> ScriptWidget;
+
 public:
-	void ShowScript(const FString& ScriptText);
+	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
 
 
-	// 마우스 휠 입력 처리 함수들
-private:
+// Quest Widget
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
+	TSubclassOf<class ULSQuestWidget> QuestWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
+	TObjectPtr<class ULSQuestWidget> QuestWidget;
+
+public:
+	void UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
 
 
+//RPC
+public:
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCUpdateQuestWidget(FLSQuestData InQuestData);
 
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCUpdateScriptWidget(const FString& ScriptText);
 };

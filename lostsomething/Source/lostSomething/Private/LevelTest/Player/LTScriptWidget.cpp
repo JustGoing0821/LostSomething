@@ -1,18 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/UI/LSScriptWidget.h"
+#include "LevelTest/Player/LTScriptWidget.h"
 #include "Components/TextBlock.h"
 
-DEFINE_LOG_CATEGORY(LogLSWidget);
+DEFINE_LOG_CATEGORY(LogLSWidgetLT);
 
-ULSScriptWidget::ULSScriptWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+ULTScriptWidget::ULTScriptWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
-void ULSScriptWidget::NativeConstruct()
+void ULTScriptWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
 	Script = Cast<UTextBlock>(GetWidgetFromName(TEXT("TxtScript")));
 	ensure(Script);
@@ -20,7 +20,7 @@ void ULSScriptWidget::NativeConstruct()
 	//UE_LOG(LogLSWidget, Log, TEXT("Begin"));
 }
 
-void ULSScriptWidget::UpdateScriptWidget(const FString& InScript)
+void ULTScriptWidget::UpdateScriptWidget(const FString& InScript)
 {
 	//UE_LOG(LogLSWidget, Log, TEXT("Widget received: %s"), *InScript);
 	//UE_LOG(LogLSWidget, Log, TEXT("Widget received length: %d"), InScript.Len());
@@ -35,10 +35,10 @@ void ULSScriptWidget::UpdateScriptWidget(const FString& InScript)
 		GetWorld()->GetTimerManager().ClearTimer(ScriptTimerHandle);
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(ScriptTimerHandle, this, &ULSScriptWidget::ClearScriptWidget, 1.f, false, 2.f);
+	GetWorld()->GetTimerManager().SetTimer(ScriptTimerHandle, this, &ULTScriptWidget::ClearScriptWidget, 1.f, false, 2.f);
 }
 
-void ULSScriptWidget::ClearScriptWidget()
+void ULTScriptWidget::ClearScriptWidget()
 {
 	Script->SetText(FText::FromString(""));
 }
