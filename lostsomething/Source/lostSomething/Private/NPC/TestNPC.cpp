@@ -28,6 +28,13 @@ ATestNPC::ATestNPC()
 		GetMesh()->SetRelativeLocationAndRotation(FVector(-20, 0, -86.6), FRotator(0, -90, 0));
 	}
 
+	// AIController 클래스를 설정
+	AIControllerClass = ATestNPCAIController::StaticClass();
+
+	// AIController가 자동으로 소환되도록 설정
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+
 	// 이동 속도 설정
 	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 

@@ -23,24 +23,24 @@ ABossObstacle::ABossObstacle()
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABossObstacle::OnOverlapBegin);
-
 
 	// 메시 컴포넌트 초기화
 	ObstacleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObstacleMesh"));
 	ObstacleMesh->SetupAttachment(CollisionComp);
 	ObstacleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체 충돌 제거
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_underbody_wheel_01.SM_underbody_wheel_01"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Asset/NPC/bedsheet_ghost_gltf/scene.scene"));
 
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
+		ObstacleMesh->SetRelativeScale3D(FVector(0.01f));
+		ObstacleMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -70.0f)); // Z축으로 50만큼 올림
+		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 30.0f));
 	}
 
 }
 
-// Called when the game starts or when spawned
 void ABossObstacle::BeginPlay()
 {
 	Super::BeginPlay();
