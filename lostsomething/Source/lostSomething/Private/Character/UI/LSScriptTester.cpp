@@ -109,9 +109,9 @@ void ALSScriptTester::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 
     if (ScriptWidget)
     {
-        ScriptWidget->SetScriptText(ScriptText);
-        ScriptWidget->AddToViewport();
-        ScriptWidget->ShowScriptWidget();
+        //ScriptWidget->SetScriptText(ScriptText);
+        //ScriptWidget->AddToViewport();
+        //ScriptWidget->ShowScriptWidget();
         LS_LOG(LogLS, Log, TEXT("Showing script: %s"), *ScriptText);
     }
     else

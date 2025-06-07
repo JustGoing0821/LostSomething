@@ -8,6 +8,9 @@
 #include "Engine/StaticMeshActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
+#include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
+#include "Character/Players/LSCharacterChoice.h"
 
 // Sets default values
 ALSTrainStep::ALSTrainStep()
@@ -24,7 +27,7 @@ ALSTrainStep::ALSTrainStep()
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	MeshComponent->SetRelativeScale3D(FVector(1.6f, 1.0f, 0.2f));
 	MeshComponent->SetRelativeLocation(FVector(-80.0f, -50.0f, -80.0f));
-	MeshComponent->SetVisibility(true);
+	MeshComponent->SetVisibility(false);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	if (ItemMeshRef.Object)
 	{
@@ -52,28 +55,10 @@ void ALSTrainStep::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 void ALSTrainStep::BeginPlay()
 {
 	Super::BeginPlay();
-
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
-
-	//Set Owner - 3.0f delay
 	if (HasAuthority())
 	{
-		//FTimerHandle Handle;
-		//GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		//	{
-		//		for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-		//		{
-		//			if (PlayerController && !PlayerController->IsLocalController())
-		//			{
-		//				SetOwner(PlayerController);
-		//				break;
-		//			}
-		//		}
-		//		//LS_LOG(LogLS, Log, TEXT("OwnerSetted."));
-		//	}
-		//), 1.0f, false, 0.5f);
-
 		for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
 		{
 			if (PlayerController && !PlayerController->IsLocalController())
@@ -87,15 +72,35 @@ void ALSTrainStep::BeginPlay()
 
 void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 {
+	ILSCharacterChoiceInterface* LSController = Cast<ILSCharacterChoiceInterface>(InPlayerController);
+	if (LSController)
+	{
+		if (LSController->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+		{
+			InstallStep();
+		}
+		else
+		{
+			ILSScriptWidgetInterface* LSScript = Cast<ILSScriptWidgetInterface>(InPlayerController);
+			LSScript->UpdateScriptWidget(TEXT("I Can't Install Step"));
+		}
+	}
+}
+
+void ALSTrainStep::InstallStep()
+{
+	OnStepInstalled.Execute();
+
 	if (bIsStepInstalled)
 	{
-		bIsStepInstalled = false;
+		//bIsStepInstalled = false;
 	}
 	else
 	{
 		bIsStepInstalled = true;
 	}
 	MeshComponent->SetVisibility(bIsStepInstalled);
+
 
 	if (HasAuthority())
 	{
@@ -105,6 +110,12 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 	{
 		ServerRPCSetVisibility(bIsStepInstalled);
 	}
+}
+
+void ALSTrainStep::PuzzleDeactivate()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	InteractionTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ALSTrainStep::ServerRPCSetVisibility_Implementation(uint8 bInStepInstalled)

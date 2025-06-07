@@ -7,6 +7,8 @@
 #include "Interface/LSInteractionInterface.h"
 #include "LSTrainStep.generated.h"
 
+DECLARE_DELEGATE(FOnStepInstalledDelegate);
+
 UCLASS()
 class LOSTSOMETHING_API ALSTrainStep : public AActor, public ILSInteractionInterface
 {
@@ -32,6 +34,20 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> InteractionTrigger;
+
+
+//StepInstall
+protected:
+	void InstallStep();
+
+public:
+	FOnStepInstalledDelegate OnStepInstalled;
+
+
+//Puzzle Section
+public:
+	void PuzzleDeactivate();
+
 
 //Replicated Section
 public:

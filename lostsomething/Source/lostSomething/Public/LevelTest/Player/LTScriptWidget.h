@@ -4,24 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "LSScriptWidget.generated.h"
+#include "LTScriptWidget.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogLSWidget, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogLSWidgetLT, Log, All);
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ULSScriptWidget : public UUserWidget
+class LOSTSOMETHING_API ULTScriptWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
-	ULSScriptWidget(const FObjectInitializer& ObjectInitializer);
-	
+	ULTScriptWidget(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void NativeConstruct() override;
-	
+
 public:
 	void UpdateScriptWidget(const FString& InScript);
 	void ClearScriptWidget();
