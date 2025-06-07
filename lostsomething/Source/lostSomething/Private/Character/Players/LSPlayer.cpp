@@ -523,45 +523,45 @@ void ALSPlayer::Attack()
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 
-//
-//	FHitResult OutHitResult;
-//	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-//	const float AttackRange = 80.0f;
-//	const float AttackRadius = 50.0f;
-//	const float AttackDamage = 10.0f;
-//	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-//	const FVector End = Start + GetActorForwardVector() * AttackRange;
-//	FColor DrawColor;
-//
-//	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
-//	if (HitDetected)
-//	{
-//		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-//
-//		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-//		if (HitNPC)
-//		{
-//			FDamageEvent DamageEvent;
-//			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-//			DrawColor = FColor::Blue;
-//		}
-//	}
-//	else
-//	{
-//		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
-//		
-//		DrawColor = FColor::Red;
-//	}
-//
-//#if ENABLE_DRAW_DEBUG
-//
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = AttackRange * 0.5f;
-//
-//
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//
-//#endif
+
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+	const float AttackRange = 80.0f;
+	const float AttackRadius = 50.0f;
+	const float AttackDamage = 10.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+	FColor DrawColor;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	if (HitDetected)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+
+		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		if (HitNPC)
+		{
+			FDamageEvent DamageEvent;
+			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawColor = FColor::Blue;
+		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
+		
+		DrawColor = FColor::Red;
+	}
+
+#if ENABLE_DRAW_DEBUG
+
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
+#endif
 }
 
 
