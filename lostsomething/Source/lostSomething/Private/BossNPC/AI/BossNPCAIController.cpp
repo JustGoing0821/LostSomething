@@ -5,9 +5,12 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include <BossNPC/BossNPC.h>
+#include "lostSomething.h"
 
 
 const FName ABossNPCAIController::Key_Phase = FName("Phase");
+const FName ABossNPCAIController::Key_CurrentHP = FName("CurrentHP");
 
 ABossNPCAIController::ABossNPCAIController()
 {
@@ -33,12 +36,16 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 
 	if (UseBlackboard(BBAsset, RawBlackboardPtr))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EPhaseType::Phase2 as uint8 = %d"), static_cast<uint8>(EPhaseType::Phase2));
+		ABossNPC* BossNPC = Cast<ABossNPC>(GetPawn());
+		if (BossNPC)
+		{
+			float CurrentHP = 100.0f;
+			LS_LOG(LogLS, Log, TEXT("BossNPCController OnPossess : %f"), CurrentHP)
+			Blackboard->SetValueAsFloat(Key_CurrentHP, CurrentHP);
+		}
 
-		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase2));
-
-		uint8 PhaseValue = Blackboard->GetValueAsEnum(Key_Phase);
-		UE_LOG(LogTemp, Warning, TEXT("[BossAI] Phase after setting: %d"), PhaseValue);
+		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase1));
+		Blackboard->GetValueAsEnum(Key_Phase);
 
 		RunBehaviorTree(BTAsset);
 	}
@@ -60,4 +67,15 @@ void ABossNPCAIController::StopAI()
 	if (nullptr == BehaviorTreeComponent) return;
 
 	BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
+}
+
+void ABossNPCAIController::ChangedHP()
+{
+	ABossNPC* BossNPC = Cast<ABossNPC>(GetPawn());
+	if (BossNPC)
+	{
+		float CurrentHP = BossNPC->GetHP();
+		LS_LOG(LogLS, Log, TEXT("BossNPCController : %f"), CurrentHP)
+		Blackboard->SetValueAsFloat(Key_CurrentHP, CurrentHP);
+	}
 }

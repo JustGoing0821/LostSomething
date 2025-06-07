@@ -29,9 +29,12 @@ public:
 
 	void StopAI();
 
+	void ChangedHP();
+
 
 	//BB Key º¯¼ö¸í
 	static const FName Key_Phase;
+	static const FName Key_CurrentHP;
 
 
 private:
