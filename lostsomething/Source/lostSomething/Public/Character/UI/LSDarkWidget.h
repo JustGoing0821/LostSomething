@@ -20,7 +20,7 @@ public:
     void SetDarknessLevel(float DarknessAlpha);
 
 protected:
-    // 어둠 오버레이 이미지 (WBP_Dark에서 바인딩할 이름)
+    // 어둠 이미지 (WBP_Dark에서 바인딩할 이름)
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UImage> DarknessOverlay;
 
