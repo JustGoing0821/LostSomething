@@ -12,6 +12,10 @@
 #include "Net/UnrealNetwork.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSQuestInterface.h"
+#include "Quest/LSQuestManager.h"
 
 
 // Sets default values
@@ -21,7 +25,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	// Stage Section
 	StageTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("StageTrigger"));
-	StageTrigger->SetBoxExtent(FVector(300, 10000, 200));
+	StageTrigger->SetBoxExtent(FVector(300, 5000, 200));
 	StageTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
 	RootComponent = StageTrigger;
 	StageTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap);
@@ -32,7 +36,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StepMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	FVector CreateGateLocation = FVector(-300, -1215, -50);
-	FVector CreateStepLocation = FVector(470, -1215, 210);
+	FVector CreateStepLocation = FVector(-1830.0, 240, 510);
 	for (FName GateName : GateNames)
 	{
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
@@ -52,7 +56,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 		StepTriggerLocations.Add(CreateStepLocation);
 
 		CreateGateLocation += FVector(0, 400, 0);
-		CreateStepLocation += FVector(0, 400, 0);
+		CreateStepLocation += FVector(400, 0, 0);
 	}
 
 	// Spawn Train
@@ -107,6 +111,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	//Puzzle
 	CorrectGate = -1;
 	CorrectPeopleCount = 2;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
 }
 
 void ALSTrainSpawnGimmick::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -122,24 +127,10 @@ void ALSTrainSpawnGimmick::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*
-	FVector SpawnLocation = MeshComponent->GetSocketLocation("TrainSpawn") + FVector(0.0f, 0.0f, 200.0f);
-	LS_LOG(LogLS, Log, TEXT("SpawnLocation : %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
-	FVector WaitLocation = MeshComponent->GetSocketLocation("TrainStop") + FVector(0.0f, 0.0f, 200.0f);
-	LS_LOG(LogLS, Log, TEXT("WaitLocation : %f, %f, %f"), WaitLocation.X, WaitLocation.Y, WaitLocation.Z);
-	FVector LeaveLocation = MeshComponent->GetSocketLocation("TrainLeave") + FVector(0.0f, 2000.0f, 200.0f);
-	LS_LOG(LogLS, Log, TEXT("SpawnLocation : %f, %f, %f"), LeaveLocation.X, LeaveLocation.Y, LeaveLocation.Z);
-	*/
-
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		{
-			if (HasAuthority())
-			{
-				SpawnTrain();
-			}
-		}
-	), 1.f, false, 3);
+	if (HasAuthority())
+	{
+		BindQuestChange();
+	}
 }
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -209,7 +200,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		CorrectGate = FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
-		float DelayTime = 10;// FMath::FRandRange(2.f, 6.f);
+		float DelayTime = FMath::FRandRange(2.f, 10.f);
 		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		MulticastRPCSetPannelMonitor();
@@ -217,15 +208,16 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 			{
-				FVector SpawnLocation = FVector(700.0f, -9950.0f, 300.0f);
-				FRotator SpawnRotation = FRotator(0.f, 90.f, 0.f);
+				FVector SpawnLocation = GetActorLocation() +FVector(-5000.f, 0.f, 0.f);
+				FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 				ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
 				if (LSTrain)
 				{
 					LSTrain->SetCorrectGate(CorrectGate);
 					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
-					LSTrain->DelegateBind(this);
+					OnPuzzleCheck.AddUObject(LSTrain, &ALSTrain::PuzzleCheck);
+					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::StopTrain);
 				}
 			}
 		), 1.f, false, DelayTime);
@@ -240,13 +232,20 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 		if (StepTriggerClass)
 		{
 			FVector SpawnLocation = StepTriggerLocations[CorrectGate-1];
-			FRotator SpawnRotation = FRotator(0.f, 90.f, 0.f);
+			FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
 			AActor* OpponentStepTrigger = GetWorld()->SpawnActor(StepTriggerClass, &SpawnLocation, &SpawnRotation);
 			OnTrainDespawned.BindLambda([OpponentStepTrigger]
 				{
 					OpponentStepTrigger->Destroy();
 				});
-			//LS_LOG(LogLS, Log, TEXT("StepTriggerClass Created."));
+
+			ALSTrainStep* TrainStep = Cast<ALSTrainStep>(OpponentStepTrigger);
+			TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
+			OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
+
+			//LS_LOG(LogLS, Log, TEXT("SpawnLocation = %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
+			//LS_LOG(LogLS, Log, TEXT("SpawnGimmickLocation = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+			//LS_LOG(LogLS, Log, TEXT("StepRelativeLocation = %f, %f, %f"), StepTriggerLocations[CorrectGate - 1].X, StepTriggerLocations[CorrectGate - 1].Y, StepTriggerLocations[CorrectGate - 1].Z);
 		}
 	}
 	else
@@ -274,12 +273,69 @@ void ALSTrainSpawnGimmick::SetPannelMonitor()
 	}
 }
 
-void ALSTrainSpawnGimmick::OnRep_CorrectGate()
+void ALSTrainSpawnGimmick::BindQuestChange()
+{
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSTrainSpawnGimmick::OnQuestChange);
+		}
+	}
+}
+
+void ALSTrainSpawnGimmick::PuzzleActivate()
+{
+	SpawnTrain();
+}
+
+void ALSTrainSpawnGimmick::PuzzleDeactivate()
+{
+}
+
+void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+{
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
+void ALSTrainSpawnGimmick::QuestClear()
 {
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->QuestComplete();
+		}
+	}
+	OnTrainPuzzleCleared.Broadcast();
+}
+
+void ALSTrainSpawnGimmick::OnRep_CorrectGate()
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 }
 
 void ALSTrainSpawnGimmick::MulticastRPCSetPannelMonitor_Implementation()
 {
 	SetPannelMonitor();
+}
+
+void ALSTrainSpawnGimmick::MulticastRPCPuzzleActivate_Implementation()
+{
+	PuzzleActivate();
+}
+
+void ALSTrainSpawnGimmick::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
 }

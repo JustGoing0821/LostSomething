@@ -4,12 +4,15 @@
 #include "BossNPC/BossNPC.h"
 #include "BossNPC/AI/BossNPCAIController.h"
 #include "BossNPC/Obstacle/BossObstacle.h"
+#include "BossNPC/Platform/PlatformGenerator.h"
+#include "lostSomething.h"
 
 // Sets default values
 ABossNPC::ABossNPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	// AIController 클래스를 설정
 	AIControllerClass = ABossNPCAIController::StaticClass();
@@ -23,18 +26,20 @@ ABossNPC::ABossNPC()
 		FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
 		USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
 		SpawnPoint->SetupAttachment(RootComponent);
-		float YOffset = (i - 1) * 93.f;
-		SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, 0.f));
+		float YOffset = (i - 1) * 220.f;
+		SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, 20.f));
 		ObstacleSpawnPoints.Add(SpawnPoint);
 	}
 
+	CurrentHP = MaxHP;
 }
 
 // Called when the game starts or when spawned
 void ABossNPC::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	EnterPhase3();
 }
 
 // Called every frame
@@ -51,12 +56,20 @@ void ABossNPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//DOREPLIFETIME(ABossNPC, bIsAttacking);
+	SetHP(GetHP()-DamageAmount);
+	LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
 
+	ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
+	if (PC)
+	{
+		PC->ChangedHP();
+	}
+
+	return 0.0f;
 }
 
 void ABossNPC::SpawnObstacles()
@@ -92,3 +105,59 @@ void ABossNPC::MultiSpawnObstacles_Implementation()
 	}
 }
 
+void ABossNPC::EnterPhase3()
+{
+	if (HasAuthority() && PlatformGeneratorClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100);
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		PlatformGenerator = GetWorld()->SpawnActor<APlatformGenerator>(PlatformGeneratorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+
+		if (PlatformGenerator)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
+			SpawnPlatform();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to spawn PlatformGenerator"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnterPhase3 skipped - No Authority or GeneratorClass is null"));
+	}
+}
+
+void ABossNPC::SpawnPlatform()
+{
+	if (HasAuthority()) // 서버인지 확인
+	{
+		if (PlatformGenerator)
+		{
+			PlatformGenerator->GenerateMaze(); // 핵심 로직 호출
+		}
+	}
+	else
+	{
+		ServerSpawnPlatform(); // 클라일 경우 서버 RPC 요청
+
+	}
+}
+
+void ABossNPC::ServerSpawnPlatform_Implementation()
+{
+	SpawnPlatform();
+}
+
+void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(ABossNPC, bIsAttacking);
+}

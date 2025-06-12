@@ -6,7 +6,6 @@
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
-#include "Puzzle/Train/LSTrainSpawnGimmick.h"
 
 ALSTrain::ALSTrain()
 {
@@ -44,6 +43,7 @@ ALSTrain::ALSTrain()
 		UStaticMeshComponent* Car = CreateDefaultSubobject<UStaticMeshComponent>(CarName);
 		Car->SetupAttachment(RootComponent);
 		Car->SetRelativeLocation(CarLocation);
+		Car->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		CarLocation += FVector(400, 0, 0);
 
 		FName Wall1Name = *CarName.ToString().Append(TEXT("Wall1"));
@@ -57,7 +57,6 @@ ALSTrain::ALSTrain()
 		Wall2->SetStaticMesh(DoorFrameMeshRef.Object);
 		Wall2->SetRelativeLocation(FVector(160, 0, 0));
 		Wall2->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-		Wall2->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		FName Wall3Name = *CarName.ToString().Append(TEXT("Wall3"));
 		UStaticMeshComponent* Wall3 = CreateDefaultSubobject<UStaticMeshComponent>(Wall3Name);
@@ -83,7 +82,6 @@ ALSTrain::ALSTrain()
 		DoorL->SetStaticMesh(DoorLMeshRef.Object);
 		DoorL->SetRelativeLocation(FVector(85, 0, 0));
 		DoorL->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-		DoorL->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 		DoorLs.Add(DoorL);
 
 		FName DoorRName = *CarName.ToString().Append(TEXT("DoorR"));
@@ -92,7 +90,6 @@ ALSTrain::ALSTrain()
 		DoorR->SetStaticMesh(DoorRMeshRef.Object);
 		DoorR->SetRelativeLocation(FVector(85, 0, 0));
 		DoorR->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-		DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		DoorRs.Add(DoorR);
 
 		//FName GateTriggerName = *CarName.ToString().Append(TEXT("GateTrigger"));
@@ -114,9 +111,14 @@ ALSTrain::ALSTrain()
 		Crowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 		Crowd->SetVisibility(false);
 		Crowd->SetMaterial(0, CrowdMaterialRef.Object);
+		Crowd->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Crowds.Add(Crowd);
 
 	}
+
+	TimeBeforeGateOpen = 1.0f;
+	TimeTrainWait = 5.0f;
+	TimeBeforeTrainLeave = 1.0f;
 }
 
 void ALSTrain::Tick(float DeltaTime)
@@ -133,14 +135,18 @@ void ALSTrain::Tick(float DeltaTime)
 
 		if (HasAuthority() && (CurrentAlpha==1.0f))
 		{
+			CurrentTrainState = ETrainState::Waiting;
 
-			FTimerHandle Handle1;
-			GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
+			if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
+			}
+			GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
 				{
 					OnTrainArrived.Broadcast();
 					CurrentAlpha = 0.0f;
 				}
-			), 1, false, 1);
+			), TimeBeforeGateOpen, false);
 
 			//for (TObjectPtr<class UBoxComponent> GateTrigger : GateTriggers)
 			//{
@@ -148,14 +154,7 @@ void ALSTrain::Tick(float DeltaTime)
 			//	LS_LOG(LogLS, Log, TEXT("GateLocation : %f, %f, %f"), GateLocation.X, GateLocation.Y, GateLocation.Z);
 			//}
 
-			CurrentTrainState = ETrainState::Waiting;
-
-			FTimerHandle Handle2;
-			GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
-				{
-					CurrentTrainState = ETrainState::Leaving;
-				}
-			), 1.f, false, 6.0f);
+			
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
@@ -176,11 +175,15 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSTrain, CurrentTrainState);
+	DOREPLIFETIME(ALSTrain, TimeTrainWait);
 }
 
 void ALSTrain::BeginPlay()
 {
 	Super::BeginPlay();
+
+	WaitLocation = FVector(-560.0f, 20.0f, 590.0f);
+	LeaveLocation = FVector(7000.0f, 20.0f, 590.0f);
 }
 
 void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -193,21 +196,26 @@ void ALSTrain::GateOpen()
 	for (UStaticMeshComponent* DoorL : DoorLs)
 	{
 		DoorL->SetVisibility(false);
+		DoorL->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 	for (UStaticMeshComponent* DoorR : DoorRs)
 	{
 		DoorR->SetVisibility(false);
+		DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
+	}
+	GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
 		{
 			//GateClose();
 			MulticastGetOnPassengers();
 			MulticastRPCGateClose();
 		}
-	), 1.f, false, 4.0f);
+	), TimeTrainWait, false);
 }
 
 void ALSTrain::GateClose()
@@ -215,17 +223,24 @@ void ALSTrain::GateClose()
 	for (UStaticMeshComponent* DoorL : DoorLs)
 	{
 		DoorL->SetVisibility(true);
+		DoorL->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 	for (UStaticMeshComponent* DoorR : DoorRs)
 	{
 		DoorR->SetVisibility(true);
+		DoorR->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
 
-void ALSTrain::DelegateBind(ALSTrainSpawnGimmick* InGimmickClass)
-{
-	InGimmickClass->OnPuzzleCheck.AddUObject(this, &ALSTrain::PuzzleCheck);
+	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
+	}
+	GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			CurrentTrainState = ETrainState::Leaving;
+		}
+	), TimeBeforeTrainLeave, false);
 }
 
 void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
@@ -235,6 +250,7 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 	if (bCorrect)
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
+		TimeTrainWait = 10.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(InCorrectGate - 1);
 		MulticastGetOffPassengers(InCorrectGate - 1);
@@ -242,6 +258,7 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 	else
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
+		TimeTrainWait = 2.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(-1);
 		MulticastGetOffPassengers(-1);
@@ -276,6 +293,16 @@ void ALSTrain::GetOnPassengers()
 		Crowds[Num]->SetVisibility(false);
 		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
 		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+	}
+}
+
+void ALSTrain::StopTrain()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	CurrentTrainState = ETrainState::Stop;
+	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
 	}
 }
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSTrainSpawnGimmick.generated.h"
 
 UENUM(BlueprintType)
@@ -15,6 +16,7 @@ enum class ETrainSpawnState : uint8
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTrainPuzzleCheckDelegate, bool/*PuzzleCorrect*/, int32/*CorrectGate*/);
 DECLARE_DELEGATE(FOnTrainDespawnedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnTrainPuzzleClearedDelegate);
 
 UCLASS()
 class LOSTSOMETHING_API ALSTrainSpawnGimmick : public AActor
@@ -85,6 +87,7 @@ public:
 	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
 
 	FOnTrainPuzzleCheckDelegate OnPuzzleCheck;
+	FOnTrainPuzzleClearedDelegate OnTrainPuzzleCleared;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CorrectGate)
 	int32 CorrectGate;
@@ -92,7 +95,22 @@ public:
 protected:
 	void CheckPuzzleCorrect();
 	void SetPannelMonitor();
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
+
+	UPROPERTY(EditAnywhere, Category="Puzzle")
 	int32 CorrectPeopleCount;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
+
+
+//Queset Section
+protected:
+	void QuestClear();
 
 
 //RPC Section
@@ -102,4 +120,10 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSetPannelMonitor();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
 };

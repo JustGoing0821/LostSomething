@@ -7,6 +7,7 @@
 #include "Character/Players/LSPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "UserInterface/LSQuestWidget.h"
 
 ALSGameMode::ALSGameMode()
 {
@@ -42,6 +43,9 @@ ALSGameMode::ALSGameMode()
 	{
 		LS_LOG(LogLS, Error, TEXT("PlayerControllerClassRef Not Found"));
 	}
+
+	bIsSiJaeServer = true;
+	CurrentPlayerCount = 0;
 }
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -67,6 +71,8 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
+			CurrentPlayerCount++;
+
 			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
@@ -84,13 +90,42 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
+			CurrentPlayerCount++;
+
 			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
 			LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
+
+		//Quest Widget Update Bind
+		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 	}
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	return ResultController;
+}
+
+void ALSGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	//LS_LOG(LogLS, Log, TEXT("Begin"));
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			//Quest Start
+			if (CurrentPlayerCount == 2)
+			{
+				QuestStart();
+			}
+		}
+	), 1, false, 3.0f);
+}
+
+void ALSGameMode::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void ALSGameMode::QuestStart()

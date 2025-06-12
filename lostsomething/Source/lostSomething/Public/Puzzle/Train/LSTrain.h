@@ -52,7 +52,10 @@ public:
 protected:
 	float CurrentAlpha = 0.0f;
 	float LerpSpeed = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector WaitLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector LeaveLocation;
 
 
@@ -87,17 +90,26 @@ protected:
 
 //Puzzle
 public:
-	void DelegateBind(class ALSTrainSpawnGimmick* InGimmickClass);
+	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
+	void StopTrain();
 
 protected:
-	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
 	void GetOffPassengers(int32 InCorrectGate);
 	void GetOnPassengers();
 
-//Network
-public:
-	//UFUNCTION()
-	//void OnRep_CurrentOpenGate();
+
+	//Timer
+	FTimerHandle TrainTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category="Puzzle")
+	float TimeBeforeGateOpen;
+
+	UPROPERTY(EditAnywhere, Category = "Puzzle", Replicated)
+	float TimeTrainWait;
+
+	UPROPERTY(EditAnywhere, Category = "Puzzle")
+	float TimeBeforeTrainLeave;
+
 
 //Replicate
 public:
