@@ -1,11 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "AOE/ACircleAOE.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
-#include "AOE/ACircleAOE.h"
+#include "Character/Players/LSPlayer.h" 
+#include "BossNPC/BossNPC.h"          
+#include "Components/SphereComponent.h"   
+#include "Engine/DamageEvents.h"  
+#include "GameFramework/DamageType.h"
 
 // Sets default values
 ACircleAOE::ACircleAOE()
@@ -103,7 +108,6 @@ void ACircleAOE::DealDamageToPlayersInRange()
     if (!CollisionSphere)
         return;
 
-    // 충돌 스피어 내의 모든 액터 찾기
     TArray<AActor*> OverlappingActors;
     CollisionSphere->GetOverlappingActors(OverlappingActors);
 
@@ -111,20 +115,28 @@ void ACircleAOE::DealDamageToPlayersInRange()
 
     for (AActor* Actor : OverlappingActors)
     {
-        // 플레이어인지 확인
-        if (APawn* Pawn = Cast<APawn>(Actor))
+        // 보스는 제외
+        if (Actor->IsA<ABossNPC>())
         {
-            // 데미지 적용
-            UGameplayStatics::ApplyDamage(
-                Pawn,
-                Damage,
-                nullptr,
-                this,
-                UDamageType::StaticClass()
+            continue;
+        }
+
+        // 플레이어에게 데미지
+        if (ALSPlayer* Player = Cast<ALSPlayer>(Actor))
+        {
+            // **올바른 FDamageEvent 생성**
+            FDamageEvent DamageEvent(UDamageType::StaticClass());
+
+            Player->TakeDamage(
+                Damage,       // float DamageAmount
+                DamageEvent,  // const FDamageEvent&
+                nullptr,      // AController* EventInstigator
+                this          // AActor* DamageCauser
             );
 
             DamagedCount++;
-            UE_LOG(LogTemp, Warning, TEXT("Damaged Actor: %s for %f damage"), *Pawn->GetName(), Damage);
+            UE_LOG(LogTemp, Warning, TEXT("Damaged Actor: %s for %f damage"),
+                *Player->GetName(), Damage);
         }
     }
 
