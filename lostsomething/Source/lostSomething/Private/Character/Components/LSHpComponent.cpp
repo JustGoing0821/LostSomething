@@ -28,18 +28,7 @@ void ULSHpComponent::SetHp(float NewHp)
 	OnHpChanged.Broadcast(CurrentHp);
 	UE_LOG(LogTemp, Warning, TEXT("hp component : HP changed: %f"), CurrentHp);
 
-	//NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
-	//if (CurrentHp != NewHp)
-	//{
-	//	CurrentHp = NewHp;
 
-	//	UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
-
-	//	// HP변경 UI에 브로드캐스트
-	//	OnHpChanged.Broadcast(CurrentHp);
-
-
-	//}
 
 }
 
