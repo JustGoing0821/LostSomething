@@ -94,8 +94,10 @@ void ALSPlayer::BeginPlay()
 	{
 		// HpComponent의 OnHpChanged 델리게이트에 우리의 OnHpChanged 함수를 바인딩
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
-
 		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
+		
+		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
+		UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
 
 		// 현재 체력값으로 HUD 초기화
 		OnHpChanged(HpComponent->GetHp());
@@ -140,6 +142,8 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		if (HasAuthority())
 		{
 			HpComponent->SetHp(CurrentHp);
+			CurrentHp = HpComponent->GetHp();  //0 이하로 내려가지 않게 동기화
+
 		}
 
 
@@ -192,7 +196,7 @@ bool ALSPlayer::isCombining()
 
 void ALSPlayer::OnHpChanged(float NewHp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
@@ -417,6 +421,8 @@ void ALSPlayer::ThrowItem()
 // Called to bind functionality to input
 void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	if (bIsDead) return;
+
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	//Input Mapping Context
@@ -460,6 +466,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ALSPlayer::Move(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 	// 로컬에서 제어 중인지 확인
 	if (!IsLocallyControlled())
 		return;
@@ -499,6 +507,8 @@ void ALSPlayer::Look(const FInputActionValue& Value)
 
 void ALSPlayer::Attack()
 {
+	if (bIsDead) return;
+
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() called"));
 
 	// 현재 선택된 슬롯에 아이템이 있는지 확인
@@ -570,6 +580,8 @@ void ALSPlayer::Attack()
 
 void ALSPlayer::PickUp()
 {
+	if (bIsDead) return;
+
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
 
 	FHitResult OutHitResult;
@@ -720,6 +732,8 @@ void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
 //Wheelchair part
 void ALSPlayer::Interaction()
 {
+	if (bIsDead) return;
+
 	// 로컬 컨트롤러가 있는지 확인
 	if (!IsLocallyControlled())
 	{
@@ -869,6 +883,8 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSPlayer, CurrentHp);
+	DOREPLIFETIME(ALSPlayer, bIsDead);
+
 	DOREPLIFETIME(ALSPlayer, bIsBeingPushed);
 	DOREPLIFETIME(ALSPlayer, PusherCharacter);
 	DOREPLIFETIME(ALSPlayer, PushedWheelchairCharacter);
@@ -983,15 +999,68 @@ void ALSPlayer::HandleWheelchairMovement()
 }
 
 
-//Widget
-//void ALSPlayer::SetupCharacterWidget(ULSUserWidget* InUserWidget)
-//{
-//	ULSHpBarWidget* HpBarWidget = Cast<ULSHpBarWidget>(InUserWidget);
-//	if (HpBarWidget)
-//	{
-//		HpBarWidget->SetMaxHp(Stat->GetMaxHP());
-//		HpBarWidget->UpdateHpBar(Stat->GetCurrentHP());
-//		Stat->OnHpChanged.AddUObject(HpBarWidget, &ULSHpBarWidget::UpdateHpBar);
-//	}
-//
-//}
+//is dead
+void ALSPlayer::OnHpReachedZero(float ZeroHp)
+{
+	UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
+	Die();
+}
+
+void ALSPlayer::Die()
+{
+	if (bIsDead) return; // 이미 죽었으면 리턴
+
+	bIsDead = true;
+	UE_LOG(LogTemp, Warning, TEXT("Player died"));
+
+	// 모든 입력 차단
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		DisableInput(PC);
+	}
+
+	// 충돌 비활성화
+	SetActorEnableCollision(false);
+
+	// 이동 비활성화
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+	// 5초 후 부활 타이머 시작
+	GetWorld()->GetTimerManager().SetTimer(
+		RespawnTimerHandle,
+		this,
+		&ALSPlayer::Respawn,
+		5.0f,
+		false
+	);
+}
+
+void ALSPlayer::Respawn()
+{
+	if (!bIsDead) return; // 이미 살아있으면 리턴
+
+	bIsDead = false;
+	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
+
+	// HP 풀로 회복
+	if (HpComponent)
+	{
+		HpComponent->SetHp(100.0f); // MaxHp로 설정
+		CurrentHp = 100.0f;
+	}
+
+	// 입력 재활성화
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		EnableInput(PC);
+	}
+
+	// 충돌 재활성화
+	SetActorEnableCollision(true);
+
+	// 이동 재활성화
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	// 타이머 클리어
+	GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+}
