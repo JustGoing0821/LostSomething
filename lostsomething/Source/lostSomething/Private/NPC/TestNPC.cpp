@@ -245,6 +245,7 @@ void ATestNPC::MultiAttackHitCheck_Implementation()
 		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
 		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		//Player 인지 확인
 		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 	}
 
@@ -271,7 +272,7 @@ void ATestNPC::MultiDespawn_Implementation()
 
 	SetLifeSpan(4.0f);
 
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 
 	if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
 	{
