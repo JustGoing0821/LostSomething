@@ -868,6 +868,7 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ALSPlayer, CurrentHp);
 	DOREPLIFETIME(ALSPlayer, bIsBeingPushed);
 	DOREPLIFETIME(ALSPlayer, PusherCharacter);
 	DOREPLIFETIME(ALSPlayer, PushedWheelchairCharacter);
