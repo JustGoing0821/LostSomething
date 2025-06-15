@@ -46,7 +46,12 @@ ABossNPC::ABossNPC()
 void ABossNPC::BeginPlay()
 {
     Super::BeginPlay();
-    EnterPhase1();
+    //EnterPhase1();
+    ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
+    if (PC)
+    {
+        PC->ChangedHP();
+    }
 }
 
 // Called every frame
@@ -68,10 +73,10 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     SetHP(GetHP() - DamageAmount);
     LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
 
-        // HP에 따른 페이즈 전환
-        float HPPercentage = GetHP() / MaxHP;
+    // HP에 따른 페이즈 전환
+    float HPPercentage = GetHP() / MaxHP;
 
-    if (HPPercentage <= 0.7f && CurrentPhase == 1)
+    /* if (HPPercentage <= 0.7f && CurrentPhase == 1)
     {
         // 1페이즈 → 2페이즈 (AOE 중단)
         StopAOEPattern();
@@ -82,8 +87,8 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
         // 2페이즈 → 3페이즈 (장애물 중단)
         StopObstaclePattern();
         EnterPhase3();
-    }
-
+    }*/
+   
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
     {
