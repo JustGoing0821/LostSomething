@@ -421,6 +421,8 @@ void ALSPlayer::ThrowItem()
 // Called to bind functionality to input
 void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	if (bIsDead) return;
+
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	//Input Mapping Context
