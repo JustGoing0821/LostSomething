@@ -101,8 +101,14 @@ protected:
 	//던지기 아이템 스폰
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
 
+	
 	void OnMouseWheelUp(const FInputActionValue& Value);
 	void OnMouseWheelDown(const FInputActionValue& Value);
+	void OnSelectSlot1();
+	void OnSelectSlot2();
+	void OnSelectSlot3();
+	void OnSelectSlot4();
+	void OnSelectSlot5();
 
 	// 죽음 상태 변수
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Death")
@@ -173,6 +179,23 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MouseWheelDownAction;
+
+	//슬롯 선택 키
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> SelectSlot1Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> SelectSlot2Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> SelectSlot3Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> SelectSlot4Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> SelectSlot5Action;
+
 
 	// 인벤토리 아이템 배열
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")

@@ -30,7 +30,7 @@ ALSPlayer::ALSPlayer()
 
 	//컨트롤러 회전시 회전 x
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 
@@ -457,6 +457,12 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
 
+		// 숫자키 바인딩
+		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
+		EnhancedInputComponent->BindAction(SelectSlot2Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot2);
+		EnhancedInputComponent->BindAction(SelectSlot3Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot3);
+		EnhancedInputComponent->BindAction(SelectSlot4Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot4);
+		EnhancedInputComponent->BindAction(SelectSlot5Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot5);
 	}
 
 
@@ -494,6 +500,8 @@ void ALSPlayer::Move(const FInputActionValue& Value)
 
 void ALSPlayer::Look(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -1063,4 +1071,55 @@ void ALSPlayer::Respawn()
 
 	// 타이머 클리어
 	GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+}
+
+
+void ALSPlayer::OnSelectSlot1()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectSlot(0); 
+	}
+}
+
+void ALSPlayer::OnSelectSlot2()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 2 key pressed"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectSlot(1);
+	}
+}
+
+void ALSPlayer::OnSelectSlot3()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 3 key pressed"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectSlot(2);
+	}
+}
+
+void ALSPlayer::OnSelectSlot4()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 4 key pressed"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectSlot(3);
+	}
+}
+
+void ALSPlayer::OnSelectSlot5()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 5 key pressed"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->SelectSlot(4);
+	}
 }
