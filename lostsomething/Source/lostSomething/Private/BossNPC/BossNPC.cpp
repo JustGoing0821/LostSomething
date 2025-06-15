@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "BossNPC/BossNPC.h"
 #include "AOE/ACircleAOE.h"
 #include "BossNPC/AI/BossNPCAIController.h"
-#include "BossNPC/BossNPC.h"
 #include "BossNPC/Obstacle/BossObstacle.h"
 #include "BossNPC/Platform/PlatformGenerator.h"
 #include "Kismet/GameplayStatics.h" 

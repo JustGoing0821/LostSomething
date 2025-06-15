@@ -104,6 +104,25 @@ protected:
 	void OnMouseWheelUp(const FInputActionValue& Value);
 	void OnMouseWheelDown(const FInputActionValue& Value);
 
+	// 죽음 상태 변수
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Death")
+	bool bIsDead = false;
+
+	// 부활 타이머
+	FTimerHandle RespawnTimerHandle;
+
+	// 죽음, 부활 함수
+	UFUNCTION()
+	void Die();
+
+	UFUNCTION()
+	void Respawn();
+
+	// HP가 0이 될 때 호출함수
+	UFUNCTION()
+	void OnHpReachedZero(float ZeroHp);
+
+
 	/*************************************Property**************************************/
 
 
@@ -159,43 +178,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemDetails> ItemInfoArray;
 
-	/*UPROPERTY()
-	FHitResult PickupHitResult;
-	FVector ViewVector;
-	FRotator ViewRotation;*/
 
-//
-//	//투사체 클래스 참조?
-//	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-//	TSubclassOf<class ALSProjectile> ProjectileClass;
-//
-//	//item
-//	UPROPERTY(EditDefaultsOnly)
-//	TSubclassOf<UUserWidget> InventoryWidgetClass;
-//
-//	UPROPERTY(EditDefaultsOnly)
-//	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
-//
 //	//이렇게 쓰지 말기
 //	/*ULSInventoryWidget* InventoryWidget;
 //	ULSInventoryEntry* InventoryEntryWidget;
 //*/
-
-
-
-//// Stat
-//protected:
-//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-//	TObjectPtr<class ULSCharacterStatComponent> Stat;
-
-// UI Widget
-//protected:
-//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-//	TObjectPtr<class ULSWidgetComponent> HpBar;
-//
-//	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
-//
-
 
 
 

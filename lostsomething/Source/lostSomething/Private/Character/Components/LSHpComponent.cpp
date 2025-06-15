@@ -26,20 +26,23 @@ void ULSHpComponent::SetHp(float NewHp)
 {
 	CurrentHp = NewHp;
 	OnHpChanged.Broadcast(CurrentHp);
-	UE_LOG(LogTemp, Warning, TEXT("hp component : HP changed: %f"), CurrentHp);
+	//UE_LOG(LogTemp, Warning, TEXT("hp component : HP changed: %f"), CurrentHp);
 
-	//NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
-	//if (CurrentHp != NewHp)
-	//{
-	//	CurrentHp = NewHp;
+    // 0과 MaxHp 사이로 값 제한
+    NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
 
-	//	UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+    if (CurrentHp != NewHp)
+    {
+        CurrentHp = NewHp;
+        OnHpChanged.Broadcast(CurrentHp);
+        UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
 
-	//	// HP변경 UI에 브로드캐스트
-	//	OnHpChanged.Broadcast(CurrentHp);
-
-
-	//}
+        // HP가 0이 되면 델리게이트 호출
+        if (CurrentHp <= 0.0f)
+        {
+            OnHpZero.Broadcast(CurrentHp);
+        }
+    }
 
 }
 
