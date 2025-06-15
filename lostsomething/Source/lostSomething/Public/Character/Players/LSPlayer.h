@@ -104,6 +104,25 @@ protected:
 	void OnMouseWheelUp(const FInputActionValue& Value);
 	void OnMouseWheelDown(const FInputActionValue& Value);
 
+	// 죽음 상태 변수
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Death")
+	bool bIsDead = false;
+
+	// 부활 타이머
+	FTimerHandle RespawnTimerHandle;
+
+	// 죽음, 부활 함수
+	UFUNCTION()
+	void Die();
+
+	UFUNCTION()
+	void Respawn();
+
+	// HP가 0이 될 때 호출함수
+	UFUNCTION()
+	void OnHpReachedZero(float ZeroHp);
+
+
 	/*************************************Property**************************************/
 
 
