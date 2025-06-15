@@ -159,43 +159,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemDetails> ItemInfoArray;
 
-	/*UPROPERTY()
-	FHitResult PickupHitResult;
-	FVector ViewVector;
-	FRotator ViewRotation;*/
 
-//
-//	//투사체 클래스 참조?
-//	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-//	TSubclassOf<class ALSProjectile> ProjectileClass;
-//
-//	//item
-//	UPROPERTY(EditDefaultsOnly)
-//	TSubclassOf<UUserWidget> InventoryWidgetClass;
-//
-//	UPROPERTY(EditDefaultsOnly)
-//	TSubclassOf<UUserWidget> InventoryEntryWidgetClass;
-//
 //	//이렇게 쓰지 말기
 //	/*ULSInventoryWidget* InventoryWidget;
 //	ULSInventoryEntry* InventoryEntryWidget;
 //*/
-
-
-
-//// Stat
-//protected:
-//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-//	TObjectPtr<class ULSCharacterStatComponent> Stat;
-
-// UI Widget
-//protected:
-//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-//	TObjectPtr<class ULSWidgetComponent> HpBar;
-//
-//	virtual void SetupCharacterWidget(class ULSUserWidget* InUserWidget) override;
-//
-
 
 
 

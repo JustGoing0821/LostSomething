@@ -140,6 +140,8 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		if (HasAuthority())
 		{
 			HpComponent->SetHp(CurrentHp);
+			CurrentHp = HpComponent->GetHp();  //0 이하로 내려가지 않게 동기화
+
 		}
 
 
@@ -192,7 +194,7 @@ bool ALSPlayer::isCombining()
 
 void ALSPlayer::OnHpChanged(float NewHp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
