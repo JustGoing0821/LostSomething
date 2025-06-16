@@ -184,3 +184,23 @@ void ALSPlayerController::ClientRPCUpdateScriptWidget_Implementation(const FStri
 	}
 }
 
+void ALSPlayerController::SelectSlot(int32 SlotIndex)
+{
+	if (LSHUDWidget)
+	{
+		// ½½·Ô ÀÎµ¦½º À¯È¿¼º °Ë»ç
+		if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 ½½·Ô
+		{
+			LSHUDWidget->ChangeSlot(SlotIndex);
+			UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectSlot"));
+	}
+}

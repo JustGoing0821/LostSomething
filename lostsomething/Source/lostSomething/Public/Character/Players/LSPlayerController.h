@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void SelectPreviousSlot();
 
+	//숫자키로 슬롯선택
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SelectSlot(int32 SlotIndex);
 
 protected:
 	virtual void BeginPlay() override;
