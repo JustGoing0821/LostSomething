@@ -120,7 +120,10 @@ protected:
 	//던지기 아이템 스폰
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
 
-	
+
+	void ApplyDamage(float DamageAmount);
+
+
 	//void OnMouseWheelUp(const FInputActionValue& Value);
 	//void OnMouseWheelDown(const FInputActionValue& Value);
 	void OnSelectSlot1();

@@ -130,10 +130,26 @@ void ALSPlayer::OnRep_CurrentHp()
 
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	LS_LOG(LogLS, Warning, TEXT("LSPLAYER  :: Take Damage : %f"), DamageAmount);
+	LS_LOG(LogLS, Log, TEXT("Begin : %f"), DamageAmount);
+
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	//추가 코드 (feat.슬)
+	if (HasAuthority())
+	{
+		ApplyDamage(DamageAmount);
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ApplyDamage called"));
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
+	}
+
+	return DamageAmount;
+
+
+	//기존 코드
 	if (HpComponent)
 	{
 		const float NewHp = HpComponent->GetHp() - DamageAmount;
@@ -186,6 +202,27 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	}
 
 	return DamageAmount;
+}
+
+void ALSPlayer::ApplyDamage(float DamageAmount)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	CurrentHp -= DamageAmount;
+
+	if (CurrentHp < 0)
+	{
+		return;
+	}
+
+	if (HpComponent)
+	{
+		HpComponent->SetHp(CurrentHp);
+		LS_LOG(LogLS, Log, TEXT("SetHp Called"));
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
+	}
 }
 
 bool ALSPlayer::isCombining()
@@ -1142,13 +1179,34 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 		UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
 
 		// 슬롯 색상 업데이트
-		LSHUDWidget->UpdateSlotBorderColors();
-	
-		
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+		//LSHUDWidget->UpdateSlotBorderColors();
+
+
+		// 플레이어 컨트롤러 가져오기
+		ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+		if (LSController && LSController->GetLSHUDWidget())
+		{
+			LSController->GetLSHUDWidget()->UpdateSlotBorderColors();
+
+
+		}
+
+
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+		}
+
+
+
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+			{
+				HUD->UpdateSlotBorderColors();
+			}
+		}
+
 	}
 }
 
