@@ -207,8 +207,18 @@ protected:
 //	ULSInventoryEntry* InventoryEntryWidget;
 //*/
 
+	//RPC 
+	// 아이템 줍기
+	UFUNCTION(Server, Reliable)
+	void ServerPickUpItem(AMasterItem* TargetItem);
 
+	// 아이템 던지기
+	UFUNCTION(Server, Reliable)
+	void ServerThrowableItem(const FItemDetails& ItemToThrow, FVector ThrowLocation, FRotator ThrowRotation);
 
+	// 아이템 드롭
+	UFUNCTION(Server, Reliable)
+	void ServerDropItemFromSlot(const FItemDetails& ItemToDrop, FVector DropLocation, FRotator DropRotation);
 
 // Wheelchair
 protected:

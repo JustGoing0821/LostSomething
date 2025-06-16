@@ -400,7 +400,7 @@ void ALSPlayer::ThrowItem()
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				if (!CurrentSlotItem.IsEmpty)
 				{
-					// 포물선으로 아이템 스폰 (나중에 구현)
+					// 포물선으로 아이템 스폰
 					SpawnThrowableItem(CurrentSlotItem);
 
 					// 슬롯 비우기 (DropItemFromSlot과 동일)
