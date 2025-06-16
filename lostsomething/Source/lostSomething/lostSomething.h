@@ -18,12 +18,12 @@ LS_LOG(LogLS, [Log,Warning,Error], ... ... );
 
 **************************/
 
-#define NS_SUBLOG(CatName, Verbosity, Format, ...) UE_LOG(CatName, Verbosity, TEXT("[%s][%s/%s] %s : %s"), LOG_NETMODEINFO, LOG_SUBLOCALROLEINFO, LOG_SUBREMOTEROLEINFO, LOG_CALLINFO, *FString::Printf(Format, ##__VA_ARGS__))
+#define LS_SUBLOG(CatName, Verbosity, Format, ...) UE_LOG(CatName, Verbosity, TEXT("[%s][%s/%s] %s : %s"), LOG_NETMODEINFO, LOG_SUBLOCALROLEINFO, LOG_SUBREMOTEROLEINFO, LOG_CALLINFO, *FString::Printf(Format, ##__VA_ARGS__))
 /******Log format (USubObject-forActorComponent)*********
 
 #include "lostSomething.h"
 
-LS_SUBLOG(LogNS, [Log,Warning,Error], ... ... );
+LS_SUBLOG(LogLS, [Log,Warning,Error], ... ... );
 
 **************************/
 
