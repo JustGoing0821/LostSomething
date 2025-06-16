@@ -215,12 +215,12 @@ void ALSPlayer::OnHpChanged(float NewHp)
 }
 
 //아이템 픽업함수
-void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
-{
-	// Pick Item In Slot 함수 호출
-	PickItemInSlot(PickedItemInfo);
-
-}
+//void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
+//{
+//	// Pick Item In Slot 함수 호출
+//	//PickItemInSlot(PickedItemInfo);
+//
+//}
 
 //슬롯에 아이템 넣기
 void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
@@ -451,8 +451,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
 		//Mouse
-		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
-		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
+		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
 		//Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
@@ -613,8 +613,8 @@ void ALSPlayer::PickUp()
 		{
 			LS_LOG(LogLS, Warning, TEXT("MASTER ITEM FOUND: %s"), *HitItem->GetName());
 
-			// 아이템 픽업 (PickItem → PickItemInSlot 호출)
-			PickItem(HitItem->GetItemInfo());
+			// 아이템 픽업
+			PickItemInSlot(HitItem->GetItemInfo());
 
 			// 아이템 제거
 			HitItem->Destroy();
@@ -706,35 +706,35 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	}
 }
 
-void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-
-	// PlayerController를 통해 HUD에 접근
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->SelectNextSlot();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-	}
-}
-
-void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-
-	// PlayerController를 통해 HUD에 접근
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->SelectPreviousSlot();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-	}
-}
+//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectNextSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
+//	}
+//}
+//
+//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectPreviousSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
+//	}
+//}
 
 
 //Wheelchair part
@@ -1080,7 +1080,7 @@ void ALSPlayer::OnSelectSlot1()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(0); 
+		SelectSlot(0); 
 	}
 }
 
@@ -1090,7 +1090,7 @@ void ALSPlayer::OnSelectSlot2()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(1);
+		SelectSlot(1);
 	}
 }
 
@@ -1100,7 +1100,7 @@ void ALSPlayer::OnSelectSlot3()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(2);
+		SelectSlot(2);
 	}
 }
 
@@ -1110,7 +1110,7 @@ void ALSPlayer::OnSelectSlot4()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(3);
+		SelectSlot(3);
 	}
 }
 
@@ -1120,6 +1120,49 @@ void ALSPlayer::OnSelectSlot5()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(4);
+		SelectSlot(4);
 	}
 }
+
+void ALSPlayer::SelectSlot(int32 SlotIndex)
+{
+	// 슬롯 인덱스 유효성 검사
+	if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
+	{
+		ChangeSlot(SlotIndex);
+		UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+	}
+}
+
+
+
+void ALSPlayer::ChangeSlot(int32 NewSlot)
+{
+	// 슬롯 범위 검증 및 순환 처리
+	if (NewSlot < 0)
+	{
+		SelectedSlot = MaxSlots;
+	}
+	else if (NewSlot > MaxSlots)
+	{
+		SelectedSlot = 0;
+	}
+	else
+	{
+		SelectedSlot = NewSlot;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
+
+	// 슬롯 색상 업데이트
+	//UpdateSlotBorderColors();
+}
+
+
+
+
+

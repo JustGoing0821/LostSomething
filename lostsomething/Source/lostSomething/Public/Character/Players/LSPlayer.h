@@ -60,8 +60,8 @@ public:
 
 	// 아이템 픽업 함수_ Pick Item 
 	// 인풋 변수가 item details. 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void PickItem(const FItemDetails& PickedItemInfo);
+	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	//void PickItem(const FItemDetails& PickedItemInfo);
 
 	//아이템 픽업후 슬롯에 넣기
 	//입력 파라미터 itemdetials 구조체
@@ -84,6 +84,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ThrowItem();
 
+	// 슬롯 선택 시스템 함수들
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ChangeSlot(int32 NewSlot);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 GetSelectedSlot() const { return SelectedSlot; }
+
+	//숫자키로 슬롯선택
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SelectSlot(int32 SlotIndex);
+
 protected:
 	/*************************************Function**************************************/
 
@@ -102,8 +113,8 @@ protected:
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
 
 	
-	void OnMouseWheelUp(const FInputActionValue& Value);
-	void OnMouseWheelDown(const FInputActionValue& Value);
+	//void OnMouseWheelUp(const FInputActionValue& Value);
+	//void OnMouseWheelDown(const FInputActionValue& Value);
 	void OnSelectSlot1();
 	void OnSelectSlot2();
 	void OnSelectSlot3();
@@ -207,18 +218,7 @@ protected:
 //	ULSInventoryEntry* InventoryEntryWidget;
 //*/
 
-	//RPC 
-	// 아이템 줍기
-	UFUNCTION(Server, Reliable)
-	void ServerPickUpItem(AMasterItem* TargetItem);
 
-	// 아이템 던지기
-	UFUNCTION(Server, Reliable)
-	void ServerThrowableItem(const FItemDetails& ItemToThrow, FVector ThrowLocation, FRotator ThrowRotation);
-
-	// 아이템 드롭
-	UFUNCTION(Server, Reliable)
-	void ServerDropItemFromSlot(const FItemDetails& ItemToDrop, FVector DropLocation, FRotator DropRotation);
 
 // Wheelchair
 protected:

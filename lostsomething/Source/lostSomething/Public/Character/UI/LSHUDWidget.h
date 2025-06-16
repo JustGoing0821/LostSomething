@@ -30,12 +30,7 @@ public:
 	void UpdateHpBar(float NewHp);
 
 
-	// 슬롯 선택 시스템 함수들
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ChangeSlot(int32 NewSlot);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int32 GetSelectedSlot() const { return SelectedSlot; }
+	
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UpdateSlotBorderColors();

@@ -29,27 +29,7 @@ void ULSHUDWidget::UpdateHpBar(float NewHp)
     }
 }
 
-void ULSHUDWidget::ChangeSlot(int32 NewSlot)
-{
-	// 슬롯 범위 검증 및 순환 처리
-	if (NewSlot < 0)
-	{
-		SelectedSlot = MaxSlots;
-	}
-	else if (NewSlot > MaxSlots)
-	{
-		SelectedSlot = 0;
-	}
-	else
-	{
-		SelectedSlot = NewSlot;
-	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
-
-	// 슬롯 색상 업데이트
-	UpdateSlotBorderColors();
-}
 
 void ULSHUDWidget::UpdateSlotBorderColors()
 {
@@ -66,54 +46,7 @@ void ULSHUDWidget::UpdateSlotBorderColors()
 
 }
 
-//icon추가함수
 
-//void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::SetIcon() called - Slot: %d"), CurrentSlot);
-//
-//	if (!ItemIcon)
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("ItemIcon is null"));
-//		return;
-//	}
-//
-//	
-//	UImage* TargetSlotIcon = nullptr;
-//
-//	switch (CurrentSlot)
-//	{
-//	case 0:
-//		TargetSlotIcon = SlotIcon_0;
-//		break;
-//	case 1:
-//		TargetSlotIcon = SlotIcon_1;
-//		break;
-//	case 2:
-//		TargetSlotIcon = SlotIcon_2;
-//		break;
-//	case 3:
-//		TargetSlotIcon = SlotIcon_3;
-//		break;
-//	case 4:
-//		TargetSlotIcon = SlotIcon_4;
-//		break;
-//	default:
-//		UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSlot);
-//		return;
-//	}
-//
-//	
-//	if (TargetSlotIcon)
-//	{
-//		TargetSlotIcon->SetBrushFromTexture(ItemIcon, true); // true = Match Size
-//		UE_LOG(LogTemp, Warning, TEXT("Icon set for slot %d"), CurrentSlot);
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("SlotIcon_%d widget is null"), CurrentSlot);
-//	}
-//}
 
 void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 {
