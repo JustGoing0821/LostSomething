@@ -85,11 +85,19 @@ public:
 	void ThrowItem();
 
 	// 슬롯 선택 시스템 함수들
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ChangeSlot(int32 NewSlot);
+	/*UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ChangeSlot(int32 NewSlot);*/
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int32 GetSelectedSlot() const { return SelectedSlot; }
+	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	//int32 GetSelectedSlot() const { return SelectedSlot; }
+
+	// 슬롯 선택 변수들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 SelectedSlot = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 MaxSlots = 4;
+
 
 	//숫자키로 슬롯선택
 	UFUNCTION(BlueprintCallable, Category = "HUD")
