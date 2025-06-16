@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "LevelTest/Player/LTPlayerController.h"
@@ -14,6 +15,7 @@
 #include "Game/LSGameMode.h"
 #include "Puzzle/VendingMachine/LSVendingMachineManager.h"
 #include "Quest/LSQuestManager.h"
+#include "Interface/LSTakeDamageInterface.h"
 
 ALSVendingMachine::ALSVendingMachine()
 {
@@ -77,10 +79,13 @@ ALSVendingMachine::ALSVendingMachine()
 
 	MachineNumber = 0;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest0;
+	DamageAmount = 10.f;
 }
 
 void ALSVendingMachine::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (HasAuthority())
 	{
 		BindQuestChange();
@@ -95,6 +100,22 @@ void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 }
 
 
+void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController)
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (HasAuthority())
+	{
+		SetCurrentInteractController(InPlayerController);
+	}
+	else
+	{
+		ServerRPCSetCurrentInteractController(InPlayerController);
+	}
+
+	Super::InteractionProcess(InPlayerController);
+}
+
 void ALSVendingMachine::InteractionProcessSiJae()
 {
 	//const TArray<FString>& Scripts = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
@@ -102,6 +123,8 @@ void ALSVendingMachine::InteractionProcessSiJae()
 	//{
 	//	LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
 	//}
+
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (HasAuthority())
 	{
@@ -220,6 +243,17 @@ void ALSVendingMachine::PuzzleCheck()
 	else
 	{
 		OnVMPuzzleCheck.Execute(false);
+		ApplyDamage();
+	}
+}
+
+void ALSVendingMachine::ApplyDamage()
+{
+	ILSTakeDamageInterface* LSPlayer = Cast<ILSTakeDamageInterface>(CurrentInteractController->GetPawn());
+	if (LSPlayer)
+	{
+		FDamageEvent DamageEvent;
+		LSPlayer->TakeDamage(DamageAmount, DamageEvent, nullptr, this);
 	}
 }
 
@@ -238,4 +272,9 @@ void ALSVendingMachine::MulticastRPCPuzzleActivate_Implementation()
 void ALSVendingMachine::MulticastRPCPuzzleDeactivate_Implementation()
 {
 	PuzzleDeactivate();
+}
+
+void ALSVendingMachine::ServerRPCSetCurrentInteractController_Implementation(APlayerController* InPlayerController)
+{
+	SetCurrentInteractController(InPlayerController);
 }

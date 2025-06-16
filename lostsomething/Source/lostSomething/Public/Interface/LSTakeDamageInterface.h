@@ -24,3 +24,5 @@ class LOSTSOMETHING_API ILSTakeDamageInterface
 public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) = 0;
 };
+
+//#include "Interface/LSTakeDamageInterface.h"

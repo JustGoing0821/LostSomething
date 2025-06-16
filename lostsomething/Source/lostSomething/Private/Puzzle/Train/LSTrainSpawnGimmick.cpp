@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "Components/BoxComponent.h"
 #include "Engine/StaticMeshActor.h"
+#include "Engine/DamageEvents.h"
 #include "Puzzle/Train/LSTrain.h"
 #include "Puzzle/Train/LSTrainStep.h"
 #include "LevelTest/Player/LTPlayerCharacter.h"
@@ -16,6 +17,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
 #include "Quest/LSQuestManager.h"
+#include "Interface/LSTakeDamageInterface.h"
 
 
 // Sets default values
@@ -112,6 +114,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	CorrectGate = -1;
 	CorrectPeopleCount = 2;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
+	DamageAmount = 10.f;
 }
 
 void ALSTrainSpawnGimmick::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -251,6 +254,7 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 	else
 	{
 		OnPuzzleCheck.Broadcast(false, CorrectGate);
+		ApplyDamage();
 	}
 }
 
@@ -292,6 +296,37 @@ void ALSTrainSpawnGimmick::PuzzleActivate()
 
 void ALSTrainSpawnGimmick::PuzzleDeactivate()
 {
+
+}
+
+void ALSTrainSpawnGimmick::ApplyDamage()
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (HasAuthority())
+	{
+		for (UBoxComponent* WaitTrigger : WaitTriggers)
+		{
+			TArray<AActor*> OverlapCharacters;
+			WaitTrigger->GetOverlappingActors(OverlapCharacters, ACharacter::StaticClass());
+			if (OverlapCharacters.Num() > 0)
+			{
+				for (AActor* OverlapCharacter : OverlapCharacters)
+				{
+					APawn* OverlapPawn = Cast<APawn>(OverlapCharacter);
+					if (OverlapPawn)
+					{
+						ILSTakeDamageInterface* LSPlayer = Cast<ILSTakeDamageInterface>(OverlapPawn);
+						if (LSPlayer)
+						{
+							FDamageEvent DamageEvent;
+							LSPlayer->TakeDamage(DamageAmount, DamageEvent, nullptr, this);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)

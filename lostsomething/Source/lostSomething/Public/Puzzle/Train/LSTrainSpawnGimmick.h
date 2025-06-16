@@ -32,6 +32,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 //Stage Section
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
@@ -100,12 +101,16 @@ protected:
 	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
 	void PuzzleActivate();
 	void PuzzleDeactivate();
+	void ApplyDamage();
 
 	UPROPERTY(EditAnywhere, Category="Puzzle")
 	int32 CorrectPeopleCount;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
+
+	UPROPERTY(EditAnywhere, Category = "Puzzle")
+	float DamageAmount;
 
 
 //Queset Section
