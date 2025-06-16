@@ -38,6 +38,7 @@ protected:
 
 //Interaction Section
 public:
+	virtual void InteractionProcess(APlayerController* InPlayerController) override;
 	virtual void InteractionProcessSiJae() override;
 	virtual void InteractionProcessIJae() override;
 
@@ -54,6 +55,7 @@ protected:
 //Puzzle Section
 public:
 	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
+	FORCEINLINE void SetCurrentInteractController(APlayerController* InPlayerController) { CurrentInteractController = InPlayerController; }
 	void BindVendingMachine(class ALSVendingMachineManager* InVendingMachineManager);
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Puzzle)
@@ -62,6 +64,8 @@ public:
 	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
 
 protected:
+	APlayerController* CurrentInteractController;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	int32 MachineNumber;
 
@@ -70,6 +74,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	float DamageAmount;
+
 	void BindQuestChange();
 	UFUNCTION()
 	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
@@ -77,6 +84,7 @@ protected:
 	void PuzzleDeactivate();
 	void SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet);
 	void PuzzleCheck();
+	void ApplyDamage();
 
 
 //RPC Section
@@ -89,4 +97,8 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCPuzzleDeactivate();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCSetCurrentInteractController(APlayerController* InPlayerController);
+
 };
