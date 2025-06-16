@@ -11,6 +11,7 @@
 
 const FName ABossNPCAIController::Key_Phase = FName("Phase");
 const FName ABossNPCAIController::Key_CurrentHP = FName("CurrentHP");
+const FName ABossNPCAIController::Key_bPhase3 = FName("bPhase3");
 
 ABossNPCAIController::ABossNPCAIController()
 {
@@ -45,7 +46,7 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 		}
 
 		Blackboard->SetValueAsEnum(FName("Key_Phase"), static_cast<uint8>(EPhaseType::Phase1));
-		//Blackboard->GetValueAsEnum(Key_Phase);
+		Blackboard->SetValueAsEnum(FName("bPhase3"), false);
 
 		RunBehaviorTree(BTAsset);
 	}
