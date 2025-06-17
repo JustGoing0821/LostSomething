@@ -305,6 +305,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 }
 
 
+
 //아이템 drop
 void ALSPlayer::DropItemFromSlot()
 {
@@ -647,8 +648,28 @@ void ALSPlayer::PickUp()
 	const FVector End = Start + GetActorForwardVector() * PickupRange;
 	FColor DrawColor;
 
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
+	//아이템 버리기 (중첩 아이템 없을때)
+	int32 CurrentSelectedSlot = SelectedSlot;
+	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
+	if (!CurrentSlotItem.IsEmpty)
+	{
+		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+		DropItemFromSlot();
+		DrawColor = FColor::Orange;
+
+		//// 디버그 라인
+		//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+		//float CapsuleHalfHeight = PickupRange * 0.5f;
+		//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+		
+	}
+
+
+	//아이템 hit 시
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
 	if (HitDetected)
 	{
 		AActor* HitActor = OutHitResult.GetActor();
@@ -658,11 +679,6 @@ void ALSPlayer::PickUp()
 		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
 		if (HitItem)
 		{
-			int32 CurrentSelectedSlot = SelectedSlot;
-			LS_LOG(LogLS, Warning, TEXT("MASTER ITEM FOUND: %s"), *HitItem->GetName());
-
-			FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-			bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
 			if (!CurrentSlotItem.IsEmpty)
 			{
@@ -677,7 +693,6 @@ void ALSPlayer::PickUp()
 				return; // 드롭만 하고 함수 종료
 			}
 		}
-
 
 
 			//수정
@@ -743,13 +758,13 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 			if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 			{
 				// 물리 시뮬레이션 활성화
-				ItemMesh->SetSimulatePhysics(true);
+				//ItemMesh->SetSimulatePhysics(true);
 				// 이 부분들 추가:
-				ItemMesh->SetNotifyRigidBodyCollision(true); 
+				//ItemMesh->SetNotifyRigidBodyCollision(true); 
 			
 				// Hit 이벤트를 위해 충돌 설정
-				ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+				//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				//ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 				// 던지는 방향과 힘 
 				FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);

@@ -67,6 +67,9 @@ public:
 	//입력 파라미터 itemdetials 구조체
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void PickItemInSlot(const FItemDetails& PickedItem);
+	
+
+
 
 	// Drop Item 위치를 나타내는 Arrow 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -116,6 +119,8 @@ protected:
 	void Interaction();
 	void Attack();
 	void PickUp();
+
+
 
 	//던지기 아이템 스폰
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
