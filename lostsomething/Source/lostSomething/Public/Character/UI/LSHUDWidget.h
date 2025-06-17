@@ -33,7 +33,7 @@ public:
 	
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void UpdateSlotBorderColors();
+	void UpdateSlotBorderColors(int32 NewSelectedSlot);
 
 	// Set IconÇÔ¼ö
 	UFUNCTION(BlueprintCallable, Category = "HUD")

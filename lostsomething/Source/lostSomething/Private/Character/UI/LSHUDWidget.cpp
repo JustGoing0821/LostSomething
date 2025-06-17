@@ -12,7 +12,7 @@ void ULSHUDWidget::NativeConstruct()
     UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::NativeConstruct() Called"));
 
     // 초기 슬롯 색상 설정
-    UpdateSlotBorderColors();
+    UpdateSlotBorderColors(0);
 }
 
 void ULSHUDWidget::UpdateHpBar(float NewHp)
@@ -31,8 +31,12 @@ void ULSHUDWidget::UpdateHpBar(float NewHp)
 
 
 
-void ULSHUDWidget::UpdateSlotBorderColors()
+void ULSHUDWidget::UpdateSlotBorderColors(int32 NewSelectedSlot)
 {
+	// 매개변수가 전달되면 해당 값 사용, 아니면 기존 SelectedSlot 사용
+	int32 SlotToSelect = (NewSelectedSlot >= 0) ? NewSelectedSlot : SelectedSlot;
+
+
 	// 모든 슬롯을 기본 색상으로 설정
 	for (int32 i = 0; i <= MaxSlots; ++i)
 	{
@@ -40,9 +44,22 @@ void ULSHUDWidget::UpdateSlotBorderColors()
 	}
 
 	// 선택된 슬롯만 하이라이트 색상으로 설정
-	SetSlotBorderColor(SelectedSlot, SelectedSlotColor);
+
+	//SetSlotBorderColor(SelectedSlot, SelectedSlotColor);
+	
+
+	// SelectedSlot 업데이트
+	SelectedSlot = SlotToSelect;
+
+	// 선택된 슬롯만 하이라이트 색상으로 설정
+	SetSlotBorderColor(SlotToSelect, SelectedSlotColor);
+
 
 	UE_LOG(LogTemp, Warning, TEXT("Slot border colors updated. Selected slot: %d"), SelectedSlot);
+
+	
+	
+
 
 }
 

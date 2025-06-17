@@ -266,34 +266,38 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		int32 CurrentSelectedSlot = SelectedSlot;
-
-		//슬롯 번호 유효한지 체크
-		if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			//슬롯 배열에서 아이템 정ㅇ보 복사해오기
-			FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-			bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+			int32 CurrentSelectedSlot = SelectedSlot;
 
-			if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+			//슬롯 번호 유효한지 체크
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
-				// 새 아이템 저장
-				ItemInfoArray[CurrentSelectedSlot] = PickedItem;
+				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-				// 아이콘 업데이트
-				//UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
-				//HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
+				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+				{
+					// 새 아이템 저장
+					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
 
-				UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
-			}
-			else  // 이미 차있는 슬롯인 경우
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+					// 아이콘 업데이트
+					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
+					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
-				// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
-				DropItemFromSlot();
+					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+				}
+				else  // 이미 차있는 슬롯인 경우
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+
+					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
+					DropItemFromSlot();
+				}
 			}
 		}
+		
 	}
 
 	
@@ -1171,41 +1175,53 @@ void ALSPlayer::OnSelectSlot5()
 
 void ALSPlayer::SelectSlot(int32 SlotIndex)
 {
-	// 슬롯 인덱스 유효성 검사
-	if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController())) 
 	{
-		SelectedSlot = SlotIndex;
-		//ChangeSlot(SlotIndex);
-		UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
-
-		// 슬롯 색상 업데이트
-		//LSHUDWidget->UpdateSlotBorderColors();
-
-
-		// 플레이어 컨트롤러 가져오기
-		ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-		if (LSController && LSController->GetLSHUDWidget())
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			LSController->GetLSHUDWidget()->UpdateSlotBorderColors();
-
-
-		}
-
-
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
-		}
-
-
-
-		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		{
-			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+			// 슬롯 인덱스 유효성 검사
+			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
 			{
-				HUD->UpdateSlotBorderColors();
-			}
+				SelectedSlot = SlotIndex;
+				//ChangeSlot(SlotIndex);
+				UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+
+				// 슬롯 색상 업데이트
+				//LSHUDWidget->UpdateSlotBorderColors();
+
+
+				// 플레이어 컨트롤러 가져오기
+				ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+				if (LSController && LSController->GetLSHUDWidget())
+				{
+					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
+
+
+				}
+
+
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+				}
+
 		}
+	}
+	
+	
+		
+
+
+
+
+
+		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		//{
+		//	if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		//	{
+		//		HUD->UpdateSlotBorderColors();
+		//	}
+		//}
 
 	}
 }
