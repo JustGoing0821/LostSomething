@@ -73,6 +73,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void DropItemFromSlot();
 
+	UFUNCTION(Server, Reliable)
+	void ServerDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation);
+
 
 	//던지기 (impulse로 아이템 스폰)
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
