@@ -130,10 +130,26 @@ void ALSPlayer::OnRep_CurrentHp()
 
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	LS_LOG(LogLS, Warning, TEXT("LSPLAYER  :: Take Damage : %f"), DamageAmount);
+	LS_LOG(LogLS, Log, TEXT("Begin : %f"), DamageAmount);
+
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	//추가 코드 (feat.슬)
+	if (HasAuthority())
+	{
+		ApplyDamage(DamageAmount);
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ApplyDamage called"));
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
+	}
+
+	return DamageAmount;
+
+
+	//기존 코드
 	if (HpComponent)
 	{
 		const float NewHp = HpComponent->GetHp() - DamageAmount;
@@ -188,6 +204,27 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	return DamageAmount;
 }
 
+void ALSPlayer::ApplyDamage(float DamageAmount)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	CurrentHp -= DamageAmount;
+
+	if (CurrentHp < 0)
+	{
+		return;
+	}
+
+	if (HpComponent)
+	{
+		HpComponent->SetHp(CurrentHp);
+		LS_LOG(LogLS, Log, TEXT("SetHp Called"));
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
+	}
+}
+
 bool ALSPlayer::isCombining()
 {
 	return bIsBeingPushed;
@@ -215,12 +252,12 @@ void ALSPlayer::OnHpChanged(float NewHp)
 }
 
 //아이템 픽업함수
-void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
-{
-	// Pick Item In Slot 함수 호출
-	PickItemInSlot(PickedItemInfo);
-
-}
+//void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
+//{
+//	// Pick Item In Slot 함수 호출
+//	//PickItemInSlot(PickedItemInfo);
+//
+//}
 
 //슬롯에 아이템 넣기
 void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
@@ -231,10 +268,12 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+			int32 CurrentSelectedSlot = SelectedSlot;
 
+			//슬롯 번호 유효한지 체크
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
+				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
@@ -258,7 +297,10 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 				}
 			}
 		}
+		
 	}
+
+	
 }
 
 
@@ -273,7 +315,7 @@ void ALSPlayer::DropItemFromSlot()
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
 			// 블루프린트의 SelectedSlots 변수와 동일한 값
-			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+			int32 CurrentSelectedSlot = SelectedSlot;
 
 			// ItemInfoArray GET: CurrentSelectedSlot 인덱스로 현재 슬롯 아이템 가져오기
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
@@ -361,7 +403,7 @@ void ALSPlayer::InitializeInventory()
 	EmptyItem.Item_Class = nullptr;
 
 	// ItemInfoArray를 Empty Item으로 채움
-	const int32 MaxSlots = 5; //슬로수
+	MaxSlots = 5; 
 	ItemInfoArray.Empty(); //배열 비우기
 
 	for (int32 i = 0; i < MaxSlots; ++i)
@@ -394,13 +436,13 @@ void ALSPlayer::ThrowItem()
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
+			int32 CurrentSelectedSlot = SelectedSlot;
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				if (!CurrentSlotItem.IsEmpty)
 				{
-					// 포물선으로 아이템 스폰 (나중에 구현)
+					// 포물선으로 아이템 스폰
 					SpawnThrowableItem(CurrentSlotItem);
 
 					// 슬롯 비우기 (DropItemFromSlot과 동일)
@@ -451,8 +493,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
 		//Mouse
-		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
-		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
+		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
 		//Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
@@ -519,24 +561,28 @@ void ALSPlayer::Attack()
 
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() called"));
 
-	// 현재 선택된 슬롯에 아이템이 있는지 확인
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	int32 CurrentSelectedSlot = SelectedSlot;
+	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
 		{
-			int32 CurrentSelectedSlot = HUD->GetSelectedSlot();
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-			{
-				if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
-				{
-					// 아이템이 있으면 던지기
-					LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
-					ThrowItem();
-					return;
-				}
-			}
+			// 아이템이 있으면 던지기
+			LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
+			ThrowItem();
+			return;
 		}
 	}
+
+	// 현재 선택된 슬롯에 아이템이 있는지 확인
+	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	//{
+	//	
+
+	//	/*if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+	//	{
+	//		
+	//	}*/
+	//}
 
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
@@ -613,8 +659,8 @@ void ALSPlayer::PickUp()
 		{
 			LS_LOG(LogLS, Warning, TEXT("MASTER ITEM FOUND: %s"), *HitItem->GetName());
 
-			// 아이템 픽업 (PickItem → PickItemInSlot 호출)
-			PickItem(HitItem->GetItemInfo());
+			// 아이템 픽업
+			PickItemInSlot(HitItem->GetItemInfo());
 
 			// 아이템 제거
 			HitItem->Destroy();
@@ -628,6 +674,7 @@ void ALSPlayer::PickUp()
 			LS_LOG(LogLS, Warning, TEXT("HIT ACTOR IS NOT MASTER ITEM: %s"), *HitActor->GetName());
 			DrawColor = FColor::Yellow;
 		}
+
 	}
 
 
@@ -706,35 +753,35 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	}
 }
 
-void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-
-	// PlayerController를 통해 HUD에 접근
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->SelectNextSlot();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-	}
-}
-
-void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-
-	// PlayerController를 통해 HUD에 접근
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->SelectPreviousSlot();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-	}
-}
+//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectNextSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
+//	}
+//}
+//
+//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectPreviousSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
+//	}
+//}
 
 
 //Wheelchair part
@@ -1078,10 +1125,12 @@ void ALSPlayer::OnSelectSlot1()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
 
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	SelectSlot(0);
+
+	/*if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(0); 
-	}
+		SelectSlot(0); 
+	}*/
 }
 
 void ALSPlayer::OnSelectSlot2()
@@ -1090,7 +1139,7 @@ void ALSPlayer::OnSelectSlot2()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(1);
+		SelectSlot(1);
 	}
 }
 
@@ -1100,7 +1149,7 @@ void ALSPlayer::OnSelectSlot3()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(2);
+		SelectSlot(2);
 	}
 }
 
@@ -1110,7 +1159,7 @@ void ALSPlayer::OnSelectSlot4()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(3);
+		SelectSlot(3);
 	}
 }
 
@@ -1120,6 +1169,90 @@ void ALSPlayer::OnSelectSlot5()
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
-		PC->SelectSlot(4);
+		SelectSlot(4);
 	}
 }
+
+void ALSPlayer::SelectSlot(int32 SlotIndex)
+{
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController())) 
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			// 슬롯 인덱스 유효성 검사
+			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
+			{
+				SelectedSlot = SlotIndex;
+				//ChangeSlot(SlotIndex);
+				UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+
+				// 슬롯 색상 업데이트
+				//LSHUDWidget->UpdateSlotBorderColors();
+
+
+				// 플레이어 컨트롤러 가져오기
+				ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+				if (LSController && LSController->GetLSHUDWidget())
+				{
+					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
+
+
+				}
+
+
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+				}
+
+		}
+	}
+	
+	
+		
+
+
+
+
+
+		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		//{
+		//	if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		//	{
+		//		HUD->UpdateSlotBorderColors();
+		//	}
+		//}
+
+	}
+}
+
+
+
+//void ALSPlayer::ChangeSlot(int32 NewSlot)
+//{
+//	//SelectedSlot = NewSlot;
+//
+//	//// 슬롯 범위 검증 및 순환 처리
+//	//if (NewSlot < 0)
+//	//{
+//	//	SelectedSlot = MaxSlots;
+//	//}
+//	//else if (NewSlot > MaxSlots)
+//	//{
+//	//	SelectedSlot = 0;
+//	//}
+//	//else
+//	//{
+//	//	
+//	//}
+//
+//	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
+//
+//	// 슬롯 색상 업데이트
+//	//UpdateSlotBorderColors();
+//}
+
+
+
+
+

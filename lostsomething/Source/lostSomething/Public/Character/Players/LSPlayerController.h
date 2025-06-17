@@ -23,15 +23,12 @@ public:
 	//수정 게터함수
 	FORCEINLINE ULSHUDWidget* GetLSHUDWidget() const { return LSHUDWidget; }
 
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void SelectNextSlot();
+	//UFUNCTION(BlueprintCallable, Category = "HUD")
+	//void SelectNextSlot();
 
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void SelectPreviousSlot();
+	//UFUNCTION(BlueprintCallable, Category = "HUD")
+	//void SelectPreviousSlot();
 
-	//숫자키로 슬롯선택
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void SelectSlot(int32 SlotIndex);
 
 protected:
 	virtual void BeginPlay() override;
