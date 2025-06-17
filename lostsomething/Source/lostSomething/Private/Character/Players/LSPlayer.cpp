@@ -1206,7 +1206,19 @@ void ALSPlayer::DropItemFromSlot()
 						FActorSpawnParameters SpawnParams;
 						SpawnParams.Instigator = this;
 
-						AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+
+						if (HasAuthority())
+						{
+							// 서버 : 클라이언트 것도 삭제
+							MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+						}
+						else
+						{
+							// 클라이언트  : 서버야 삭제 해줘
+							ServerDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+						}
+
+						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 							ItemClass,
 							SpawnLocation,
 							SpawnRotation,
@@ -1216,7 +1228,7 @@ void ALSPlayer::DropItemFromSlot()
 						if (SpawnedItem)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Item dropped: %s"), *SpawnedItem->GetName());
-						}
+						}*/
 					}
 
 					// Set Array Element: 해당 슬롯을 빈 상태로 만들기
@@ -1256,6 +1268,24 @@ void ALSPlayer::DropItemFromSlot()
 	}
 }
 
+void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
+{
+	MultiDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation);
+}
+
+void ALSPlayer::MultiDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Instigator = this;
+
+	// 모든 클라이언트에서 아이템 스폰
+	AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+		ItemClass,
+		SpawnLocation,
+		SpawnRotation,
+		SpawnParams
+	);
+}
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
