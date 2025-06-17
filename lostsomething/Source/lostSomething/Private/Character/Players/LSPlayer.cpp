@@ -273,6 +273,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 			//슬롯 번호 유효한지 체크
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
+			
 				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
@@ -314,7 +315,7 @@ void ALSPlayer::DropItemFromSlot()
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			// 블루프린트의 SelectedSlots 변수와 동일한 값
+			
 			int32 CurrentSelectedSlot = SelectedSlot;
 
 			// ItemInfoArray GET: CurrentSelectedSlot 인덱스로 현재 슬롯 아이템 가져오기
@@ -322,12 +323,12 @@ void ALSPlayer::DropItemFromSlot()
 			{
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 
-				// Break ItemDetails: IsEmpty와 Item Class 값 추출
+				// ItemDetails: IsEmpty와 Item Class 값 추출
 				bool bIsSlotEmpty = CurrentSlotItem.IsEmpty;
 				TSubclassOf<AMasterItem> ItemClass = CurrentSlotItem.Item_Class;
 
-				// Branch: IsEmpty 조건 확인 (False 분기 - 슬롯이 차있을 때)
-				if (!bIsSlotEmpty)  // False 분기
+				//슬롯이 차있을 때
+				if (!bIsSlotEmpty)  
 				{
 					// Spawn Actor: DropItemLoc 위치에 Item Class로 액터 생성
 					if (ItemClass && DropItemLoc)
@@ -631,7 +632,7 @@ void ALSPlayer::Attack()
 
 
 
-
+//아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
 	if (bIsDead) return;
@@ -657,8 +658,29 @@ void ALSPlayer::PickUp()
 		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
 		if (HitItem)
 		{
+			int32 CurrentSelectedSlot = SelectedSlot;
 			LS_LOG(LogLS, Warning, TEXT("MASTER ITEM FOUND: %s"), *HitItem->GetName());
 
+			FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+			bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+			if (!CurrentSlotItem.IsEmpty)
+			{
+				LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+				DropItemFromSlot();
+				DrawColor = FColor::Orange;
+
+				// 디버그 라인
+				FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+				float CapsuleHalfHeight = PickupRange * 0.5f;
+				DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+				return; // 드롭만 하고 함수 종료
+			}
+		}
+
+
+
+			//수정
 			// 아이템 픽업
 			PickItemInSlot(HitItem->GetItemInfo());
 
@@ -671,25 +693,25 @@ void ALSPlayer::PickUp()
 		}
 		else
 		{
-			LS_LOG(LogLS, Warning, TEXT("HIT ACTOR IS NOT MASTER ITEM: %s"), *HitActor->GetName());
+			
 			DrawColor = FColor::Yellow;
 		}
 
 	}
 
 
-
-	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
-	// 현재 선택된 슬롯의 아이템을 드롭
-	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
-	DropItemFromSlot();
-	DrawColor = FColor::Red;
-
-	// 디버그 라인
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = PickupRange * 0.5f;
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-}
+//
+//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
+//	// 현재 선택된 슬롯의 아이템을 드롭
+//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
+//	DropItemFromSlot();
+//	DrawColor = FColor::Red;
+//
+//	// 디버그 라인
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = PickupRange * 0.5f;
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//}
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
