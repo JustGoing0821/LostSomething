@@ -64,20 +64,27 @@ public:
 	void PickUp();
 
 	UFUNCTION(Server, Reliable)
-	void ServerPickUp(AActor* TargetItem);
+	void ServerPickUp(AMasterItem* TargetItem);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiPickUp(AActor* TargetItem);
+
+	UFUNCTION(Client, Reliable)
+	void ClientPickUp(FItemDetails ItemData);
+
 
 	//버리기 (Item Drop : Spawn)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void DropItemFromSlot();
 
 	UFUNCTION(Server, Reliable)
-	void ServerDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation);
+	void ServerDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation, int32 SlotIndex);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation);
+
+	UFUNCTION(Client, Reliable)
+	void ClientDropItemFromSlot(int32 SlotIndex);
 
 
 	//던지기 (impulse로 아이템 스폰)

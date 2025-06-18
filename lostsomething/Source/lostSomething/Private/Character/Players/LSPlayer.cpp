@@ -1129,21 +1129,23 @@ void ALSPlayer::PickUp()
 
 		//수정
 		// 아이템 픽업
-		PickItemInSlot(HitItem->GetItemInfo());
+		
 
 		if (HasAuthority())
 		{
-			// 서버인 경우: 모든 클라이언트에게 삭제 명령
-			MultiPickUp(HitItem);
+			// 서버
+			PickItemInSlot(HitItem->GetItemInfo());
+			HitItem->Destroy();
 		}
 		else
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
 			ServerPickUp(HitItem);
+			//ClientPickUp(HitItem);
 		}
 
 		// 아이템 제거
-		HitItem->Destroy();
+		//HitItem->Destroy();
 
 		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
 		DrawColor = FColor::Green;
@@ -1157,26 +1159,40 @@ void ALSPlayer::PickUp()
 	
 }
 
-void ALSPlayer::ServerPickUp_Implementation(AActor* TargetItem)
+void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 {
+	if (!TargetItem) return;
+
+	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
 	TargetItem->Destroy();
+
+	ClientPickUp(ItemData);
+
+	//MultiPickUp(TargetItem);
+	//PickItemInSlot(TargetItem->GetItemInfo());
+	//TargetItem->Destroy();
+	//ClientPickUp(TargetItem);
+	
 	
 }
 
 void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 {
-	TargetItem->Destroy();
+	//TargetItem->Destroy();
 }
 
 
-
+void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+{
+	PickItemInSlot(ItemData);
+}
 
 //아이템 drop
 void ALSPlayer::DropItemFromSlot()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
 
-	// PlayerController를 통해 HUD에서 현재 선택된 슬롯 인덱스 가져오기
+	
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
@@ -1184,7 +1200,7 @@ void ALSPlayer::DropItemFromSlot()
 
 			int32 CurrentSelectedSlot = SelectedSlot;
 
-			// ItemInfoArray GET: CurrentSelectedSlot 인덱스로 현재 슬롯 아이템 가져오기
+			//현재 슬롯 아이템 가져오기
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
@@ -1209,13 +1225,39 @@ void ALSPlayer::DropItemFromSlot()
 
 						if (HasAuthority())
 						{
+							//FActorSpawnParameters SpawnParams;
+							//SpawnParams.Instigator = this;
+
+							// 모든 클라이언트에서 아이템 스폰
+							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+								ItemClass,
+								SpawnLocation,
+								SpawnRotation,
+								SpawnParams
+							);
+
+							// Set Array Element: 해당 슬롯을 빈 상태로 만들기
+							FItemDetails EmptySlot;
+							EmptySlot.IsEmpty = true;
+							EmptySlot.Item_Name = NAME_None;
+							EmptySlot.Item_Icon = nullptr;
+							EmptySlot.Item_Nature = EItemNature::IsConsumable;
+							EmptySlot.Item_Class = nullptr;
+
+							ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
+
+							// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
+							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
+							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
+
+
 							// 서버 : 클라이언트 것도 삭제
-							MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
 						}
 						else
 						{
 							// 클라이언트  : 서버야 삭제 해줘
-							ServerDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+							ServerDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation, SelectedSlot);
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1231,20 +1273,7 @@ void ALSPlayer::DropItemFromSlot()
 						}*/
 					}
 
-					// Set Array Element: 해당 슬롯을 빈 상태로 만들기
-					FItemDetails EmptySlot;
-					EmptySlot.IsEmpty = true;
-					EmptySlot.Item_Name = NAME_None;
-					EmptySlot.Item_Icon = nullptr;
-					EmptySlot.Item_Nature = EItemNature::IsConsumable;
-					EmptySlot.Item_Class = nullptr;
-
-					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
-
-					// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
-					UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
-					HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
-
+					
 					UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
 				}
 				else
@@ -1268,24 +1297,60 @@ void ALSPlayer::DropItemFromSlot()
 	}
 }
 
-void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
+void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation, int32 SlotIndex)
 {
-	MultiDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation);
-}
+	//MultiDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation);
 
-void ALSPlayer::MultiDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
-{
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 
-	// 모든 클라이언트에서 아이템 스폰
+	//서버에서 아이템 스폰
 	AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 		ItemClass,
 		SpawnLocation,
 		SpawnRotation,
 		SpawnParams
 	);
+
+
+	//클라이언트 인벤토리 수정요청
+	ClientDropItemFromSlot(SlotIndex);
 }
+
+void ALSPlayer::MultiDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
+{
+	
+}
+
+void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
+{
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			
+			// Set Array Element: 해당 슬롯을 빈 상태로 만들기
+			FItemDetails EmptySlot;
+			EmptySlot.IsEmpty = true;
+			EmptySlot.Item_Name = NAME_None;
+			EmptySlot.Item_Icon = nullptr;
+			EmptySlot.Item_Nature = EItemNature::IsConsumable;
+			EmptySlot.Item_Class = nullptr;
+
+			ItemInfoArray[SlotIndex] = EmptySlot;
+
+			// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
+			UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
+			HUD->SetIcon(SlotIndex, EmptyIcon);
+
+
+		}
+	}
+		
+	
+
+}
+
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
