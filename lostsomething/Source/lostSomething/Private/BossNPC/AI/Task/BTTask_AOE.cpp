@@ -1,19 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BossNPC/AI/Task/BTTask_SpawnObstacles.h"
+
+#include "BossNPC/AI/Task/BTTask_AOE.h"
 #include "BossNPC/AI/BossNPCAIController.h"
 #include "BossNPC/BossNPC.h"
-#include "BossNPC/Obstacle/BossObstacle.h"
 
-
-UBTTask_SpawnObstacles::UBTTask_SpawnObstacles()
+UBTTask_AOE::UBTTask_AOE()
 {
-    bNotifyTick = true;
-    CurrentSpawnCount = 0;
-    TimeSinceLastSpawn = 0.0f;
+	bNotifyTick = true;
+	CurrentSpawnCount = 0;
+	TimeSinceLastSpawn = 0.0f;
 }
 
-EBTNodeResult::Type UBTTask_SpawnObstacles::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_AOE::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     ControlledPawn = OwnerComp.GetAIOwner()->GetPawn();
     if (!ControlledPawn.IsValid())
@@ -26,16 +25,16 @@ EBTNodeResult::Type UBTTask_SpawnObstacles::ExecuteTask(UBehaviorTreeComponent& 
     return EBTNodeResult::InProgress;
 }
 
-void UBTTask_SpawnObstacles::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTTask_AOE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
     TimeSinceLastSpawn += DeltaSeconds;
 
-    if (TimeSinceLastSpawn >= 5.0f)
+    if (TimeSinceLastSpawn >= 1.5f)
     {
-        if (CurrentSpawnCount < 5)
+        if (CurrentSpawnCount < 3)
         {
             ABossNPC* BossPawn = Cast<ABossNPC>(ControlledPawn.Get());
-            BossPawn->EnterPhase2();
+            BossPawn->EnterPhase1();
             TimeSinceLastSpawn = 0.0f;
             CurrentSpawnCount++;
         }

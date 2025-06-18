@@ -46,7 +46,12 @@ ABossNPC::ABossNPC()
 void ABossNPC::BeginPlay()
 {
     Super::BeginPlay();
-    EnterPhase1();
+    //EnterPhase1();
+    ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
+    if (PC)
+    {
+        PC->ChangedHP();
+    }
 }
 
 // Called every frame
@@ -68,10 +73,10 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     SetHP(GetHP() - DamageAmount);
     LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
 
-        // HP에 따른 페이즈 전환
-        float HPPercentage = GetHP() / MaxHP;
+    // HP에 따른 페이즈 전환
+    float HPPercentage = GetHP() / MaxHP;
 
-    if (HPPercentage <= 0.7f && CurrentPhase == 1)
+    /* if (HPPercentage <= 0.7f && CurrentPhase == 1)
     {
         // 1페이즈 → 2페이즈 (AOE 중단)
         StopAOEPattern();
@@ -82,8 +87,8 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
         // 2페이즈 → 3페이즈 (장애물 중단)
         StopObstaclePattern();
         EnterPhase3();
-    }
-
+    }*/
+   
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
     {
@@ -98,7 +103,7 @@ void ABossNPC::EnterPhase1()
 {
     if (HasAuthority())
     {
-        CurrentPhase = 1;
+        //CurrentPhase = 1;
         UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
         StartAOEAttackPattern();
     }
@@ -109,17 +114,11 @@ void ABossNPC::EnterPhase2()
 {
     if (HasAuthority())
     {
-        CurrentPhase = 2;
+        //CurrentPhase = 2;
         UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
 
         // 장애물 스폰 패턴 시작
-        GetWorld()->GetTimerManager().SetTimer(
-            ObstaclePatternTimerHandle,
-            this,
-            &ABossNPC::SpawnObstacles,
-            3.0f,  // 3초마다 장애물 스폰
-            true   // 반복
-        );
+        SpawnObstacles();
     }
 }
 
@@ -128,7 +127,7 @@ void ABossNPC::EnterPhase3()
 {
     if (HasAuthority() && PlatformGeneratorClass)
     {
-        CurrentPhase = 3;
+        //CurrentPhase = 3;
         UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
 
         FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100);
@@ -162,14 +161,15 @@ void ABossNPC::StartAOEAttackPattern()
         // 첫 AOE는 즉시 시작
         SpawnAOEAttack();
 
-        // 이후 주기적으로 AOE 스폰
-        GetWorld()->GetTimerManager().SetTimer(
+        /*GetWorld()->GetTimerManager().SetTimer(
             AOEPatternTimerHandle,
             this,
             &ABossNPC::SpawnAOEAttack,
             AOEAttackInterval,
             true  // 반복
-        );
+        );*/
+        // 이후 주기적으로 AOE 스폰
+        
 
         UE_LOG(LogTemp, Warning, TEXT("AOE Attack Pattern Started"));
     }

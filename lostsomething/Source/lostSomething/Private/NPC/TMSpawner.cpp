@@ -22,6 +22,12 @@ void ATMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+
 	if (SpawnOffsets.Num() == 0) // 만약 에디터에서 입력 안 되어 있다면 기본값 채우기
 	{
 		SpawnOffsets.Add(FVector(0.f, 0.f, 0.f));

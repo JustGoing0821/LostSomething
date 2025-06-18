@@ -245,6 +245,7 @@ void ATestNPC::MultiAttackHitCheck_Implementation()
 		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
 		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		//Player 인지 확인
 		HitResult->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 	}
 
@@ -271,7 +272,7 @@ void ATestNPC::MultiDespawn_Implementation()
 
 	SetLifeSpan(4.0f);
 
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 
 	if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
 	{
@@ -286,6 +287,29 @@ void ATestNPC::MultiDespawn_Implementation()
 				ToTarget.Normalize();
 
 				FVector OppositeDirection = -ToTarget;
+				FRotator NewRot = OppositeDirection.Rotation();
+				SetActorRotation(NewRot); // 뒤돌기
+
+				// 2. 4미터 떨어진 위치 계산
+				FVector EscapeDestination = GetActorLocation() + OppositeDirection * 1400.0f;
+
+				// 3. AI 이동
+				FAIMoveRequest MoveRequest;
+				MoveRequest.SetGoalLocation(EscapeDestination);
+				MoveRequest.SetAcceptanceRadius(5.0f);
+
+				FNavPathSharedPtr NavPath;
+				FPathFollowingRequestResult Result = AICon->MoveTo(MoveRequest, &NavPath);
+			}
+			else 
+			{
+				// 1. 현재 바라보는 방향 가져오기
+				FVector CurrentForward = GetActorForwardVector();
+				CurrentForward.Z = 0.0f;  // Z축 제거 (수평 이동만)
+				CurrentForward.Normalize();
+
+				// 2. 180도 반대 방향
+				FVector OppositeDirection = -CurrentForward;
 				FRotator NewRot = OppositeDirection.Rotation();
 				SetActorRotation(NewRot); // 뒤돌기
 
