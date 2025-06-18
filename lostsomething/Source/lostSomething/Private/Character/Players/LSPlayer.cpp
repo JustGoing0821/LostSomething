@@ -1351,69 +1351,160 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 }
 
+//
+//void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
+//{
+//	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::SpawnThrowableItem() called"));
+//
+//
+//	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
+//	if (ItemClass && DropItemLoc)
+//	{
+//		// 던지기 시작 위치 (플레이어 앞쪽)
+//		FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
+//		FRotator ThrowRotation = GetActorRotation();
+//
+//		FActorSpawnParameters SpawnParams;
+//		SpawnParams.Instigator = this;
+//
+//
+//
+//		if (HasAuthority()) 
+//		{
+//
+//			//스폰부분
+//			AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
+//				ItemClass,
+//				ThrowStartLocation,
+//				ThrowRotation,
+//				SpawnParams
+//			);
+//
+//
+//			if (ThrownItem)
+//			{
+//				// 던져진 아이템으로 설정
+//				ThrownItem->bIsThrown = true;
+//
+//				if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
+//				{
+//					// 물리 시뮬레이션 활성화
+//					//ItemMesh->SetSimulatePhysics(true);
+//					//ItemMesh->SetNotifyRigidBodyCollision(true); 
+//
+//					// Hit 이벤트를 위해 충돌 설정
+//					//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//					//ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+//
+//					// 던지는 방향과 힘 
+//					FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
+//					const float THROW_FORCE = 1000.0f;
+//
+//					// 임펄스 적용
+//					ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
+//
+//					// Hit 이벤트 바인딩 
+//					ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
+//
+//					LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
+//				}
+//			}
+//			else
+//			{
+//				LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
+//			}
+//
+//		}
+//		else
+//		{
+//			ServerSpawnThrowableItem();
+//		}
+//
+//	}
+//	else
+//	{
+//		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
+//	}
+//}
 
-void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
+//void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
+//{
+//
+//	
+//
+//}
+
+void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
 {
-	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::SpawnThrowableItem() called"));
+}
 
-
-	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
-	if (ItemClass && DropItemLoc)
-	{
-		// 던지기 시작 위치 (플레이어 앞쪽)
-		FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
-		FRotator ThrowRotation = GetActorRotation();
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Instigator = this;
-
-		AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
-			ItemClass,
-			ThrowStartLocation,
-			ThrowRotation,
-			SpawnParams
-		);
-
-		if (ThrownItem)
-		{
-			// 던져진 아이템으로 설정
-			ThrownItem->bIsThrown = true;
-
-			if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
-			{
-				// 물리 시뮬레이션 활성화
-				//ItemMesh->SetSimulatePhysics(true);
-				// 이 부분들 추가:
-				//ItemMesh->SetNotifyRigidBodyCollision(true); 
-
-				// Hit 이벤트를 위해 충돌 설정
-				//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				//ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-
-				// 던지는 방향과 힘 
-				FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-				const float THROW_FORCE = 1000.0f;
-
-				// 임펄스 적용
-				ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
-
-				// Hit 이벤트 바인딩 
-				ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
-
-				LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
-			}
-		}
-		else
-		{
-			LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
-		}
-	}
-	else
-	{
-		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
-	}
+void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
+{
 }
 
 
 
+
+
+
+
+
+void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
+{
+	if (!HasAuthority())
+	{
+		ServerSpawnThrowableItem(ItemToThrow);
+		return;
+	}
+
+	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
+	if (!ItemClass || !DropItemLoc)
+	{
+		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
+		return;
+	}
+
+	FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
+	FRotator ThrowRotation = GetActorRotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Instigator = this;
+
+	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
+		ItemClass,
+		ThrowStartLocation,
+		ThrowRotation,
+		SpawnParams
+	);
+
+	if (ThrownItem)
+	{
+		ThrownItem->bIsThrown = true;
+
+		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
+		{
+			ItemMesh->SetSimulatePhysics(true);
+			ItemMesh->SetNotifyRigidBodyCollision(true);
+			ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
+			const float THROW_FORCE = 1000.0f;
+			ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
+
+			ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
+
+			LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
+		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
+	}
+}
+
+void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
+{
+	SpawnThrowableItem(ItemToThrow);
+}
 

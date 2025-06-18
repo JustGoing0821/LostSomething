@@ -90,10 +90,15 @@ public:
 	//던지기 (impulse로 아이템 스폰)
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
 
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnThrowableItem(const FItemDetails& ItemToThrow);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiSpawnThrowableItem(const FItemDetails& ItemToThrow);
 
+	UFUNCTION(Client, Reliable)
+	void ClientSpawnThrowableItem(int32 SlotIndex);
 
-	
 	//슬롯 관련
 	//아이템 픽업후 슬롯에 넣기
 	//입력 파라미터 itemdetials 구조체
