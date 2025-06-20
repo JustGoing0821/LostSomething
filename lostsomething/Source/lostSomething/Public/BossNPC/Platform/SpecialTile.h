@@ -27,6 +27,12 @@ protected:
 	void SetVisibleSiJae();
 	void SetVisibleIJae();
 
+	UPROPERTY()
+	UMaterialInterface* Material_SiJae;
+
+	UPROPERTY()
+	UMaterialInterface* Material_IJae;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

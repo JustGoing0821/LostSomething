@@ -4,6 +4,7 @@
 #include "BossNPC/Platform/SpecialTile.h"
 #include "lostSomething.h"
 #include <Interface/LSCharacterChoiceInterface.h>
+#include "EngineUtils.h"
 
 // Sets default values
 ASpecialTile::ASpecialTile()
@@ -15,13 +16,53 @@ ASpecialTile::ASpecialTile()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
 
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (CubeMesh.Succeeded())
+	{
+		MeshComp->SetStaticMesh(CubeMesh.Object);
+	}
+
+	MeshComp->SetRelativeScale3D(FVector(2.0f, 2.0f, 0.125f));
+
+	//생성자에서 머티리얼 미리 로딩
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'"));
+	if (MatSiJae.Succeeded())
+	{
+		Material_SiJae = MatSiJae.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'"));
+	if (MatIJae.Succeeded())
+	{
+		Material_IJae = MatIJae.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
 void ASpecialTile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	//주로 BeginPlay에 구현
+	if (HasAuthority())
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+				{
+					if (PlayerController && !PlayerController->IsLocalController())
+					{
+						SetOwner(PlayerController);
+						LS_LOG(LogLS, Log, TEXT("Owner Setted."));
+						break;
+					}
+				}
+			}
+		), 1.0f, false, 2.0f);
+	}
+
+	ChangeVisible();
 }
 
 void ASpecialTile::ChangeVisible()
@@ -49,21 +90,19 @@ void ASpecialTile::ChangeVisible()
 
 void ASpecialTile::SetVisibleSiJae()
 {
-	ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialFinder(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'"));
-	if (MaterialFinder.Succeeded())
+	if (Material_SiJae)
 	{
-		MeshComp->SetMaterial(0, MaterialFinder.Object);
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("SetVisibleSiJae() : Material"));
+		MeshComp->SetMaterial(0, Material_SiJae);
+		LS_LOG(LogLS, Log, TEXT("SetVisibleSiJae() : Material applied"));
 	}
 }
 
 void ASpecialTile::SetVisibleIJae()
 {
-	ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialFinder(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green"));
-	if (MaterialFinder.Succeeded())
+	if (Material_IJae)
 	{
-		MeshComp->SetMaterial(0, MaterialFinder.Object);
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("SetVisibleIJae() : Material"));
+		MeshComp->SetMaterial(0, Material_IJae);
+		LS_LOG(LogLS, Log, TEXT("SetVisibleIJae() : Material applied"));
 	}
 }
 

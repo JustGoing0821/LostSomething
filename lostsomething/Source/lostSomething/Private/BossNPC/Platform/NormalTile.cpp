@@ -14,6 +14,13 @@ ANormalTile::ANormalTile()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
 
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (CubeMesh.Succeeded())
+	{
+		MeshComp->SetStaticMesh(CubeMesh.Object);
+	}
+	MeshComp->SetRelativeScale3D(FVector(2.0f, 2.0f, 0.125f));
+
 	ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialFinder(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'"));
 	if (MaterialFinder.Succeeded())
 	{
