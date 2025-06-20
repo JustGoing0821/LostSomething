@@ -8,6 +8,12 @@
 #include <string>
 
 
+ULSGameInstance::ULSGameInstance()
+{
+	CharacterChoices.Add(ELSNetworkPosition::Server, ELSCharacterChoice::None);
+	CharacterChoices.Add(ELSNetworkPosition::Client, ELSCharacterChoice::None);
+}
+
 void ULSGameInstance::Init()
 {
 	Super::Init();
@@ -185,4 +191,14 @@ FString ULSGameInstance::StringBase64Decode(const FString& str)
 	FBase64::Decode(str, arrayData);
 	std::string ut8String((char*)(arrayData.GetData()), arrayData.Num());
 	return UTF8_TO_TCHAR(ut8String.c_str());
+}
+
+void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
+{
+	//UE_LOG(LogTemp, Log, TEXT("%s"), TEXT("SetCharacterChoices Begin"));
+	if (CharacterChoices.Num() == 2)
+	{
+		CharacterChoices[ELSNetworkPosition::Server] = ServerChoice;
+		CharacterChoices[ELSNetworkPosition::Client] = ClientChoice;
+	}
 }

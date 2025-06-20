@@ -60,7 +60,76 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	APlayerController* ResultController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(GetGameInstance());
 
+	//Not Used ChoseCharacterMap
+	if (GameInstance)
+	{
+		if (GameInstance->GetServerCharacterChoice() == ELSCharacterChoice::None)
+		{
+			TestLoginProcess(ResultController);
+			return ResultController;
+		}
+	}
+
+	//Used ChooseCharacterMap
+	if (GameInstance)
+	{
+		ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(ResultController);
+		if (LSPlayerController)
+		{
+			if (LSPlayerController->GetName() == TEXT("LTPlayerController_0"))
+			{
+				if (GameInstance->GetServerCharacterChoice() == ELSCharacterChoice::SiJae)
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+					DefaultPawnClass = SiJaePawnClass;
+				}
+				else
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+					DefaultPawnClass = IJaePawnClass;
+				}
+				CurrentPlayerCount++;
+
+				FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+			}
+			else
+			{
+				if (GameInstance->GetClientCharacterChoice() == ELSCharacterChoice::IJae)
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+					DefaultPawnClass = IJaePawnClass;
+				}
+				else
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+					DefaultPawnClass = SiJaePawnClass;
+				}
+				CurrentPlayerCount++;
+
+				FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+			}
+
+			//Quest Widget Update Bind
+			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
+		}
+	}
+
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
+	return ResultController;
+}
+
+void ALTGameMode::TestLoginProcess(APlayerController* ResultController)
+{
+	LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Begin"));
 	ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(ResultController);
 	if (LSPlayerController)
 	{
@@ -107,9 +176,6 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALTPlayerController::UpdateQuestWidget);
 		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 	}
-
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
-	return ResultController;
 }
 
 void ALTGameMode::PostLogin(APlayerController* NewPlayer)
