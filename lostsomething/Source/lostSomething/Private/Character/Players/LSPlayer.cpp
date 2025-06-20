@@ -1033,24 +1033,20 @@ void ALSPlayer::HandleWheelchairMovement()
 	if (!PusherCharacter)
 		return;
 
-	// 이 함수는 이제(IJae) 캐릭터에서 호출됨
-	if (HasAuthority())
-	{
-		// 시제(SiJae)의 위치와 방향 가져오기
-		FVector PusherLocation = PusherCharacter->GetActorLocation();
-		FVector PusherForward = PusherCharacter->GetActorForwardVector();
+	// 시제(SiJae)의 위치와 방향 가져오기
+	FVector PusherLocation = PusherCharacter->GetActorLocation();
+	FVector PusherForward = PusherCharacter->GetActorForwardVector();
 
-		// 이제(IJae) 캐릭터를 시제(SiJae) 캐릭터 앞에 위치시키기
-		FVector NewLocation = PusherLocation + (PusherForward * 100.0f);
+	// 이제(IJae) 캐릭터를 시제(SiJae) 캐릭터 앞에 위치시키기
+	FVector NewLocation = PusherLocation + (PusherForward * 100.0f);
 
-		// 이제(IJae) 캐릭터의 위치와 회전 설정
-		// 이제 캐릭터는 시제 캐릭터가 보는 방향으로 회전
-		SetActorLocation(NewLocation, true);
+	// 이제(IJae) 캐릭터의 위치와 회전 설정
+	// 이제 캐릭터는 시제 캐릭터가 보는 방향으로 회전
+	SetActorLocation(NewLocation, true);
 
-		FRotator NewRotation = PusherForward.Rotation();
-		NewRotation.Pitch = 0.0f;
-		SetActorRotation(NewRotation);
-	}
+	FRotator NewRotation = PusherForward.Rotation();
+	NewRotation.Pitch = 0.0f;
+	SetActorRotation(NewRotation);
 }
 
 
