@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
@@ -20,6 +21,7 @@
 // Sets default values
 ALSMoveTutorial::ALSMoveTutorial()
 {
+	//TutorialTrigger
 	TutorialTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TutorialTrigger"));
 	RootComponent = TutorialTrigger;
 	TutorialTrigger->SetBoxExtent(FVector(100, 100, 100));
@@ -28,6 +30,24 @@ ALSMoveTutorial::ALSMoveTutorial()
 	TutorialTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSMoveTutorial::OnTutorialTriggerBeginOverlap);
 	TutorialTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSMoveTutorial::OnTutorialTriggerEndOverlap);
 
+	//LocationMark
+	LocationMark = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LocationMark"));
+	LocationMark->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder"));
+	if (ItemMeshRef.Object)
+	{
+		LocationMark->SetStaticMesh(ItemMeshRef.Object);
+	}
+	LocationMark->SetVisibility(false);
+	LocationMark->SetCollisionProfileName(TEXT("NoColision"));
+	LocationMark->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//LightMark
+	LightMark = CreateDefaultSubobject<USpotLightComponent>(TEXT("LightMark"));
+	LightMark->SetupAttachment(RootComponent);
+	LightMark->SetIntensity(0.0f);
+
+	bReplicates = true;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest1;
 }
 
@@ -111,6 +131,7 @@ void ALSMoveTutorial::BindQuestChange()
 
 void ALSMoveTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
@@ -123,12 +144,42 @@ void ALSMoveTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum
 
 void ALSMoveTutorial::PuzzleActivate()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
+	{
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+	}
+
 	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	LocationMark->SetVisibility(true);
+	LightMark->SetIntensity(3000.0f);
 }
 
 void ALSMoveTutorial::PuzzleDeactivate()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+	if (LSCharacterChoice)
+	{
+		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+		LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+	}
+
 	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LocationMark->SetVisibility(false);
+	LightMark->SetIntensity(0.0f);
 }
 
 void ALSMoveTutorial::QuestClear()
@@ -145,10 +196,12 @@ void ALSMoveTutorial::QuestClear()
 
 void ALSMoveTutorial::MulticastRPCPuzzleActivate_Implementation()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleActivate();
 }
 
 void ALSMoveTutorial::MulticastRPCPuzzleDeactivate_Implementation()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleDeactivate();
 }

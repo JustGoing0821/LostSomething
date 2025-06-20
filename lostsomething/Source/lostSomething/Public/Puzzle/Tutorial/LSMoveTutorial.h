@@ -20,8 +20,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TutorialTrigger;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> LocationMark;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USpotLightComponent> LightMark;
 
 	int32 CurrentTriggerPlayers;
 
@@ -44,10 +50,10 @@ protected:
 
 //RPC
 public:
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCPuzzleActivate();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCPuzzleDeactivate();
 
 };
