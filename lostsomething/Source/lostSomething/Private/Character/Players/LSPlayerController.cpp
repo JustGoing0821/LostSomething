@@ -79,39 +79,6 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
 }
 
-void ALSPlayerController::SelectNextSlot()
-{
-	if (LSHUDWidget)
-	{
-		int32 CurrentSlot = LSHUDWidget->GetSelectedSlot();
-		int32 NextSlot = CurrentSlot + 1;
-
-		LSHUDWidget->ChangeSlot(NextSlot);
-
-		UE_LOG(LogTemp, Warning, TEXT("Selected next slot: %d -> %d"), CurrentSlot, NextSlot);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectNextSlot"));
-	}
-}
-
-void ALSPlayerController::SelectPreviousSlot()
-{
-	if (LSHUDWidget)
-	{
-		int32 CurrentSlot = LSHUDWidget->GetSelectedSlot();
-		int32 PreviousSlot = CurrentSlot - 1;
-
-		LSHUDWidget->ChangeSlot(PreviousSlot);
-
-		UE_LOG(LogTemp, Warning, TEXT("Selected previous slot: %d -> %d"), CurrentSlot, PreviousSlot);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectPreviousSlot"));
-	}
-}
 
 void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum)
 {
@@ -181,26 +148,5 @@ void ALSPlayerController::ClientRPCUpdateScriptWidget_Implementation(const FStri
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Not LocalController"));
-	}
-}
-
-void ALSPlayerController::SelectSlot(int32 SlotIndex)
-{
-	if (LSHUDWidget)
-	{
-		// ½½·Ô ÀÎµ¦½º À¯È¿¼º °Ë»ç
-		if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 ½½·Ô
-		{
-			LSHUDWidget->ChangeSlot(SlotIndex);
-			UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("LSHUDWidget is null in SelectSlot"));
 	}
 }

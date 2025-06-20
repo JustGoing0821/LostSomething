@@ -38,6 +38,7 @@ protected:
     float MaxHP = 100.0f;
     float CurrentHP;
 
+    //AOE
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
@@ -99,7 +100,7 @@ private:
     void SpawnAOEAttack();
     void StopAOEPattern();
     void StopObstaclePattern();
-    FVector GetRandomAOELocation();
+    //FVector GetRandomAOELocation();
     FVector GetRandomLocationAroundBoss();  // ← 이거 추가!
 
     // 네트워크 RPC 함수들

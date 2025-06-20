@@ -35,6 +35,7 @@ public:
 	//BB Key º¯¼ö¸í
 	static const FName Key_Phase;
 	static const FName Key_CurrentHP;
+	static const FName Key_bPhase3;
 
 
 private:

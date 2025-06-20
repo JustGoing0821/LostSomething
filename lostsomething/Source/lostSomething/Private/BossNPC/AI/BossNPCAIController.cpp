@@ -11,6 +11,7 @@
 
 const FName ABossNPCAIController::Key_Phase = FName("Phase");
 const FName ABossNPCAIController::Key_CurrentHP = FName("CurrentHP");
+const FName ABossNPCAIController::Key_bPhase3 = FName("bPhase3");
 
 ABossNPCAIController::ABossNPCAIController()
 {
@@ -41,11 +42,11 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 		{
 			float CurrentHP = 100.0f;
 			LS_LOG(LogLS, Log, TEXT("BossNPCController OnPossess : %f"), CurrentHP)
-			Blackboard->SetValueAsFloat(Key_CurrentHP, CurrentHP);
+			Blackboard->SetValueAsFloat(FName("CurrentHP"), CurrentHP);
 		}
 
-		Blackboard->SetValueAsEnum(Key_Phase, static_cast<uint8>(EPhaseType::Phase1));
-		Blackboard->GetValueAsEnum(Key_Phase);
+		Blackboard->SetValueAsEnum(FName("Key_Phase"), static_cast<uint8>(EPhaseType::Phase1));
+		Blackboard->SetValueAsEnum(FName("bPhase3"), false);
 
 		RunBehaviorTree(BTAsset);
 	}
@@ -76,6 +77,7 @@ void ABossNPCAIController::ChangedHP()
 	{
 		float CurrentHP = BossNPC->GetHP();
 		LS_LOG(LogLS, Log, TEXT("BossNPCController : %f"), CurrentHP)
-		Blackboard->SetValueAsFloat(Key_CurrentHP, CurrentHP);
+		//BlackboardComp->GetValueAsFloat(FName("CurrentHP"));
+		Blackboard->SetValueAsFloat(FName("CurrentHP"), CurrentHP);
 	}
 }
