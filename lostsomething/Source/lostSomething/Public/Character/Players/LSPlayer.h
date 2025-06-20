@@ -239,9 +239,6 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
 	TObjectPtr<ACharacter> PusherCharacter;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wheelchair")
-	TObjectPtr<USkeletalMeshComponent> WheelchairMesh;
-
 	UPROPERTY(Replicated)
 	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
 
