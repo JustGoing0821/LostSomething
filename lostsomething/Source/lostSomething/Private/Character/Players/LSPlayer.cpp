@@ -501,20 +501,37 @@ void ALSPlayer::Attack()
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 
 
+	if (HasAuthority())
+	{
+		ProcessAttack();
+	}
+	else
+	{
+		ServerProcessAttack();
+	}
+
+	
+
+}
+
+void ALSPlayer::ProcessAttack()
+{
+
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 	const float AttackRange = 80.0f;
-	const float AttackRadius = 50.0f;
+	const float AttackRadius = 30.0f;
 	const float AttackDamage = 10.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+
 	if (HitDetected)
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		
+
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
 		{
 			// Player면 데미지 x
@@ -541,7 +558,7 @@ void ALSPlayer::Attack()
 	else
 	{
 		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
-		
+
 		DrawColor = FColor::Red;
 	}
 
@@ -554,6 +571,20 @@ void ALSPlayer::Attack()
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 
 #endif
+	//
+}
+
+void ALSPlayer::ServerProcessAttack_Implementation()
+{
+	ProcessAttack();
+}
+
+void ALSPlayer::MultiProcessAttack_Implementation()
+{
+}
+
+void ALSPlayer::ClientProcessAttack_Implementation()
+{
 }
 
 
@@ -621,7 +652,7 @@ void ALSPlayer::Interaction()
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-	const float InteractionRange = 150.0f;
+	const float InteractionRange = 80.0f;
 	const float InteractionRadius = 50.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * InteractionRange;
