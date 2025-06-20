@@ -136,8 +136,15 @@ void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 			bIsThrown = false; // 던져진 상태 해제
 			return;
 		}
+
+	// 플레이어나 다른 액터에게 맞은 경우
+	if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item hit player: %s"), *HitPlayer->GetName());
+		// 플레이어에게 맞았을 때
+	}
 	// NPC에게 데미지
-	if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OtherActor))
+	else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OtherActor))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit NPC: %s, dealing damage: %.1f"),
 			*OtherActor->GetName(), ThrowDamage);
@@ -152,10 +159,5 @@ void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		bIsThrown = false;
 		Destroy();
 	}
-	// 플레이어나 다른 액터에게 맞은 경우
-	else if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item hit player: %s"), *HitPlayer->GetName());
-		// 플레이어에게 맞았을 때
-	}
+	
 }

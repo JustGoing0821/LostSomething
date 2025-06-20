@@ -45,16 +45,10 @@ public:
 
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	virtual bool isCombining() override;
-
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	//수정
 	UFUNCTION()
 	void OnHpChanged(float NewHp);
 
@@ -63,26 +57,81 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//void PickItem(const FItemDetails& PickedItemInfo);
 
+
+	//Item Section
+
+	//줍기 (Destroy)
+	void PickUp();
+
+	UFUNCTION(Server, Reliable)
+	void ServerPickUp(AMasterItem* TargetItem);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiPickUp(AActor* TargetItem);
+
+	UFUNCTION(Client, Reliable)
+	void ClientPickUp(FItemDetails ItemData);
+
+
+	//버리기 (Item Drop : Spawn)
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void DropItemFromSlot();
+
+	UFUNCTION(Server, Reliable)
+	void ServerDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation, int32 SlotIndex);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiDropItemFromSlot(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation);
+
+	UFUNCTION(Client, Reliable)
+	void ClientDropItemFromSlot(int32 SlotIndex);
+
+
+	//던지기 (impulse로 아이템 스폰)
+	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnThrowableItem(const FItemDetails& ItemToThrow);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiSpawnThrowableItem(const FItemDetails& ItemToThrow);
+
+	UFUNCTION(Client, Reliable)
+	void ClientSpawnThrowableItem(int32 SlotIndex);
+
+	//슬롯 관련
 	//아이템 픽업후 슬롯에 넣기
 	//입력 파라미터 itemdetials 구조체
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void PickItemInSlot(const FItemDetails& PickedItem);
 
-	// Drop Item 위치를 나타내는 Arrow 컴포넌트
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UArrowComponent> DropItemLoc;
-
-	// 슬롯에서 아이템 드롭
+	// 아이템 던지기
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void DropItemFromSlot();
+	void ThrowItem();
+
 
 	// 인벤토리 초기화 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void InitializeInventory();
 
-	// 아이템 던지기
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ThrowItem();
+
+	// Drop Item 위치를 나타내는 Arrow 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UArrowComponent> DropItemLoc;
+
+
+
+	
+	// 슬롯 선택 변수들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 SelectedSlot = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 MaxSlots = 4;
+
+	//숫자키로 슬롯선택
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void SelectSlot(int32 SlotIndex);
 
 	// 슬롯 선택 시스템 함수들
 	/*UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -91,17 +140,10 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//int32 GetSelectedSlot() const { return SelectedSlot; }
 
-	// 슬롯 선택 변수들
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int32 SelectedSlot = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int32 MaxSlots = 4;
+	
 
 
-	//숫자키로 슬롯선택
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void SelectSlot(int32 SlotIndex);
+	
 
 protected:
 	/*************************************Function**************************************/
@@ -115,13 +157,14 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Interaction();
 	void Attack();
-	void PickUp();
-
-	//던지기 아이템 스폰
-	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
-
-
 	void ApplyDamage(float DamageAmount);
+
+	
+
+
+
+
+
 
 
 	//void OnMouseWheelUp(const FInputActionValue& Value);
