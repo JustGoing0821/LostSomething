@@ -518,14 +518,29 @@ void ALSPlayer::Attack()
 	if (HitDetected)
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		
+		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
+		{
+			// Player면 데미지 x
+			UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
+			DrawColor = FColor::Red;
+		}
 
-		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
+		{
+			// NPC만 데미지 적용
+			FDamageEvent DamageEvent;
+			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawColor = FColor::Blue;
+		}
+
+		/*ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
 		if (HitNPC)
 		{
 			FDamageEvent DamageEvent;
 			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
 			DrawColor = FColor::Blue;
-		}
+		}*/
 	}
 	else
 	{
