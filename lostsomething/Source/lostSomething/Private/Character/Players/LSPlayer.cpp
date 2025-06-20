@@ -69,10 +69,6 @@ ALSPlayer::ALSPlayer()
 	// Arrow 위치 조정 (플레이어 앞쪽에 배치)
 	DropItemLoc->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 
-	//wheelchair
-	WheelchairMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WheelchairMesh"));
-	WheelchairMesh->SetupAttachment(GetMesh());
-
 	bIsBeingPushed = false;
 	PusherCharacter = nullptr;
 	bCanPushWheelchair = false;
@@ -1014,6 +1010,18 @@ void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, AC
 {
 	bIsBeingPushed = bPushing;
 	PusherCharacter = Pusher;
+
+	if (IsLocallyControlled() && CameraBoom)
+	{
+		if (bPushing)
+		{
+			CameraBoom->bDoCollisionTest = false;
+		}
+		else
+		{
+			CameraBoom->bDoCollisionTest = true;
+		}
+	}
 
 	// 이제(IJae) 캐릭터의 움직임 제어 설정
 	if (bIsBeingPushed)
