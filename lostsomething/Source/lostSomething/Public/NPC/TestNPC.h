@@ -31,8 +31,6 @@ public:
     void Damage();
     UFUNCTION(Server, Reliable)
     void ServerDamage();
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiDamage();
 
     void SetDespawn();
 
