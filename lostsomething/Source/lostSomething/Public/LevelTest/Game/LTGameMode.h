@@ -33,8 +33,6 @@ protected:
 
 	int32 CurrentPlayerCount;
 
-	void TestLoginProcess(class APlayerController* ResultController);
-
 
 // Quest Section
 public:

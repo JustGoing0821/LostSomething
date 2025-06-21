@@ -45,7 +45,7 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
 
     while (CurrentCol < NumCols - 1)
     {
-        if (FMath::FRand() < 0.8f)
+        if (FMath::FRand() < 0.6f)
         {
             TArray<int32> VOptions;
             if (CurrentRow > 0) VOptions.Add(CurrentRow - 1);

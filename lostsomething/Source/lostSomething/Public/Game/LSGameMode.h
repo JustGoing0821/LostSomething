@@ -45,8 +45,4 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class ALSQuestManager> QuestManager;
-
-//Test Login
-protected:
-	void TestLoginProcess(class APlayerController* ResultController);
 };
