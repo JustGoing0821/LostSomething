@@ -36,32 +36,31 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 {
 	FOnlineSessionSettings Setting;
 
-	// 1. 데디케이트 서버인가??
 	Setting.bIsDedicated = false;
-	// 2. 랜선인가?
+
 	auto SubSys = IOnlineSubsystem::Get();
 	Setting.bIsLANMatch = SubSys->GetSubsystemName().IsEqual("NULL");
-	// 3. 공개로 입장할 수 있는가? 아니면 친구초대로만???
+
 	Setting.bShouldAdvertise = true;
-	// 4. 온라인 상태(presence)를 공개적으로 사용할것인가? -> ping정보
 	Setting.bUsesPresence = true;
-	// 5. 중간입장이 가능한가?
 	Setting.bAllowJoinInProgress = true;
 	Setting.bAllowJoinViaPresence = true;
-	// 6. 최대 입장 가능한 수 설정
 	Setting.NumPublicConnections = 2;
-	// 7. 커스텀 정보 설정
 
+	// ? 값은 반드시 UTF-8 또는 FString로 저장 (Base64 제거)
+	FString EncodedRoomName = FString(FTCHARToUTF8(*RoomName).Get());
+	FString EncodedHostName = FString(FTCHARToUTF8(*NickName).Get());
 
-	Setting.Set(TEXT("ROOM_NAME"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("HOST_NAME"), NickName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	// 숫자 값도 반드시 FString으로 변환
+	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("slot_count"), FString::FromInt(3), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("password_required"), FString("false"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	FUniqueNetIdPtr netID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
-	
-	UE_LOG(LogTemp, Warning, TEXT("CreateRoom Start!!! roomNamd : %s, netID : %s"), *RoomName, *netID->ToString());
-
 	SessionInterface->CreateSession(*netID, FName("MySession"), Setting);
-
 }
 
 void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccessful)
