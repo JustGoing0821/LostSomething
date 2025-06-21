@@ -2,9 +2,8 @@
 
 
 #include "Character/UI/LSScriptWidget.h"
+#include "lostSomething.h"
 #include "Components/TextBlock.h"
-
-DEFINE_LOG_CATEGORY(LogLSWidget);
 
 ULSScriptWidget::ULSScriptWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -17,12 +16,12 @@ void ULSScriptWidget::NativeConstruct()
 	Script = Cast<UTextBlock>(GetWidgetFromName(TEXT("TxtScript")));
 	ensure(Script);
 
-	//UE_LOG(LogLSWidget, Log, TEXT("Begin"));
+	//LS_WDGLOG(LogLS, Log, TEXT("Begin"));
 }
 
 void ULSScriptWidget::UpdateScriptWidget(const FString& InScript)
 {
-	//UE_LOG(LogLSWidget, Log, TEXT("Widget received: %s"), *InScript);
+	//LS_WDGLOG(LogLS, Log, TEXT("Widget received: %s"), *InScript);
 	//UE_LOG(LogLSWidget, Log, TEXT("Widget received length: %d"), InScript.Len());
 
 	if (Script)

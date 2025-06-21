@@ -38,6 +38,7 @@ void ALSQuestManager::QuestStart()
 
 void ALSQuestManager::QuestComplete()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	int32 QuestMaxLevel=0;
 	ULSGameSingleton& GameSingleton = ULSGameSingleton::Get();
 	QuestMaxLevel = GameSingleton.QuestMaxLevelIndex;

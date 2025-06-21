@@ -2,6 +2,7 @@
 
 
 #include "UserInterface/Network/CharacterChooseWidget.h"
+#include "lostSomething.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 
@@ -31,6 +32,7 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (ServerChoice == ELSCharacterChoice::SiJae)
 	{
 		TxtServerChoice->SetText(FText::FromString(TEXT("SiJae")));
@@ -53,10 +55,12 @@ void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice Serv
 
 void UCharacterChooseWidget::OnClickedBthSiJae()
 {
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::SiJae);
 }
 
 void UCharacterChooseWidget::OnClickedBthIJae()
 {
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::IJae);
 }

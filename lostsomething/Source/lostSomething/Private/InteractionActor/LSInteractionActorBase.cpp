@@ -198,6 +198,7 @@ void ALSInteractionActorBase::SetCurrentQuest(ELSInteractionEnum InCurrentQuest)
 
 void ALSInteractionActorBase::ChangeVisible()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
 	if (LSCharacterChoice)
@@ -221,6 +222,7 @@ void ALSInteractionActorBase::ChangeVisible()
 
 void ALSInteractionActorBase::MulticastRPCChangeVisible_Implementation()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ChangeVisible();
 }
 

@@ -154,11 +154,12 @@ void ALSVendingMachine::InteractionProcessIJae()
 	//	ServerRPCPuzzleCheck();
 	//}
 
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
+	LS_LOG(LogLS, Warning, TEXT("%s"), TEXT("IJae can't interact with this"));
 }
 
 void ALSVendingMachine::SetVisibleSiJae()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	Super::SetVisibleSiJae();
 
 	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
@@ -166,6 +167,7 @@ void ALSVendingMachine::SetVisibleSiJae()
 
 void ALSVendingMachine::SetVisibleIJae()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	Super::SetVisibleIJae();
 
 	MeshComponent->SetMaterial(0, MeshMaterials[CurrentVendingMachineColor]);
@@ -266,15 +268,21 @@ void ALSVendingMachine::ServerRPCPuzzleCheck_Implementation()
 
 void ALSVendingMachine::MulticastRPCPuzzleActivate_Implementation()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
 	PuzzleActivate();
 }
 
 void ALSVendingMachine::MulticastRPCPuzzleDeactivate_Implementation()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
 	PuzzleDeactivate();
 }
 
 void ALSVendingMachine::ServerRPCSetCurrentInteractController_Implementation(APlayerController* InPlayerController)
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
 	SetCurrentInteractController(InPlayerController);
 }
