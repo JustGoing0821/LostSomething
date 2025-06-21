@@ -10,6 +10,7 @@
 #include "Interaction/LSInteractionEnum.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
+#include "Character/UI/LSDeathWidget.h" 
 #include "LSPlayerController.generated.h"
 
 
@@ -55,6 +56,23 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
+
+
+//Death Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
+	TSubclassOf<class ULSDeathWidget> DeathWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
+	TObjectPtr<class ULSDeathWidget> DeathWidget;
+
+public:
+	// Death Widget 관리 함수들
+	UFUNCTION(BlueprintCallable, Category = "Death")
+	void ShowDeathWidget();
+
+	UFUNCTION(BlueprintCallable, Category = "Death")
+	void HideDeathWidget();
 
 
 //Script Section

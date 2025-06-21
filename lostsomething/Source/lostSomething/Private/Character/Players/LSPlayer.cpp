@@ -18,6 +18,7 @@
 #include "Character/Item/MasterItem.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
 
@@ -292,9 +293,17 @@ void ALSPlayer::Die()
 	UE_LOG(LogTemp, Warning, TEXT("Player died"));
 
 	// 모든 입력 차단
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
+		PC->ShowDeathWidget();
 		DisableInput(PC);
+	}
+
+	// 메시 숨기기
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(false);
+		UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));
 	}
 
 	// 충돌 비활성화
@@ -320,6 +329,13 @@ void ALSPlayer::Respawn()
 	bIsDead = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
 
+	// 메시 다시 보이게
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(true);
+		UE_LOG(LogTemp, Warning, TEXT("Player mesh shown"));
+	}
+
 	// HP 풀로 회복
 	if (HpComponent)
 	{
@@ -328,8 +344,9 @@ void ALSPlayer::Respawn()
 	}
 
 	// 입력 재활성화
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
+		PC->HideDeathWidget();
 		EnableInput(PC);
 	}
 

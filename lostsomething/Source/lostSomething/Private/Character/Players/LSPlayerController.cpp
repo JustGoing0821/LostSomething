@@ -32,6 +32,12 @@ ALSPlayerController::ALSPlayerController()
 	{
 		ScriptWidgetClass = ScriptWidgetRef.Class;
 	}
+
+	static ConstructorHelpers::FClassFinder<ULSDeathWidget> DeathWidgetRef(TEXT("/Game/Players/UI/WBP_DeathWidget.WBP_DeathWidget_C"));
+	if (DeathWidgetRef.Class)
+	{
+		DeathWidgetClass = DeathWidgetRef.Class;
+	}
 }
 
 void ALSPlayerController::BeginPlay()
@@ -47,6 +53,17 @@ void ALSPlayerController::BeginPlay()
 		if (LSHUDWidget)
 		{
 			LSHUDWidget->AddToViewport();
+		}
+	}
+
+
+	if (IsLocalController() && DeathWidgetClass)
+	{
+		DeathWidget = CreateWidget<ULSDeathWidget>(this, DeathWidgetClass);
+		if (DeathWidget)
+		{
+			// 생성만 하고 화면에는 추가x(숨김 상태)
+			LS_LOG(LogLS, Log, TEXT("%s"), TEXT("DeathWidget Created."));
 		}
 	}
 
@@ -79,6 +96,24 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
 }
 
+//Death
+void ALSPlayerController::ShowDeathWidget()
+{
+	if (IsLocalController() && DeathWidget)
+	{
+		DeathWidget->AddToViewport();
+		UE_LOG(LogTemp, Warning, TEXT("Death widget shown"));
+	}
+}
+
+void ALSPlayerController::HideDeathWidget()
+{
+	if (IsLocalController() && DeathWidget)
+	{
+		DeathWidget->RemoveFromViewport();
+		UE_LOG(LogTemp, Warning, TEXT("Death widget hidden"));
+	}
+}
 
 void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum)
 {
@@ -96,6 +131,8 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
 	}
 }
+
+
 
 void ALSPlayerController::UpdateScriptWidget(const FString& ScriptText)
 {
