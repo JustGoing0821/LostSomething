@@ -196,8 +196,28 @@ protected:
 	UFUNCTION()
 	void Die();
 
+	UFUNCTION(Server, Reliable)
+	void ServerDie();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiDie();
+
+	UFUNCTION(Client, Reliable)
+	void ClientDie();
+
+
 	UFUNCTION()
 	void Respawn();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRespawn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRespawn();
+
+	UFUNCTION(Client, Reliable)
+	void ClientRespawn();
+
 
 	// HP가 0이 될 때 호출함수
 	UFUNCTION()

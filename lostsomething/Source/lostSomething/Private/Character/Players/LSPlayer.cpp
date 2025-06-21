@@ -285,6 +285,7 @@ void ALSPlayer::OnHpReachedZero(float ZeroHp)
 	Die();
 }
 
+
 void ALSPlayer::Die()
 {
 	if (bIsDead) return; // 이미 죽었으면 리턴
@@ -292,34 +293,70 @@ void ALSPlayer::Die()
 	bIsDead = true;
 	UE_LOG(LogTemp, Warning, TEXT("Player died"));
 
-	// 모든 입력 차단
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	if (HasAuthority())
 	{
-		PC->ShowDeathWidget();
-		DisableInput(PC);
+		MultiDie();
+
+		// 모든 입력 차단
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			//PC->ShowDeathWidget();
+			//DisableInput(PC);
+		}
+
+		// 메시 숨기기
+	/*	if (GetMesh())
+		{
+			GetMesh()->SetVisibility(false);
+			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));
+		}*/
+
+		// 충돌 비활성화
+		SetActorEnableCollision(false);
+
+		// 이동 비활성화
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+		// 5초 후 부활 타이머 시작
+		GetWorld()->GetTimerManager().SetTimer(
+			RespawnTimerHandle,
+			this,
+			&ALSPlayer::Respawn,
+			5.0f,
+			false
+		);
+		
 	}
 
-	// 메시 숨기기
+	
+}
+
+void ALSPlayer::ServerDie_Implementation()
+{
+}
+
+void ALSPlayer::MultiDie_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
 	if (GetMesh())
 	{
 		GetMesh()->SetVisibility(false);
-		UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));
 	}
 
-	// 충돌 비활성화
-	SetActorEnableCollision(false);
+	// 본인 클라이언트에서만 UI 처리
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			PC->ShowDeathWidget();
+			DisableInput(PC);
+		}
+	}
+}
 
-	// 이동 비활성화
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
-
-	// 5초 후 부활 타이머 시작
-	GetWorld()->GetTimerManager().SetTimer(
-		RespawnTimerHandle,
-		this,
-		&ALSPlayer::Respawn,
-		5.0f,
-		false
-	);
+void ALSPlayer::ClientDie_Implementation()
+{
+	
 }
 
 void ALSPlayer::Respawn()
@@ -329,11 +366,36 @@ void ALSPlayer::Respawn()
 	bIsDead = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
 
-	// 메시 다시 보이게
+	if (HasAuthority())
+	{
+		
+		// HP 풀로 회복
+		if (HpComponent)
+		{
+			HpComponent->SetHp(100.0f);
+			CurrentHp = 100.0f;
+		}
+
+		// 타이머 클리어
+		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+
+		MultiRespawn();
+	}
+
+
+}
+
+void ALSPlayer::ServerRespawn_Implementation()
+{
+}
+
+void ALSPlayer::MultiRespawn_Implementation()
+{
+		// 메시 다시 보이게
 	if (GetMesh())
 	{
 		GetMesh()->SetVisibility(true);
-		UE_LOG(LogTemp, Warning, TEXT("Player mesh shown"));
+		
 	}
 
 	// HP 풀로 회복
@@ -356,8 +418,12 @@ void ALSPlayer::Respawn()
 	// 이동 재활성화
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 
-	// 타이머 클리어
-	GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+	
+
+}
+
+void ALSPlayer::ClientRespawn_Implementation()
+{
 }
 
 
