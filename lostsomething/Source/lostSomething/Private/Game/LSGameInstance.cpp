@@ -131,7 +131,7 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			continue;
 
 		FString roomName;
-		r.Session.SessionSettings.Get(TEXT("ROOM_NAME"), roomName);
+		r.Session.SessionSettings.Get(TEXT("room_name"), roomName);
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *roomName);
 	}
 }
@@ -140,7 +140,7 @@ void ULSGameInstance::JoinRoom(int32 index)
 {
 	auto r = RoomSearch->SearchResults[index];
 	FString sessionName;
-	r.Session.SessionSettings.Get(TEXT("ROOM_NAME"), sessionName);
+	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
 	SessionInterface->JoinSession(0, FName(*sessionName), r);
 }
 
