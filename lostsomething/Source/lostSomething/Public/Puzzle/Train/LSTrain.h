@@ -50,18 +50,26 @@ public:
 	FOnTrainArrivedDelegate OnTrainArrived;
 
 protected:
-	float CurrentAlpha = 0.0f;
+	float CurrentTrainAlpha = 0.0f;
+	float CurrentPassengersAlpha = 0.0f;
 	float LerpSpeed = 0.5f;
+	uint8 bisPassengersGettingOff : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector WaitLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector LeaveLocation;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector GetOffLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector GetOnLocation;
 
 //Gates
 public:
 	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
+
+	UPROPERTY(Replicated)
+	int32 CorrectDoorIndex;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
