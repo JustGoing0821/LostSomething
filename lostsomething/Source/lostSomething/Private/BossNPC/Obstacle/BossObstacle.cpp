@@ -67,14 +67,9 @@ void ABossObstacle::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,	AActor* 
 {
 	if (OtherActor && OtherActor != this)
 	{
-		if (OtherActor && OtherActor != this)
-		{
-			ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OtherActor);
-			if (HitResult) // ²À Ã¼Å©!
-			{
-				FDamageEvent DamageEvent;
-				HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
-			}
-		}
+		FDamageEvent DamageEvent;
+		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OtherActor);
+		HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
+
 	}
 }

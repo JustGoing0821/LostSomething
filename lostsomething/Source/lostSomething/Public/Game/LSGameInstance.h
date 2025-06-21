@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include <Interfaces/OnlineSessionInterface.h>
-#include "Game/LSNetworkPosition.h"
-#include "Character/Players/LSCharacterChoice.h"
 #include "LSGameInstance.generated.h"
 
 
@@ -42,8 +40,6 @@ class LOSTSOMETHING_API ULSGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	ULSGameInstance();
-
 	//=============================================
 	//     PROPERTIES & VARIABLES
 	//=============================================
@@ -112,13 +108,4 @@ protected:
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Quest)
 	int32 CurrentQuestIndex = 0;
 	
-
-	//CharacterChoiceSection
-public:
-	void SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice);
-	FORCEINLINE const ELSCharacterChoice GetServerCharacterChoice() { return CharacterChoices[ELSNetworkPosition::Server]; }
-	FORCEINLINE const ELSCharacterChoice GetClientCharacterChoice() { return CharacterChoices[ELSNetworkPosition::Client]; }
-
-protected:
-	TMap<ELSNetworkPosition, ELSCharacterChoice> CharacterChoices;
 };

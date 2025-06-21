@@ -124,8 +124,6 @@ void ULobbyWidget::OnMyDoFindRoomList()
 
 void ULobbyWidget::AddRoomInfoWidget(const FRoomInfo& roomInfo)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
-
 	if (nullptr == scroll_RoomList || nullptr == RoomInfoFactory)
 		return;
 
@@ -134,8 +132,6 @@ void ULobbyWidget::AddRoomInfoWidget(const FRoomInfo& roomInfo)
 	ui->SetInfo(roomInfo);
 	// scroll_roomList의 자식으로 붙이고싶다.
 	scroll_RoomList->AddChild(ui);
-
-	UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
 }
 
 void ULobbyWidget::SetFindActive(bool bActive)
