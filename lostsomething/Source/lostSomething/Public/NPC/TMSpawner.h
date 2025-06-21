@@ -18,9 +18,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, Category = "Monster Type")
-	bool bBoss;
-
 	// 몬스터 클래스 설정용
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TSubclassOf<AActor> MonsterClass;

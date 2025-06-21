@@ -130,7 +130,7 @@ void ABossNPC::EnterPhase3()
         //CurrentPhase = 3;
         UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
 
-        FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
+        FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100);
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

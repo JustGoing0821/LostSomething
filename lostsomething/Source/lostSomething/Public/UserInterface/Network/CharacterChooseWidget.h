@@ -4,10 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/Players/LSCharacterChoice.h"
 #include "CharacterChooseWidget.generated.h"
-
-DECLARE_DELEGATE_OneParam(FOnCharacterChooseDelegate, ELSCharacterChoice InCharacterChoice);
 
 /**
  * 
@@ -17,34 +14,4 @@ class LOSTSOMETHING_API UCharacterChooseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-public:
-	UCharacterChooseWidget(const FObjectInitializer& ObjectInitializer);
-
-protected:
-	virtual void NativeConstruct() override;
-
-public:
-	FOnCharacterChooseDelegate OnCharacterChoose;
-
-	void UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice);
-
-protected:
-	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtServerChoice;
-
-	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtClientChoice;
-
-	UPROPERTY()
-	TObjectPtr<class UButton> BtnSiJae;
-
-	UPROPERTY()
-	TObjectPtr<class UButton> BtnIJae;
-
-	UFUNCTION()
-	void OnClickedBthSiJae();
-
-	UFUNCTION()
-	void OnClickedBthIJae();
-
 };
