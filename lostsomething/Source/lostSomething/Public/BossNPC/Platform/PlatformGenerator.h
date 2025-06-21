@@ -33,10 +33,10 @@ public:
     float TileSpacing = 200.f;
 
     UPROPERTY(EditAnywhere)
-    int32 NumRows = 3;
+    int32 NumRows = 5;
 
     UPROPERTY(EditAnywhere)
-    int32 NumCols = 6;
+    int32 NumCols = 9;
 
     void GenerateMaze();
     TArray<TArray<bool>> GenerateConnectedSpecialPath();

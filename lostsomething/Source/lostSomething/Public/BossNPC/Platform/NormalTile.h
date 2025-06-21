@@ -15,9 +15,13 @@ public:
 	// Sets default values for this actor's properties
 	ANormalTile();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UStaticMeshComponent* MeshComp;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 
 public:	
 	// Called every frame
