@@ -48,8 +48,8 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.NumPublicConnections = 2;
 
 	// ? 값은 반드시 UTF-8 또는 FString로 저장 (Base64 제거)
-	FString EncodedRoomName = FString(FTCHARToUTF8(*RoomName).Get());
-	FString EncodedHostName = FString(FTCHARToUTF8(*NickName).Get());
+	FString EncodedRoomName = StringBase64Encode(RoomName);  // 변경!
+	FString EncodedHostName = StringBase64Encode(NickName);  // 변경!
 
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -80,6 +80,7 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 
 void ULSGameInstance::FindOtherRooms()
 {
+	UE_LOG(LogTemp, Warning, TEXT("FindOtherRooms Begin"));
 	// 1. FOnlineSessionSearch객체를 생성
 	RoomSearch = MakeShareable(new FOnlineSessionSearch());
 	// 2. 세션 검색 조건 설정
@@ -96,6 +97,7 @@ void ULSGameInstance::FindOtherRooms()
 	if (OnFindingRoomsDelegate.IsBound())
 	{
 		OnFindingRoomsDelegate.Broadcast(true);
+		UE_LOG(LogTemp, Warning, TEXT("OnFindingRoomsDelegate.Broadcast"));
 	}
 }
 
@@ -124,15 +126,52 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 
 void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%d"), bWasSuccesful);
-	for (auto r : RoomSearch->SearchResults)
-	{
-		if (false == r.IsValid())
-			continue;
+	UE_LOG(LogTemp, Warning, TEXT("OnMyFindOtherRoomsComplete CALLED!!!"));
+	UE_LOG(LogTemp, Warning, TEXT("search success: %d"), bWasSuccesful);
+	UE_LOG(LogTemp, Warning, TEXT("find room numbers: %d"), RoomSearch->SearchResults.Num());
 
-		FString roomName;
-		r.Session.SessionSettings.Get(TEXT("room_name"), roomName);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *roomName);
+	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
+	{
+		auto SearchResult = RoomSearch->SearchResults[i];
+
+		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);
+
+		if (!SearchResult.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("INVALID SESSION"));
+			continue;
+		}
+
+		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
+
+		// 우리가 설정한 키들만 체크
+		FString roomName, hostName;
+		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
+		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
+
+		if (hasRoomName && hasHostName)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), *StringBase64Decode(roomName));
+			UE_LOG(LogTemp, Warning, TEXT("host: %s"), *StringBase64Decode(hostName));
+
+			// UI 델리게이트 호출
+			if (OnAddRoomInfoDelegate.IsBound())
+			{
+				FRoomInfo roomInfo;
+				roomInfo.Index = i;
+				roomInfo.RoomName = StringBase64Decode(roomName);
+				roomInfo.HostName = StringBase64Decode(hostName);
+				roomInfo.PlayerCount = TEXT("1");
+				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
+
+				OnAddRoomInfoDelegate.Broadcast(roomInfo);
+				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("no room"));
+		}
 	}
 }
 
