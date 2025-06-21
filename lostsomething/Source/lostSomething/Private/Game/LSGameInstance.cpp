@@ -53,14 +53,14 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	// 7. 커스텀 정보 설정
 
 
-	Setting.Set(TEXT("ROOM_NAME"), StringBase64Encode(RoomName), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("HOST_NAME"), StringBase64Encode(NickName), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	// 8. netID 찾기
-	FUniqueNetIdPtr netID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+	Setting.Set(TEXT("ROOM_NAME"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("HOST_NAME"), NickName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
+	FUniqueNetIdPtr netID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+	
 	UE_LOG(LogTemp, Warning, TEXT("CreateRoom Start!!! roomNamd : %s, netID : %s"), *RoomName, *netID->ToString());
 
-	SessionInterface->CreateSession(*netID, FName(*RoomName), Setting);
+	SessionInterface->CreateSession(*netID, FName("MySession"), Setting);
 
 }
 
