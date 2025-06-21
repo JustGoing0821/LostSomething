@@ -74,7 +74,7 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 		MyRoomName = SessionName.ToString();
 		// 서버는 세계 여행을 떠나고싶다. 어디로???
 		FString url = TEXT("/Game/Map/ChooseMap?listen");
-		GetWorld()->ServerTravel(url);
+		//GetWorld()->ServerTravel(url);
 	}
 }
 
