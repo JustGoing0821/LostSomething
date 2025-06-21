@@ -10,22 +10,11 @@ ATMSpawner::ATMSpawner()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	if (bBoss)
+	static ConstructorHelpers::FClassFinder<AActor> MonsterBP(TEXT("/Game/NPC/Blueprints/BP_TestNPC.BP_TestNPC"));
+	if (MonsterBP.Succeeded())
 	{
-		static ConstructorHelpers::FClassFinder<AActor> MonsterBP(TEXT("/Game/BossNPC/BluePrints/BP_BossNPC.BP_BossNPC"));
-		if (MonsterBP.Succeeded())
-		{
-			MonsterClass = MonsterBP.Class;
-		}
+		MonsterClass = MonsterBP.Class;
 	}
-	else {
-		static ConstructorHelpers::FClassFinder<AActor> MonsterBP(TEXT("/Game/NPC/Blueprints/BP_TestNPC.BP_TestNPC"));
-		if (MonsterBP.Succeeded())
-		{
-			MonsterClass = MonsterBP.Class;
-		}
-	}
-	
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +31,8 @@ void ATMSpawner::BeginPlay()
 	if (SpawnOffsets.Num() == 0) // 만약 에디터에서 입력 안 되어 있다면 기본값 채우기
 	{
 		SpawnOffsets.Add(FVector(0.f, 0.f, 0.f));
+		SpawnOffsets.Add(FVector(100.f, 0.f, 0.f));
+		SpawnOffsets.Add(FVector(-100.f, 0.f, 0.f));
 	}
 
 	

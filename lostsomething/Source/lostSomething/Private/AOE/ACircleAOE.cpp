@@ -11,14 +11,13 @@
 #include "Components/SphereComponent.h"   
 #include "Engine/DamageEvents.h"  
 #include "GameFramework/DamageType.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "UObject/ConstructorHelpers.h"
 
 // Sets default values
 ACircleAOE::ACircleAOE()
 {
-
     bReplicates = true;
-
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
     // 루트 컴포넌트 생성
@@ -28,10 +27,31 @@ ACircleAOE::ACircleAOE()
     CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
     CollisionSphere->SetupAttachment(RootComponent);
     CollisionSphere->SetSphereRadius(Radius);
+    CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // 경고 메시 생성
     WarningMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WarningMesh"));
     WarningMesh->SetupAttachment(RootComponent);
+    WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("/Engine/BasicShapes/Sphere"));
+    if (SphereMesh.Succeeded())
+    {
+        WarningMesh->SetStaticMesh(SphereMesh.Object);
+        UE_LOG(LogTemp, Warning, TEXT("Sphere mesh loaded successfully"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to load Sphere mesh"));
+    }
+
+    // **Sphere를 납작하게 만들어서 원형 장판으로 사용**
+    WarningMesh->SetRelativeLocation(FVector(0, 0, -45.0f)); // 바닥에 붙이기
+    WarningMesh->SetRelativeRotation(FRotator(0, 0, 0));
+
+    float ScaleXY = Radius / 50.0f; // Sphere 기본 반지름 50
+    float ScaleZ = 0.05f; // **매우 납작하게**
+    WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
 }
 
 // Called when the game starts or when spawned
@@ -44,17 +64,58 @@ void ACircleAOE::BeginPlay()
     {
         CollisionSphere->SetSphereRadius(Radius);
     }
+
+    // 메시 크기를 Radius에 맞게 다시 조정
+    if (WarningMesh)
+    {
+        float ScaleXY = Radius / 50.0f;
+        float ScaleZ = 0.1f; // **더 두껍게**
+        WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+
+        // **충돌 설정 강화**
+        WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+        WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+        WarningMesh->SetCanEverAffectNavigation(false); // **네비게이션에도 영향 안 줌**
+
+        UE_LOG(LogTemp, Warning, TEXT("WarningMesh configured: Scale(%f, %f, %f)"),
+            ScaleXY, ScaleXY, ScaleZ);
+    }
+
+    // Dynamic Material Instance 생성
+    if (WarningMaterial && WarningMesh)
+    {
+        DynamicMaterial = WarningMesh->CreateDynamicMaterialInstance(0, WarningMaterial);
+        if (DynamicMaterial)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial created successfully!"));
+            // **테스트용 즉시 색상 설정**
+            DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(1.0f, 0.5f, 0.0f, 0.8f));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("WarningMaterial or WarningMesh is null!"));
+    }
 }
 
 // Called every frame
 void ACircleAOE::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (bIsWarningPhase)
+    {
+        ElapsedTime += DeltaTime;
+        float Alpha = ElapsedTime / WarningDuration;
+        UpdateColorAnimation(Alpha);
+    }
 }
 
 void ACircleAOE::StartAOE()
 {
-    UE_LOG(LogTemp, Warning, TEXT("AOE Started! Radius: %f, Duration: %f"), Radius, WarningDuration);
+    bIsWarningPhase = true;
+    ElapsedTime = 0.0f;
 
     // 경고 표시
     if (WarningMesh)
@@ -62,10 +123,11 @@ void ACircleAOE::StartAOE()
         WarningMesh->SetVisibility(true);
     }
 
-    // 디버그 원 그리기 (개발 중에만 사용)
+    /*
 #if WITH_EDITOR
     DrawDebugSphere(GetWorld(), GetActorLocation(), Radius, 32, FColor::Red, false, WarningDuration);
 #endif
+    */
 
     // 경고 시간 후 폭발
     GetWorld()->GetTimerManager().SetTimer(
@@ -79,7 +141,7 @@ void ACircleAOE::StartAOE()
 
 void ACircleAOE::Explode()
 {
-    UE_LOG(LogTemp, Warning, TEXT("AOE Exploded!"));
+    bIsWarningPhase = false;
 
     // 경고 메시 숨기기
     if (WarningMesh)
@@ -87,20 +149,38 @@ void ACircleAOE::Explode()
         WarningMesh->SetVisibility(false);
     }
 
-    // 폭발 이펙트 디버그
+    CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+    /*
 #if WITH_EDITOR
     DrawDebugSphere(GetWorld(), GetActorLocation(), Radius, 32, FColor::Orange, false, 2.0f);
 #endif
+    */
 
     // 범위 내 플레이어에게 데미지
     DealDamageToPlayersInRange();
 
-    // 2초 후 삭제 (이펙트 확인용)
-    FTimerHandle DestroyTimer;
-    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, [this]()
-        {
-            Destroy();
-        }, 2.0f, false);
+    Destroy();
+}
+
+void ACircleAOE::UpdateColorAnimation(float Alpha)
+{
+    if (DynamicMaterial)
+    {
+        FLinearColor BaseColor = FMath::Lerp(
+            FLinearColor(1.0f, 0.6f, 0.0f, 0.8f),
+            FLinearColor(1.0f, 0.0f, 0.0f, 0.9f),
+            Alpha
+        );
+
+        float BlinkSpeed = FMath::Lerp(5.0f, 15.0f, Alpha);
+        float BlinkValue = (FMath::Sin(ElapsedTime * BlinkSpeed) + 1.0f) * 0.5f;
+
+        FLinearColor FinalColor = BaseColor;
+        FinalColor.A *= (0.5f + BlinkValue * 0.5f);
+
+        DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FinalColor);
+    }
 }
 
 void ACircleAOE::DealDamageToPlayersInRange()
@@ -112,33 +192,18 @@ void ACircleAOE::DealDamageToPlayersInRange()
     CollisionSphere->GetOverlappingActors(OverlappingActors);
 
     int32 DamagedCount = 0;
-
     for (AActor* Actor : OverlappingActors)
     {
-        // 보스는 제외
         if (Actor->IsA<ABossNPC>())
         {
             continue;
         }
 
-        // 플레이어에게 데미지
         if (ALSPlayer* Player = Cast<ALSPlayer>(Actor))
         {
-            // **올바른 FDamageEvent 생성**
             FDamageEvent DamageEvent(UDamageType::StaticClass());
-
-            Player->TakeDamage(
-                Damage,       // float DamageAmount
-                DamageEvent,  // const FDamageEvent&
-                nullptr,      // AController* EventInstigator
-                this          // AActor* DamageCauser
-            );
-
+            Player->TakeDamage(Damage, DamageEvent, nullptr, this);
             DamagedCount++;
-            UE_LOG(LogTemp, Warning, TEXT("Damaged Actor: %s for %f damage"),
-                *Player->GetName(), Damage);
         }
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("AOE hit %d actors"), DamagedCount);
 }
