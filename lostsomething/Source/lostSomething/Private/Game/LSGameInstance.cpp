@@ -38,14 +38,14 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 
 	Setting.bIsDedicated = false;
 
-	//auto SubSys = IOnlineSubsystem::Get();
-	//Setting.bIsLANMatch = SubSys->GetSubsystemName().IsEqual("NULL");
-	Setting.bIsLANMatch = true;
+	auto SubSys = IOnlineSubsystem::Get();
+	Setting.bIsLANMatch = SubSys->GetSubsystemName().IsEqual("NULL");
+	//Setting.bIsLANMatch = true;
 
 	Setting.bShouldAdvertise = true;
-	Setting.bUsesPresence = false;
+	Setting.bUsesPresence = true;
 	Setting.bAllowJoinInProgress = true;
-	Setting.bAllowJoinViaPresence = false;
+	Setting.bAllowJoinViaPresence = true;
 	Setting.NumPublicConnections = 2;
 
 	// ? 값은 반드시 UTF-8 또는 FString로 저장 (Base64 제거)
