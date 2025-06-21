@@ -75,7 +75,7 @@ void ALSMoveTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Overlap
 			if (CharacterChoice)
 			{
 				CurrentTriggerPlayers++;
-				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 				if (CurrentTriggerPlayers == 2)
 				{
 					QuestClear();
@@ -92,9 +92,8 @@ void ALSMoveTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Overlap
 				{
 					Script = TEXT("Wait For SiJae.");
 				}
-
-				//LS_LOG(LogLS, Log, TEXT("UpdateScriptWidget Called = %s"), *Script);
 				ScriptController->UpdateScriptWidget(Script);
+
 			}
 		}
 	}
@@ -111,7 +110,7 @@ void ALSMoveTutorial::OnTutorialTriggerEndOverlap(UPrimitiveComponent* Overlappe
 			if (LSCharacter)
 			{
 				CurrentTriggerPlayers--;
-				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 			}
 		}
 	}
@@ -132,7 +131,7 @@ void ALSMoveTutorial::BindQuestChange()
 
 void ALSMoveTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
@@ -145,13 +144,13 @@ void ALSMoveTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum
 
 void ALSMoveTutorial::PuzzleActivate()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
 	if (LSCharacterChoice)
 	{
 		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
-		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
 	}
 	else
 	{
@@ -165,13 +164,13 @@ void ALSMoveTutorial::PuzzleActivate()
 
 void ALSMoveTutorial::PuzzleDeactivate()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
 	if (LSCharacterChoice)
 	{
 		FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
-		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+		LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
 	}
 	else
 	{
@@ -197,12 +196,12 @@ void ALSMoveTutorial::QuestClear()
 
 void ALSMoveTutorial::MulticastRPCPuzzleActivate_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleActivate();
 }
 
 void ALSMoveTutorial::MulticastRPCPuzzleDeactivate_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleDeactivate();
 }

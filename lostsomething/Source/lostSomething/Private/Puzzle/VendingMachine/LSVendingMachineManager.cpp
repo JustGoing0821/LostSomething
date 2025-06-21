@@ -65,7 +65,6 @@ void ALSVendingMachineManager::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSVendingMachine::StaticClass(), FoundActors);
 	if (FoundActors.Num() > 0)
 	{
-		//LS_LOG(LogLS, Log, TEXT("VendingMachines Found : %d"), FoundActors.Num());
 		int32 CurrentMachine = 0;
 		for (AActor* FoundActor : FoundActors)
 		{
@@ -76,9 +75,9 @@ void ALSVendingMachineManager::BeginPlay()
 				VendingMachine->BindVendingMachine(this);
 				VendingMachine->OnVMPuzzleCheck.BindUObject(this, &ALSVendingMachineManager::PuzzleCheck);
 				CurrentMachine++;
-				//LS_LOG(LogLS, Log, TEXT("VendingMachine Binded"));
 			}
 		}
+		//LS_LOG(LogLS, Log, TEXT("VendingMachines Found : %d"), VendingMachines.Num());
 	}
 	else
 	{
@@ -134,7 +133,7 @@ void ALSVendingMachineManager::InteractionProcessIJae()
 
 void ALSVendingMachineManager::StartPhase()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentPhase = ECurrentPhase::Phase1;
 
 	//Set AnswerColors
@@ -173,7 +172,7 @@ void ALSVendingMachineManager::ProceedPhase()
 	//Set Answer
 	CurrentPhase = static_cast<ECurrentPhase>(static_cast<uint8>(CurrentPhase)+1);
 	FString EnumString = StaticEnum<ECurrentPhase>()->GetNameByValue(static_cast<int64>(CurrentPhase)).ToString();
-	//LS_LOG(LogLS, Log, TEXT("CurrentPhase : %s"), *EnumString);
+	LS_LOG(LogLS, Log, TEXT("CurrentPhase : %s"), *EnumString);
 
 	//Set Start Material
 	CurrentAnswerColor = AnswerColors[CurrentPhase];
@@ -185,7 +184,7 @@ void ALSVendingMachineManager::ProceedPhase()
 
 void ALSVendingMachineManager::PuzzleCheck(bool bisPuzzleCorrect)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (HasAuthority())
 	{
@@ -227,7 +226,7 @@ void ALSVendingMachineManager::PuzzleCheck(bool bisPuzzleCorrect)
 
 void ALSVendingMachineManager::QuestClear()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -280,13 +279,11 @@ void ALSVendingMachineManager::OnQuestChange(FLSQuestData InQuestData, ELSIntera
 
 void ALSVendingMachineManager::MulticastRPCQuestClear_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	QuestClear();
 }
 
 void ALSVendingMachineManager::ServerRPCQuestClear_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	MulticastRPCQuestClear();
 }
 
@@ -304,12 +301,10 @@ void ALSVendingMachineManager::ServerRPCStartPhase_Implementation()
 
 void ALSVendingMachineManager::MulticastRPCPuzzleActivate_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleActivate();
 }
 
 void ALSVendingMachineManager::MulticastRPCPuzzleDeactivate_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	PuzzleDeactivate();
 }

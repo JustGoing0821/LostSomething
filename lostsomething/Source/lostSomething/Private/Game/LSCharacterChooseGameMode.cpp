@@ -45,7 +45,6 @@ void ALSCharacterChooseGameMode::BeginPlay()
 		{
 			GameStartWidget->AddToViewport(0);
 			GameStartWidget->OnCharacterChooseEnd.BindUObject(this, &ALSCharacterChooseGameMode::GameStart);
-			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("GameStartWidget Binded"));
 		}
 		else
 		{
@@ -60,7 +59,6 @@ void ALSCharacterChooseGameMode::BeginPlay()
 
 void ALSCharacterChooseGameMode::SetCharacterChoice(bool bisServer, ELSCharacterChoice InCharacterChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (bisServer)
 	{
 		CharacterChoices[ELSNetworkPosition::Server] = InCharacterChoice;

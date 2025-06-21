@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "LSScriptWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogLSWidget, Log, All);
+
 /**
  * 
  */

@@ -34,20 +34,17 @@ void ALSCharacterChoiceController::BeginPlay()
 
 		CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
 		CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
-		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("CharacterChooseWidget Added"));
 	}
 
 	ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
 		GameMode->CharacterChoiceChanged.AddUObject(this, &ALSCharacterChoiceController::UpdateCharacterChooseWidget);
-		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("GameMode Binded"));
 	}
 }
 
 void ALSCharacterChoiceController::OnCharacterChoose(ELSCharacterChoice InCharacterChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		SetCharacterChoice(true, InCharacterChoice);
@@ -60,7 +57,6 @@ void ALSCharacterChoiceController::OnCharacterChoose(ELSCharacterChoice InCharac
 
 void ALSCharacterChoiceController::SetCharacterChoice(bool bisServer, ELSCharacterChoice InCharacterChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -73,7 +69,6 @@ void ALSCharacterChoiceController::SetCharacterChoice(bool bisServer, ELSCharact
 
 void ALSCharacterChoiceController::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (IsLocalController())
 	{
 		if (CharacterChooseWidget)
@@ -90,13 +85,11 @@ void ALSCharacterChoiceController::UpdateCharacterChooseWidget(ELSCharacterChoic
 
 void ALSCharacterChoiceController::ServerRPCSetCharacterChoice_Implementation(ELSCharacterChoice InCharacterChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	SetCharacterChoice(false, InCharacterChoice);
 }
 
 void ALSCharacterChoiceController::ClientRPCUpdateCharacterChooseWidget_Implementation(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (IsLocalController())
 	{
 		if (CharacterChooseWidget)

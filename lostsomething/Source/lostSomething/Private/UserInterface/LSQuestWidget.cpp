@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UserInterface/LSQuestWidget.h"
-#include "lostSomething.h"
 #include "Components/TextBlock.h"
 
 ULSQuestWidget::ULSQuestWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -21,7 +20,6 @@ void ULSQuestWidget::NativeConstruct()
 
 void ULSQuestWidget::UpdateQuestWidget(FLSQuestData InQuestData)
 {
-	//LS_WDGLOG(LogLS, Log, TEXT("Begin"));
 	if (QuestName)
 	{
 		QuestName->SetText(FText::FromString(InQuestData.QuestName));

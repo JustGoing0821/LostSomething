@@ -2,7 +2,6 @@
 
 
 #include "UserInterface/Network/ChooseCharacterEndWidget.h"
-#include "lostSomething.h"
 #include "Components/Button.h"
 
 UChooseCharacterEndWidget::UChooseCharacterEndWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -19,6 +18,5 @@ void UChooseCharacterEndWidget::NativeConstruct()
 
 void UChooseCharacterEndWidget::OnClickedBtnGameStart()
 {
-	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	OnCharacterChooseEnd.ExecuteIfBound();
 }
