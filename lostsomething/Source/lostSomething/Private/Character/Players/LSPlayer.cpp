@@ -904,13 +904,13 @@ void ALSPlayer::Interaction()
 			DrawColor = FColor::Green;
 		}
 
-		ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(HitActor);
+	/*	ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(HitActor);
 		if (HitNPC)
 		{
 			FDamageEvent DamageEvent;
 			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
 			DrawColor = FColor::Blue;
-		}
+		}*/
 	}
 	else
 	{

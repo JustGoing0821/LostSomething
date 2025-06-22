@@ -38,7 +38,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StepMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	FVector CreateGateLocation = FVector(-300, -1215, -50);
-	FVector CreateStepLocation = FVector(-1830.0, 240, 510);
+	FVector CreateStepLocation = FVector(-1830.0, 268, 503);
 	for (FName GateName : GateNames)
 	{
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
@@ -220,7 +220,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 					LSTrain->SetCorrectGate(CorrectGate);
 					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
 					OnPuzzleCheck.AddUObject(LSTrain, &ALSTrain::PuzzleCheck);
-					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::StopTrain);
+					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::MulticastStopTrain);
 				}
 			}
 		), 1.f, false, DelayTime);
@@ -231,7 +231,10 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 {
 	if (CurrentOverlapTrigger[CorrectGate] == CorrectPeopleCount)
 	{
-		OnPuzzleCheck.Broadcast(true, CorrectGate);
+		if (HasAuthority())
+		{
+			OnPuzzleCheck.Broadcast(true, CorrectGate);
+		}
 		if (StepTriggerClass)
 		{
 			FVector SpawnLocation = StepTriggerLocations[CorrectGate-1];
@@ -253,7 +256,10 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 	}
 	else
 	{
-		OnPuzzleCheck.Broadcast(false, CorrectGate);
+		if (HasAuthority())
+		{
+			OnPuzzleCheck.Broadcast(false, CorrectGate);
+		}
 		ApplyDamage();
 	}
 }
@@ -352,7 +358,10 @@ void ALSTrainSpawnGimmick::QuestClear()
 			GameModeQuest->QuestComplete();
 		}
 	}
-	OnTrainPuzzleCleared.Broadcast();
+	if (HasAuthority())
+	{
+		OnTrainPuzzleCleared.Broadcast();
+	}
 }
 
 void ALSTrainSpawnGimmick::OnRep_CorrectGate()
