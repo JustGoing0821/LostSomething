@@ -26,6 +26,10 @@ protected:
 	UFUNCTION()
 	void OnTransferTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+public:
+	FORCEINLINE void SetMoveTargetMap(class UWorld* InMap) { MoveTargetMap = InMap; }
+	FORCEINLINE void SetPuzzleActivateEnum(ELSInteractionEnum InLSInteractionEnum) { PuzzleActivateEnum = InLSInteractionEnum; }
+	void SetTriggerBoxExtent(FVector InBoxSize);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Travel")
