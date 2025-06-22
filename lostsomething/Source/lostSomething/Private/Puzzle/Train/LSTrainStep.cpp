@@ -77,7 +77,14 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 	{
 		if (LSController->GetCharacterChoice() == ELSCharacterChoice::SiJae)
 		{
-			InstallStep();
+			if (HasAuthority())
+			{
+				InstallStep();
+			}
+			else
+			{
+				ServerRPCInstallStep();
+			}
 		}
 		else
 		{
@@ -101,15 +108,7 @@ void ALSTrainStep::InstallStep()
 	}
 	MeshComponent->SetVisibility(bIsStepInstalled);
 
-
-	if (HasAuthority())
-	{
-		MulticastRPCSetVisibility();
-	}
-	else
-	{
-		ServerRPCSetVisibility(bIsStepInstalled);
-	}
+	MulticastRPCSetVisibility();
 }
 
 void ALSTrainStep::PuzzleDeactivate()
@@ -118,11 +117,9 @@ void ALSTrainStep::PuzzleDeactivate()
 	InteractionTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void ALSTrainStep::ServerRPCSetVisibility_Implementation(uint8 bInStepInstalled)
+void ALSTrainStep::ServerRPCInstallStep_Implementation()
 {
-	bIsStepInstalled = bInStepInstalled;
-	//LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
-	MulticastRPCSetVisibility();
+	InstallStep();
 }
 
 void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
