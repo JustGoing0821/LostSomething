@@ -7,10 +7,12 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
 #include "Quest/LSQuestManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 
 // Sets default values
 ALSCombineTutorial::ALSCombineTutorial()
@@ -23,7 +25,7 @@ ALSCombineTutorial::ALSCombineTutorial()
 	TutorialTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerBeginOverlap);
 	TutorialTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerEndOverlap);
 
-	PuzzleActivateEnum = ELSInteractionEnum::Quest2;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest3;
 }
 
 void ALSCombineTutorial::BeginPlay()
@@ -48,7 +50,11 @@ void ALSCombineTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Over
 			}
 			else
 			{
-				LS_LOG(LogLS, Log, TEXT("Being Not Pushed."));
+				LS_LOG(LogLS, Warning, TEXT("Being Not Pushed."));
+				ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
+				ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(OverlapCharacter->GetController());
+				FString Script = "Being Not Pushed.";
+				ScriptController->UpdateScriptWidget(Script);
 			}
 		}
 	}
