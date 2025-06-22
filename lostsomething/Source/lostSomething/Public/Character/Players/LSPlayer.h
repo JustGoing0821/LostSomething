@@ -266,6 +266,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemDetails> ItemInfoArray;
 
+	// 휠체어 관련 프로퍼티
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float NormalCombineDistance = 100.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float MaxCombineDistance = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float DistanceCheckInterval = 0.1f;
+
+	float LastDistanceCheckTime = 0.0f;
+
 
 //	//이렇게 쓰지 말기
 //	/*ULSInventoryWidget* InventoryWidget;
@@ -305,7 +317,13 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastWheelchairStateChanged(bool bPushing, ACharacter* Pusher);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRequestAutoSeparation();
+
 	void HandleWheelchairMovement();
+
+	void CheckCombineDistance();
+	void AutoSeparateFromWheelchair();
 
 public:
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
