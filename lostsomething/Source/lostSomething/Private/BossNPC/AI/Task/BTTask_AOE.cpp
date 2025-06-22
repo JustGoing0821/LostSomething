@@ -7,9 +7,7 @@
 
 UBTTask_AOE::UBTTask_AOE()
 {
-	bNotifyTick = true;
-	CurrentSpawnCount = 0;
-	TimeSinceLastSpawn = 0.0f;
+
 }
 
 EBTNodeResult::Type UBTTask_AOE::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -20,27 +18,13 @@ EBTNodeResult::Type UBTTask_AOE::ExecuteTask(UBehaviorTreeComponent& OwnerComp, 
         return EBTNodeResult::Failed;
     }
 
-    CurrentSpawnCount = 0;
-    TimeSinceLastSpawn = 0.0f;
-    return EBTNodeResult::InProgress;
-}
-
-void UBTTask_AOE::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-    TimeSinceLastSpawn += DeltaSeconds;
-
-    if (TimeSinceLastSpawn >= 1.5f)
+    ABossNPC* BossPawn = Cast<ABossNPC>(ControlledPawn);
+    if (!BossPawn)
     {
-        if (CurrentSpawnCount < 3)
-        {
-            ABossNPC* BossPawn = Cast<ABossNPC>(ControlledPawn.Get());
-            BossPawn->EnterPhase1();
-            TimeSinceLastSpawn = 0.0f;
-            CurrentSpawnCount++;
-        }
-        else
-        {
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-        }
+        return EBTNodeResult::Failed;
     }
+
+    BossPawn->EnterPhase1();
+
+    return EBTNodeResult::Succeeded;
 }

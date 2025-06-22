@@ -2,7 +2,8 @@
 
 
 #include "BossNPC/Platform/NormalTile.h"
-
+#include <Interface/LSTakeDamageInterface.h>
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 ANormalTile::ANormalTile()
@@ -28,13 +29,20 @@ ANormalTile::ANormalTile()
 		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("SetVisibleSiJae() : Material"));
 	}
 
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 또는 QueryAndPhysics
+	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	MeshComp->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap); // Pawn과만 오버랩
+	MeshComp->SetGenerateOverlapEvents(true);
+
+
 }
 
 // Called when the game starts or when spawned
 void ANormalTile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	MeshComp->OnComponentBeginOverlap.AddDynamic(this, &ANormalTile::OnMeshBeginOverlap);
 }
 
 // Called every frame
@@ -42,5 +50,22 @@ void ANormalTile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ANormalTile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+	if (OtherActor && OtherActor != this)
+	{
+		if (OtherActor && OtherActor != this)
+		{
+			ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OtherActor);
+			if (HitResult) // 꼭 체크!
+			{
+				FDamageEvent DamageEvent;
+				HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
+			}
+		}
+	}
 }
 
