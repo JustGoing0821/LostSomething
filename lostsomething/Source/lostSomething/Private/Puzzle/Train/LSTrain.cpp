@@ -31,12 +31,12 @@ ALSTrain::ALSTrain()
 		MeshComponent->SetStaticMesh(FloorMeshRef.Object);
 	}
 	MeshComponent->SetRelativeScale3D(FVector(25.f, 3.f, 0.1f));
-	MeshComponent->SetRelativeLocation(FVector(-200.f, 0.f, -150.f));
+	MeshComponent->SetRelativeLocation(FVector(-200.f, 0.f, -155.f));
 
 
 	// Moving Location
-	WaitLocation = FVector(700, 50, 300);
-	LeaveLocation = FVector(700, 12050, 300);
+	WaitLocation = FVector(-560.0f, 65.0f, 590.0f);
+	LeaveLocation = FVector(7000.0f, 65.0f, 590.0f);
 
 	// Mesh Ref
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> WallMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_wall_100_01.SM_ext_wall_100_01"));
@@ -135,7 +135,7 @@ ALSTrain::ALSTrain()
 	TimeBeforeTrainLeave = 1.0f;
 	bisPassengersGettingOff = false;
 	GetOnLocation = FVector(80, -40, 0);
-	GetOffLocation = FVector(80, 200, 0);
+	GetOffLocation = FVector(80, 130, 0);
 }
 
 void ALSTrain::Tick(float DeltaTime)
@@ -223,9 +223,6 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 void ALSTrain::BeginPlay()
 {
 	Super::BeginPlay();
-
-	WaitLocation = FVector(-560.0f, 20.0f, 590.0f);
-	LeaveLocation = FVector(7000.0f, 20.0f, 590.0f);
 }
 
 void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
