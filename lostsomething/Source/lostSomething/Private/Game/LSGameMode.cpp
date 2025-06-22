@@ -120,7 +120,7 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 				QuestStart();
 			}
 		}
-	), 1, false, 3.0f);
+	), 1, false, 6.0f);
 }
 
 void ALSGameMode::BeginPlay()
