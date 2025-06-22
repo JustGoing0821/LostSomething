@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/TimerHandle.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "ACircleAOE.generated.h"
 
 UCLASS()
@@ -39,6 +40,15 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
     float Damage = 20.0f;
 
+    // 머티리얼 설정
+    UPROPERTY(EditAnywhere, Category = "Visual")
+    class UMaterialInterface* WarningMaterial;
+
+    // 애니메이션용
+    float ElapsedTime = 0.0f;
+    bool bIsWarningPhase = false;
+    UMaterialInstanceDynamic* DynamicMaterial = nullptr;
+
 
     // 타이머
     FTimerHandle WarningTimerHandle;
@@ -57,4 +67,5 @@ public:
 
 private:
     void DealDamageToPlayersInRange();
+    void UpdateColorAnimation(float Alpha);
 };

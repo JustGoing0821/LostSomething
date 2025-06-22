@@ -141,20 +141,9 @@ public:
 	//int32 GetSelectedSlot() const { return SelectedSlot; }
 
 	
-	void Attack();
-	void ProcessAttack();
+
 
 	
-
-	UFUNCTION(Server, Reliable)
-	void ServerProcessAttack();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiProcessAttack();
-
-	UFUNCTION(Client, Reliable)
-	void ClientProcessAttack();
-
 
 protected:
 	/*************************************Function**************************************/
@@ -167,6 +156,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Interaction();
+	void Attack();
 	void ApplyDamage(float DamageAmount);
 
 	
@@ -296,6 +286,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemDetails> ItemInfoArray;
 
+	// 휠체어 관련 프로퍼티
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float NormalCombineDistance = 100.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float MaxCombineDistance = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wheelchair")
+	float DistanceCheckInterval = 0.1f;
+
+	float LastDistanceCheckTime = 0.0f;
+
 
 //	//이렇게 쓰지 말기
 //	/*ULSInventoryWidget* InventoryWidget;
@@ -335,7 +337,13 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastWheelchairStateChanged(bool bPushing, ACharacter* Pusher);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRequestAutoSeparation();
+
 	void HandleWheelchairMovement();
+
+	void CheckCombineDistance();
+	void AutoSeparateFromWheelchair();
 
 public:
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
