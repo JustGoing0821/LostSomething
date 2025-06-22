@@ -73,9 +73,18 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 	{
 		// 입장한 방의 이름을 기억하고싶다.
 		MyRoomName = SessionName.ToString();
+
 		// 서버는 세계 여행을 떠나고싶다. 어디로???
-		FString url = TEXT("/Game/Map/ChooseMap?listen");
-		//GetWorld()->ServerTravel(url);
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(
+			TimerHandle,
+			[this]() {
+				FString url = TEXT("/Game/Map/ChooseMap?listen");
+				GetWorld()->ServerTravel(url);
+			},
+			3.0f,  // 3초 지연
+			false
+		);;
 	}
 }
 
