@@ -18,6 +18,7 @@
 #include "Character/Item/MasterItem.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
 
@@ -152,79 +153,107 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 
 
 	//기존 코드
-	if (HpComponent)
-	{
-		const float NewHp = HpComponent->GetHp() - DamageAmount;
-		//HpComponent->SetHp(NewHp);
-		CurrentHp -= DamageAmount;
-		if (HasAuthority())
-		{
-			HpComponent->SetHp(CurrentHp);
-			CurrentHp = HpComponent->GetHp();  //0 이하로 내려가지 않게 동기화
+	//if (HpComponent)
+	//{
+	//	const float NewHp = HpComponent->GetHp() - DamageAmount;
+	//	//HpComponent->SetHp(NewHp);
+	//	CurrentHp -= DamageAmount;
+	//	if (HasAuthority())
+	//	{
+	//		HpComponent->SetHp(CurrentHp);
+	//		CurrentHp = HpComponent->GetHp();  //0 이하로 내려가지 않게 동기화
 
-		}
+	//	}
 
 
-		//UI 업데이트 시도
-		UE_LOG(LogTemp, Warning, TEXT("TakeDamage: Attempting direct HUD update"));
+	//	//UI 업데이트 시도
+	//	UE_LOG(LogTemp, Warning, TEXT("TakeDamage: Attempting direct HUD update"));
 
-		// 손상을 입힌 컨트롤러가 있는 경우 확인
-		AController* ValidController = EventInstigator;
-		if (!ValidController)
-		{
-			// 없으면 현재 월드의 첫 번째 플레이어 컨트롤러 가져오기
-			if (GetWorld())
-			{
-				for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-				{
-					ValidController = It->Get();
-					if (ValidController)
-						break;
-				}
-			}
-		}
+	//	// 손상을 입힌 컨트롤러가 있는 경우 확인
+	//	AController* ValidController = EventInstigator;
+	//	if (!ValidController)
+	//	{
+	//		// 없으면 현재 월드의 첫 번째 플레이어 컨트롤러 가져오기
+	//		if (GetWorld())
+	//		{
+	//			for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	//			{
+	//				ValidController = It->Get();
+	//				if (ValidController)
+	//					break;
+	//			}
+	//		}
+	//	}
 
-		if (ValidController)
-		{
-			ALSPlayerController* LSController = Cast<ALSPlayerController>(ValidController);
-			if (LSController && LSController->GetLSHUDWidget())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Directly updating HUD with HP: %.1f"), NewHp);
-				LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Could not get LSPlayerController or HUDWidget"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("No valid controller found for HUD update"));
-		}
-	}
+	//	if (ValidController)
+	//	{
+	//		ALSPlayerController* LSController = Cast<ALSPlayerController>(ValidController);
+	//		if (LSController && LSController->GetLSHUDWidget())
+	//		{
+	//			UE_LOG(LogTemp, Warning, TEXT("Directly updating HUD with HP: %.1f"), NewHp);
+	//			LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+	//		}
+	//		else
+	//		{
+	//			UE_LOG(LogTemp, Error, TEXT("Could not get LSPlayerController or HUDWidget"));
+	//		}
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("No valid controller found for HUD update"));
+	//	}
+	//}
 
-	return DamageAmount;
+	//return DamageAmount;
 }
 
 void ALSPlayer::ApplyDamage(float DamageAmount)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	CurrentHp -= DamageAmount;
+	if (bIsDead) return;
 
-	if (CurrentHp < 0)
-	{
-		return;
-	}
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (HpComponent)
 	{
+		CurrentHp -= DamageAmount;
 		HpComponent->SetHp(CurrentHp);
-		LS_LOG(LogLS, Log, TEXT("SetHp Called"));
+		LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
 	}
+
+
+	if (CurrentHp <= 0)
+	{
+		LS_LOG(LogLS, Error, TEXT("hp is zero call Die"));
+		Die();
+		return;
+	}
+
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
 	}
+
+	//if (HpComponent)
+	//{
+	//	// 현재 HP에서 데미지만큼 감소한 값을 계산
+	//	float NewHp = HpComponent->GetHp() - DamageAmount;
+
+	//	// HpComponent에서 Clamp 처리 (0~MaxHp)
+	//	HpComponent->SetHp(NewHp);
+
+	//	// HpComponent에서 제한된 값을 CurrentHp에 할당
+	//	CurrentHp = HpComponent->GetHp();  // 이제 0 이하로 내려가지 않음
+
+	//	LS_LOG(LogLS, Log, TEXT("SetHp Called"));
+	//}
+	//else
+	//{
+	//	LS_LOG(LogLS, Error, TEXT("No HpComponent"));
+	//}
+
+
+
+
 }
 
 bool ALSPlayer::isCombining()
@@ -236,6 +265,7 @@ bool ALSPlayer::isCombining()
 void ALSPlayer::OnHpChanged(float NewHp)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
@@ -252,6 +282,157 @@ void ALSPlayer::OnHpChanged(float NewHp)
 
 	}
 }
+
+
+//is dead
+void ALSPlayer::OnHpReachedZero(float ZeroHp)
+{
+	UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
+	Die();
+}
+
+
+void ALSPlayer::Die()
+{
+	if (bIsDead) return; // 이미 죽었으면 리턴
+
+	bIsDead = true;
+	UE_LOG(LogTemp, Warning, TEXT("Player died"));
+
+	if (HasAuthority())
+	{
+		MultiDie();
+
+		// 모든 입력 차단
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			//PC->ShowDeathWidget();
+			//DisableInput(PC);
+		}
+
+		// 메시 숨기기
+	/*	if (GetMesh())
+		{
+			GetMesh()->SetVisibility(false);
+			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));
+		}*/
+
+		// 충돌 비활성화
+		SetActorEnableCollision(false);
+
+		// 이동 비활성화
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+		// 5초 후 부활 타이머 시작
+		GetWorld()->GetTimerManager().SetTimer(
+			RespawnTimerHandle,
+			this,
+			&ALSPlayer::Respawn,
+			5.0f,
+			false
+		);
+		
+	}
+
+	
+}
+
+void ALSPlayer::ServerDie_Implementation()
+{
+}
+
+void ALSPlayer::MultiDie_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(false);
+	}
+
+	// 본인 클라이언트에서만 UI 처리
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			PC->ShowDeathWidget();
+			DisableInput(PC);
+		}
+	}
+}
+
+void ALSPlayer::ClientDie_Implementation()
+{
+	
+}
+
+void ALSPlayer::Respawn()
+{
+	if (!bIsDead) return; // 이미 살아있으면 리턴
+
+	bIsDead = false;
+	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
+
+	if (HasAuthority())
+	{
+		
+		// HP 풀로 회복
+		if (HpComponent)
+		{
+			HpComponent->SetHp(100.0f);
+			CurrentHp = 100.0f;
+		}
+
+		// 타이머 클리어
+		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+
+		MultiRespawn();
+	}
+
+
+}
+
+void ALSPlayer::ServerRespawn_Implementation()
+{
+}
+
+void ALSPlayer::MultiRespawn_Implementation()
+{
+		// 메시 다시 보이게
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(true);
+		
+	}
+
+	// HP 풀로 회복
+	if (HpComponent)
+	{
+		HpComponent->SetHp(100.0f); // MaxHp로 설정
+		CurrentHp = 100.0f;
+	}
+
+	// 입력 재활성화
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->HideDeathWidget();
+		EnableInput(PC);
+	}
+
+	// 충돌 재활성화
+	SetActorEnableCollision(true);
+
+	// 이동 재활성화
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	
+
+}
+
+void ALSPlayer::ClientRespawn_Implementation()
+{
+}
+
+
 
 //아이템 픽업함수
 //void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
@@ -966,73 +1147,6 @@ void ALSPlayer::ServerRequestAutoSeparation_Implementation()
 	}
 }
 
-//is dead
-void ALSPlayer::OnHpReachedZero(float ZeroHp)
-{
-	UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
-	Die();
-}
-
-void ALSPlayer::Die()
-{
-	if (bIsDead) return; // 이미 죽었으면 리턴
-
-	bIsDead = true;
-	UE_LOG(LogTemp, Warning, TEXT("Player died"));
-
-	// 모든 입력 차단
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		DisableInput(PC);
-	}
-
-	// 충돌 비활성화
-	SetActorEnableCollision(false);
-
-	// 이동 비활성화
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
-
-	// 5초 후 부활 타이머 시작
-	GetWorld()->GetTimerManager().SetTimer(
-		RespawnTimerHandle,
-		this,
-		&ALSPlayer::Respawn,
-		5.0f,
-		false
-	);
-}
-
-void ALSPlayer::Respawn()
-{
-	if (!bIsDead) return; // 이미 살아있으면 리턴
-
-	bIsDead = false;
-	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
-
-	// HP 풀로 회복
-	if (HpComponent)
-	{
-		HpComponent->SetHp(100.0f); // MaxHp로 설정
-		CurrentHp = 100.0f;
-	}
-
-	// 입력 재활성화
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		EnableInput(PC);
-	}
-
-	// 충돌 재활성화
-	SetActorEnableCollision(true);
-
-	// 이동 재활성화
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	// 타이머 클리어
-	GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
-}
-
-
 void ALSPlayer::OnSelectSlot1()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
@@ -1228,6 +1342,12 @@ void ALSPlayer::PickUp()
 			}
 		}
 
+		
+		if (!HitItem)
+		{
+			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
+			return; // 마스터 아이템이 아니면 픽업 무시하고 종료
+		}
 
 		//수정
 		// 아이템 픽업
@@ -1243,7 +1363,7 @@ void ALSPlayer::PickUp()
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
 			ServerPickUp(HitItem);
-			//ClientPickUp(HitItem);
+			
 		}
 
 		// 아이템 제거
