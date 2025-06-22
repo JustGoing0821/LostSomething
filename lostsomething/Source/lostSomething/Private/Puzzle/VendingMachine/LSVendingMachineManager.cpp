@@ -129,11 +129,12 @@ void ALSVendingMachineManager::InteractionProcessIJae()
 	//	ServerRPCStartPhase();
 	//}
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
+
 }
 
 void ALSVendingMachineManager::StartPhase()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentPhase = ECurrentPhase::Phase1;
 
 	//Set AnswerColors

@@ -44,7 +44,7 @@ ALSCombineTutorial::ALSCombineTutorial()
 	LightMark->SetIntensity(0.0f);
 
 	bReplicates = true;
-	PuzzleActivateEnum = ELSInteractionEnum::Quest3;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest4;
 }
 
 void ALSCombineTutorial::BeginPlay()

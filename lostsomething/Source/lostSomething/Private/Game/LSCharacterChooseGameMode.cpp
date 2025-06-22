@@ -92,7 +92,7 @@ void ALSCharacterChooseGameMode::GameStart()
 			GameInstance->SetCharacterChoices(ServerChoice, ClientChoice);
 		}
 
-		GetWorld()->ServerTravel(TEXT("/Game/Level/TestMap/LoginTestMap"));
+		GetWorld()->ServerTravel(TEXT("/Game/Stage/LSStage1Map1"));
 	}
 	else
 	{
