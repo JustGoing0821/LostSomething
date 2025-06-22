@@ -220,7 +220,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 					LSTrain->SetCorrectGate(CorrectGate);
 					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
 					OnPuzzleCheck.AddUObject(LSTrain, &ALSTrain::PuzzleCheck);
-					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::StopTrain);
+					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::MulticastStopTrain);
 				}
 			}
 		), 1.f, false, DelayTime);

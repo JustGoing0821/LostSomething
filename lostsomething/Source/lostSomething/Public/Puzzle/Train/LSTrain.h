@@ -133,4 +133,7 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastGetOnPassengers();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastStopTrain();
+
 };
