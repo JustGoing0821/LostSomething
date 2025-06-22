@@ -43,7 +43,7 @@ ALSAttackTutorial::ALSAttackTutorial()
 
 	bReplicates = true;
 	CorrectCauserCharacter = ELSCharacterChoice::None;
-	PuzzleActivateEnum = ELSInteractionEnum::Quest4;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest3;
 }
 
 void ALSAttackTutorial::BeginPlay()
