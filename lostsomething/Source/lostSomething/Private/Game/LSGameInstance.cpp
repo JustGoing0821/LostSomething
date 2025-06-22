@@ -53,7 +53,7 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString EncodedRoomName = StringBase64Encode(RoomName);  // 변경!
 	FString EncodedHostName = StringBase64Encode(NickName);  // 변경!
 
-	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("room_name"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	// 숫자 값도 반드시 FString으로 변환
@@ -108,7 +108,7 @@ void ULSGameInstance::FindOtherRooms()
 	// 2. 세션 검색 조건 설정
 	RoomSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 	// 3. 최대 검색 갯수를 정하고싶다.
-	RoomSearch->MaxSearchResults = 3;
+	RoomSearch->MaxSearchResults = 10;
 	// 4. 랜선인지 아닌지를 정하고싶다.
 	auto subSys = IOnlineSubsystem::Get();
 	RoomSearch->bIsLanQuery = subSys->GetSubsystemName().IsEqual("NULL");
