@@ -124,7 +124,7 @@ void ALSAttackTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEn
 
 void ALSAttackTutorial::PuzzleActivate()
 {
-	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetVisibility(true);
 }
 
