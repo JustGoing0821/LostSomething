@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
@@ -25,6 +26,24 @@ ALSCombineTutorial::ALSCombineTutorial()
 	TutorialTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerBeginOverlap);
 	TutorialTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSCombineTutorial::OnTutorialTriggerEndOverlap);
 
+	//LocationMark
+	LocationMark = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LocationMark"));
+	LocationMark->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cylinder.SM_Cylinder"));
+	if (ItemMeshRef.Object)
+	{
+		LocationMark->SetStaticMesh(ItemMeshRef.Object);
+	}
+	LocationMark->SetVisibility(false);
+	LocationMark->SetCollisionProfileName(TEXT("NoColision"));
+	LocationMark->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//LightMark
+	LightMark = CreateDefaultSubobject<USpotLightComponent>(TEXT("LightMark"));
+	LightMark->SetupAttachment(RootComponent);
+	LightMark->SetIntensity(0.0f);
+
+	bReplicates = true;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest3;
 }
 
@@ -91,12 +110,18 @@ void ALSCombineTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionE
 
 void ALSCombineTutorial::PuzzleActivate()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	LocationMark->SetVisibility(true);
+	LightMark->SetIntensity(3000.0f);
 }
 
 void ALSCombineTutorial::PuzzleDeactivate()
 {
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LocationMark->SetVisibility(false);
+	LightMark->SetIntensity(0.0f);
 }
 
 void ALSCombineTutorial::QuestClear()

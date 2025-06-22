@@ -141,9 +141,20 @@ public:
 	//int32 GetSelectedSlot() const { return SelectedSlot; }
 
 	
-
+	void Attack();
+	void ProcessAttack();
 
 	
+
+	UFUNCTION(Server, Reliable)
+	void ServerProcessAttack();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiProcessAttack();
+
+	UFUNCTION(Client, Reliable)
+	void ClientProcessAttack();
+
 
 protected:
 	/*************************************Function**************************************/
@@ -156,7 +167,6 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Interaction();
-	void Attack();
 	void ApplyDamage(float DamageAmount);
 
 	

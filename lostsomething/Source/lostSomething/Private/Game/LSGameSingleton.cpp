@@ -7,7 +7,7 @@
 ULSGameSingleton::ULSGameSingleton()
 {
 	//Quest Data
-	static ConstructorHelpers::FObjectFinder<UDataTable> QuestDataTableRef(TEXT("/Script/Engine.DataTable'/Game/Level/Quest/LSQuestDataTable.LSQuestDataTable'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> QuestDataTableRef(TEXT("/Game/Level/Quest/LSQuestDataTable.LSQuestDataTable"));
 	if (nullptr != QuestDataTableRef.Object)
 	{
 		const UDataTable* QuestTempTable = QuestDataTableRef.Object;
