@@ -97,6 +97,7 @@ void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSVendingMachine, CurrentVendingMachineColor);
+	DOREPLIFETIME(ALSVendingMachine, CurrentInteractController);
 }
 
 
@@ -154,7 +155,12 @@ void ALSVendingMachine::InteractionProcessIJae()
 	//	ServerRPCPuzzleCheck();
 	//}
 
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
+	LS_LOG(LogLS, Warning, TEXT("%s"), TEXT("IJae can't interact with this"));
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
+	if (ScriptController)
+	{
+		ScriptController->UpdateScriptWidget(TEXT("IJae can't interact with this"));
+	}
 }
 
 void ALSVendingMachine::SetVisibleSiJae()
@@ -243,6 +249,11 @@ void ALSVendingMachine::PuzzleCheck()
 	else
 	{
 		OnVMPuzzleCheck.Execute(false);
+		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
+		if (ScriptController)
+		{
+			ScriptController->UpdateScriptWidget(TEXT("Wrong Vendingmachine. You need IJae's help."));
+		}
 		ApplyDamage();
 	}
 }

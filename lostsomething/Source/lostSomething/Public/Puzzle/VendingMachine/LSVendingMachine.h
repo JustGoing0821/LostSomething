@@ -64,7 +64,8 @@ public:
 	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
 
 protected:
-	APlayerController* CurrentInteractController;
+	UPROPERTY(Replicated)
+	TObjectPtr<class APlayerController> CurrentInteractController;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	int32 MachineNumber;
