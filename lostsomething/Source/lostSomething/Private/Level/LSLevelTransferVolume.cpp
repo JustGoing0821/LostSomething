@@ -99,6 +99,11 @@ void ALSLevelTransferVolume::OnTransferTriggerEndOverlap(UPrimitiveComponent* Ov
 	}
 }
 
+void ALSLevelTransferVolume::SetTriggerBoxExtent(FVector InBoxSize)
+{
+	TriggerBox->SetBoxExtent(InBoxSize);
+}
+
 void ALSLevelTransferVolume::BindQuestChange()
 {
 	if (HasAuthority())
