@@ -24,16 +24,13 @@ void ULSHpComponent::BeginPlay()
 
 void ULSHpComponent::SetHp(float NewHp)
 {
-	CurrentHp = NewHp;
-	OnHpChanged.Broadcast(CurrentHp);
-	//UE_LOG(LogTemp, Warning, TEXT("hp component : HP changed: %f"), CurrentHp);
-
     // 0과 MaxHp 사이로 값 제한
-    NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
+    float ClampedHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
 
-    if (CurrentHp != NewHp)
+    // 실제로 값이 변경되었는지 확인
+    if (CurrentHp != ClampedHp)
     {
-        CurrentHp = NewHp;
+        CurrentHp = ClampedHp;
         OnHpChanged.Broadcast(CurrentHp);
         UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
 
@@ -43,6 +40,27 @@ void ULSHpComponent::SetHp(float NewHp)
             OnHpZero.Broadcast(CurrentHp);
         }
     }
+
+ //   // 0과 MaxHp 사이로 값 제한
+ //   NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
+
+	//CurrentHp = NewHp;
+	//OnHpChanged.Broadcast(CurrentHp);
+	////UE_LOG(LogTemp, Warning, TEXT("hp component : HP changed: %f"), CurrentHp);
+
+
+ //   if (CurrentHp != NewHp)
+ //   {
+ //       CurrentHp = NewHp;
+ //       OnHpChanged.Broadcast(CurrentHp);
+ //       UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+
+ //       // HP가 0이 되면 델리게이트 호출
+ //       if (CurrentHp <= 0.0f)
+ //       {
+ //           OnHpZero.Broadcast(CurrentHp);
+ //       }
+ //   }
 
 }
 
