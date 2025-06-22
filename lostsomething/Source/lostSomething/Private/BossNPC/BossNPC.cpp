@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h" 
 #include "Character/Players/LSPlayer.h"  
 #include "lostSomething.h"
+#include <BossNPC/Anim/BossNPCAnimIns.h>
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -101,6 +102,7 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 // 1페이즈 진입 - AOE 패턴
 void ABossNPC::EnterPhase1()
 {
+    UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
     if (HasAuthority())
     {
         //CurrentPhase = 1;
@@ -139,7 +141,7 @@ void ABossNPC::EnterPhase3()
 
         if (PlatformGenerator)
         {
-            UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
+            //UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
             SpawnPlatform();
         }
         else
@@ -152,6 +154,85 @@ void ABossNPC::EnterPhase3()
         UE_LOG(LogTemp, Warning, TEXT("EnterPhase3 skipped - No Authority or GeneratorClass is null"));
     }
 }
+
+void ABossNPC::AOEMontagePlay()
+{
+    ServerAOEMontagePlay();
+}
+
+void ABossNPC::ServerAOEMontagePlay_Implementation()
+{
+    MultiAOEMontagePlay();
+}
+
+void ABossNPC::MultiAOEMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->AOEMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->AOEMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->AOEMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::ObsMontagePlay()
+{
+    ServerObsMontagePlay();
+}
+
+void ABossNPC::ServerObsMontagePlay_Implementation()
+{
+    MultiObsMontagePlay();
+}
+
+void ABossNPC::MultiObsMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->ObstacleMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->ObstacleMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->ObstacleMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::MazeMontagePlay()
+{
+    ServerMazeMontagePlay();
+}
+
+void ABossNPC::ServerMazeMontagePlay_Implementation()
+{
+    MultiMazeMontagePlay();
+}
+
+void ABossNPC::MultiMazeMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->MazeMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->MazeMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->MazeMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
 
 // AOE 공격 패턴 시작
 void ABossNPC::StartAOEAttackPattern()
@@ -182,12 +263,6 @@ void ABossNPC::SpawnAOEAttack()
 }
 
 void ABossNPC::ServerSpawnAOEAttack_Implementation()
-{
-    MultiSpawnAOEAttack();
-}
-
-// AOE 멀티캐스트 스폰 (핵심 로직)
-void ABossNPC::MultiSpawnAOEAttack_Implementation()
 {
     if (!CircleAOEClass)
     {
@@ -239,8 +314,24 @@ void ABossNPC::MultiSpawnAOEAttack_Implementation()
         PlayerAOECount, ExtraRandomAOEs);
 }
 
+// AOE 멀티캐스트 스폰 (핵심 로직)
+void ABossNPC::MultiSpawnAOEAttack_Implementation()
+{
+    
+}
+
 // 단일 AOE 스폰 헬퍼 함수
 void ABossNPC::SpawnSingleAOE(FVector SpawnLocation, FString AOEType)
+{
+    ServerSpawnSingleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::ServerSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
+{
+    MultiSpawnSingleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::MultiSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
 {
     FActorSpawnParameters Params;
     Params.Owner = this;
@@ -268,11 +359,6 @@ void ABossNPC::SpawnObstacles()
 }
 
 void ABossNPC::ServerSpawnObstacles_Implementation()
-{
-    MultiSpawnObstacles();
-}
-
-void ABossNPC::MultiSpawnObstacles_Implementation()
 {
     TArray<int32> Indexes = { 0, 1, 2 };
 
@@ -308,6 +394,11 @@ void ABossNPC::MultiSpawnObstacles_Implementation()
             UE_LOG(LogTemp, Warning, TEXT("Obstacle spawned at location: %s"), *SpawnLocation.ToString());
         }
     }
+}
+
+void ABossNPC::MultiSpawnObstacles_Implementation()
+{
+    
 }
 
 // 플랫폼 스폰

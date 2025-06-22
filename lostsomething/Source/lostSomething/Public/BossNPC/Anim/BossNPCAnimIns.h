@@ -14,4 +14,28 @@ class LOSTSOMETHING_API UBossNPCAnimIns : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* AOEMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* ObstacleMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* MazeMontage;
+
+	float MontagePlay(UAnimMontage* Montage);
+
+	FName GetMontageSectionName(int32 Section);
+
+	void MontageStop(UAnimMontage* Montage, bool bInterrupted);
+
+	//UAnimMontage* CurrentMontage;
+
+	UFUNCTION()
+	void AnimNotify_AOEAttack();
+
+	UFUNCTION()
+	void AnimNotify_ObsAttack();
+
+	UFUNCTION()
+	void AnimNotify_MazeAttack();
 };

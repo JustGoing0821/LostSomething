@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTTask_Platfrom::ExecuteTask(UBehaviorTreeComponent& OwnerC
     }
 
     // 장판 생성
-    BossPawn->EnterPhase3();
+    BossPawn->MazeMontagePlay();
 
     // 재실행 방지용 플래그 설정
     AIController->GetBlackboardComponent()->SetValueAsBool(FName("bPhase3"), true);

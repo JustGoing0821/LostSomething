@@ -24,7 +24,7 @@ EBTNodeResult::Type UBTTask_AOE::ExecuteTask(UBehaviorTreeComponent& OwnerComp, 
         return EBTNodeResult::Failed;
     }
 
-    BossPawn->EnterPhase1();
+    BossPawn->AOEMontagePlay();
 
     return EBTNodeResult::Succeeded;
 }
