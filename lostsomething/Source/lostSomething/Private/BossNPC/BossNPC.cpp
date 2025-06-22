@@ -360,11 +360,6 @@ void ABossNPC::SpawnObstacles()
 
 void ABossNPC::ServerSpawnObstacles_Implementation()
 {
-    MultiSpawnObstacles();
-}
-
-void ABossNPC::MultiSpawnObstacles_Implementation()
-{
     TArray<int32> Indexes = { 0, 1, 2 };
 
     // ·£´ý ¼ÅÇÃ
@@ -399,6 +394,11 @@ void ABossNPC::MultiSpawnObstacles_Implementation()
             UE_LOG(LogTemp, Warning, TEXT("Obstacle spawned at location: %s"), *SpawnLocation.ToString());
         }
     }
+}
+
+void ABossNPC::MultiSpawnObstacles_Implementation()
+{
+    
 }
 
 // ÇÃ·§Æû ½ºÆù
