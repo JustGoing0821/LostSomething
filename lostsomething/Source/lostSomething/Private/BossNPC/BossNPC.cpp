@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h" 
 #include "Character/Players/LSPlayer.h"  
 #include "lostSomething.h"
+#include <BossNPC/Anim/BossNPCAnimIns.h>
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -101,6 +102,7 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 // 1페이즈 진입 - AOE 패턴
 void ABossNPC::EnterPhase1()
 {
+    UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
     if (HasAuthority())
     {
         //CurrentPhase = 1;
@@ -139,7 +141,7 @@ void ABossNPC::EnterPhase3()
 
         if (PlatformGenerator)
         {
-            UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
+            //UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
             SpawnPlatform();
         }
         else
@@ -150,6 +152,55 @@ void ABossNPC::EnterPhase3()
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("EnterPhase3 skipped - No Authority or GeneratorClass is null"));
+    }
+}
+
+void ABossNPC::AOEMontagePlay()
+{
+
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->AOEMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->AOEMontage)
+    {
+        NPCAnimInstance->PlayRandomMontageSection(NPCAnimInstance->AOEMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::ObsMontagePlay()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->ObstacleMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->ObstacleMontage)
+    {
+        NPCAnimInstance->PlayRandomMontageSection(NPCAnimInstance->ObstacleMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::MazeMontagePlay()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->MazeMontage) return;
+
+    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->MazeMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->MazeMontage);
+        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
     }
 }
 

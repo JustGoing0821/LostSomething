@@ -32,6 +32,11 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UFUNCTION(BlueprintCallable, Category = "Boss Phase")
     void EnterPhase3();
 
+    // 몽타주 시작 함수
+    void AOEMontagePlay();
+    void ObsMontagePlay();
+    void MazeMontagePlay();
+
 protected:
     virtual void BeginPlay() override;
 
