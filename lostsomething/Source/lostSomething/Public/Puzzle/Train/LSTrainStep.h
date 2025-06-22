@@ -54,9 +54,9 @@ public:
 	UPROPERTY(Replicated)
 	uint8 bIsStepInstalled : 1;
 
-	UFUNCTION(Server, Unreliable)
-	void ServerRPCSetVisibility(uint8 bInStepInstalled);
-
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSetVisibility();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCInstallStep();
 };

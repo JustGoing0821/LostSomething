@@ -31,6 +31,7 @@ public:
     void Damage();
     UFUNCTION(Server, Reliable)
     void ServerDamage();
+
     UFUNCTION(NetMulticast, Reliable)
     void MultiDamage();
 
@@ -68,8 +69,6 @@ public:
 
     UFUNCTION(Server, Reliable)
     void ServerAttackHitCheck();
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiAttackHitCheck();
 
     // 공격 관련 변수
     UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))

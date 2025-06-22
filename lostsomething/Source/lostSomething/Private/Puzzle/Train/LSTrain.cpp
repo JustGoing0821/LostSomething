@@ -21,6 +21,19 @@ ALSTrain::ALSTrain()
 	TrainTrigger->SetBoxExtent(FVector(1450.0f, 150.0f, 150.0f));
 	TrainTrigger->SetCollisionProfileName(CPROFILE_LSPAWN);
 
+	//Floor
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> FloorMeshRef(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (FloorMeshRef.Object)
+	{
+		MeshComponent->SetStaticMesh(FloorMeshRef.Object);
+	}
+	MeshComponent->SetRelativeScale3D(FVector(25.f, 3.f, 0.1f));
+	MeshComponent->SetRelativeLocation(FVector(-200.f, 0.f, -150.f));
+
+
 	// Moving Location
 	WaitLocation = FVector(700, 50, 300);
 	LeaveLocation = FVector(700, 12050, 300);
@@ -32,6 +45,7 @@ ALSTrain::ALSTrain()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Level/Puzzle/Train/SM_SM_Crowd.SM_SM_Crowd"));
+
 	static ConstructorHelpers::FObjectFinder<UMaterial> CrowdMaterialRef(TEXT("/Game/Level/Puzzle/Train/MALE.MALE"));
 	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
 
@@ -111,7 +125,7 @@ ALSTrain::ALSTrain()
 		Crowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 		Crowd->SetVisibility(false);
 		Crowd->SetMaterial(0, CrowdMaterialRef.Object);
-		Crowd->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Crowd->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Crowds.Add(Crowd);
 
 	}
@@ -119,6 +133,9 @@ ALSTrain::ALSTrain()
 	TimeBeforeGateOpen = 1.0f;
 	TimeTrainWait = 5.0f;
 	TimeBeforeTrainLeave = 1.0f;
+	bisPassengersGettingOff = false;
+	GetOnLocation = FVector(80, -40, 0);
+	GetOffLocation = FVector(80, 200, 0);
 }
 
 void ALSTrain::Tick(float DeltaTime)
@@ -127,13 +144,13 @@ void ALSTrain::Tick(float DeltaTime)
 
 	if (CurrentTrainState== ETrainState::Comming)
 	{
-		CurrentAlpha += DeltaTime * LerpSpeed;
-		CurrentAlpha = FMath::Clamp(CurrentAlpha, 0.0f, 1.0f);
+		CurrentTrainAlpha += DeltaTime * LerpSpeed;
+		CurrentTrainAlpha = FMath::Clamp(CurrentTrainAlpha, 0.0f, 1.0f);
 		FVector CurrentLocation = GetActorLocation();
-		FVector NewLocation = FMath::Lerp(CurrentLocation, WaitLocation, CurrentAlpha);
+		FVector NewLocation = FMath::Lerp(CurrentLocation, WaitLocation, CurrentTrainAlpha);
 		SetActorLocation(NewLocation);
 
-		if (HasAuthority() && (CurrentAlpha==1.0f))
+		if (HasAuthority() && (CurrentTrainAlpha ==1.0f))
 		{
 			CurrentTrainState = ETrainState::Waiting;
 
@@ -144,7 +161,7 @@ void ALSTrain::Tick(float DeltaTime)
 			GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
 				{
 					OnTrainArrived.Broadcast();
-					CurrentAlpha = 0.0f;
+					CurrentTrainAlpha = 0.0f;
 				}
 			), TimeBeforeGateOpen, false);
 
@@ -159,13 +176,37 @@ void ALSTrain::Tick(float DeltaTime)
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
 	{
+		if (bisPassengersGettingOff && CurrentPassengersAlpha != 1.0f)
+		{
+			CurrentPassengersAlpha += DeltaTime * 2.0f;
+			CurrentPassengersAlpha = FMath::Clamp(CurrentPassengersAlpha, 0.0f, 1.0f);
+			//FVector CurrentLocation = GetActorLocation();
+			FVector NewLocation = FMath::Lerp(GetOnLocation, GetOffLocation, CurrentPassengersAlpha);
+			//FVector NewLocation = FMath::Lerp(GetOffLocation, GetOnLocation, CurrentPassengersAlpha);
+
+			for (int32 Num = 0; Num < DoorLs.Num(); Num++)
+			{
+				//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+				if (Num == CorrectDoorIndex)
+				{
+					//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+					continue;
+				}
+				else
+				{
+					Crowds[Num]->SetRelativeLocation(NewLocation);
+					LS_LOG(LogLS, Log, TEXT("CurrentPassengersAlpha : %f"), CurrentPassengersAlpha);
+					LS_LOG(LogLS, Log, TEXT("Crowd Moved : %f"), NewLocation.Y);
+				}
+			}
+		}
 	}
 	else if (CurrentTrainState == ETrainState::Leaving)
 	{
-		CurrentAlpha += DeltaTime * LerpSpeed;
-		CurrentAlpha = FMath::Clamp(CurrentAlpha, 0.0f, 1.0f);
+		CurrentTrainAlpha += DeltaTime * LerpSpeed;
+		CurrentTrainAlpha = FMath::Clamp(CurrentTrainAlpha, 0.0f, 1.0f);
 		FVector CurrentLocation = GetActorLocation();
-		FVector NewLocation = FMath::Lerp(CurrentLocation, LeaveLocation, CurrentAlpha);
+		FVector NewLocation = FMath::Lerp(CurrentLocation, LeaveLocation, CurrentTrainAlpha);
 		SetActorLocation(NewLocation);
 	}
 }
@@ -176,6 +217,7 @@ void ALSTrain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 	DOREPLIFETIME(ALSTrain, CurrentTrainState);
 	DOREPLIFETIME(ALSTrain, TimeTrainWait);
+	DOREPLIFETIME(ALSTrain, CorrectDoorIndex);
 }
 
 void ALSTrain::BeginPlay()
@@ -246,6 +288,7 @@ void ALSTrain::GateClose()
 void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 {
 	//LS_LOG(LogLS, Log, TEXT("InCorrectGate : %d"), InCorrectGate);
+	CorrectDoorIndex = InCorrectGate - 1;
 
 	if (bCorrect)
 	{
@@ -253,52 +296,59 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 		TimeTrainWait = 10.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(InCorrectGate - 1);
+		CorrectDoorIndex = InCorrectGate - 1;
 		MulticastGetOffPassengers(InCorrectGate - 1);
 	}
 	else
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
-		TimeTrainWait = 2.0f;
+		TimeTrainWait = 4.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(-1);
+		CorrectDoorIndex = -1;
 		MulticastGetOffPassengers(-1);
 	}
 }
 
 void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-
 	for (int32 Num=0 ; Num< DoorLs.Num() ; Num++)
 	{
 		//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
-		if (Num == InCorrectGate)
+		if (Num == CorrectDoorIndex)
 		{
 			//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+			Crowds[Num]->SetVisibility(false);
+			Crowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			continue;
 		}
 		else
 		{
 			Crowds[Num]->SetVisibility(true);
-			Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
+			//Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
 			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 		}
 	}
+	CurrentPassengersAlpha = 0.0f;
+	bisPassengersGettingOff = true;
 }
 
 void ALSTrain::GetOnPassengers()
 {
+	//LS_LOG(LogLS, Log, TEXT("Begin"));
+
 	for (int32 Num = 0; Num < DoorLs.Num(); Num++)
 	{
 		Crowds[Num]->SetVisibility(false);
 		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
 		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 	}
+	bisPassengersGettingOff = false;
 }
 
 void ALSTrain::StopTrain()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentTrainState = ETrainState::Stop;
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
