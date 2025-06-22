@@ -293,7 +293,7 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 	if (bCorrect)
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
-		TimeTrainWait = 10.0f;
+		TimeTrainWait = 5.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(InCorrectGate - 1);
 		CorrectDoorIndex = InCorrectGate - 1;
@@ -302,7 +302,7 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 	else
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
-		TimeTrainWait = 4.0f;
+		TimeTrainWait = 2.0f;
 		MulticastRPCGateOpen();
 		//GetOffPassengers(-1);
 		CorrectDoorIndex = -1;
@@ -349,10 +349,14 @@ void ALSTrain::GetOnPassengers()
 void ALSTrain::StopTrain()
 {
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	CurrentTrainState = ETrainState::Stop;
+	if (HasAuthority())
+	{
+		CurrentTrainState = ETrainState::Stop;
+	}
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("TrainTimerHandle Cleared."));
 	}
 }
 
