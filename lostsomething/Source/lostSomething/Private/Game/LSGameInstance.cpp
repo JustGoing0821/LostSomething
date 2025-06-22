@@ -6,7 +6,14 @@
 #include "OnlineSubsystem.h"
 #include "Online/OnlineSessionNames.h"
 #include <string>
+#include <Game/LobbyGameMode.h>
 
+
+ULSGameInstance::ULSGameInstance()
+{
+	CharacterChoices.Add(ELSNetworkPosition::Server, ELSCharacterChoice::None);
+	CharacterChoices.Add(ELSNetworkPosition::Client, ELSCharacterChoice::None);
+}
 
 void ULSGameInstance::Init()
 {
@@ -30,57 +37,78 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 {
 	FOnlineSessionSettings Setting;
 
-	// 1. 데디케이트 서버인가??
 	Setting.bIsDedicated = false;
-	// 2. 랜선인가?
+
 	auto SubSys = IOnlineSubsystem::Get();
 	Setting.bIsLANMatch = SubSys->GetSubsystemName().IsEqual("NULL");
-	// 3. 공개로 입장할 수 있는가? 아니면 친구초대로만???
+	//Setting.bIsLANMatch = true;
+
 	Setting.bShouldAdvertise = true;
-	// 4. 온라인 상태(presence)를 공개적으로 사용할것인가? -> ping정보
 	Setting.bUsesPresence = true;
-	// 5. 중간입장이 가능한가?
 	Setting.bAllowJoinInProgress = true;
 	Setting.bAllowJoinViaPresence = true;
-	// 6. 최대 입장 가능한 수 설정
 	Setting.NumPublicConnections = 2;
-	// 7. 커스텀 정보 설정
 
+	// ? 값은 반드시 UTF-8 또는 FString로 저장 (Base64 제거)
+	FString EncodedRoomName = StringBase64Encode(RoomName);  // 변경!
+	FString EncodedHostName = StringBase64Encode(NickName);  // 변경!
 
-	Setting.Set(TEXT("ROOM_NAME"), StringBase64Encode(RoomName), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("HOST_NAME"), StringBase64Encode(NickName), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	// 8. netID 찾기
+	Setting.Set(TEXT("room_name"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	// 숫자 값도 반드시 FString으로 변환
+	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("slot_count"), FString::FromInt(3), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("password_required"), FString("false"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
 	FUniqueNetIdPtr netID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
-
-	UE_LOG(LogTemp, Warning, TEXT("CreateRoom Start!!! roomNamd : %s, netID : %s"), *RoomName, *netID->ToString());
-
-	SessionInterface->CreateSession(*netID, FName(*RoomName), Setting);
-
+	SessionInterface->CreateSession(*netID, FName("MySession"), Setting);
 }
 
 void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccessful)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete!!! sessionName : %s, bWasSuccessful : %d"), *SessionName.ToString(), bWasSuccessful);
 
-	// 방을 생성했다면
 	if (bWasSuccessful)
 	{
-		// 입장한 방의 이름을 기억하고싶다.
 		MyRoomName = SessionName.ToString();
-		// 서버는 세계 여행을 떠나고싶다. 어디로???
-		FString url = TEXT("/Game/Map/ChooseMap?listen");
-		GetWorld()->ServerTravel(url);
+
+		UWorld* World = GetWorld();
+		if (!World)
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetWorld() is null"));
+			return;
+		}
+
+		// 서버인지 체크
+		if (World->GetAuthGameMode() == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Not server: GameMode is null"));
+			return;
+		}
+
+		FTimerHandle TimerHandle;
+		World->GetTimerManager().SetTimer(TimerHandle,
+			[World]() {
+				UE_LOG(LogTemp, Warning, TEXT("ServerTravel start"));
+				World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
+			},
+			3.0f,
+			false);
+
+		UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete: timer success"));
 	}
 }
 
 void ULSGameInstance::FindOtherRooms()
 {
+	UE_LOG(LogTemp, Warning, TEXT("FindOtherRooms Begin"));
 	// 1. FOnlineSessionSearch객체를 생성
 	RoomSearch = MakeShareable(new FOnlineSessionSearch());
 	// 2. 세션 검색 조건 설정
 	RoomSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 	// 3. 최대 검색 갯수를 정하고싶다.
-	RoomSearch->MaxSearchResults = 3;
+	RoomSearch->MaxSearchResults = 10;
 	// 4. 랜선인지 아닌지를 정하고싶다.
 	auto subSys = IOnlineSubsystem::Get();
 	RoomSearch->bIsLanQuery = subSys->GetSubsystemName().IsEqual("NULL");
@@ -91,6 +119,7 @@ void ULSGameInstance::FindOtherRooms()
 	if (OnFindingRoomsDelegate.IsBound())
 	{
 		OnFindingRoomsDelegate.Broadcast(true);
+		UE_LOG(LogTemp, Warning, TEXT("OnFindingRoomsDelegate.Broadcast"));
 	}
 }
 
@@ -119,15 +148,52 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 
 void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%d"), bWasSuccesful);
-	for (auto r : RoomSearch->SearchResults)
-	{
-		if (false == r.IsValid())
-			continue;
+	UE_LOG(LogTemp, Warning, TEXT("OnMyFindOtherRoomsComplete CALLED!!!"));
+	UE_LOG(LogTemp, Warning, TEXT("search success: %d"), bWasSuccesful);
+	UE_LOG(LogTemp, Warning, TEXT("find room numbers: %d"), RoomSearch->SearchResults.Num());
 
-		FString roomName;
-		r.Session.SessionSettings.Get(TEXT("ROOM_NAME"), roomName);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *roomName);
+	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
+	{
+		auto SearchResult = RoomSearch->SearchResults[i];
+
+		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);
+
+		if (!SearchResult.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("INVALID SESSION"));
+			continue;
+		}
+
+		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
+
+		// 우리가 설정한 키들만 체크
+		FString roomName, hostName;
+		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
+		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
+
+		if (hasRoomName && hasHostName)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), *StringBase64Decode(roomName));
+			UE_LOG(LogTemp, Warning, TEXT("host: %s"), *StringBase64Decode(hostName));
+
+			// UI 델리게이트 호출
+			if (OnAddRoomInfoDelegate.IsBound())
+			{
+				FRoomInfo roomInfo;
+				roomInfo.Index = i;
+				roomInfo.RoomName = StringBase64Decode(roomName);
+				roomInfo.HostName = StringBase64Decode(hostName);
+				roomInfo.PlayerCount = TEXT("1");
+				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
+
+				OnAddRoomInfoDelegate.Broadcast(roomInfo);
+				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("no room"));
+		}
 	}
 }
 
@@ -135,7 +201,7 @@ void ULSGameInstance::JoinRoom(int32 index)
 {
 	auto r = RoomSearch->SearchResults[index];
 	FString sessionName;
-	r.Session.SessionSettings.Get(TEXT("ROOM_NAME"), sessionName);
+	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
 	SessionInterface->JoinSession(0, FName(*sessionName), r);
 }
 
@@ -185,4 +251,14 @@ FString ULSGameInstance::StringBase64Decode(const FString& str)
 	FBase64::Decode(str, arrayData);
 	std::string ut8String((char*)(arrayData.GetData()), arrayData.Num());
 	return UTF8_TO_TCHAR(ut8String.c_str());
+}
+
+void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
+{
+	//UE_LOG(LogTemp, Log, TEXT("%s"), TEXT("SetCharacterChoices Begin"));
+	if (CharacterChoices.Num() == 2)
+	{
+		CharacterChoices[ELSNetworkPosition::Server] = ServerChoice;
+		CharacterChoices[ELSNetworkPosition::Client] = ClientChoice;
+	}
 }
