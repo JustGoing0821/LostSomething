@@ -72,6 +72,7 @@ void ALSTrainStep::BeginPlay()
 
 void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ILSCharacterChoiceInterface* LSController = Cast<ILSCharacterChoiceInterface>(InPlayerController);
 	if (LSController)
 	{
@@ -96,6 +97,7 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 
 void ALSTrainStep::InstallStep()
 {
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	OnStepInstalled.Execute();
 
 	if (bIsStepInstalled)
@@ -106,7 +108,7 @@ void ALSTrainStep::InstallStep()
 	{
 		bIsStepInstalled = true;
 	}
-	MeshComponent->SetVisibility(bIsStepInstalled);
+	//MeshComponent->SetVisibility(bIsStepInstalled);
 
 	MulticastRPCSetVisibility();
 }

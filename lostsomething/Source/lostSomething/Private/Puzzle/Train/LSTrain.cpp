@@ -195,8 +195,8 @@ void ALSTrain::Tick(float DeltaTime)
 				else
 				{
 					Crowds[Num]->SetRelativeLocation(NewLocation);
-					LS_LOG(LogLS, Log, TEXT("CurrentPassengersAlpha : %f"), CurrentPassengersAlpha);
-					LS_LOG(LogLS, Log, TEXT("Crowd Moved : %f"), NewLocation.Y);
+					//LS_LOG(LogLS, Log, TEXT("CurrentPassengersAlpha : %f"), CurrentPassengersAlpha);
+					//LS_LOG(LogLS, Log, TEXT("Crowd Moved : %f"), NewLocation.Y);
 				}
 			}
 		}
@@ -348,7 +348,7 @@ void ALSTrain::GetOnPassengers()
 
 void ALSTrain::StopTrain()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	CurrentTrainState = ETrainState::Stop;
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
@@ -374,4 +374,9 @@ void ALSTrain::MulticastGetOffPassengers_Implementation(int32 InCorrectGate)
 void ALSTrain::MulticastGetOnPassengers_Implementation()
 {
 	GetOnPassengers();
+}
+
+void ALSTrain::MulticastStopTrain_Implementation()
+{
+	StopTrain();
 }
