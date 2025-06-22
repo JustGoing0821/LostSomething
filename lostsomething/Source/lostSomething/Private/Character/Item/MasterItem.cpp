@@ -73,7 +73,7 @@ void AMasterItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	UE_LOG(LogTemp, Warning, TEXT("MasterItem: OnBeginOverlap with %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
 
-	// LSPlayer인지 확인 (ThirdPersonCharacter 대신)
+	// LSPlayer인지 확인
 	if (ALSPlayer* Player = Cast<ALSPlayer>(OtherActor))
 	{
 		// PlayerController 가져오기
