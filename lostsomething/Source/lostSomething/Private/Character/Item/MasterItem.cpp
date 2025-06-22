@@ -120,22 +120,20 @@ void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	const FHitResult& Hit)
 {
 	if (!bIsThrown) return; // 던져진 아이템이 아니면 무시
-
 	UE_LOG(LogTemp, Warning, TEXT("Thrown item hit: %s"),
 		OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
 
-
-		  // 바닥이나 벽에 맞으면 Hit 이벤트 해제
-		if (!Cast<ILSTakeDamageInterface>(OtherActor) && !Cast<ALSPlayer>(OtherActor))
+	// 바닥이나 벽에 맞으면 Hit 이벤트 해제
+	if (!Cast<ILSTakeDamageInterface>(OtherActor) && !Cast<ALSPlayer>(OtherActor))
+	{
+		// Hit 이벤트 바인딩 해제
+		if (ItemMesh)
 		{
-			// Hit 이벤트 바인딩 해제
-			if (ItemMesh)
-			{
-				ItemMesh->OnComponentHit.RemoveAll(this);
-			}
-			bIsThrown = false; // 던져진 상태 해제
-			return;
+			ItemMesh->OnComponentHit.RemoveAll(this);
 		}
+		bIsThrown = false; // 던져진 상태 해제
+		return;
+	}
 
 	// 플레이어나 다른 액터에게 맞은 경우
 	if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OtherActor))
@@ -149,15 +147,26 @@ void AMasterItem::OnItemHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		UE_LOG(LogTemp, Warning, TEXT("Hit NPC: %s, dealing damage: %.1f"),
 			*OtherActor->GetName(), ThrowDamage);
 
+		// 던진 캐릭터의 컨트롤러 가져오기
+		AController* ThrowerController = GetInstigatorController();
+
+		if (ThrowerController)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Thrower controller found: %s"),
+				*ThrowerController->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Thrower controller is null!"));
+		}
+
 		// 데미지 이벤트 생성
 		FDamageEvent DamageEvent;
-
-		// NPC에게 데미지 적용
-		HitNPC->TakeDamage(ThrowDamage, DamageEvent, nullptr, this);
+		// NPC에게 데미지 적용 - 던진 캐릭터 컨트롤러 전달
+		HitNPC->TakeDamage(ThrowDamage, DamageEvent, ThrowerController, this);
 
 		// 던져진 상태 해제하고 아이템 파괴
 		bIsThrown = false;
 		Destroy();
 	}
-	
 }
