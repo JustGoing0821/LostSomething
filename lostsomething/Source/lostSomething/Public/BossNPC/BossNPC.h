@@ -33,9 +33,25 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     void EnterPhase3();
 
     // 몽타주 시작 함수
+
+
     void AOEMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerAOEMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiAOEMontagePlay();
+
     void ObsMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerObsMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiObsMontagePlay();
+
     void MazeMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerMazeMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiMazeMontagePlay();
 
 protected:
     virtual void BeginPlay() override;
@@ -45,6 +61,11 @@ protected:
 
     //AOE
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));
+    UFUNCTION(Server, Reliable)
+    void ServerSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
     int32 RandomAOECount = 2; // 추가 랜덤 AOE 개수

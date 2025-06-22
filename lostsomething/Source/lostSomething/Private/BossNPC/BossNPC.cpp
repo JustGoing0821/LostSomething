@@ -157,7 +157,16 @@ void ABossNPC::EnterPhase3()
 
 void ABossNPC::AOEMontagePlay()
 {
+    ServerAOEMontagePlay();
+}
 
+void ABossNPC::ServerAOEMontagePlay_Implementation()
+{
+    MultiAOEMontagePlay();
+}
+
+void ABossNPC::MultiAOEMontagePlay_Implementation()
+{
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
     if (!NPCAnimInstance || !NPCAnimInstance->AOEMontage) return;
@@ -167,12 +176,22 @@ void ABossNPC::AOEMontagePlay()
     // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
     if (NPCAnimInstance->AOEMontage)
     {
-        NPCAnimInstance->PlayRandomMontageSection(NPCAnimInstance->AOEMontage);
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->AOEMontage);
         //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
     }
 }
 
 void ABossNPC::ObsMontagePlay()
+{
+    ServerObsMontagePlay();
+}
+
+void ABossNPC::ServerObsMontagePlay_Implementation()
+{
+    MultiObsMontagePlay();
+}
+
+void ABossNPC::MultiObsMontagePlay_Implementation()
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
@@ -183,12 +202,22 @@ void ABossNPC::ObsMontagePlay()
     // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
     if (NPCAnimInstance->ObstacleMontage)
     {
-        NPCAnimInstance->PlayRandomMontageSection(NPCAnimInstance->ObstacleMontage);
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->ObstacleMontage);
         //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
     }
 }
 
 void ABossNPC::MazeMontagePlay()
+{
+    ServerMazeMontagePlay();
+}
+
+void ABossNPC::ServerMazeMontagePlay_Implementation()
+{
+    MultiMazeMontagePlay();
+}
+
+void ABossNPC::MultiMazeMontagePlay_Implementation()
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
@@ -203,6 +232,7 @@ void ABossNPC::MazeMontagePlay()
         //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
     }
 }
+
 
 // AOE 공격 패턴 시작
 void ABossNPC::StartAOEAttackPattern()
@@ -233,12 +263,6 @@ void ABossNPC::SpawnAOEAttack()
 }
 
 void ABossNPC::ServerSpawnAOEAttack_Implementation()
-{
-    MultiSpawnAOEAttack();
-}
-
-// AOE 멀티캐스트 스폰 (핵심 로직)
-void ABossNPC::MultiSpawnAOEAttack_Implementation()
 {
     if (!CircleAOEClass)
     {
@@ -290,8 +314,24 @@ void ABossNPC::MultiSpawnAOEAttack_Implementation()
         PlayerAOECount, ExtraRandomAOEs);
 }
 
+// AOE 멀티캐스트 스폰 (핵심 로직)
+void ABossNPC::MultiSpawnAOEAttack_Implementation()
+{
+    
+}
+
 // 단일 AOE 스폰 헬퍼 함수
 void ABossNPC::SpawnSingleAOE(FVector SpawnLocation, FString AOEType)
+{
+    ServerSpawnSingleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::ServerSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
+{
+    MultiSpawnSingleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::MultiSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
 {
     FActorSpawnParameters Params;
     Params.Owner = this;

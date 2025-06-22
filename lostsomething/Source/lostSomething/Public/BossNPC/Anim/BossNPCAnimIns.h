@@ -22,13 +22,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* MazeMontage;
 
-	void MontagePlay(UAnimMontage* Montage);
-
-	void JumpToMontageSection(int32 NewSection, UAnimMontage* Montage);
-
-	void PlayRandomMontageSection(UAnimMontage* Montage);
+	float MontagePlay(UAnimMontage* Montage);
 
 	FName GetMontageSectionName(int32 Section);
+
+	void MontageStop(UAnimMontage* Montage, bool bInterrupted);
+
+	//UAnimMontage* CurrentMontage;
 
 	UFUNCTION()
 	void AnimNotify_AOEAttack();

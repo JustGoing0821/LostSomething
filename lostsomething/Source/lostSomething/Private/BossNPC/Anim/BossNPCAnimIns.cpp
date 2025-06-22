@@ -9,6 +9,11 @@ FName UBossNPCAnimIns::GetMontageSectionName(int32 Section)
     return FName(*FString::Printf(TEXT("Attack%d"), Section));
 }
 
+void UBossNPCAnimIns::MontageStop(UAnimMontage* Montage, bool bInterrupted)
+{
+    Montage_Stop(0.25f, Montage);
+}
+
 void UBossNPCAnimIns::AnimNotify_AOEAttack()
 {
     //UE_LOG(LogTemp, Warning, TEXT("UBossNPCAnimIns::AnimNotify_AOEAttack()"));
@@ -31,39 +36,22 @@ void UBossNPCAnimIns::AnimNotify_MazeAttack()
     NPCCharacter->EnterPhase3();
 }
 
-void UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
+float UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
 {
-    //UE_LOG(LogTemp, Warning, TEXT("UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)"));
+    //CurrentMontage = Montage;
+
     if (Montage && !Montage_IsPlaying(Montage))
     {
-        Montage_Play(Montage);
+        FOnMontageEnded EndDelegate;
+        EndDelegate.BindUObject(this, &UBossNPCAnimIns::MontageStop);
+        Montage_SetEndDelegate(EndDelegate, Montage);
+
+        return Montage_Play(Montage);
+
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("Montage is nullptr in UTestNPCAnimIns"));
+        UE_LOG(LogTemp, Warning, TEXT("Montage is nullptr or already playing in UBossNPCAnimIns"));
+        return 0.f;
     }
-}
-
-void UBossNPCAnimIns::JumpToMontageSection(int32 NewSection, UAnimMontage* Montage)
-{
-    Montage_JumpToSection(GetMontageSectionName(NewSection), Montage);
-}
-
-void UBossNPCAnimIns::PlayRandomMontageSection(UAnimMontage* Montage)
-{
-    //UE_LOG(LogTemp, Warning, TEXT("UBossNPCAnimIns::PlayRandomMontageSection(UAnimMontage* Montage)"));
-    if (!Montage)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Montage is null"));
-        return;
-    }
-
-    int32 MaxSections = 8; // 실제 섹션 개수로 바꾸기
-    int32 RandomSection = FMath::RandRange(1, MaxSections); // 0부터 MaxSections-1 사이 랜덤 숫자
-
-    // 선택한 섹션으로 점프
-    JumpToMontageSection(RandomSection, Montage);
-
-    // 몽타주 재생 (필요시)
-    MontagePlay(Montage);
 }
