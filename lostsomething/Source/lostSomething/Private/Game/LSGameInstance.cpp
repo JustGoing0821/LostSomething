@@ -6,6 +6,7 @@
 #include "OnlineSubsystem.h"
 #include "Online/OnlineSessionNames.h"
 #include <string>
+#include <Game/LobbyGameMode.h>
 
 
 ULSGameInstance::ULSGameInstance()
@@ -68,23 +69,34 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete!!! sessionName : %s, bWasSuccessful : %d"), *SessionName.ToString(), bWasSuccessful);
 
-	// 방을 생성했다면
 	if (bWasSuccessful)
 	{
-		// 입장한 방의 이름을 기억하고싶다.
 		MyRoomName = SessionName.ToString();
 
-		// 서버는 세계 여행을 떠나고싶다. 어디로???
+		UWorld* World = GetWorld();
+		if (!World)
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetWorld() is null"));
+			return;
+		}
+
+		// 서버인지 체크
+		if (World->GetAuthGameMode() == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Not server: GameMode is null"));
+			return;
+		}
+
 		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(
-			TimerHandle,
-			[this]() {
-				FString url = TEXT("/Game/Map/ChooseMap?listen");
-				GetWorld()->ServerTravel(url);
+		World->GetTimerManager().SetTimer(TimerHandle,
+			[World]() {
+				UE_LOG(LogTemp, Warning, TEXT("ServerTravel start"));
+				World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
 			},
-			3.0f,  // 3초 지연
-			false
-		);;
+			3.0f,
+			false);
+
+		UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete: timer success"));
 	}
 }
 
