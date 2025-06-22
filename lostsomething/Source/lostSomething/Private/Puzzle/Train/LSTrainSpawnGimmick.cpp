@@ -231,7 +231,10 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 {
 	if (CurrentOverlapTrigger[CorrectGate] == CorrectPeopleCount)
 	{
-		OnPuzzleCheck.Broadcast(true, CorrectGate);
+		if (HasAuthority())
+		{
+			OnPuzzleCheck.Broadcast(true, CorrectGate);
+		}
 		if (StepTriggerClass)
 		{
 			FVector SpawnLocation = StepTriggerLocations[CorrectGate-1];
@@ -253,7 +256,10 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 	}
 	else
 	{
-		OnPuzzleCheck.Broadcast(false, CorrectGate);
+		if (HasAuthority())
+		{
+			OnPuzzleCheck.Broadcast(false, CorrectGate);
+		}
 		ApplyDamage();
 	}
 }
@@ -352,7 +358,10 @@ void ALSTrainSpawnGimmick::QuestClear()
 			GameModeQuest->QuestComplete();
 		}
 	}
-	OnTrainPuzzleCleared.Broadcast();
+	if (HasAuthority())
+	{
+		OnTrainPuzzleCleared.Broadcast();
+	}
 }
 
 void ALSTrainSpawnGimmick::OnRep_CorrectGate()
