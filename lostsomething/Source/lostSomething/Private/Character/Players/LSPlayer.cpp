@@ -115,6 +115,12 @@ void ALSPlayer::Tick(float DeltaTime)
 	if (bIsBeingPushed && PusherCharacter)
 	{
 		HandleWheelchairMovement();
+		LastDistanceCheckTime += DeltaTime;
+		if (LastDistanceCheckTime >= DistanceCheckInterval)
+		{
+			CheckCombineDistance();
+			LastDistanceCheckTime = 0.0f;
+		}
 	}
 }
 
@@ -866,15 +872,26 @@ void ALSPlayer::HandleWheelchairMovement()
 	if (!PusherCharacter)
 		return;
 
-	// 시제(SiJae)의 위치와 방향 가져오기
 	FVector PusherLocation = PusherCharacter->GetActorLocation();
 	FVector PusherForward = PusherCharacter->GetActorForwardVector();
 
-	// 이제(IJae) 캐릭터를 시제(SiJae) 캐릭터 앞에 위치시키기
-	FVector NewLocation = PusherLocation + (PusherForward * 100.0f);
+	FVector TargetLocation = PusherLocation + (PusherForward * NormalCombineDistance);
 
-	// 이제(IJae) 캐릭터의 위치와 회전 설정
-	// 이제 캐릭터는 시제 캐릭터가 보는 방향으로 회전
+	FVector CurrentLocation = GetActorLocation();
+	float DistanceToTarget = FVector::Dist(CurrentLocation, TargetLocation);
+
+	FVector NewLocation;
+	if (DistanceToTarget > NormalCombineDistance * 0.5f)
+	{
+		float InterpSpeed = 5.0f; 
+		NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation,
+			GetWorld()->GetDeltaSeconds(), InterpSpeed);
+	}
+	else
+	{
+		NewLocation = TargetLocation;
+	}
+
 	SetActorLocation(NewLocation, true);
 
 	FRotator NewRotation = PusherForward.Rotation();
@@ -882,6 +899,72 @@ void ALSPlayer::HandleWheelchairMovement()
 	SetActorRotation(NewRotation);
 }
 
+void ALSPlayer::CheckCombineDistance()
+{
+	if (!bIsBeingPushed || !PusherCharacter)
+		return;
+
+	FVector MyLocation = GetActorLocation();
+	FVector PusherLocation = PusherCharacter->GetActorLocation();
+	float CurrentDistance = FVector::Dist(MyLocation, PusherLocation);
+
+	if (CurrentDistance > MaxCombineDistance)
+	{
+		LS_LOG(LogLS, Warning, TEXT("Distance exceeded limit: %.2f > %.2f - Auto separating"),
+			CurrentDistance, MaxCombineDistance);
+
+		if (HasAuthority())
+		{
+			AutoSeparateFromWheelchair();
+		}
+		else
+		{
+			ServerRequestAutoSeparation();
+		}
+	}
+	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% 여유분
+	{
+		LS_LOG(LogLS, Warning, TEXT("Distance warning: %.2f (Normal: %.2f)"),
+			CurrentDistance, NormalCombineDistance);
+	}
+}
+
+void ALSPlayer::AutoSeparateFromWheelchair()
+{
+	if (!HasAuthority())
+		return;
+
+	LS_LOG(LogLS, Warning, TEXT("Auto-separating wheelchair due to distance limit"));
+
+	// 합체 상태 해제
+	bIsBeingPushed = false;
+	ACharacter* FormerPusher = PusherCharacter;
+	PusherCharacter = nullptr;
+
+	// 모든 클라이언트에 상태 변경 알림
+	MulticastWheelchairStateChanged(false, nullptr);
+}
+
+bool ALSPlayer::ServerRequestAutoSeparation_Validate()
+{
+	return true;
+}
+
+void ALSPlayer::ServerRequestAutoSeparation_Implementation()
+{
+	// 서버에서 거리 재확인 후 분리
+	if (bIsBeingPushed && PusherCharacter)
+	{
+		FVector MyLocation = GetActorLocation();
+		FVector PusherLocation = PusherCharacter->GetActorLocation();
+		float CurrentDistance = FVector::Dist(MyLocation, PusherLocation);
+
+		if (CurrentDistance > MaxCombineDistance)
+		{
+			AutoSeparateFromWheelchair();
+		}
+	}
+}
 
 //is dead
 void ALSPlayer::OnHpReachedZero(float ZeroHp)
