@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/TimerHandle.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Character/Players/LSCharacterChoice.h"
 #include "LSQuestLocationMark.generated.h"
 
 UCLASS()
@@ -53,6 +54,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
     ELSInteractionEnum PuzzleActivateEnum = ELSInteractionEnum::Quest0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
 
 //RPC Section
 public:
