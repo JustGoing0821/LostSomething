@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interface/LSCharacterChoiceInterface.h"
 #include "Quest/LSQuestManager.h"
 
 // Sets default values
@@ -88,6 +89,20 @@ void ALSQuestLocationMark::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
 
 void ALSQuestLocationMark::PuzzleActivate()
 {
+    ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+    ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+    if (LSCharacterChoice)
+    {
+        FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+        //LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+        if (LSCharacterChoice->GetCharacterChoice() != CharacterChoice && CharacterChoice != ELSCharacterChoice::None) return;
+    }
+    else
+    {
+        LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+        return;
+    }
+
     // SpawnSystem 커스텀 이벤트 호출
     SpawnSystem();
 
@@ -100,6 +115,20 @@ void ALSQuestLocationMark::PuzzleActivate()
 
 void ALSQuestLocationMark::PuzzleDeactivate()
 {
+    ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+    ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+    if (LSCharacterChoice)
+    {
+        FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+        //LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+        if (LSCharacterChoice->GetCharacterChoice() != CharacterChoice && CharacterChoice != ELSCharacterChoice::None) return;
+    }
+    else
+    {
+        LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+        return;
+    }
+
     if (GetWorld()->GetTimerManager().IsTimerActive(SpawnTimerHandle))
     {
         GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
