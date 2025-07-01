@@ -23,12 +23,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TutorialTrigger;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UStaticMeshComponent> LocationMark;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USpotLightComponent> LightMark;
-
 	int32 CurrentTriggerPlayers;
 
 	UFUNCTION()
