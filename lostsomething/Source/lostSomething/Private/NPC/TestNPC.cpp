@@ -305,7 +305,7 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
+	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
 	Damage();
 	return 0.0f;
 }
@@ -325,7 +325,7 @@ void ATestNPC::MultiDamage_Implementation()
 	{
 		if (AnimIns)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("AnimIns->DamageMontagePlay();"));
+			UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiDamage_Implementation()"));
 			AnimIns->DamageMontagePlay();
 		}
 	}
