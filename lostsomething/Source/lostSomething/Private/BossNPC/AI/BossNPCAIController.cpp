@@ -76,7 +76,7 @@ void ABossNPCAIController::ChangedHP()
 	if (BossNPC)
 	{
 		float CurrentHP = BossNPC->GetHP();
-		LS_LOG(LogLS, Log, TEXT("BossNPCController : %f"), CurrentHP)
+		//LS_LOG(LogLS, Log, TEXT("BossNPCController : %f"), CurrentHP)
 		//BlackboardComp->GetValueAsFloat(FName("CurrentHP"));
 		Blackboard->SetValueAsFloat(FName("CurrentHP"), CurrentHP);
 	}

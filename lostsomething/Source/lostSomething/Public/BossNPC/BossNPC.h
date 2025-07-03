@@ -18,10 +18,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Obstacle")
     TArray<USceneComponent*> ObstacleSpawnPoints;
 
-    FORCEINLINE void SetHP(float NewHP)
-    {
-        CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
-    }
+    void SetHP(float NewHP);
     FORCEINLINE float GetHP() const { return CurrentHP; }
 
     // 페이즈 진입 함수들

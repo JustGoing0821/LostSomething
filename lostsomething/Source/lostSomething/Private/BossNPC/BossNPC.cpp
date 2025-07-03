@@ -72,23 +72,11 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     SetHP(GetHP() - DamageAmount);
-    LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
+    //LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
 
-    // HP에 따른 페이즈 전환
-    float HPPercentage = GetHP() / MaxHP;
-
-    /* if (HPPercentage <= 0.7f && CurrentPhase == 1)
+    if(GetHP() <= 0.0f)
     {
-        // 1페이즈 → 2페이즈 (AOE 중단)
-        StopAOEPattern();
-        EnterPhase2();
     }
-    else if (HPPercentage <= 0.3f && CurrentPhase == 2)
-    {
-        // 2페이즈 → 3페이즈 (장애물 중단)
-        StopObstaclePattern();
-        EnterPhase3();
-    }*/
    
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
@@ -99,14 +87,19 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     return 0.0f;
 }
 
+void ABossNPC::SetHP(float NewHP)
+{
+    CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
+}
+
 // 1페이즈 진입 - AOE 패턴
 void ABossNPC::EnterPhase1()
 {
-    UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
+    //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
     if (HasAuthority())
     {
         //CurrentPhase = 1;
-        UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
+        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
         StartAOEAttackPattern();
     }
 }
@@ -117,7 +110,7 @@ void ABossNPC::EnterPhase2()
     if (HasAuthority())
     {
         //CurrentPhase = 2;
-        UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
+        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
 
         // 장애물 스폰 패턴 시작
         SpawnObstacles();
@@ -130,7 +123,7 @@ void ABossNPC::EnterPhase3()
     if (HasAuthority() && PlatformGeneratorClass)
     {
         //CurrentPhase = 3;
-        UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+        //UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
 
         FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
         FActorSpawnParameters SpawnParams;
