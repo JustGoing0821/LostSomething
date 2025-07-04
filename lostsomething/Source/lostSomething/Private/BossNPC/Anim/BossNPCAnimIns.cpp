@@ -36,6 +36,13 @@ void UBossNPCAnimIns::AnimNotify_MazeAttack()
     NPCCharacter->EnterPhase3();
 }
 
+void UBossNPCAnimIns::AnimNotify_NextTiming()
+{
+    auto Pawn = TryGetPawnOwner();
+    ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+    NPCCharacter->SetPhaseStatus(false);
+}
+
 float UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
 {
     //CurrentMontage = Montage;

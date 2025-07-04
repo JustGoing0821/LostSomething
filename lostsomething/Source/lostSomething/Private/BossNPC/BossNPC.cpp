@@ -41,6 +41,7 @@ ABossNPC::ABossNPC()
     MaxAOECount = 2;
     AOESpawnRadius = 500.0f;
     CurrentPhase = 1;
+    bIsPhaseChanging = false;
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +90,27 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 void ABossNPC::SetHP(float NewHP)
 {
+    if (bIsPhaseChanging)
+    {
+        // 무적 상태이면 체력 변경 무시
+        return;
+    }
+
+    if (CurrentPhase == 1 && NewHP <= 80.0f)
+    {
+        NewHP = 80.0f;
+        CurrentPhase = 2;
+        bIsPhaseChanging = true;
+        DamageMontagePlay();
+    }
+    else if (CurrentPhase == 2 && NewHP <= 40.0f)
+    {
+        NewHP = 40.0f;
+        CurrentPhase = 3;
+        bIsPhaseChanging = true;
+        DamageMontagePlay();
+    }
+
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
 }
 
@@ -223,6 +245,29 @@ void ABossNPC::MultiMazeMontagePlay_Implementation()
     {
         NPCAnimInstance->MontagePlay(NPCAnimInstance->MazeMontage);
         //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::DamageMontagePlay()
+{
+    ServerDamageMontagePlay();
+}
+
+void ABossNPC::ServerDamageMontagePlay_Implementation()
+{
+    MultiDamageMontagePlay();
+}
+
+void ABossNPC::MultiDamageMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->DamageMontage) return;
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->DamageMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->DamageMontage);
     }
 }
 
@@ -460,5 +505,5 @@ void ABossNPC::StopObstaclePattern()
 void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ABossNPC, CurrentPhase);
+    //DOREPLIFETIME(ABossNPC, CurrentPhase);
 }

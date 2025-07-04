@@ -50,11 +50,21 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UFUNCTION(NetMulticast, Reliable)
     void MultiMazeMontagePlay();
 
+    void DamageMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerDamageMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDamageMontagePlay();
+
+    FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
+
 protected:
     virtual void BeginPlay() override;
 
-    float MaxHP = 100.0f;
+    float MaxHP = 120.0f;
     float CurrentHP;
+
+    bool bIsPhaseChanging;
 
     //AOE
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));
