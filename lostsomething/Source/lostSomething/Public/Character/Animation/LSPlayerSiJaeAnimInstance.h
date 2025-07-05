@@ -16,6 +16,7 @@ class LOSTSOMETHING_API ULSPlayerSiJaeAnimInstance : public UAnimInstance
 
 public:
 	ULSPlayerSiJaeAnimInstance();
+	void SetDeadAnim();
 
 protected:
 	//딱 한번 호출. 초기화.
@@ -23,6 +24,10 @@ protected:
 
 	//프레임마다 호출, 캐릭터의 현재 상태 업데이트
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
 
 	//왜 bp에서는 읽기만? 객체 타입선언 Owner 변수추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)

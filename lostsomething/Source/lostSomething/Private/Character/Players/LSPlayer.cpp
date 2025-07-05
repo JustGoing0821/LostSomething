@@ -16,6 +16,7 @@
 #include "Character/Players/LSPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Item/MasterItem.h"
+#include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSDeathWidget.h" 
@@ -291,6 +292,14 @@ void ALSPlayer::OnHpReachedZero(float ZeroHp)
 	Die();
 }
 
+void ALSPlayer::MeshHide()
+{
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(false);
+		UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden (delayed)"));
+	}
+}
 
 void ALSPlayer::Die()
 {
@@ -299,10 +308,11 @@ void ALSPlayer::Die()
 	bIsDead = true;
 	UE_LOG(LogTemp, Warning, TEXT("Player died"));
 
+	
+
 	if (HasAuthority())
 	{
 		MultiDie();
-
 		// 모든 입력 차단
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		{
@@ -311,11 +321,14 @@ void ALSPlayer::Die()
 		}
 
 		// 메시 숨기기
-	/*	if (GetMesh())
+		if (GetMesh())
 		{
-			GetMesh()->SetVisibility(false);
-			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));
-		}*/
+			
+			/*GetMesh()->SetVisibility(false);
+			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));*/
+		}
+
+
 
 		// 충돌 비활성화
 		SetActorEnableCollision(false);
@@ -324,13 +337,7 @@ void ALSPlayer::Die()
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
 
 		// 5초 후 부활 타이머 시작
-		GetWorld()->GetTimerManager().SetTimer(
-			RespawnTimerHandle,
-			this,
-			&ALSPlayer::Respawn,
-			5.0f,
-			false
-		);
+		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle,this,&ALSPlayer::Respawn,5.0f,false);
 		
 	}
 
@@ -346,7 +353,16 @@ void ALSPlayer::MultiDie_Implementation()
 	UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
 	if (GetMesh())
 	{
-		GetMesh()->SetVisibility(false);
+		GetWorld()->GetTimerManager().SetTimer(MeshHideTimerHandle, this, &ALSPlayer::MeshHide, 2.0f, false);
+
+		//GetMesh()->SetVisibility(false);
+	}
+
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetDeadAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리

@@ -9,12 +9,12 @@ ULSPlayerSiJaeAnimInstance::ULSPlayerSiJaeAnimInstance()
 {
 	MovingThreshould = 3.0f;
 	JumpingThreshould = 100.0f;
+	
 }
 
 void ULSPlayerSiJaeAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-
 	Owner = Cast<ACharacter>(GetOwningActor());
 	if (Owner)
 	{
@@ -22,10 +22,28 @@ void ULSPlayerSiJaeAnimInstance::NativeInitializeAnimation()
 	}
 }
 
+void ULSPlayerSiJaeAnimInstance::SetDeadAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SetDeadAnim called"));
+
+	if (!DeathMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DeathMontage is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(DeathMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(DeathMontage);
+	}
+}
+
+
 void ULSPlayerSiJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-
+	
 	if (Movement)
 	{
 		Velocity = Movement->Velocity;
