@@ -191,6 +191,10 @@ protected:
 
 	// 부활 타이머
 	FTimerHandle RespawnTimerHandle;
+	FTimerHandle MeshHideTimerHandle;
+
+	UFUNCTION()
+	void MeshHide();
 
 	// 죽음, 부활 함수
 	UFUNCTION()
