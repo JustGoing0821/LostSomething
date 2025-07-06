@@ -141,7 +141,7 @@ public:
 	//int32 GetSelectedSlot() const { return SelectedSlot; }
 
 	
-	void Attack();
+	virtual void Attack();
 	void ProcessAttack();
 
 	
