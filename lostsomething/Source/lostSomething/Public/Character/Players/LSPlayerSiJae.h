@@ -29,4 +29,7 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	
 protected:
 	virtual bool CanPushWheelchair() const override;
+
+	virtual void Attack() override;
+
 };
