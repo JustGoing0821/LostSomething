@@ -332,7 +332,7 @@ void ALSPlayer::Die()
 
 
 		// 충돌 비활성화
-		SetActorEnableCollision(false);
+		//SetActorEnableCollision(false);
 
 		// 이동 비활성화
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
@@ -363,7 +363,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION"));
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+	}
+
+	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstanceIJae)
+	{
+		AnimInstanceIJae->SetDeadAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
@@ -1438,7 +1445,7 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 
 	ClientPickUp(ItemData);
 
-	//MultiPickUp(TargetItem);
+	MultiPickUp(TargetItem);
 	//PickItemInSlot(TargetItem->GetItemInfo());
 	//TargetItem->Destroy();
 	//ClientPickUp(TargetItem);
@@ -1448,7 +1455,12 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 
 void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 {
-	//TargetItem->Destroy();
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetPickUpAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
 }
 
 

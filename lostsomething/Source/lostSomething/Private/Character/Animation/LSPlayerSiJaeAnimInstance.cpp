@@ -39,6 +39,22 @@ void ULSPlayerSiJaeAnimInstance::SetDeadAnim()
 	}
 }
 
+void ULSPlayerSiJaeAnimInstance::SetPickUpAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PickUpdAnim called"));
+
+	if (!PickUpMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PickupMontage is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(PickUpMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(PickUpMontage);
+	}
+}
 
 void ULSPlayerSiJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
