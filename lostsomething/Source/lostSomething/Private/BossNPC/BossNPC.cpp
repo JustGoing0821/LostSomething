@@ -41,6 +41,7 @@ ABossNPC::ABossNPC()
     MaxAOECount = 2;
     AOESpawnRadius = 500.0f;
     CurrentPhase = 1;
+    bIsPhaseChanging = false;
 }
 
 // Called when the game starts or when spawned
@@ -72,23 +73,7 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     SetHP(GetHP() - DamageAmount);
-    LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
-
-    // HP에 따른 페이즈 전환
-    float HPPercentage = GetHP() / MaxHP;
-
-    /* if (HPPercentage <= 0.7f && CurrentPhase == 1)
-    {
-        // 1페이즈 → 2페이즈 (AOE 중단)
-        StopAOEPattern();
-        EnterPhase2();
-    }
-    else if (HPPercentage <= 0.3f && CurrentPhase == 2)
-    {
-        // 2페이즈 → 3페이즈 (장애물 중단)
-        StopObstaclePattern();
-        EnterPhase3();
-    }*/
+    //LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
    
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
@@ -96,17 +81,49 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
         PC->ChangedHP();
     }
 
+    if (GetHP() <= 0.0f)
+    {
+        //LS_LOG(LogLS, Log, TEXT("DieMontagePlay"))
+        DieMontagePlay();
+    }
+
     return 0.0f;
+}
+
+void ABossNPC::SetHP(float NewHP)
+{
+    if (bIsPhaseChanging)
+    {
+        // 무적 상태이면 체력 변경 무시
+        return;
+    }
+
+    if (CurrentPhase == 1 && NewHP <= 80.0f)
+    {
+        NewHP = 80.0f;
+        CurrentPhase = 2;
+        bIsPhaseChanging = true;
+        DamageMontagePlay();
+    }
+    else if (CurrentPhase == 2 && NewHP <= 40.0f)
+    {
+        NewHP = 40.0f;
+        CurrentPhase = 3;
+        bIsPhaseChanging = true;
+        DamageMontagePlay();
+    }
+
+    CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
 }
 
 // 1페이즈 진입 - AOE 패턴
 void ABossNPC::EnterPhase1()
 {
-    UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
+    //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
     if (HasAuthority())
     {
         //CurrentPhase = 1;
-        UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
+        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
         StartAOEAttackPattern();
     }
 }
@@ -117,7 +134,7 @@ void ABossNPC::EnterPhase2()
     if (HasAuthority())
     {
         //CurrentPhase = 2;
-        UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
+        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
 
         // 장애물 스폰 패턴 시작
         SpawnObstacles();
@@ -130,7 +147,7 @@ void ABossNPC::EnterPhase3()
     if (HasAuthority() && PlatformGeneratorClass)
     {
         //CurrentPhase = 3;
-        UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+        //UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
 
         FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
         FActorSpawnParameters SpawnParams;
@@ -230,6 +247,52 @@ void ABossNPC::MultiMazeMontagePlay_Implementation()
     {
         NPCAnimInstance->MontagePlay(NPCAnimInstance->MazeMontage);
         //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
+    }
+}
+
+void ABossNPC::DamageMontagePlay()
+{
+    ServerDamageMontagePlay();
+}
+
+void ABossNPC::ServerDamageMontagePlay_Implementation()
+{
+    MultiDamageMontagePlay();
+}
+
+void ABossNPC::MultiDamageMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->DamageMontage) return;
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->DamageMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->DamageMontage);
+    }
+}
+
+void ABossNPC::DieMontagePlay()
+{
+    ServerDieMontagePlay();
+}
+
+void ABossNPC::ServerDieMontagePlay_Implementation()
+{
+    MultiDieMontagePlay();
+}
+
+void ABossNPC::MultiDieMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->NextMotionMontage) return;
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->NextMotionMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->NextMotionMontage);
     }
 }
 
@@ -467,5 +530,5 @@ void ABossNPC::StopObstaclePattern()
 void ABossNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ABossNPC, CurrentPhase);
+    //DOREPLIFETIME(ABossNPC, CurrentPhase);
 }

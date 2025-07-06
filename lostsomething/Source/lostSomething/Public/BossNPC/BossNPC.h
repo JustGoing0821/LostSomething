@@ -18,10 +18,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Obstacle")
     TArray<USceneComponent*> ObstacleSpawnPoints;
 
-    FORCEINLINE void SetHP(float NewHP)
-    {
-        CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
-    }
+    void SetHP(float NewHP);
     FORCEINLINE float GetHP() const { return CurrentHP; }
 
     // 페이즈 진입 함수들
@@ -53,11 +50,27 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UFUNCTION(NetMulticast, Reliable)
     void MultiMazeMontagePlay();
 
+    void DamageMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerDamageMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDamageMontagePlay();
+
+    void  DieMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerDieMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDieMontagePlay();
+
+    FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
+
 protected:
     virtual void BeginPlay() override;
 
-    float MaxHP = 100.0f;
+    float MaxHP = 120.0f;
     float CurrentHP;
+
+    bool bIsPhaseChanging;
 
     //AOE
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));

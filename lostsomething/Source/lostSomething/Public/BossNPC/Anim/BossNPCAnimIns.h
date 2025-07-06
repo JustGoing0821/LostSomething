@@ -21,6 +21,10 @@ public:
 	UAnimMontage* ObstacleMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* MazeMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* DamageMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* NextMotionMontage;
 
 	float MontagePlay(UAnimMontage* Montage);
 
@@ -38,4 +42,7 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_MazeAttack();
+
+	UFUNCTION()
+	void AnimNotify_NextTiming();
 };

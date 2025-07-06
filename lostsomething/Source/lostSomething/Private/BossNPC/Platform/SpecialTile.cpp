@@ -54,7 +54,7 @@ void ASpecialTile::BeginPlay()
 					if (PlayerController && !PlayerController->IsLocalController())
 					{
 						SetOwner(PlayerController);
-						LS_LOG(LogLS, Log, TEXT("Owner Setted."));
+						//LS_LOG(LogLS, Log, TEXT("Owner Setted."));
 						break;
 					}
 				}
@@ -93,7 +93,7 @@ void ASpecialTile::SetVisibleSiJae()
 	if (Material_SiJae)
 	{
 		MeshComp->SetMaterial(0, Material_SiJae);
-		LS_LOG(LogLS, Log, TEXT("SetVisibleSiJae() : Material applied"));
+		//LS_LOG(LogLS, Log, TEXT("SetVisibleSiJae() : Material applied"));
 	}
 }
 
@@ -102,7 +102,7 @@ void ASpecialTile::SetVisibleIJae()
 	if (Material_IJae)
 	{
 		MeshComp->SetMaterial(0, Material_IJae);
-		LS_LOG(LogLS, Log, TEXT("SetVisibleIJae() : Material applied"));
+		//LS_LOG(LogLS, Log, TEXT("SetVisibleIJae() : Material applied"));
 	}
 }
 
