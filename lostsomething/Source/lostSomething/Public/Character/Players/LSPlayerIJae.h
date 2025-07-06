@@ -18,4 +18,6 @@ protected:
 	virtual bool CanPushWheelchair() const override;
 
 	virtual void Jump() override;
+
+	virtual void Attack() override;
 };
