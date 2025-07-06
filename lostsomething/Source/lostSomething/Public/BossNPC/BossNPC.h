@@ -56,6 +56,12 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UFUNCTION(NetMulticast, Reliable)
     void MultiDamageMontagePlay();
 
+    void  DieMontagePlay();
+    UFUNCTION(Server, Reliable)
+    void ServerDieMontagePlay();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDieMontagePlay();
+
     FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
 
 protected:

@@ -74,15 +74,17 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
     SetHP(GetHP() - DamageAmount);
     //LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
-
-    if(GetHP() <= 0.0f)
-    {
-    }
    
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
     {
         PC->ChangedHP();
+    }
+
+    if (GetHP() <= 0.0f)
+    {
+        //LS_LOG(LogLS, Log, TEXT("DieMontagePlay"))
+        DieMontagePlay();
     }
 
     return 0.0f;
@@ -268,6 +270,29 @@ void ABossNPC::MultiDamageMontagePlay_Implementation()
     if (NPCAnimInstance->DamageMontage)
     {
         NPCAnimInstance->MontagePlay(NPCAnimInstance->DamageMontage);
+    }
+}
+
+void ABossNPC::DieMontagePlay()
+{
+    ServerDieMontagePlay();
+}
+
+void ABossNPC::ServerDieMontagePlay_Implementation()
+{
+    MultiDieMontagePlay();
+}
+
+void ABossNPC::MultiDieMontagePlay_Implementation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
+    if (!NPCAnimInstance || !NPCAnimInstance->NextMotionMontage) return;
+
+    // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+    if (NPCAnimInstance->NextMotionMontage)
+    {
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->NextMotionMontage);
     }
 }
 
