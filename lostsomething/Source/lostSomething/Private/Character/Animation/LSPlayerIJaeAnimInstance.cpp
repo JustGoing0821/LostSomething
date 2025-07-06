@@ -10,6 +10,23 @@ ULSPlayerIJaeAnimInstance::ULSPlayerIJaeAnimInstance()
 	//JumpingThreshould = 100.0f;
 }
 
+void ULSPlayerIJaeAnimInstance::ThrowingAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ThrowingAnim called"));
+
+	if (!ThrowingMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ThrowingAnim is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(ThrowingMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(ThrowingMontage);
+	}
+}
+
 void ULSPlayerIJaeAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
