@@ -1704,13 +1704,6 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 //
 //}
 
-void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
-{
-}
-
-void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
-{
-}
 
 
 
@@ -1754,13 +1747,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	{
 		ThrownItem->bIsThrown = true;
 
-		ULSPlayerIJaeAnimInstance* AnimInstance = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
-		if (AnimInstance)
-		{
-			AnimInstance->ThrowingAnim();
-			UE_LOG(LogTemp, Warning, TEXT("Player throwing ANIMATION"));
-		}
-		//return;
+		
 
 		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 		{
@@ -1777,7 +1764,9 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 
 			LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
 		}
+		MultiSpawnThrowableItem(ItemToThrow);
 	}
+
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
@@ -1786,8 +1775,21 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 
 void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
 {
-	
-
 	SpawnThrowableItem(ItemToThrow);
+	
 }
 
+void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
+{
+	ULSPlayerIJaeAnimInstance* AnimInstance = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->ThrowingAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player throwing ANIMATION"));
+	}
+	//return;
+}
+
+void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
+{
+}
