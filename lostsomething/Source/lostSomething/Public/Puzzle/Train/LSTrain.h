@@ -36,7 +36,19 @@ protected:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UStaticMeshComponent> MeshComponent;
+	TObjectPtr<class USceneComponent> SharedRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> LeftSideGatesRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> RightSideGatesRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> LeftSideCrowdRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> RightSideCrowdRoot;
 
 	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TrainTrigger;
@@ -72,20 +84,26 @@ public:
 	int32 CorrectDoorIndex;
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> DoorLs;
+	UPROPERTY(EditAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	bool bisGateLeftSide;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> DoorRs;
-
-	//UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	//TArray<UBoxComponent*> GateTriggers;
+	TArray<UStaticMeshComponent*> LeftSideDoorLs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> Crowds;
+	TArray<UStaticMeshComponent*> LeftSideDoorRs;
 
-	//UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
-	//int32 CurrentOpenGate;
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideDoorLs;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideDoorRs;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> LeftSideCrowds;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideCrowds;
 	
 	int32 CorrectGate;
 

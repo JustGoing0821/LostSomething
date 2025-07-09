@@ -62,9 +62,18 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	}
 
 	// Spawn Train
-	TrainClass = ALSTrain::StaticClass();
 	CurrentState = ETrainSpawnState::Despawned;
 	StepTriggerClass = ALSTrainStep::StaticClass();
+	static ConstructorHelpers::FClassFinder<ALSTrain> TrainClassRef(TEXT("/Game/Level/Puzzle/Train/BP_Train.BP_Train_C"));
+	if (TrainClassRef.Class)
+	{
+		TrainClass = TrainClassRef.Class;
+	}
+	else
+	{
+		// 블루프린트 로드 실패시 기본 C++ 클래스로 폴백
+		TrainClass = ALSTrain::StaticClass();
+	}
 
 	// Mesh
 	//MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));

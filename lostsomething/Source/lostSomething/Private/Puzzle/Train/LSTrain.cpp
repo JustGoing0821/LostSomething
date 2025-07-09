@@ -15,119 +15,122 @@ ALSTrain::ALSTrain()
 	//Replication
 	bReplicates = true;
 
-	// Train Trigger Section
-	TrainTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TrainTrigger"));
-	RootComponent = TrainTrigger;
-	TrainTrigger->SetBoxExtent(FVector(1450.0f, 150.0f, 150.0f));
-	TrainTrigger->SetCollisionProfileName(CPROFILE_LSPAWN);
-
-	//Floor
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> FloorMeshRef(TEXT("/Engine/BasicShapes/Cube.Cube"));
-	if (FloorMeshRef.Object)
-	{
-		MeshComponent->SetStaticMesh(FloorMeshRef.Object);
-	}
-	MeshComponent->SetRelativeScale3D(FVector(25.f, 3.f, 0.1f));
-	MeshComponent->SetRelativeLocation(FVector(-200.f, 0.f, -155.f));
-
-
 	// Moving Location
 	WaitLocation = FVector(-560.0f, 65.0f, 590.0f);
 	LeaveLocation = FVector(7000.0f, 65.0f, 590.0f);
 
+	//Root Component
+	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));
+	RootComponent = SharedRoot;
+
+	LeftSideGatesRoot = CreateDefaultSubobject<USceneComponent>(TEXT("LeftSideGatesRoot"));
+	LeftSideGatesRoot->SetupAttachment(SharedRoot);
+	LeftSideGatesRoot->SetRelativeLocation(FVector(127.42f, 0, 0));
+
+	RightSideGatesRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RightSideGatesRoot"));
+	RightSideGatesRoot->SetupAttachment(SharedRoot);
+	RightSideGatesRoot->SetRelativeLocation(FVector(-127.42f, 0, 0));
+
+	LeftSideCrowdRoot = CreateDefaultSubobject<USceneComponent>(TEXT("LeftSideCrowdRoot"));
+	LeftSideCrowdRoot->SetupAttachment(SharedRoot);
+
+	RightSideCrowdRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RightSideCrowdRoot"));
+	RightSideCrowdRoot->SetupAttachment(SharedRoot);
+
+	// Train Trigger Section
+	TrainTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TrainTrigger"));
+	TrainTrigger->SetupAttachment(SharedRoot);
+	TrainTrigger->SetBoxExtent(FVector(150.0f, 1200.0f, 150.0f));
+	TrainTrigger->SetRelativeLocation(FVector(0, -1000.f, 80.f));
+	TrainTrigger->SetCollisionProfileName(CPROFILE_LSPAWN);
+
 	// Mesh Ref
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> WallMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_wall_100_01.SM_ext_wall_100_01"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorFrameMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_wall_doorway_01.SM_wall_doorway_01"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoofMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_roof_200_01.SM_ext_roof_200_01"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> WallMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_wall_100_01.SM_ext_wall_100_01"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_wall_doorway_01.SM_wall_doorway_01"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> RoofMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_ext_roof_200_01.SM_ext_roof_200_01"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorLMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_01.SM_door_wall_01"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorRMeshRef(TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Structure/SM_door_wall_02.SM_door_wall_02"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> DoorMeshRef(TEXT("/Game/Asset/Map/ModSubwayStation/StaticMeshes/SM_R211_Door_Ext.SM_R211_Door_Ext"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CrowdMeshRef(TEXT("/Game/Level/Puzzle/Train/SM_SM_Crowd.SM_SM_Crowd"));
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> DoorMaterialRef(TEXT("/Game/Asset/Map/ModSubwayStation/Materials/MI_SubwayCar_Ext"));
 	static ConstructorHelpers::FObjectFinder<UMaterial> CrowdMaterialRef(TEXT("/Game/Level/Puzzle/Train/MALE.MALE"));
-	static FName CarNames[] = { TEXT("Car1") , TEXT("Car2"), TEXT("Car3"), TEXT("Car4"), TEXT("Car5"), TEXT("Car6") };
+	static FName GateNames[] = { TEXT("Gate1") , TEXT("Gate2"), TEXT("Gate3"), TEXT("Gate4"), TEXT("Gate5"), TEXT("Gate6") };
 
 	// Car Generate
-	FVector CarLocation = FVector(-1350, 150, -150);
+	FVector LeftSideDoorLLocation = FVector(0, 0, 0);
+	FVector LeftSideDoorRLocation = FVector(0, -74.f, 0);
+	FVector RightSideDoorLLocation = FVector(0, -148.f, 0);
+	FVector RightSideDoorRLocation = FVector(0, -74.f, 0);
+	FVector LeftSideCrowdLocation = FVector(70.f, -74.f, 0);
+	FVector RightSideCrowdLocation = FVector(-80.f, -74.f, 0);
 
-	for (FName CarName : CarNames)
+
+	for (FName GateName : GateNames)
 	{
-		UStaticMeshComponent* Car = CreateDefaultSubobject<UStaticMeshComponent>(CarName);
-		Car->SetupAttachment(RootComponent);
-		Car->SetRelativeLocation(CarLocation);
-		Car->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		CarLocation += FVector(400, 0, 0);
+		FName LeftSideDoorLName = *GateName.ToString().Append(TEXT("LeftSideDoorL"));
+		UStaticMeshComponent* LeftSideDoorL = CreateDefaultSubobject<UStaticMeshComponent>(LeftSideDoorLName);
+		LeftSideDoorL->SetupAttachment(LeftSideGatesRoot);
+		LeftSideDoorL->SetStaticMesh(DoorMeshRef.Object);
+		LeftSideDoorL->SetMaterial(0, DoorMaterialRef.Object);
+		LeftSideDoorL->SetRelativeLocationAndRotation(LeftSideDoorLLocation, FRotator(0, -90.f, 0));
+		LeftSideDoorL->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		LeftSideDoorLs.Add(LeftSideDoorL);
 
-		FName Wall1Name = *CarName.ToString().Append(TEXT("Wall1"));
-		UStaticMeshComponent* Wall1 = CreateDefaultSubobject<UStaticMeshComponent>(Wall1Name);
-		Wall1->SetupAttachment(Car);
-		Wall1->SetStaticMesh(WallMeshRef.Object);
+		FName LeftSideDoorRName = *GateName.ToString().Append(TEXT("LeftSideDoorR"));
+		UStaticMeshComponent* LeftSideDoorR = CreateDefaultSubobject<UStaticMeshComponent>(LeftSideDoorRName);
+		LeftSideDoorR->SetupAttachment(LeftSideGatesRoot);
+		LeftSideDoorR->SetStaticMesh(DoorMeshRef.Object);
+		LeftSideDoorR->SetMaterial(0, DoorMaterialRef.Object);
+		LeftSideDoorR->SetRelativeLocationAndRotation(LeftSideDoorRLocation, FRotator(0, -90.f, 0));
+		LeftSideDoorR->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		LeftSideDoorRs.Add(LeftSideDoorR);
 
-		FName Wall2Name = *CarName.ToString().Append(TEXT("Wall2"));
-		UStaticMeshComponent* Wall2 = CreateDefaultSubobject<UStaticMeshComponent>(Wall2Name);
-		Wall2->SetupAttachment(Car);
-		Wall2->SetStaticMesh(DoorFrameMeshRef.Object);
-		Wall2->SetRelativeLocation(FVector(160, 0, 0));
-		Wall2->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		FName RightSideDoorLName = *GateName.ToString().Append(TEXT("RightSideDoorL"));
+		UStaticMeshComponent* RightSideDoorL = CreateDefaultSubobject<UStaticMeshComponent>(RightSideDoorLName);
+		RightSideDoorL->SetupAttachment(RightSideGatesRoot);
+		RightSideDoorL->SetStaticMesh(DoorMeshRef.Object);
+		RightSideDoorL->SetMaterial(0, DoorMaterialRef.Object);
+		RightSideDoorL->SetRelativeLocationAndRotation(RightSideDoorLLocation, FRotator(0, 90.f, 0));
+		RightSideDoorL->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		RightSideDoorLs.Add(RightSideDoorL);
 
-		FName Wall3Name = *CarName.ToString().Append(TEXT("Wall3"));
-		UStaticMeshComponent* Wall3 = CreateDefaultSubobject<UStaticMeshComponent>(Wall3Name);
-		Wall3->SetupAttachment(Car);
-		Wall3->SetStaticMesh(WallMeshRef.Object);
-		Wall3->SetRelativeLocation(FVector(270, 0, 0));
+		FName RightSideDoorRName = *GateName.ToString().Append(TEXT("RightSideDoorR"));
+		UStaticMeshComponent* RightSideDoorR = CreateDefaultSubobject<UStaticMeshComponent>(RightSideDoorRName);
+		RightSideDoorR->SetupAttachment(RightSideGatesRoot);
+		RightSideDoorR->SetStaticMesh(DoorMeshRef.Object);
+		RightSideDoorR->SetMaterial(0, DoorMaterialRef.Object);
+		RightSideDoorR->SetRelativeLocationAndRotation(RightSideDoorRLocation, FRotator(0, 90.f, 0));
+		RightSideDoorR->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		RightSideDoorRs.Add(RightSideDoorR);
 
-		FName Roof1Name = *CarName.ToString().Append(TEXT("Roof1"));
-		UStaticMeshComponent* Roof1 = CreateDefaultSubobject<UStaticMeshComponent>(Roof1Name);
-		Roof1->SetupAttachment(Car);
-		Roof1->SetStaticMesh(RoofMeshRef.Object);
-		Roof1->SetRelativeLocation(FVector(-100, -300, 0));
+		LeftSideDoorLLocation += FVector(0, -400.f, 0);
+		LeftSideDoorRLocation += FVector(0, -400.f, 0);
+		RightSideDoorLLocation += FVector(0, -400.f, 0);
+		RightSideDoorRLocation += FVector(0, -400.f, 0);
 
-		FName Roof2Name = *CarName.ToString().Append(TEXT("Roof2"));
-		UStaticMeshComponent* Roof2 = CreateDefaultSubobject<UStaticMeshComponent>(Roof2Name);
-		Roof2->SetupAttachment(Car);
-		Roof2->SetStaticMesh(RoofMeshRef.Object);
-		Roof2->SetRelativeLocation(FVector(70, -300, 0));
+		FName LeftSideCrowdName = *GateName.ToString().Append(TEXT("LeftSideCrowd"));
+		UStaticMeshComponent* LeftSideCrowd = CreateDefaultSubobject<UStaticMeshComponent>(LeftSideCrowdName);
+		LeftSideCrowd->SetupAttachment(LeftSideCrowdRoot);
+		LeftSideCrowd->SetStaticMesh(CrowdMeshRef.Object);
+		LeftSideCrowd->SetRelativeLocationAndRotation(LeftSideCrowdLocation, FRotator(0,0,0));
+		LeftSideCrowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
+		LeftSideCrowd->SetVisibility(true);
+		LeftSideCrowd->SetMaterial(0, CrowdMaterialRef.Object);
+		LeftSideCrowds.Add(LeftSideCrowd);
 
-		FName DoorLName = *CarName.ToString().Append(TEXT("DoorL"));
-		UStaticMeshComponent* DoorL = CreateDefaultSubobject<UStaticMeshComponent>(DoorLName);
-		DoorL->SetupAttachment(Car);
-		DoorL->SetStaticMesh(DoorLMeshRef.Object);
-		DoorL->SetRelativeLocation(FVector(85, 0, 0));
-		DoorL->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-		DoorLs.Add(DoorL);
+		FName RightSideCrowdName = *GateName.ToString().Append(TEXT("RightSideCrowd"));
+		UStaticMeshComponent* RightSideCrowd = CreateDefaultSubobject<UStaticMeshComponent>(RightSideCrowdName);
+		RightSideCrowd->SetupAttachment(RightSideCrowdRoot);
+		RightSideCrowd->SetStaticMesh(CrowdMeshRef.Object);
+		RightSideCrowd->SetRelativeLocationAndRotation(RightSideCrowdLocation, FRotator(0, 180, 0));
+		RightSideCrowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
+		RightSideCrowd->SetVisibility(true);
+		RightSideCrowd->SetMaterial(0, CrowdMaterialRef.Object);
+		RightSideCrowds.Add(RightSideCrowd);
 
-		FName DoorRName = *CarName.ToString().Append(TEXT("DoorR"));
-		UStaticMeshComponent* DoorR = CreateDefaultSubobject<UStaticMeshComponent>(DoorRName);
-		DoorR->SetupAttachment(Car);
-		DoorR->SetStaticMesh(DoorRMeshRef.Object);
-		DoorR->SetRelativeLocation(FVector(85, 0, 0));
-		DoorR->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-		DoorRs.Add(DoorR);
-
-		//FName GateTriggerName = *CarName.ToString().Append(TEXT("GateTrigger"));
-		//UBoxComponent* GateTrigger = CreateDefaultSubobject<UBoxComponent>(GateTriggerName);
-		//GateTrigger->SetupAttachment(Car);
-		//GateTrigger->SetBoxExtent(FVector(80.0f, 20.0f, 110.0f));
-		//GateTrigger->SetRelativeLocation(FVector(85, 20, 110));
-		//GateTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
-		//GateTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//GateTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrain::OnGateTriggerBeginOverlap);
-		//GateTrigger->ComponentTags.Add(GateTriggerName);
-		//GateTriggers.Add(GateTrigger);
-
-		FName CrowdName = *CarName.ToString().Append(TEXT("Crowd"));
-		UStaticMeshComponent* Crowd = CreateDefaultSubobject<UStaticMeshComponent>(CrowdName);
-		Crowd->SetupAttachment(Car);
-		Crowd->SetStaticMesh(CrowdMeshRef.Object);
-		Crowd->SetRelativeLocationAndRotation(FVector(80,-40, 0), FRotator(0,90,0));
-		Crowd->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
-		Crowd->SetVisibility(false);
-		Crowd->SetMaterial(0, CrowdMaterialRef.Object);
-		//Crowd->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		Crowds.Add(Crowd);
-
+		LeftSideCrowdLocation += FVector(0, -400.f, 0);
+		RightSideCrowdLocation += FVector(0, -400.f, 0);
 	}
 
 	TimeBeforeGateOpen = 1.0f;
@@ -183,22 +186,6 @@ void ALSTrain::Tick(float DeltaTime)
 			//FVector CurrentLocation = GetActorLocation();
 			FVector NewLocation = FMath::Lerp(GetOnLocation, GetOffLocation, CurrentPassengersAlpha);
 			//FVector NewLocation = FMath::Lerp(GetOffLocation, GetOnLocation, CurrentPassengersAlpha);
-
-			for (int32 Num = 0; Num < DoorLs.Num(); Num++)
-			{
-				//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
-				if (Num == CorrectDoorIndex)
-				{
-					//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
-					continue;
-				}
-				else
-				{
-					Crowds[Num]->SetRelativeLocation(NewLocation);
-					//LS_LOG(LogLS, Log, TEXT("CurrentPassengersAlpha : %f"), CurrentPassengersAlpha);
-					//LS_LOG(LogLS, Log, TEXT("Crowd Moved : %f"), NewLocation.Y);
-				}
-			}
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Leaving)
@@ -232,17 +219,32 @@ void ALSTrain::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponen
 
 void ALSTrain::GateOpen()
 {
-	for (UStaticMeshComponent* DoorL : DoorLs)
+	if (bisGateLeftSide)
 	{
-		DoorL->SetVisibility(false);
-		DoorL->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		for (UStaticMeshComponent* DoorL : LeftSideDoorLs)
+		{
+			DoorL->SetVisibility(false);
+			DoorL->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		for (UStaticMeshComponent* DoorR : LeftSideDoorRs)
+		{
+			DoorR->SetVisibility(false);
+			DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
 	}
-	for (UStaticMeshComponent* DoorR : DoorRs)
+	else
 	{
-		DoorR->SetVisibility(false);
-		DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		for (UStaticMeshComponent* DoorL : RightSideDoorLs)
+		{
+			DoorL->SetVisibility(false);
+			DoorL->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		for (UStaticMeshComponent* DoorR : RightSideDoorRs)
+		{
+			DoorR->SetVisibility(false);
+			DoorR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
 	}
-	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
@@ -250,7 +252,6 @@ void ALSTrain::GateOpen()
 	}
 	GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
 		{
-			//GateClose();
 			MulticastGetOnPassengers();
 			MulticastRPCGateClose();
 		}
@@ -259,17 +260,32 @@ void ALSTrain::GateOpen()
 
 void ALSTrain::GateClose()
 {
-	for (UStaticMeshComponent* DoorL : DoorLs)
+	if (bisGateLeftSide)
 	{
-		DoorL->SetVisibility(true);
-		DoorL->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		for (UStaticMeshComponent* DoorL : LeftSideDoorLs)
+		{
+			DoorL->SetVisibility(true);
+			DoorL->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		for (UStaticMeshComponent* DoorR : LeftSideDoorRs)
+		{
+			DoorR->SetVisibility(true);
+			DoorR->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
 	}
-	for (UStaticMeshComponent* DoorR : DoorRs)
+	else
 	{
-		DoorR->SetVisibility(true);
-		DoorR->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		for (UStaticMeshComponent* DoorL : RightSideDoorLs)
+		{
+			DoorL->SetVisibility(true);
+			DoorL->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		for (UStaticMeshComponent* DoorR : RightSideDoorRs)
+		{
+			DoorR->SetVisibility(true);
+			DoorR->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
 	}
-	//GateTriggers[CurrentOpenGate]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
@@ -309,23 +325,49 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 
 void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 {
-	for (int32 Num=0 ; Num< DoorLs.Num() ; Num++)
+	if (bisGateLeftSide)
 	{
-		//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
-		if (Num == CorrectDoorIndex)
+		for (int32 Num = 0; Num < LeftSideDoorLs.Num(); Num++)
 		{
-			//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
-			Crowds[Num]->SetVisibility(false);
-			Crowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			continue;
-		}
-		else
-		{
-			Crowds[Num]->SetVisibility(true);
-			//Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
-			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+			if (Num == CorrectDoorIndex)
+			{
+				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				LeftSideCrowds[Num]->SetVisibility(false);
+				LeftSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				continue;
+			}
+			else
+			{
+				LeftSideCrowds[Num]->SetVisibility(true);
+				//Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
+				//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+			}
 		}
 	}
+	else
+	{
+		for (int32 Num = 0; Num < RightSideDoorLs.Num(); Num++)
+		{
+			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+			if (Num == CorrectDoorIndex)
+			{
+				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				RightSideCrowds[Num]->SetVisibility(false);
+				RightSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				continue;
+			}
+			else
+			{
+				RightSideCrowds[Num]->SetVisibility(true);
+				//Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
+				//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+			}
+		}
+	}
+
+
+	
 	CurrentPassengersAlpha = 0.0f;
 	bisPassengersGettingOff = true;
 }
@@ -334,12 +376,25 @@ void ALSTrain::GetOnPassengers()
 {
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
 
-	for (int32 Num = 0; Num < DoorLs.Num(); Num++)
+	if (bisGateLeftSide)
 	{
-		Crowds[Num]->SetVisibility(false);
-		Crowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
-		//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+		for (int32 Num = 0; Num < LeftSideDoorLs.Num(); Num++)
+		{
+			LeftSideCrowds[Num]->SetVisibility(false);
+			LeftSideCrowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
+			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+		}
 	}
+	else
+	{
+		for (int32 Num = 0; Num < RightSideDoorLs.Num(); Num++)
+		{
+			RightSideCrowds[Num]->SetVisibility(false);
+			RightSideCrowds[Num]->SetRelativeLocation(FVector(80, -40, 0));
+			//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+		}
+	}
+
 	bisPassengersGettingOff = false;
 }
 
