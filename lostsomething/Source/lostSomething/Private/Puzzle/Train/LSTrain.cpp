@@ -15,9 +15,11 @@ ALSTrain::ALSTrain()
 	//Replication
 	bReplicates = true;
 
+	bisGateLeftSide =true;
+
 	// Moving Location
-	WaitLocation = FVector(-560.0f, 65.0f, 590.0f);
-	LeaveLocation = FVector(7000.0f, 65.0f, 590.0f);
+	WaitLocation = FVector(600.0f, -290.0f, -6.2f);
+	LeaveLocation = FVector(-6000.0f, -290.0f, -6.2f);
 
 	//Root Component
 	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));

@@ -71,10 +71,15 @@ protected:
 	FVector WaitLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector LeaveLocation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
-	FVector GetOffLocation;
+	FVector LeftSideCrowdGetOnLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
-	FVector GetOnLocation;
+	FVector RightSideCrowdGetOnLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector LeftSideCrowdGetOffLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector RightSideCrowdGetOffLocation;
 
 //Gates
 public:

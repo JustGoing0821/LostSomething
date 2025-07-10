@@ -27,7 +27,7 @@ ALSTrainStep::ALSTrainStep()
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	MeshComponent->SetRelativeScale3D(FVector(1.6f, 0.5f, 0.2f));
 	MeshComponent->SetRelativeLocation(FVector(-80.0f, -25.0f, -80.0f));
-	MeshComponent->SetVisibility(false);
+	MeshComponent->SetVisibility(true);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	if (ItemMeshRef.Object)
 	{
