@@ -18,16 +18,16 @@ ALSTrainStep::ALSTrainStep()
 	// Stage Section
 	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionCollision"));
 	RootComponent = InteractionTrigger;
-	InteractionTrigger->SetBoxExtent(FVector(80, 25, 80));
+	InteractionTrigger->SetBoxExtent(FVector(65, 25, 80));
 	InteractionTrigger->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
 
 	//Mesh
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	MeshComponent->SetRelativeScale3D(FVector(1.6f, 0.5f, 0.2f));
-	MeshComponent->SetRelativeLocation(FVector(-80.0f, -25.0f, -80.0f));
-	MeshComponent->SetVisibility(true);
+	MeshComponent->SetRelativeScale3D(FVector(1.3f, 0.5f, 0.2f));
+	MeshComponent->SetRelativeLocation(FVector(-65.0f, -25.0f, -80.0f));
+	MeshComponent->SetVisibility(false);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	if (ItemMeshRef.Object)
 	{

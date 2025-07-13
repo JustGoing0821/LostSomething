@@ -109,7 +109,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
 	TArray<UStaticMeshComponent*> RightSideCrowds;
-	
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<FVector> LeftSideCrowdsLocation;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<FVector> RightSideCrowdsLocation;
+
 	int32 CorrectGate;
 
 	UFUNCTION()
@@ -125,7 +131,7 @@ public:
 	void StopTrain();
 
 protected:
-	void GetOffPassengers(int32 InCorrectGate);
+	void GetOffPassengers();
 	void GetOnPassengers();
 
 
@@ -151,7 +157,7 @@ public:
 	void MulticastRPCGateClose();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastGetOffPassengers(int32 InCorrectGate);
+	void MulticastGetOffPassengers();
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastGetOnPassengers();

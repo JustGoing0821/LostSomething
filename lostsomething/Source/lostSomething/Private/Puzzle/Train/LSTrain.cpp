@@ -11,15 +11,16 @@ ALSTrain::ALSTrain()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	//Replication
 	bReplicates = true;
 
-	bisGateLeftSide =true;
+	//Gate Side
+	bisGateLeftSide =false;
 
 	// Moving Location
-	WaitLocation = FVector(600.0f, -290.0f, -6.2f);
-	LeaveLocation = FVector(-6000.0f, -290.0f, -6.2f);
+	WaitLocation = FVector(2486.0f, -290.0f, -6.2f);
+	LeaveLocation = FVector(9000.0f, -290.0f, -6.2f);
 
 	//Root Component
 	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));
@@ -120,6 +121,7 @@ ALSTrain::ALSTrain()
 		LeftSideCrowd->SetVisibility(true);
 		LeftSideCrowd->SetMaterial(0, CrowdMaterialRef.Object);
 		LeftSideCrowds.Add(LeftSideCrowd);
+		LeftSideCrowdsLocation.Add(LeftSideCrowdLocation);
 
 		FName RightSideCrowdName = *GateName.ToString().Append(TEXT("RightSideCrowd"));
 		UStaticMeshComponent* RightSideCrowd = CreateDefaultSubobject<UStaticMeshComponent>(RightSideCrowdName);
@@ -130,17 +132,16 @@ ALSTrain::ALSTrain()
 		RightSideCrowd->SetVisibility(true);
 		RightSideCrowd->SetMaterial(0, CrowdMaterialRef.Object);
 		RightSideCrowds.Add(RightSideCrowd);
+		RightSideCrowdsLocation.Add(RightSideCrowdLocation);
 
 		LeftSideCrowdLocation += FVector(0, -400.f, 0);
 		RightSideCrowdLocation += FVector(0, -400.f, 0);
 	}
 
-	TimeBeforeGateOpen = 1.0f;
-	TimeTrainWait = 5.0f;
+	TimeBeforeGateOpen = 3.0f;
+	TimeTrainWait = 0.0f;
 	TimeBeforeTrainLeave = 1.0f;
 	bisPassengersGettingOff = false;
-	GetOnLocation = FVector(80, -40, 0);
-	GetOffLocation = FVector(80, 130, 0);
 }
 
 void ALSTrain::Tick(float DeltaTime)
@@ -185,8 +186,40 @@ void ALSTrain::Tick(float DeltaTime)
 		{
 			CurrentPassengersAlpha += DeltaTime * 2.0f;
 			CurrentPassengersAlpha = FMath::Clamp(CurrentPassengersAlpha, 0.0f, 1.0f);
+
+			if (bisGateLeftSide)
+			{
+				for (int32 Num = 0; Num < LeftSideDoorLs.Num(); Num++)
+				{
+					//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+					if (Num != CorrectDoorIndex)
+					{
+						FVector CurrentLocation = LeftSideCrowds[Num]->GetRelativeLocation();
+						FVector NewLocation = LeftSideCrowdsLocation[Num] + FVector(150.f, 0, 0);
+						NewLocation = FMath::Lerp(CurrentLocation, NewLocation, CurrentPassengersAlpha);
+						LeftSideCrowds[Num]->SetRelativeLocation(NewLocation);
+						//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+					}
+				}
+			}
+			else
+			{
+				for (int32 Num = 0; Num < RightSideDoorLs.Num(); Num++)
+				{
+					//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
+					if (Num != CorrectDoorIndex)
+					{
+						FVector CurrentLocation = RightSideCrowds[Num]->GetRelativeLocation();
+						FVector NewLocation = RightSideCrowdsLocation[Num] + FVector(-150.f, 0, 0);
+						NewLocation = FMath::Lerp(CurrentLocation, NewLocation, CurrentPassengersAlpha);
+						RightSideCrowds[Num]->SetRelativeLocation(NewLocation);
+						//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
+					}
+				}
+			}
+
 			//FVector CurrentLocation = GetActorLocation();
-			FVector NewLocation = FMath::Lerp(GetOnLocation, GetOffLocation, CurrentPassengersAlpha);
+			//FVector NewLocation = FMath::Lerp(GetOnLocation, GetOffLocation, CurrentPassengersAlpha);
 			//FVector NewLocation = FMath::Lerp(GetOffLocation, GetOnLocation, CurrentPassengersAlpha);
 		}
 	}
@@ -303,29 +336,26 @@ void ALSTrain::GateClose()
 void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 {
 	//LS_LOG(LogLS, Log, TEXT("InCorrectGate : %d"), InCorrectGate);
-	CorrectDoorIndex = InCorrectGate - 1;
 
 	if (bCorrect)
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
-		TimeTrainWait = 5.0f;
+		TimeTrainWait = 15.0f;
 		MulticastRPCGateOpen();
-		//GetOffPassengers(InCorrectGate - 1);
 		CorrectDoorIndex = InCorrectGate - 1;
-		MulticastGetOffPassengers(InCorrectGate - 1);
+		MulticastGetOffPassengers();
 	}
 	else
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
 		TimeTrainWait = 2.0f;
 		MulticastRPCGateOpen();
-		//GetOffPassengers(-1);
 		CorrectDoorIndex = -1;
-		MulticastGetOffPassengers(-1);
+		MulticastGetOffPassengers();
 	}
 }
 
-void ALSTrain::GetOffPassengers(int32 InCorrectGate)
+void ALSTrain::GetOffPassengers()
 {
 	if (bisGateLeftSide)
 	{
@@ -334,7 +364,7 @@ void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
 			if (Num == CorrectDoorIndex)
 			{
-				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				LS_LOG(LogLS, Log, TEXT("Correct Gate"));
 				LeftSideCrowds[Num]->SetVisibility(false);
 				LeftSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				continue;
@@ -342,8 +372,6 @@ void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 			else
 			{
 				LeftSideCrowds[Num]->SetVisibility(true);
-				//Crowds[Num]->SetRelativeLocation(FVector(80, 80, 0));
-				//LS_LOG(LogLS, Log, TEXT("Crowd Moved"));
 			}
 		}
 	}
@@ -354,7 +382,7 @@ void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
 			if (Num == CorrectDoorIndex)
 			{
-				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				LS_LOG(LogLS, Log, TEXT("Correct Gate"));
 				RightSideCrowds[Num]->SetVisibility(false);
 				RightSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				continue;
@@ -367,8 +395,6 @@ void ALSTrain::GetOffPassengers(int32 InCorrectGate)
 			}
 		}
 	}
-
-
 	
 	CurrentPassengersAlpha = 0.0f;
 	bisPassengersGettingOff = true;
@@ -424,9 +450,9 @@ void ALSTrain::MulticastRPCGateClose_Implementation()
 	GateClose();
 }
 
-void ALSTrain::MulticastGetOffPassengers_Implementation(int32 InCorrectGate)
+void ALSTrain::MulticastGetOffPassengers_Implementation()
 {
-	GetOffPassengers(InCorrectGate);
+	GetOffPassengers();
 }
 
 void ALSTrain::MulticastGetOnPassengers_Implementation()
