@@ -36,7 +36,19 @@ protected:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UStaticMeshComponent> MeshComponent;
+	TObjectPtr<class USceneComponent> SharedRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> LeftSideGatesRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> RightSideGatesRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> LeftSideCrowdRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> RightSideCrowdRoot;
 
 	UPROPERTY(VisibleAnywhere, Category = Train, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> TrainTrigger;
@@ -59,10 +71,15 @@ protected:
 	FVector WaitLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	FVector LeaveLocation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
-	FVector GetOffLocation;
+	FVector LeftSideCrowdGetOnLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
-	FVector GetOnLocation;
+	FVector RightSideCrowdGetOnLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector LeftSideCrowdGetOffLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	FVector RightSideCrowdGetOffLocation;
 
 //Gates
 public:
@@ -72,21 +89,33 @@ public:
 	int32 CorrectDoorIndex;
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> DoorLs;
+	UPROPERTY(EditAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	bool bisGateLeftSide;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> DoorRs;
-
-	//UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	//TArray<UBoxComponent*> GateTriggers;
+	TArray<UStaticMeshComponent*> LeftSideDoorLs;
 
 	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
-	TArray<UStaticMeshComponent*> Crowds;
+	TArray<UStaticMeshComponent*> LeftSideDoorRs;
 
-	//UPROPERTY(ReplicatedUsing = OnRep_CurrentOpenGate)
-	//int32 CurrentOpenGate;
-	
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideDoorLs;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideDoorRs;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> LeftSideCrowds;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<UStaticMeshComponent*> RightSideCrowds;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<FVector> LeftSideCrowdsLocation;
+
+	UPROPERTY(VisibleAnywhere, Category = Gate, Meta = (AllowPrivateAccess = "true"))
+	TArray<FVector> RightSideCrowdsLocation;
+
 	int32 CorrectGate;
 
 	UFUNCTION()
@@ -102,7 +131,7 @@ public:
 	void StopTrain();
 
 protected:
-	void GetOffPassengers(int32 InCorrectGate);
+	void GetOffPassengers();
 	void GetOnPassengers();
 
 
@@ -128,7 +157,7 @@ public:
 	void MulticastRPCGateClose();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastGetOffPassengers(int32 InCorrectGate);
+	void MulticastGetOffPassengers();
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastGetOnPassengers();

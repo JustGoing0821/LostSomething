@@ -37,8 +37,8 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static FName GateNames[] = { TEXT("Gate1") , TEXT("Gate2"), TEXT("Gate3"), TEXT("Gate4"), TEXT("Gate5"), TEXT("Gate6") };
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StepMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
-	FVector CreateGateLocation = FVector(-300, -1215, -50);
-	FVector CreateStepLocation = FVector(-1830.0, 268, 503);
+	FVector CreateGateLocation = FVector(-300.f, 785.f, -50.f);
+	FVector CreateStepLocation = FVector(2412.f, -124.f, 59.99f);
 	for (FName GateName : GateNames)
 	{
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
@@ -57,14 +57,23 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 		StepTriggerLocations.Add(CreateStepLocation);
 
-		CreateGateLocation += FVector(0, 400, 0);
-		CreateStepLocation += FVector(400, 0, 0);
+		CreateGateLocation += FVector(0, -400.f, 0);
+		CreateStepLocation += FVector(-400.f, 0, 0);
 	}
 
 	// Spawn Train
-	TrainClass = ALSTrain::StaticClass();
 	CurrentState = ETrainSpawnState::Despawned;
 	StepTriggerClass = ALSTrainStep::StaticClass();
+	static ConstructorHelpers::FClassFinder<ALSTrain> TrainClassRef(TEXT("/Game/Level/Puzzle/Train/BP_Train.BP_Train_C"));
+	if (TrainClassRef.Class)
+	{
+		TrainClass = TrainClassRef.Class;
+	}
+	else
+	{
+		// 블루프린트 로드 실패시 기본 C++ 클래스로 폴백
+		TrainClass = ALSTrain::StaticClass();
+	}
 
 	// Mesh
 	//MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
@@ -211,8 +220,8 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 			{
-				FVector SpawnLocation = GetActorLocation() +FVector(-5000.f, 0.f, 0.f);
-				FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
+				FVector SpawnLocation = FVector(-4000.0f, -290.0f, -6.2f);
+				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 				ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
 				if (LSTrain)
