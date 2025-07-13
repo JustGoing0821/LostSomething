@@ -16,8 +16,6 @@ void ALSPlayerIJae::Jump()
 void ALSPlayerIJae::Attack() {
     if (bIsDead) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("=== IJae Attack START ==="));
-
     int32 CurrentSelectedSlot = SelectedSlot;
     if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
     {
