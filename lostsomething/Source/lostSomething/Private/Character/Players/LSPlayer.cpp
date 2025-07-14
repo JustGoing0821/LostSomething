@@ -33,7 +33,11 @@ ALSPlayer::ALSPlayer()
 
 	//컨트롤러 회전시 회전 x
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
+
+	// 이동 방향에 따라 캐릭터 회전
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
+
 	bUseControllerRotationRoll = false;
 
 
@@ -788,10 +792,17 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
+	MultiProcessAttack();
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()
 {
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetAttackAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+	}
 }
 
 void ALSPlayer::ClientProcessAttack_Implementation()
