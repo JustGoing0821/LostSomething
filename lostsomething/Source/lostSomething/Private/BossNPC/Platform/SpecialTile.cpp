@@ -11,53 +11,52 @@
 // Sets default values
 ASpecialTile::ASpecialTile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
 
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체는 충돌 끔
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComp->SetCollisionObjectType(ECC_WorldStatic);
+	MeshComp->SetCollisionResponseToAllChannels(ECR_Block);
 
-	// 트리거 박스 생성
-	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	TriggerBox->SetupAttachment(MeshComp); // Mesh 밑에 붙임
-
-	// 트리거 박스 설정
-	TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	TriggerBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	TriggerBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	TriggerBox->SetGenerateOverlapEvents(true);
-
-	// 트리거 크기 (발판 크기에 맞춰서 조정)
-	TriggerBox->SetBoxExtent(FVector(100.f, 100.f, 50.f));
-	TriggerBox->SetRelativeLocation(FVector::ZeroVector);
-
-	// 오버랩 델리게이트 연결
-	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(
+		TEXT("/Engine/BasicShapes/Cube.Cube")
+	);
 	if (CubeMesh.Succeeded())
 	{
 		MeshComp->SetStaticMesh(CubeMesh.Object);
 	}
-
 	MeshComp->SetRelativeScale3D(FVector(2.0f, 2.0f, 0.125f));
 
-	//생성자에서 머티리얼 미리 로딩
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'"));
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	TriggerBox->SetupAttachment(MeshComp);
+	TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerBox->SetCollisionObjectType(ECC_WorldDynamic);
+	TriggerBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	TriggerBox->SetGenerateOverlapEvents(true);
+	TriggerBox->SetBoxExtent(FVector(100.f, 100.f, 50.f));
+	TriggerBox->SetRelativeLocation(FVector::ZeroVector);
+	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(
+		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'")
+	);
 	if (MatSiJae.Succeeded())
 	{
 		Material_SiJae = MatSiJae.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(
+		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'")
+	);
 	if (MatIJae.Succeeded())
 	{
 		Material_IJae = MatIJae.Object;
 	}
+
 	bOverlap = false;
 }
 
