@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/LSInteractionEnum.h"
 #include "LSInteractionTutorial.generated.h"
 
 UCLASS()
@@ -23,6 +24,9 @@ protected:
 protected:
 	void PuzzleCheck(bool isPuzzleCorrect);
 	void QuestClear();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
 
 //RPC Section
 public:

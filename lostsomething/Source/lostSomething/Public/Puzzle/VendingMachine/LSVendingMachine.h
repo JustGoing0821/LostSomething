@@ -63,6 +63,9 @@ public:
 
 	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum PuzzleActivateEnum;
+
 protected:
 	UPROPERTY(Replicated)
 	TObjectPtr<class APlayerController> CurrentInteractController;
@@ -71,9 +74,6 @@ protected:
 	int32 MachineNumber;
 
 	TArray<TArray<EVendingMachineColor>> VendingMachineColorSets;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
-	ELSInteractionEnum PuzzleActivateEnum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	float DamageAmount;
