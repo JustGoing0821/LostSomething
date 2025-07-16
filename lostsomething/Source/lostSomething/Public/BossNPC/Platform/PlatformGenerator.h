@@ -38,8 +38,12 @@ public:
     UPROPERTY(EditAnywhere)
     int32 NumCols = 9;
 
+    TArray<TArray<bool>> SpecialMap;
+    void SpawnTilesColumn(int32 ColIndex);
+
     void GenerateMaze();
     TArray<TArray<bool>> GenerateConnectedSpecialPath();
+    void OnSpecialTileStepped(int32 CurrentCol);
     void SpawnTiles(const TArray<TArray<bool>>& specialMap);
 
 };

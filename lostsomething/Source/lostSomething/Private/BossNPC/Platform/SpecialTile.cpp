@@ -5,6 +5,8 @@
 #include "lostSomething.h"
 #include <Interface/LSCharacterChoiceInterface.h>
 #include "EngineUtils.h"
+#include "Components/BoxComponent.h"
+#include "BossNPC/Platform/PlatformGenerator.h"
 
 // Sets default values
 ASpecialTile::ASpecialTile()
@@ -15,6 +17,26 @@ ASpecialTile::ASpecialTile()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
+
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체는 충돌 끔
+
+	// 트리거 박스 생성
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	TriggerBox->SetupAttachment(MeshComp); // Mesh 밑에 붙임
+
+	// 트리거 박스 설정
+	TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	TriggerBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	TriggerBox->SetGenerateOverlapEvents(true);
+
+	// 트리거 크기 (발판 크기에 맞춰서 조정)
+	TriggerBox->SetBoxExtent(FVector(100.f, 100.f, 50.f));
+	TriggerBox->SetRelativeLocation(FVector::ZeroVector);
+
+	// 오버랩 델리게이트 연결
+	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
 	if (CubeMesh.Succeeded())
@@ -36,7 +58,13 @@ ASpecialTile::ASpecialTile()
 	{
 		Material_IJae = MatIJae.Object;
 	}
+	bOverlap = false;
+}
 
+void ASpecialTile::Init(APlatformGenerator* Generator, int32 ColIndex)
+{
+	PlatformGenerator = Generator;
+	ThisColumn = ColIndex;
 }
 
 // Called when the game starts or when spawned
@@ -104,6 +132,17 @@ void ASpecialTile::SetVisibleIJae()
 		MeshComp->SetMaterial(0, Material_IJae);
 		//LS_LOG(LogLS, Log, TEXT("SetVisibleIJae() : Material applied"));
 	}
+}
+
+void ASpecialTile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	LS_LOG(LogLS, Error,TEXT("ASpecialTile::OnMeshBeginOverlap"))
+	if (PlatformGenerator && !bOverlap)
+	{
+		bOverlap = true;
+		PlatformGenerator->OnSpecialTileStepped(ThisColumn);
+	}
+	//Destroy();
 }
 
 
