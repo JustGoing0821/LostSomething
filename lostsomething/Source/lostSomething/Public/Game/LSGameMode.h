@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interface/LSLocationTransferInterface.h"
 #include "Interaction/LSInteractionEnum.h"
 #include "LSGameMode.generated.h"
 
@@ -12,7 +13,7 @@
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface
+class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface, public ILSLocationTransferInterface
 {
 	GENERATED_BODY()
 	
@@ -45,6 +46,11 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class ALSQuestManager> QuestManager;
+
+
+// Player Transfer
+public:
+	void TransferPlayerLocation(FVector InSijaeLocation, FVector InIjaeLocation) override;
 
 //Test Login
 protected:
