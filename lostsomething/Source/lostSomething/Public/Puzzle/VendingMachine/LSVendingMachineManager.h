@@ -40,6 +40,9 @@ protected:
 //Pannel Section
 protected:
 	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USceneComponent> Root;
+
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(VisibleAnywhere)
