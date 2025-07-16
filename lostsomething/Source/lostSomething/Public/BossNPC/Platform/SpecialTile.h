@@ -22,6 +22,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UBoxComponent* TriggerBox;
+	
+	bool bOverlap;
 
 protected:
 	// Called when the game starts or when spawned
@@ -44,7 +46,6 @@ protected:
 	APlatformGenerator* PlatformGenerator;
 	int32 ThisColumn;
 
-	bool bOverlap;
 
 public:	
 	// Called every frame

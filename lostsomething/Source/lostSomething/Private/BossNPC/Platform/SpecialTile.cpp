@@ -37,7 +37,7 @@ ASpecialTile::ASpecialTile()
 	TriggerBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	TriggerBox->SetGenerateOverlapEvents(true);
-	TriggerBox->SetBoxExtent(FVector(100.f, 100.f, 50.f));
+	TriggerBox->SetBoxExtent(FVector(50.f, 50.f, 50.f));
 	TriggerBox->SetRelativeLocation(FVector::ZeroVector);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
 
@@ -64,6 +64,7 @@ void ASpecialTile::Init(APlatformGenerator* Generator, int32 ColIndex)
 {
 	PlatformGenerator = Generator;
 	ThisColumn = ColIndex;
+	bOverlap = false;
 }
 
 // Called when the game starts or when spawned
