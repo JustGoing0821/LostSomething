@@ -2,36 +2,24 @@
 
 
 #include "Character/UI/LSDarkWidget.h"
+#include "Components/Image.h"
 
-void ULSDarkWidget::NativeConstruct()
+void ULSDarkWidget::SetOpacityByDistance(float Distance)
 {
-    Super::NativeConstruct();
+	if (!DarkImage) return;
 
-    // 초기 상태는 완전 투명 (밝음)
-    if (DarknessOverlay)
-    {
-        SetDarknessLevel(0.0f);
-        UE_LOG(LogTemp, Warning, TEXT("DarkWidget: Initialized"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("DarkWidget: DarknessOverlay not found! Check widget binding."));
-    }
-}
+	const float MinDistance = 200.0f;
+	const float MaxDistance = 1000.0f;
 
-void ULSDarkWidget::SetDarknessLevel(float DarknessAlpha)
-{
-    CurrentDarknessLevel = FMath::Clamp(DarknessAlpha, 0.0f, 1.0f);
+	float Alpha = 0.0f;
 
-    if (DarknessOverlay)
-    {
-        FLinearColor DarknessColor = FLinearColor(0.0f, 0.0f, 0.0f, CurrentDarknessLevel);
-        DarknessOverlay->SetColorAndOpacity(DarknessColor);
+	if (Distance > MinDistance)
+	{
+		Alpha = FMath::Clamp((Distance - MinDistance) / (MaxDistance - MinDistance), 0.0f, 1.0f);
+	}
 
-        UE_LOG(LogTemp, Log, TEXT("DarkWidget: Darkness level set to: %f"), CurrentDarknessLevel);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("DarkWidget: DarknessOverlay is null!"));
-    }
+	FLinearColor NewColor = DarkImage->ColorAndOpacity;
+	NewColor.A = Alpha;
+
+	DarkImage->SetColorAndOpacity(NewColor);
 }

@@ -2,8 +2,11 @@
 
 
 #include "Character/Players/LSPlayerSiJae.h"
+#include "Character/Players/LSPlayerIJae.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSDarkWidget.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -11,8 +14,15 @@ void ALSPlayerSiJae::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (IsLocallyControlled())  // 로컬 컨트롤러만 위젯을 띄움
+ 
+    if (IJae == nullptr)
     {
+        UE_LOG(LogTemp, Warning, TEXT("SiJae: IJae was not found!"));
+    }
+
+    if (IsLocallyControlled())
+    {
+        //darkwidget 생성, 띄우기ㄴ
         if (DarkWidgetClass)
         {
             DarkWidgetInstance = CreateWidget<ULSDarkWidget>(GetWorld(), DarkWidgetClass);
@@ -27,7 +37,9 @@ void ALSPlayerSiJae::BeginPlay()
         {
             UE_LOG(LogTemp, Error, TEXT("DarkWidgetClass is not set in ALSPlayerSiJae"));
         }
+
     }
+   
 }
 
 
@@ -56,5 +68,64 @@ void ALSPlayerSiJae::Attack() {
     else
     {
         ServerProcessAttack();
+    } 
+}
+
+
+void ALSPlayerSiJae::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (!IJae)
+    {
+        IJae = Cast<ALSPlayerIJae>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSPlayerIJae::StaticClass()));
+        if (IJae)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("SiJae: Found IJae player!"));
+        }
     }
+
+    if (IJae != nullptr)
+    {
+        float Distance = FVector::Dist(GetActorLocation(), IJae->GetActorLocation());
+        UE_LOG(LogTemp, Warning, TEXT("SiJae: Distance to IJae = %.2f"), Distance);
+
+        if (DarkWidgetInstance)
+        {
+            DarkWidgetInstance->SetOpacityByDistance(Distance);
+        }
+    }
+
+
+    
+
+    //순회하면서 찾기
+    //if (!IJae)
+    //{
+    //    UE_LOG(LogTemp, Warning, TEXT("SiJae: Searching for IJae player..."));
+
+    //    for (TActorIterator<ALSPlayerIJae> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+    //    {
+    //        if (IsValid(*ActorItr))
+    //        {
+    //            IJae = *ActorItr;
+    //            UE_LOG(LogTemp, Warning, TEXT("SiJae: Found IJae player!"));
+    //            break;
+    //        }
+    //    }
+
+    //    if (!IJae)
+    //    {
+    //        UE_LOG(LogTemp, Warning, TEXT("SiJae: IJae player not found yet"));
+    //        return; // IJae가 없으면 거리 계산 안 함
+    //    }
+    //}
+
+    //if (IJae != nullptr)
+    //{
+    //    float Distance = FVector::Dist(GetActorLocation(), IJae->GetActorLocation());
+    //    UE_LOG(LogTemp, Warning, TEXT("SiJae: Distance to IJae = %.2f"), Distance);
+    //}
+
+    
 }
