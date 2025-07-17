@@ -5,38 +5,66 @@
 #include "lostSomething.h"
 #include <Interface/LSCharacterChoiceInterface.h>
 #include "EngineUtils.h"
+#include "Components/BoxComponent.h"
+#include "BossNPC/Platform/PlatformGenerator.h"
 
 // Sets default values
 ASpecialTile::ASpecialTile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(MeshComp);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComp->SetCollisionObjectType(ECC_WorldStatic);
+	MeshComp->SetCollisionResponseToAllChannels(ECR_Block);
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(
+		TEXT("/Engine/BasicShapes/Cube.Cube")
+	);
 	if (CubeMesh.Succeeded())
 	{
 		MeshComp->SetStaticMesh(CubeMesh.Object);
 	}
-
 	MeshComp->SetRelativeScale3D(FVector(2.0f, 2.0f, 0.125f));
 
-	//생성자에서 머티리얼 미리 로딩
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'"));
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	TriggerBox->SetupAttachment(MeshComp);
+	TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerBox->SetCollisionObjectType(ECC_WorldDynamic);
+	TriggerBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	TriggerBox->SetGenerateOverlapEvents(true);
+	TriggerBox->SetBoxExtent(FVector(50.f, 50.f, 50.f));
+	TriggerBox->SetRelativeLocation(FVector::ZeroVector);
+	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(
+		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'")
+	);
 	if (MatSiJae.Succeeded())
 	{
 		Material_SiJae = MatSiJae.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(
+		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'")
+	);
 	if (MatIJae.Succeeded())
 	{
 		Material_IJae = MatIJae.Object;
 	}
 
+	bOverlap = false;
+}
+
+void ASpecialTile::Init(APlatformGenerator* Generator, int32 ColIndex)
+{
+	PlatformGenerator = Generator;
+	ThisColumn = ColIndex;
+	bOverlap = false;
 }
 
 // Called when the game starts or when spawned
@@ -104,6 +132,17 @@ void ASpecialTile::SetVisibleIJae()
 		MeshComp->SetMaterial(0, Material_IJae);
 		//LS_LOG(LogLS, Log, TEXT("SetVisibleIJae() : Material applied"));
 	}
+}
+
+void ASpecialTile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	LS_LOG(LogLS, Error,TEXT("ASpecialTile::OnMeshBeginOverlap"))
+	if (PlatformGenerator && !bOverlap)
+	{
+		bOverlap = true;
+		PlatformGenerator->OnSpecialTileStepped(ThisColumn);
+	}
+	//Destroy();
 }
 
 
