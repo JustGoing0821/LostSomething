@@ -17,15 +17,19 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	CurrentPhase = ECurrentPhase::NotStarted;
 	bReplicates = true;
 
+	//Root Component
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	RootComponent = Root;
+
 	//Collision
 	StartButton = CreateDefaultSubobject<UBoxComponent>(TEXT("StartButtonCollision"));
 	StartButton->SetCollisionProfileName(CPROFILE_LSINTERACTIONACTOR);
 	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StartButton->SetBoxExtent(FVector(55, 3, 80));
-	RootComponent = StartButton;
+	//StartButton->SetBoxExtent(FVector(55, 3, 80));
+	StartButton->SetupAttachment(RootComponent);
 
 	//Mesh
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PannelMeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	//MeshComponent->SetRelativeLocation(FVector(-50.0f, -50.0f, -50.0f));
@@ -69,7 +73,7 @@ void ALSVendingMachineManager::BeginPlay()
 		for (AActor* FoundActor : FoundActors)
 		{
 			ALSVendingMachine* VendingMachine = Cast<ALSVendingMachine>(FoundActor);
-			if (VendingMachine)
+			if (VendingMachine && VendingMachine->PuzzleActivateEnum == PuzzleActivateEnum)
 			{
 				VendingMachine->SetMachineNumber(CurrentMachine);
 				VendingMachine->BindVendingMachine(this);
