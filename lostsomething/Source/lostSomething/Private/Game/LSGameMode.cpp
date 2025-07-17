@@ -154,6 +154,42 @@ void ALSGameMode::QuestComplete()
 	QuestManager->QuestComplete();
 }
 
+void ALSGameMode::TransferPlayerLocation(FVector InSijaeLocation, FVector InIjaeLocation)
+{
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(Iterator->Get());
+		if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
+		{
+			ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+			APawn* Pawn = LSPlayerController->GetPawn(); // 또는 Cast<AMyCharacter>(PC->GetPawn());
+
+			if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+			{
+				Pawn->SetActorLocation(InSijaeLocation);
+			}
+			else
+			{
+				Pawn->SetActorLocation(InIjaeLocation);
+			}
+		}
+		else
+		{
+			ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+			APawn* Pawn = LSPlayerController->GetPawn(); // 또는 Cast<AMyCharacter>(PC->GetPawn());
+
+			if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+			{
+				Pawn->SetActorLocation(InSijaeLocation);
+			}
+			else
+			{
+				Pawn->SetActorLocation(InIjaeLocation);
+			}
+		}
+	}
+}
+
 void ALSGameMode::TestLoginProcess(APlayerController* ResultController)
 {
 	ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(ResultController);

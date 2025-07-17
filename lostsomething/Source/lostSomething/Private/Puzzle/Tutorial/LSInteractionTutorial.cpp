@@ -11,6 +11,7 @@
 // Sets default values
 ALSInteractionTutorial::ALSInteractionTutorial()
 {
+	PuzzleActivateEnum = ELSInteractionEnum::Quest2;
 }
 
 // Called when the game starts or when spawned
@@ -26,7 +27,7 @@ void ALSInteractionTutorial::BeginPlay()
 		for (AActor* FoundActor : FoundActors)
 		{
 			ALSVendingMachine* VendingMachine = Cast<ALSVendingMachine>(FoundActor);
-			if (VendingMachine)
+			if (VendingMachine && VendingMachine->PuzzleActivateEnum == PuzzleActivateEnum)
 			{
 				VendingMachine->OnVMPuzzleCheck.BindUObject(this, &ALSInteractionTutorial::PuzzleCheck);
 			}
