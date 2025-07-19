@@ -31,12 +31,13 @@ ALSPlayer::ALSPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
 	//컨트롤러 회전시 회전 x
 	bUseControllerRotationPitch = false;
 
 	// 이동 방향에 따라 캐릭터 회전
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = false; //수정
 
 	bUseControllerRotationRoll = false;
 
