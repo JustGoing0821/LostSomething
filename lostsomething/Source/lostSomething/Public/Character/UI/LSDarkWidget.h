@@ -16,6 +16,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOpacityByDistance(float Distance);
 
+	//ÃÖ´ë ¾îµÒ
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dark Effect")
+	float MaxOpacity = 0.97f;  
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	class UImage* DarkImage;

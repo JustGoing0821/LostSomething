@@ -9,13 +9,14 @@ void ULSDarkWidget::SetOpacityByDistance(float Distance)
 	if (!DarkImage) return;
 
 	const float MinDistance = 200.0f;
-	const float MaxDistance = 1000.0f;
+	const float MaxDistance = 1500.0f;
 
 	float Alpha = 0.0f;
 
 	if (Distance > MinDistance)
 	{
-		Alpha = FMath::Clamp((Distance - MinDistance) / (MaxDistance - MinDistance), 0.0f, 1.0f);
+		float Normalized = FMath::Clamp((Distance - MinDistance) / (MaxDistance - MinDistance), 0.0f, 1.0f);
+		Alpha = Normalized * MaxOpacity;
 	}
 
 	FLinearColor NewColor = DarkImage->ColorAndOpacity;

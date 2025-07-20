@@ -1455,10 +1455,10 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 
 	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
 	TargetItem->Destroy();
-
+	MultiPickUp(TargetItem);
 	ClientPickUp(ItemData);
 
-	MultiPickUp(TargetItem);
+	
 	//PickItemInSlot(TargetItem->GetItemInfo());
 	//TargetItem->Destroy();
 	//ClientPickUp(TargetItem);
