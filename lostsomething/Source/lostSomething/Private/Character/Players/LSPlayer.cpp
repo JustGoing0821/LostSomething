@@ -36,8 +36,8 @@ ALSPlayer::ALSPlayer()
 	bUseControllerRotationPitch = false;
 
 	// 이동 방향에 따라 캐릭터 회전
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	bUseControllerRotationYaw = false; //수정
+	//GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = true; //수정
 
 	bUseControllerRotationRoll = false;
 
@@ -57,9 +57,10 @@ ALSPlayer::ALSPlayer()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
+
 	//camera boom 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
