@@ -31,9 +31,14 @@ ALSPlayer::ALSPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
 	//컨트롤러 회전시 회전 x
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
+
+	// 이동 방향에 따라 캐릭터 회전
+	//GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = true; //수정
+
 	bUseControllerRotationRoll = false;
 
 
@@ -52,9 +57,10 @@ ALSPlayer::ALSPlayer()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
+
 	//camera boom 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -332,7 +338,7 @@ void ALSPlayer::Die()
 
 
 		// 충돌 비활성화
-		SetActorEnableCollision(false);
+		//SetActorEnableCollision(false);
 
 		// 이동 비활성화
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
@@ -363,7 +369,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION"));
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+	}
+
+	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstanceIJae)
+	{
+		AnimInstanceIJae->SetDeadAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
@@ -781,10 +794,17 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
+	MultiProcessAttack();
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()
 {
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetAttackAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+	}
 }
 
 void ALSPlayer::ClientProcessAttack_Implementation()
@@ -1435,10 +1455,10 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 
 	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
 	TargetItem->Destroy();
-
+	MultiPickUp(TargetItem);
 	ClientPickUp(ItemData);
 
-	//MultiPickUp(TargetItem);
+	
 	//PickItemInSlot(TargetItem->GetItemInfo());
 	//TargetItem->Destroy();
 	//ClientPickUp(TargetItem);
@@ -1448,7 +1468,12 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 
 void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 {
-	//TargetItem->Destroy();
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetPickUpAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
 }
 
 

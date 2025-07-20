@@ -16,6 +16,7 @@ class LOSTSOMETHING_API ULSPlayerIJaeAnimInstance : public UAnimInstance
 	
 public:
 	ULSPlayerIJaeAnimInstance();
+	void SetDeadAnim();
 	void ThrowingAnim();
 
 protected:
@@ -32,6 +33,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* ThrowingMontage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
 
 
 	//Movement
