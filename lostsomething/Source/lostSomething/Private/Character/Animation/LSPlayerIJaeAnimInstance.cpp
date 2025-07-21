@@ -10,6 +10,23 @@ ULSPlayerIJaeAnimInstance::ULSPlayerIJaeAnimInstance()
 	//JumpingThreshould = 100.0f;
 }
 
+void ULSPlayerIJaeAnimInstance::SetDeadAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SetDeadAnim called"));
+
+	if (!DeathMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DeathMontage is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(DeathMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(DeathMontage);
+	}
+}
+
 void ULSPlayerIJaeAnimInstance::ThrowingAnim()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ThrowingAnim called"));

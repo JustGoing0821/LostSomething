@@ -110,7 +110,7 @@ void ALSPlayerController::HideDeathWidget()
 {
 	if (IsLocalController() && DeathWidget)
 	{
-		DeathWidget->RemoveFromViewport();
+		DeathWidget->RemoveFromParent();
 		UE_LOG(LogTemp, Warning, TEXT("Death widget hidden"));
 	}
 }

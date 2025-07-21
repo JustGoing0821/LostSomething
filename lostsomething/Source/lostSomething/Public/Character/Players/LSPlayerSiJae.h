@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/Players/LSPlayer.h"
+#include "Character/Players/LSPlayerIJae.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSDarkWidget.h"
 #include "LSPlayerSiJae.generated.h"
@@ -19,10 +20,14 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	// LSPlayerSiJae.h
 
 	virtual void BeginPlay() override;
+	//virtual void GetDistance()
+
+	UPROPERTY()
+	TObjectPtr<ALSPlayerIJae> IJae;
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> DarkWidgetClass;
+	TSubclassOf<ULSDarkWidget> DarkWidgetClass;
 
 	UPROPERTY()
 	ULSDarkWidget* DarkWidgetInstance;
@@ -31,5 +36,7 @@ protected:
 	virtual bool CanPushWheelchair() const override;
 
 	virtual void Attack() override;
+
+	void Tick(float DeltaTime);
 
 };

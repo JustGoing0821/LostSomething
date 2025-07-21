@@ -2,6 +2,7 @@
 
 
 #include "BossNPC/Platform/PlatformGenerator.h"
+#include <BossNPC/Platform/SpecialTile.h>
 
 // Sets default values
 APlatformGenerator::APlatformGenerator()
@@ -28,8 +29,9 @@ void APlatformGenerator::Tick(float DeltaTime)
 
 void APlatformGenerator::GenerateMaze()
 {
-	TArray<TArray<bool>> specialMap = GenerateConnectedSpecialPath();
-	SpawnTiles(specialMap);
+	SpecialMap = GenerateConnectedSpecialPath();
+	//SpawnTiles(SpecialMap);
+    SpawnTilesColumn(0);
 }
 
 TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
@@ -74,6 +76,48 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
     }
 
     return specialMap;
+}
+
+void APlatformGenerator::OnSpecialTileStepped(int32 CurrentCol)
+{
+    int32 NextCol = CurrentCol + 1;
+    if (NextCol < NumCols)
+    {
+        SpawnTilesColumn(NextCol);
+    }
+}
+
+void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
+{
+    if (SpecialMap.Num() == 0) return;
+    if (ColIndex >= SpecialMap[0].Num()) return;
+
+    int32 Rows = SpecialMap.Num();
+
+    FVector StartLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
+
+    for (int32 Row = 0; Row < Rows; ++Row)
+    {
+        FVector SpawnLocation = StartLocation + FVector(ColIndex * TileSpacing, Row * TileSpacing, -200);
+
+        bool bIsSpecial = SpecialMap[Row][ColIndex];
+
+        TSubclassOf<AActor> TileClass = bIsSpecial ? SpecialTileClass : NormalTileClass;
+
+        AActor* TileActor = GetWorld()->SpawnActor<AActor>(
+            TileClass,
+            SpawnLocation,
+            FRotator::ZeroRotator
+        );
+
+        if (bIsSpecial)
+        {
+            if (ASpecialTile* SpecialTile = Cast<ASpecialTile>(TileActor))
+            {
+                SpecialTile->Init(this, ColIndex);
+            }
+        }
+    }
 }
 
 void APlatformGenerator::SpawnTiles(const TArray<TArray<bool>>& specialMap)
