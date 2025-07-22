@@ -17,7 +17,7 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 {
 	GENERATED_BODY()
 
-	// LSPlayerSiJae.h
+	ALSPlayerSiJae();
 
 	virtual void BeginPlay() override;
 	//virtual void GetDistance()
@@ -32,6 +32,13 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	UPROPERTY()
 	ULSDarkWidget* DarkWidgetInstance;
 	
+public: 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	UStaticMeshComponent* Weapon;
+
+	
+
+
 protected:
 	virtual bool CanPushWheelchair() const override;
 
