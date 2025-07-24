@@ -27,6 +27,18 @@
 // Sets default values
 ALSPlayer::ALSPlayer()
 {
+	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+
+
+	Weapon->SetupAttachment(GetMesh());
+
+	//소켓 붙이기
+	FName WeaponSocket(TEXT("hand_rSocket"));
+	if (GetMesh()->DoesSocketExist(WeaponSocket))
+	{
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+	}
+
 
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

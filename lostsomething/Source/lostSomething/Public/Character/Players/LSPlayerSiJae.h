@@ -17,7 +17,7 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 {
 	GENERATED_BODY()
 
-	ALSPlayerSiJae();
+
 
 	virtual void BeginPlay() override;
 	//virtual void GetDistance()
@@ -33,8 +33,7 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	ULSDarkWidget* DarkWidgetInstance;
 	
 public: 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	UStaticMeshComponent* Weapon;
+	
 
 	
 

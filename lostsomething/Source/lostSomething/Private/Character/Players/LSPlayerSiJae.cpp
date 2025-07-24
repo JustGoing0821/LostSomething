@@ -10,21 +10,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 
-ALSPlayerSiJae::ALSPlayerSiJae()
-{
-    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-
-    
-    Weapon->SetupAttachment(GetMesh());
-
-    //소켓 붙이기
-    FName WeaponSocket(TEXT("hand_rSocket"));
-    if (GetMesh()->DoesSocketExist(WeaponSocket))
-    {
-        Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
-    }
-   
-}
 
 
 

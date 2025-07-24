@@ -57,6 +57,8 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//void PickItem(const FItemDetails& PickedItemInfo);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	UStaticMeshComponent* Weapon;
 
 	//Item Section
 
