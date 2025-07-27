@@ -86,6 +86,10 @@ protected:
 public:
 	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
 
+	void StartTalking();
+
+	void StopTalking();
+
 
 // Quest Widget
 protected:

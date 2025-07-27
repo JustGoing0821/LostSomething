@@ -60,6 +60,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	UStaticMeshComponent* Weapon;
 
+
+	//voice
+	void VoiceStart(const FInputActionValue& Value);
+	void VoiceStop(const FInputActionValue& Value);
+
 	//Item Section
 
 	//ащ╠Б (Destroy)
@@ -252,6 +257,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* VoiceAction;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> InteractAction;
