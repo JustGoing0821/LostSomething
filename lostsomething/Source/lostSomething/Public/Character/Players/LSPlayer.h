@@ -188,6 +188,7 @@ protected:
 
 	virtual void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void Interreact();
 	void Interaction();
 	void ApplyDamage(float DamageAmount);
 
@@ -279,6 +280,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> InteractAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> InterreactAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
