@@ -12,7 +12,7 @@ ABMSpawner::ABMSpawner()
 
 	bReplicates = true;
 
-	static ConstructorHelpers::FClassFinder<AActor> MonsterBP(TEXT("/Game/BossNPC/BluePrints/BP_BossNPC.BP_BossNPC_C"));
+	static ConstructorHelpers::FClassFinder<ABossNPC> MonsterBP(TEXT("/Game/BossNPC/BluePrints/BP_BossNPC.BP_BossNPC_C"));
 	if (MonsterBP.Succeeded())
 	{
 		MonsterClass = MonsterBP.Class;
@@ -25,20 +25,40 @@ void ABMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UE_LOG(LogTemp, Warning, TEXT("BM : Spawner BeginPlay called."));
+
 	if (!HasAuthority())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("BM : No authority (client). Skipping spawn."));
 		return;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("BM : Has authority (server). Attempting to spawn boss."));
 
-	for (const FVector& Offset : SpawnOffsets)
+	if (!MonsterClass)
 	{
-		//FVector SpawnLocation = GetActorLocation() + Offset;
-		FVector SpawnLocation = GetActorLocation();
-		GetWorld()->SpawnActor<ABossNPC>(MonsterClass, SpawnLocation, GetActorRotation());
-		UE_LOG(LogTemp, Warning, TEXT("SpawnActor"))
+		UE_LOG(LogTemp, Error, TEXT("BM : MonsterClass is nullptr. Cannot spawn boss."));
+		return;
 	}
-	
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	ABossNPC* SpawnedBoss = GetWorld()->SpawnActor<ABossNPC>(
+		MonsterClass,
+		GetActorLocation(),
+		GetActorRotation(),
+		SpawnParams
+	);
+
+	if (!SpawnedBoss)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BM : Failed to spawn BossNPC."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BM : BossNPC spawned successfully at: %s"), *SpawnedBoss->GetActorLocation().ToString());
+	}
 }
 
 // Called every frame
