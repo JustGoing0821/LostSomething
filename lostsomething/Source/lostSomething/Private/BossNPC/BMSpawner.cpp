@@ -31,15 +31,10 @@ void ABMSpawner::BeginPlay()
 	}
 
 
-	if (SpawnOffsets.Num() == 0) // 만약 에디터에서 입력 안 되어 있다면 기본값 채우기
-	{
-		SpawnOffsets.Add(FVector(0.f, 0.f, 0.f));
-	}
-
-
 	for (const FVector& Offset : SpawnOffsets)
 	{
-		FVector SpawnLocation = GetActorLocation() + Offset;
+		//FVector SpawnLocation = GetActorLocation() + Offset;
+		FVector SpawnLocation = GetActorLocation();
 		GetWorld()->SpawnActor<ABossNPC>(MonsterClass, SpawnLocation, GetActorRotation());
 		UE_LOG(LogTemp, Warning, TEXT("SpawnActor"))
 	}
