@@ -27,49 +27,19 @@
 // Sets default values
 ALSPlayer::ALSPlayer()
 {
-	/*Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-
-
-	Weapon->SetupAttachment(GetMesh());*/
-
-	//소켓 붙이기
-	/*FName WeaponSocket(TEXT("hand_rSocket"));
-	if (GetMesh()->DoesSocketExist(WeaponSocket))
-	{
-		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
-	}*/
-
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-
-	// Create a CameraComponent	
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetMesh());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	//Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	//Mesh1P->SetOnlyOwnerSee(true);
-	//Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	//Mesh1P->bCastDynamicShadow = false;
-	//Mesh1P->CastShadow = false;
-	////Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
-	//Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
 
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 
 	//컨트롤러 회전시 회전 x
-	//bUseControllerRotationPitch = false;
+	bUseControllerRotationPitch = false;
 
-	//// 이동 방향에 따라 캐릭터 회전
-	////GetCharacterMovement()->bOrientRotationToMovement = true;
-	//bUseControllerRotationYaw = true; //수정
+	// 이동 방향에 따라 캐릭터 회전
+	//GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = true; //수정
 
-	//bUseControllerRotationRoll = false;
+	bUseControllerRotationRoll = false;
 
 
 	//Capusule
@@ -88,15 +58,15 @@ ALSPlayer::ALSPlayer()
 	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 
-	////camera boom 
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(GetMesh());
-	//CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	//camera boom 
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(GetMesh());
+	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	//FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	//FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 	
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));

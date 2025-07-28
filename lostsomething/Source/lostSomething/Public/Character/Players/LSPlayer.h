@@ -32,15 +32,6 @@ class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInter
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Mesh1P;
-
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstPersonCameraComponent;
-
-
 public:
 	/*************************************Function**************************************/
 
@@ -52,17 +43,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	/** Returns Mesh1P subobject **/
-	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool isCombining() override;
-	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	UFUNCTION()
 	void OnHpChanged(float NewHp);
@@ -72,8 +57,6 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//void PickItem(const FItemDetails& PickedItemInfo);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	UStaticMeshComponent* Weapon;
 
 	//Item Section
 
