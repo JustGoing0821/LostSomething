@@ -10,10 +10,13 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 
+
+
+
 void ALSPlayerSiJae::BeginPlay()
 {
     Super::BeginPlay();
-
+ 
  
     if (IJae == nullptr)
     {
