@@ -91,7 +91,7 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
     if (IJae != nullptr)
     {
         float Distance = FVector::Dist(GetActorLocation(), IJae->GetActorLocation());
-        UE_LOG(LogTemp, Warning, TEXT("SiJae: Distance to IJae = %.2f"), Distance);
+        //UE_LOG(LogTemp, Warning, TEXT("SiJae: Distance to IJae = %.2f"), Distance);
 
         if (DarkWidgetInstance)
         {

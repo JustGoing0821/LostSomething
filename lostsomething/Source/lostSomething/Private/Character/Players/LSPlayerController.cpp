@@ -187,3 +187,15 @@ void ALSPlayerController::ClientRPCUpdateScriptWidget_Implementation(const FStri
 		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Not LocalController"));
 	}
 }
+
+
+void ALSPlayerController::StartTalking()
+{
+	UE_LOG(LogTemp, Log, TEXT("Voice started"));
+	
+}
+
+void ALSPlayerController::StopTalking()
+{
+	UE_LOG(LogTemp, Log, TEXT("Voice stopped"));
+}
