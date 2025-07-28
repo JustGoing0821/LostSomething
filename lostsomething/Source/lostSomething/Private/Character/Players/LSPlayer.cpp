@@ -648,6 +648,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 		// Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
+		EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
 
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
@@ -895,6 +896,9 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 //	}
 //}
 
+void ALSPlayer::Interreact()
+{
+}
 
 //Wheelchair part
 void ALSPlayer::Interaction()
