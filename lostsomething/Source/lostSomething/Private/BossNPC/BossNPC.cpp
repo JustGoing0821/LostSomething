@@ -29,7 +29,7 @@ ABossNPC::ABossNPC()
         FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
-        float YOffset = (i - 1) * 50.0f;
+        float YOffset = (i - 1) * 82.0f;
         SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -40.f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
@@ -434,7 +434,7 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
 
     // 1 또는 2개 선택
     int32 NumToSpawn = FMath::RandBool() ? 1 : 2;
-    UE_LOG(LogTemp, Warning, TEXT("Spawning %d obstacles"), NumToSpawn);
+    //UE_LOG(LogTemp, Warning, TEXT("Spawning %d obstacles"), NumToSpawn);
 
     for (int32 i = 0; i < NumToSpawn; ++i)
     {
@@ -450,12 +450,7 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
             SpawnLocation,
             SpawnRotation,
             Params
-        );
-
-        if (SpawnedObstacle)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Obstacle spawned at location: %s"), *SpawnLocation.ToString());
-        }
+        );      
     }
 }
 

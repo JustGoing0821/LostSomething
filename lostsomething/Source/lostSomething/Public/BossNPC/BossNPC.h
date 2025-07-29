@@ -64,6 +64,16 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
 
     FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+    TArray<FVector> PlayerSpawnLocations;
+
+    FORCEINLINE FVector GetPlayerSpawnLocation(int32 Index) const
+    {
+        return PlayerSpawnLocations.IsValidIndex(Index)
+            ? PlayerSpawnLocations[Index]
+            : FVector::ZeroVector;
+    }
+
 protected:
     virtual void BeginPlay() override;
 
