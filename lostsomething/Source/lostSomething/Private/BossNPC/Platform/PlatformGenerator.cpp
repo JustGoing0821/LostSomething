@@ -3,6 +3,8 @@
 
 #include "BossNPC/Platform/PlatformGenerator.h"
 #include <BossNPC/Platform/SpecialTile.h>
+#include <Kismet/GameplayStatics.h>
+#include <BossNPC/BossNPC.h>
 
 // Sets default values
 APlatformGenerator::APlatformGenerator()
@@ -18,6 +20,12 @@ void APlatformGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if (!BossNPC)
+    {
+        BossNPC = Cast<ABossNPC>(
+            UGameplayStatics::GetActorOfClass(GetWorld(), ABossNPC::StaticClass())
+        );
+    }
 }
 
 // Called every frame
@@ -31,7 +39,7 @@ void APlatformGenerator::GenerateMaze()
 {
 	SpecialMap = GenerateConnectedSpecialPath();
 	//SpawnTiles(SpecialMap);
-    SpawnTilesColumn(0);
+    SpawnTilesColumn(NumCols - 1);
 }
 
 TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
@@ -80,8 +88,7 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
 
 void APlatformGenerator::OnSpecialTileStepped(int32 CurrentCol)
 {
-    int32 NextCol = CurrentCol + 1;
-    if (NextCol < NumCols)
+    int32 NextCol = CurrentCol - 1;
     {
         SpawnTilesColumn(NextCol);
     }
@@ -89,25 +96,33 @@ void APlatformGenerator::OnSpecialTileStepped(int32 CurrentCol)
 
 void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
 {
-    if (SpecialMap.Num() == 0) return;
-    if (ColIndex >= SpecialMap[0].Num()) return;
+    if (SpecialMap.Num() == 0 || ColIndex >= SpecialMap[0].Num()) return;
+    if (!BossNPC) return;
 
     int32 Rows = SpecialMap.Num();
 
-    FVector StartLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
+    FVector Forward = BossNPC->GetActorForwardVector();
+    FVector Right = BossNPC->GetActorRightVector();
+    FVector Origin = BossNPC->GetActorLocation();
 
-    for (int32 Row = 0; Row < Rows; ++Row)
+    // Çà Áß¾Ó ±âÁØ ÁÂ¿ì ¿ÀÇÁ¼Â (¿ÞÂÊÀ¸·Î ¶¯±â·Á¸é À½¼ö)
+    float RowOffset = (Rows - 1) * 0.5f * TileSpacing;
+
+    for (int32 Row = Rows - 1; Row >= 0; --Row)
     {
-        FVector SpawnLocation = StartLocation + FVector(ColIndex * TileSpacing, Row * TileSpacing, -200);
+        FVector SpawnLocation =
+            Origin +
+            Forward * (ColIndex * TileSpacing + 300.f) +
+            Right * (Row * TileSpacing - RowOffset) +  // ¿©±â¼­ ÁÂÃøÀ¸·Î ¶¯±è
+            FVector(0, 0, -140.f);
 
         bool bIsSpecial = SpecialMap[Row][ColIndex];
-
-        TSubclassOf<AActor> TileClass = bIsSpecial ? SpecialTileClass : NormalTileClass;
+        FRotator TileRotation = Forward.Rotation();
 
         AActor* TileActor = GetWorld()->SpawnActor<AActor>(
-            TileClass,
+            bIsSpecial ? SpecialTileClass : NormalTileClass,
             SpawnLocation,
-            FRotator::ZeroRotator
+            TileRotation
         );
 
         if (bIsSpecial)

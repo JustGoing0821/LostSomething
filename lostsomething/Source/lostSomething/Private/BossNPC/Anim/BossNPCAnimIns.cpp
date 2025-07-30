@@ -3,6 +3,7 @@
 
 #include "BossNPC/Anim/BossNPCAnimIns.h"
 #include <BossNPC/BossNPC.h>
+#include <Game/LSGameMode.h>
 
 FName UBossNPCAnimIns::GetMontageSectionName(int32 Section)
 {
@@ -40,6 +41,13 @@ void UBossNPCAnimIns::AnimNotify_NextTiming()
 {
     auto Pawn = TryGetPawnOwner();
     ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+
+    auto gm = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode()); // auto : 자동으로 자료형을 만들어줌
+    if (gm) // if(nullptr != gm) 이랑 같음
+    {
+        gm->TransferPlayerLocation(NPCCharacter->GetPlayerSpawnLocation(0), NPCCharacter->GetPlayerSpawnLocation(1));
+    }
+
     NPCCharacter->SetPhaseStatus(false);
 }
 

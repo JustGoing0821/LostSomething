@@ -648,6 +648,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 		// Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
+		EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
 
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
@@ -665,6 +666,12 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(SelectSlot3Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot3);
 		EnhancedInputComponent->BindAction(SelectSlot4Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot4);
 		EnhancedInputComponent->BindAction(SelectSlot5Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot5);
+
+		//voice
+		//Attack
+		EnhancedInputComponent->BindAction(VoiceAction, ETriggerEvent::Started, this, &ALSPlayer::VoiceStart);
+		EnhancedInputComponent->BindAction(VoiceAction, ETriggerEvent::Completed, this, &ALSPlayer::VoiceStop);
+
 	}
 
 
@@ -889,6 +896,9 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 //	}
 //}
 
+void ALSPlayer::Interreact()
+{
+}
 
 //Wheelchair part
 void ALSPlayer::Interaction()
@@ -1376,6 +1386,45 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 //	//UpdateSlotBorderColors();
 //}
 
+
+
+//voice section
+void ALSPlayer::VoiceStart(const FInputActionValue& Value)
+{
+	auto pc = GetController<ALSPlayerController>();
+	if (pc && pc->IsLocalController())
+	{
+		pc->StartTalking();
+	}
+}
+
+void ALSPlayer::VoiceStop(const FInputActionValue& Value)
+{
+	auto pc = GetController<ALSPlayerController>();
+	if (pc && pc->IsLocalController())
+	{
+		pc->StopTalking();
+	}
+}
+
+
+//void ALSPlayer::VoiceStart(const FInputActionValue& Value)
+//{
+//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
+//	if (pc && pc->IsLocalController())
+//	{
+//		pc->StartTalking();
+//	}
+//}
+//
+//void ALSPlayer::VoiceStop(const FInputActionValue& Value)
+//{
+//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
+//	if (pc && pc->IsLocalController())
+//	{
+//		pc->StopTalking();
+//	}
+//}
 
 
 
