@@ -32,7 +32,7 @@ protected:
 
     // AOE ¼³Á¤
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
-    float Radius = 500.0f;
+    float Radius = 250.0f;
 
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
     float WarningDuration = 2.0f;
