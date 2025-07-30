@@ -5,6 +5,8 @@
 #include <Interface/LSTakeDamageInterface.h>
 #include "Engine/DamageEvents.h"
 #include <Game/LSGameMode.h>
+#include <BossNPC/BossNPC.h>
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ANormalTile::ANormalTile()
@@ -66,11 +68,20 @@ void ANormalTile::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 				FDamageEvent DamageEvent;
 				HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
 
-				auto gm = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode()); // auto : 자동으로 자료형을 만들어줌
-				if (gm) // if(nullptr != gm) 이랑 같음
+				ABossNPC* BossNPC = Cast<ABossNPC>(
+					UGameplayStatics::GetActorOfClass(GetWorld(), ABossNPC::StaticClass())
+				);
+
+				if (BossNPC)
 				{
-					gm->TransferPlayerLocation(FVector(-183.777164f, -345.912895f, -0.499989f), FVector(-153.777164f, -385.912895f, -0.499989f));
-				}				
+					FVector Loc1 = BossNPC->GetPlayerSpawnLocation(0);
+					FVector Loc2 = BossNPC->GetPlayerSpawnLocation(1);
+
+					if (auto gm = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode()))
+					{
+						gm->TransferPlayerLocation(Loc1, Loc2);
+					}
+				}
 			}
 		}
 	}
