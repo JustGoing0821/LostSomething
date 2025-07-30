@@ -45,12 +45,11 @@ ACircleAOE::ACircleAOE()
         UE_LOG(LogTemp, Error, TEXT("Failed to load Sphere mesh"));
     }
 
-    // **Sphere를 납작하게 만들어서 원형 장판으로 사용**
     WarningMesh->SetRelativeLocation(FVector(0, 0, -45.0f)); // 바닥에 붙이기
     WarningMesh->SetRelativeRotation(FRotator(0, 0, 0));
 
-    float ScaleXY = Radius / 50.0f; // Sphere 기본 반지름 50
-    float ScaleZ = 0.05f; // **매우 납작하게**
+    float ScaleXY = Radius / 50.0f;
+    float ScaleZ = 0.05f;
     WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
 }
 
@@ -59,24 +58,21 @@ void ACircleAOE::BeginPlay()
 {
     Super::BeginPlay();
 
-    // 반지름 설정
     if (CollisionSphere)
     {
         CollisionSphere->SetSphereRadius(Radius);
     }
 
-    // 메시 크기를 Radius에 맞게 다시 조정
     if (WarningMesh)
     {
         float ScaleXY = Radius / 50.0f;
-        float ScaleZ = 0.1f; // **더 두껍게**
+        float ScaleZ = 0.1f; 
         WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
 
-        // **충돌 설정 강화**
         WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
         WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        WarningMesh->SetCanEverAffectNavigation(false); // **네비게이션에도 영향 안 줌**
+        WarningMesh->SetCanEverAffectNavigation(false); 
 
         UE_LOG(LogTemp, Warning, TEXT("WarningMesh configured: Scale(%f, %f, %f)"),
             ScaleXY, ScaleXY, ScaleZ);
@@ -89,7 +85,6 @@ void ACircleAOE::BeginPlay()
         if (DynamicMaterial)
         {
             UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial created successfully!"));
-            // **테스트용 즉시 색상 설정**
             DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(1.0f, 0.5f, 0.0f, 0.8f));
         }
     }
