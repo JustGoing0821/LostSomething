@@ -13,6 +13,7 @@
 #include "GameFramework/DamageType.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ACircleAOE::ACircleAOE()
@@ -45,13 +46,20 @@ ACircleAOE::ACircleAOE()
         UE_LOG(LogTemp, Error, TEXT("Failed to load Sphere mesh"));
     }
 
-    // **Sphere를 납작하게 만들어서 원형 장판으로 사용**
     WarningMesh->SetRelativeLocation(FVector(0, 0, -45.0f)); // 바닥에 붙이기
     WarningMesh->SetRelativeRotation(FRotator(0, 0, 0));
 
-    float ScaleXY = Radius / 50.0f; // Sphere 기본 반지름 50
-    float ScaleZ = 0.05f; // **매우 납작하게**
+    float ScaleXY = Radius / 50.0f;
+    float ScaleZ = 0.05f;
     WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+}
+
+void ACircleAOE::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(ACircleAOE, ElapsedTime);
+    DOREPLIFETIME(ACircleAOE, bIsWarningPhase);
 }
 
 // Called when the game starts or when spawned
@@ -59,24 +67,26 @@ void ACircleAOE::BeginPlay()
 {
     Super::BeginPlay();
 
-    // 반지름 설정
     if (CollisionSphere)
     {
         CollisionSphere->SetSphereRadius(Radius);
     }
 
-    // 메시 크기를 Radius에 맞게 다시 조정
+    SetupWarningVisual();
+}
+
+void ACircleAOE::SetupWarningVisual()
+{
     if (WarningMesh)
     {
         float ScaleXY = Radius / 50.0f;
-        float ScaleZ = 0.1f; // **더 두껍게**
+        float ScaleZ = 0.1f;
         WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
 
-        // **충돌 설정 강화**
         WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
         WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        WarningMesh->SetCanEverAffectNavigation(false); // **네비게이션에도 영향 안 줌**
+        WarningMesh->SetCanEverAffectNavigation(false);
 
         UE_LOG(LogTemp, Warning, TEXT("WarningMesh configured: Scale(%f, %f, %f)"),
             ScaleXY, ScaleXY, ScaleZ);
@@ -89,13 +99,32 @@ void ACircleAOE::BeginPlay()
         if (DynamicMaterial)
         {
             UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial created successfully!"));
-            // **테스트용 즉시 색상 설정**
             DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(1.0f, 0.5f, 0.0f, 0.8f));
         }
     }
     else
     {
         UE_LOG(LogTemp, Error, TEXT("WarningMaterial or WarningMesh is null!"));
+    }
+}
+
+void ACircleAOE::OnRep_IsWarningPhase()
+{
+    if (bIsWarningPhase)
+    {
+        // 클라이언트에서 경고 시각 효과 시작
+        if (WarningMesh)
+        {
+            WarningMesh->SetVisibility(true);
+        }
+    }
+    else
+    {
+        // 클라이언트에서 경고 시각 효과 종료
+        if (WarningMesh)
+        {
+            WarningMesh->SetVisibility(false);
+        }
     }
 }
 
@@ -106,7 +135,13 @@ void ACircleAOE::Tick(float DeltaTime)
 
     if (bIsWarningPhase)
     {
-        ElapsedTime += DeltaTime;
+        // 서버에서만 시간 업데이트
+        if (HasAuthority())
+        {
+            ElapsedTime += DeltaTime;
+        }
+
+        // 모든 클라이언트에서 색상 애니메이션 업데이트
         float Alpha = ElapsedTime / WarningDuration;
         UpdateColorAnimation(Alpha);
     }
@@ -114,20 +149,15 @@ void ACircleAOE::Tick(float DeltaTime)
 
 void ACircleAOE::StartAOE()
 {
+    // 서버에서만 실행
+    if (!HasAuthority())
+        return;
+
     bIsWarningPhase = true;
     ElapsedTime = 0.0f;
 
-    // 경고 표시
-    if (WarningMesh)
-    {
-        WarningMesh->SetVisibility(true);
-    }
-
-    /*
-#if WITH_EDITOR
-    DrawDebugSphere(GetWorld(), GetActorLocation(), Radius, 32, FColor::Red, false, WarningDuration);
-#endif
-    */
+    // 모든 클라이언트에 경고 시작 알림
+    MulticastStartWarning();
 
     // 경고 시간 후 폭발
     GetWorld()->GetTimerManager().SetTimer(
@@ -139,15 +169,31 @@ void ACircleAOE::StartAOE()
     );
 }
 
-void ACircleAOE::Explode()
+void ACircleAOE::MulticastStartWarning_Implementation()
 {
-    bIsWarningPhase = false;
-
-    // 경고 메시 숨기기
+    // 경고 표시
     if (WarningMesh)
     {
-        WarningMesh->SetVisibility(false);
+        WarningMesh->SetVisibility(true);
     }
+
+    /*
+#if WITH_EDITOR
+    DrawDebugSphere(GetWorld(), GetActorLocation(), Radius, 32, FColor::Red, false, WarningDuration);
+#endif
+    */
+}
+
+void ACircleAOE::Explode()
+{
+    // 서버에서만 실행
+    if (!HasAuthority())
+        return;
+
+    bIsWarningPhase = false;
+
+    // 모든 클라이언트에 폭발 알림
+    MulticastExplode();
 
     CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -157,10 +203,19 @@ void ACircleAOE::Explode()
 #endif
     */
 
-    // 범위 내 플레이어에게 데미지
+    // 범위 내 플레이어에게 데미지 (서버에서만)
     DealDamageToPlayersInRange();
 
     Destroy();
+}
+
+void ACircleAOE::MulticastExplode_Implementation()
+{
+    // 경고 메시 숨기기
+    if (WarningMesh)
+    {
+        WarningMesh->SetVisibility(false);
+    }
 }
 
 void ACircleAOE::UpdateColorAnimation(float Alpha)
