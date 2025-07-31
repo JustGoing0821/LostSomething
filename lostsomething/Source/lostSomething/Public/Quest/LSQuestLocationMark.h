@@ -22,6 +22,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+    UPROPERTY(VisibleAnywhere)
+    TObjectPtr<class UBoxComponent> TriggerBox;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
 	TObjectPtr<class UNiagaraSystem> LocationMark;
 
@@ -46,6 +49,9 @@ protected:
     // 커스텀 이벤트 함수들
     UFUNCTION()
     void SpawnSystem();
+
+    UFUNCTION()
+    void OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
     UFUNCTION()
     void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
