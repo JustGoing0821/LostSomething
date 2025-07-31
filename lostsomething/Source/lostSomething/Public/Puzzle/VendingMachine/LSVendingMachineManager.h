@@ -75,7 +75,7 @@ protected:
 	int32 CurrentColorSet;
 	TMap<ECurrentPhase, EVendingMachineColor> AnswerColors;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
 	void StartPhase();
