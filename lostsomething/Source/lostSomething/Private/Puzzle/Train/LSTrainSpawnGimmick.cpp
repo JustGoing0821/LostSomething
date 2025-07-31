@@ -122,7 +122,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	//Puzzle
 	CorrectGate = -1;
 	CorrectPeopleCount = 2;
-	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest7;
 	DamageAmount = 10.f;
 }
 
