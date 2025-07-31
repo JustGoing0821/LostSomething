@@ -29,6 +29,9 @@ public:
     UPROPERTY(EditAnywhere)
     TSubclassOf<AActor> SpecialTileClass;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ACharacter* BossNPC;
+
     UPROPERTY(EditAnywhere)
     float TileSpacing = 200.f;
 

@@ -19,8 +19,8 @@ ALSTrain::ALSTrain()
 	bisGateLeftSide =false;
 
 	// Moving Location
-	WaitLocation = FVector(2486.0f, -290.0f, -6.2f);
-	LeaveLocation = FVector(9000.0f, -290.0f, -6.2f);
+	WaitLocation = FVector(3586.0f, -290.0f, -6.2f);
+	LeaveLocation = FVector(30000.0f, -290.0f, -6.2f);
 
 	//Root Component
 	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));
