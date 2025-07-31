@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractionActor/LSInteractionActorBase.h"
+#include "Interaction/LSInteractionActorBase.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interaction/LSInteractionEnum.h"

@@ -38,7 +38,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StepMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	FVector CreateGateLocation = FVector(-300.f, 785.f, -50.f);
-	FVector CreateStepLocation = FVector(2412.f, -124.f, 59.99f);
+	FVector CreateStepLocation = FVector(3510.f, -124.f, 59.99f);
 	for (FName GateName : GateNames)
 	{
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
@@ -220,7 +220,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 			{
-				FVector SpawnLocation = FVector(-4000.0f, -290.0f, -6.2f);
+				FVector SpawnLocation = FVector(-2000.0f, -290.0f, -6.2f);
 				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 				ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
