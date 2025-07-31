@@ -110,7 +110,7 @@ void ALSVendingMachineManager::SetVisibleIJae()
 	}
 }
 
-void ALSVendingMachineManager::InteractionProcessSiJae()
+void ALSVendingMachineManager::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
 	if (HasAuthority())
 	{
@@ -122,7 +122,7 @@ void ALSVendingMachineManager::InteractionProcessSiJae()
 	}
 }
 
-void ALSVendingMachineManager::InteractionProcessIJae()
+void ALSVendingMachineManager::InteractionProcessIJae(APlayerController* InPlayerController)
 {
 	//if (HasAuthority())
 	//{

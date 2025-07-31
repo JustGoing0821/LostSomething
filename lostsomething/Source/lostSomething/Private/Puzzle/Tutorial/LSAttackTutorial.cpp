@@ -28,17 +28,10 @@ ALSAttackTutorial::ALSAttackTutorial()
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
 	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -100.0f));
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/SpendingMachines/SM_SpendingMachine_02.SM_SpendingMachine_02"));
-	if (ItemMeshRef.Object)
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Game/Asset/Map/ModSubwayStation/StaticMeshes/SM_TrashCan.SM_TrashCan"));
+	if (MeshRef.Object)
 	{
-		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
-	}
-
-	//Material
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BlueMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
-	if (BlueMaterialRef.Object)
-	{
-		MeshComponent->SetMaterial(0, BlueMaterialRef.Object);
+		MeshComponent->SetStaticMesh(MeshRef.Object);
 	}
 
 	bReplicates = true;
