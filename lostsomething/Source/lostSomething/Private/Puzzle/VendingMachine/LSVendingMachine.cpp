@@ -100,6 +100,7 @@ void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ALSVendingMachine, bisCorrectMachine);
 	DOREPLIFETIME(ALSVendingMachine, CurrentVendingMachineColor);
 	DOREPLIFETIME(ALSVendingMachine, CurrentInteractController);
 	DOREPLIFETIME(ALSVendingMachine, bisPhaseStart);
@@ -124,14 +125,30 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 
 void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
-	if (CurrentQuest==ELSInteractionEnum::Quest5 && !bisPhaseStart)
+	FString Script = "";
+	if (CurrentQuest == ELSInteractionEnum::Quest2)
 	{
-		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
-		if (ScriptController)
+		if (!bisCorrectMachine)
 		{
-			ScriptController->UpdateScriptWidget(InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0]);
+			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
 		}
-		return;
+	}
+	else if (CurrentQuest == ELSInteractionEnum::Quest5)
+	{
+		if (!bisPhaseStart)
+		{
+			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
+		}
+		else if (!bisCorrectMachine)
+		{
+			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[1];
+		}
+	}
+
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	if (ScriptController)
+	{
+		ScriptController->UpdateScriptWidget(Script);
 	}
 
 	if (HasAuthority())
@@ -146,34 +163,40 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 
 void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerController)
 {
-	//Test Log Code
-	//const TArray<FString>& Scripts = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest);
-	//for (FString Script : Scripts)
-	//{
-	//	LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
-	//}
-
-	//if (HasAuthority())
-	//{
-	//	PuzzleCheck();
-	//}
-	//else
-	//{
-	//	ServerRPCPuzzleCheck();
-	//}
-
 	LS_LOG(LogLS, Warning, TEXT("%s"), TEXT("IJae can't interact with this"));
-	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
-	if (ScriptController)
+
+	FString Script = "";
+	if (CurrentQuest == ELSInteractionEnum::Quest2)
 	{
-		if (bisPhaseStart)
+		if (bisCorrectMachine)
 		{
-			ScriptController->UpdateScriptWidget(InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1]);
+			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0];
 		}
 		else
 		{
-			ScriptController->UpdateScriptWidget(InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0]);
+			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1];
 		}
+	}
+	else if (CurrentQuest == ELSInteractionEnum::Quest5)
+	{
+		if (!bisPhaseStart)
+		{
+			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0];
+		}
+		else if (bisCorrectMachine)
+		{
+			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1];
+		}
+		else
+		{
+			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[2];
+		}
+	}
+
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	if (ScriptController)
+	{
+		ScriptController->UpdateScriptWidget(Script);
 	}
 }
 
@@ -260,6 +283,11 @@ void ALSVendingMachine::PuzzleCheck()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
+	if (CurrentQuest==ELSInteractionEnum::Quest5&&!bisPhaseStart)
+	{
+		return;
+	}
+
 	if (bisCorrectMachine)
 	{
 		OnVMPuzzleCheck.Execute(true);
@@ -267,11 +295,6 @@ void ALSVendingMachine::PuzzleCheck()
 	else
 	{
 		OnVMPuzzleCheck.Execute(false);
-		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
-		if (ScriptController)
-		{
-			ScriptController->UpdateScriptWidget(InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[1]);
-		}
 		ApplyDamage();
 	}
 }

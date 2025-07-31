@@ -47,11 +47,6 @@ protected:
 	virtual void SetVisibleSiJae() override;
 	virtual void SetVisibleIJae() override;
 
-//Quest Section
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
-	uint8 bisCorrectMachine : 1;
-
 //Puzzle Section
 public:
 	FORCEINLINE void SetMachineNumber(int32 InMachineNumber) { MachineNumber = InMachineNumber; }
@@ -67,6 +62,9 @@ public:
 	ELSInteractionEnum PuzzleActivateEnum;
 
 protected:
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Puzzle)
+	uint8 bisCorrectMachine : 1;
+
 	UPROPERTY(Replicated)
 	TObjectPtr<class APlayerController> CurrentInteractController;
 
