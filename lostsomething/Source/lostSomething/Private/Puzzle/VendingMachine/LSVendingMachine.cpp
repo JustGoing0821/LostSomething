@@ -133,7 +133,7 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
 		}
 	}
-	else if (CurrentQuest == ELSInteractionEnum::Quest5)
+	else if (CurrentQuest == ELSInteractionEnum::Quest6)
 	{
 		if (!bisPhaseStart)
 		{
@@ -177,7 +177,7 @@ void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerContro
 			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1];
 		}
 	}
-	else if (CurrentQuest == ELSInteractionEnum::Quest5)
+	else if (CurrentQuest == ELSInteractionEnum::Quest6)
 	{
 		if (!bisPhaseStart)
 		{

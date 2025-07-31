@@ -12,6 +12,7 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Quest/LSQuestManager.h"
@@ -86,9 +87,19 @@ void ALSQuestLocationMark::SpawnSystem()
 
 void ALSQuestLocationMark::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (HasAuthority()&&!bIsLooping)
+    ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
+    ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(OverlapCharacter->GetController());
+    if (LSCharacterChoice)
     {
-        MulticastRPCPuzzleDeactivate();
+        FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+        //LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+        if (LSCharacterChoice->GetCharacterChoice() == CharacterChoice || CharacterChoice == ELSCharacterChoice::None)
+        {
+            if (HasAuthority() && !bIsLooping)
+            {
+                MulticastRPCPuzzleDeactivate();
+            }
+        }
     }
 }
 

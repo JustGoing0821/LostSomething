@@ -57,7 +57,7 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	}
 	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
 
-	PuzzleActivateEnum = ELSInteractionEnum::Quest5;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
 }
 
 void ALSVendingMachineManager::BeginPlay()
