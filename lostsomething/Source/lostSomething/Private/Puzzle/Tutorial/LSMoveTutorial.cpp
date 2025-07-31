@@ -6,6 +6,7 @@
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Controller.h"
@@ -13,6 +14,7 @@
 #include "Interface/LSQuestInterface.h"
 #include "Quest/LSQuestManager.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Interaction/LSInteractionScriptData.h"
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
@@ -31,6 +33,63 @@ ALSMoveTutorial::ALSMoveTutorial()
 
 	bReplicates = true;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest1;
+
+	//Script
+	ScriptAssetNameSiJae = FName(TEXT("LSMoveTutorialSiJae"));
+	ScriptAssetNameIJae = FName(TEXT("LSMoveTutorialIJae"));
+}
+
+void ALSMoveTutorial::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	//Script Section
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList(TEXT("LSScriptData"), Assets);
+
+	if (0 < Assets.Num())
+	{
+		for (const FPrimaryAssetId& AssetId : Assets)
+		{
+			if (AssetId.PrimaryAssetName == ScriptAssetNameSiJae)
+			{
+				FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+				//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+				if (AssetPtr.IsPending())
+				{
+					AssetPtr.LoadSynchronous();
+				}
+				InteractionScriptDataSiJae = Cast<ULSInteractionScriptData>(AssetPtr.Get());
+				ensure(InteractionScriptDataSiJae);
+				break;
+			}
+		}
+
+		for (const FPrimaryAssetId& AssetId : Assets)
+		{
+			//Test Asset
+			if (AssetId.PrimaryAssetName == ScriptAssetNameIJae)
+			{
+				FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+				//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+				if (AssetPtr.IsPending())
+				{
+					AssetPtr.LoadSynchronous();
+				}
+				InteractionScriptDataIJae = Cast<ULSInteractionScriptData>(AssetPtr.Get());
+				ensure(InteractionScriptDataIJae);
+				break;
+			}
+		}
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("ScriptAssetName Not Found"));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -68,11 +127,11 @@ void ALSMoveTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Overlap
 				FString Script = "";
 				if (CharacterChoice->GetCharacterChoice() == ELSCharacterChoice::SiJae)
 				{
-					Script = TEXT("Wait For IJae.");
+					Script = InteractionScriptDataSiJae->GetInteractionScripts(PuzzleActivateEnum)[0];
 				}
 				else
 				{
-					Script = TEXT("Wait For SiJae.");
+					Script = InteractionScriptDataIJae->GetInteractionScripts(PuzzleActivateEnum)[0];
 				}
 				ScriptController->UpdateScriptWidget(Script);
 

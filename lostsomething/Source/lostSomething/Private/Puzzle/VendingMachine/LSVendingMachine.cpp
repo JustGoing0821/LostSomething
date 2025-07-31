@@ -8,14 +8,17 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Interaction/LSInteractionScriptData.h"
 #include "Game/LSGameMode.h"
 #include "Puzzle/VendingMachine/LSVendingMachineManager.h"
 #include "Quest/LSQuestManager.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 
 ALSVendingMachine::ALSVendingMachine()
 {
@@ -80,6 +83,7 @@ ALSVendingMachine::ALSVendingMachine()
 	MachineNumber = 0;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest0;
 	DamageAmount = 10.f;
+	bisPhaseStart = false;
 }
 
 void ALSVendingMachine::BeginPlay()
@@ -98,6 +102,7 @@ void ALSVendingMachine::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(ALSVendingMachine, CurrentVendingMachineColor);
 	DOREPLIFETIME(ALSVendingMachine, CurrentInteractController);
+	DOREPLIFETIME(ALSVendingMachine, bisPhaseStart);
 }
 
 
@@ -119,13 +124,15 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 
 void ALSVendingMachine::InteractionProcessSiJae()
 {
-	//const TArray<FString>& Scripts = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
-	//for (FString Script : Scripts)
-	//{
-	//	LS_LOG(LogLS, Log, TEXT("Interaction Script : %s"), *Script);
-	//}
-
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (!bisPhaseStart)
+	{
+		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
+		if (ScriptController)
+		{
+			ScriptController->UpdateScriptWidget(InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0]);
+		}
+		return;
+	}
 
 	if (HasAuthority())
 	{
@@ -159,7 +166,14 @@ void ALSVendingMachine::InteractionProcessIJae()
 	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
 	if (ScriptController)
 	{
-		ScriptController->UpdateScriptWidget(TEXT("IJae can't interact with this"));
+		if (bisPhaseStart)
+		{
+			ScriptController->UpdateScriptWidget(InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1]);
+		}
+		else
+		{
+			ScriptController->UpdateScriptWidget(InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0]);
+		}
 	}
 }
 
@@ -196,6 +210,8 @@ void ALSVendingMachine::BindQuestChange()
 
 void ALSVendingMachine::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
+	CurrentQuest = InQuestEnum;
+
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
@@ -232,6 +248,8 @@ void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int3
 		bisCorrectMachine = false;
 	}
 
+	bisPhaseStart = true;
+
 	if (HasAuthority())
 	{
 		MulticastRPCChangeVisible();
@@ -252,7 +270,7 @@ void ALSVendingMachine::PuzzleCheck()
 		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
 		if (ScriptController)
 		{
-			ScriptController->UpdateScriptWidget(TEXT("Wrong Vendingmachine. You need IJae's help."));
+			ScriptController->UpdateScriptWidget(InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[1]);
 		}
 		ApplyDamage();
 	}

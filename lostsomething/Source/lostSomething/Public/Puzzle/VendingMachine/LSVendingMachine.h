@@ -70,6 +70,9 @@ protected:
 	UPROPERTY(Replicated)
 	TObjectPtr<class APlayerController> CurrentInteractController;
 
+	UPROPERTY(Replicated)
+	uint8 bisPhaseStart:1;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle)
 	int32 MachineNumber;
 
