@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractionActor/LSInteractionActorBase.h"
+#include "Interaction/LSInteractionActorBase.h"
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
 #include "Interaction/LSInteractionEnum.h"
 #include "LSVendingMachine.generated.h"
@@ -39,8 +39,8 @@ protected:
 //Interaction Section
 public:
 	virtual void InteractionProcess(APlayerController* InPlayerController) override;
-	virtual void InteractionProcessSiJae() override;
-	virtual void InteractionProcessIJae() override;
+	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) override;
+	virtual void InteractionProcessIJae(APlayerController* InPlayerController) override;
 
 //Visible Section
 protected:

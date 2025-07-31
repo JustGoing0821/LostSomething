@@ -122,11 +122,11 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 	Super::InteractionProcess(InPlayerController);
 }
 
-void ALSVendingMachine::InteractionProcessSiJae()
+void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
-	if (!bisPhaseStart)
+	if (CurrentQuest==ELSInteractionEnum::Quest5 && !bisPhaseStart)
 	{
-		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
+		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
 		if (ScriptController)
 		{
 			ScriptController->UpdateScriptWidget(InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0]);
@@ -144,7 +144,7 @@ void ALSVendingMachine::InteractionProcessSiJae()
 	}
 }
 
-void ALSVendingMachine::InteractionProcessIJae()
+void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerController)
 {
 	//Test Log Code
 	//const TArray<FString>& Scripts = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest);
@@ -163,7 +163,7 @@ void ALSVendingMachine::InteractionProcessIJae()
 	//}
 
 	LS_LOG(LogLS, Warning, TEXT("%s"), TEXT("IJae can't interact with this"));
-	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(CurrentInteractController);
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
 	if (ScriptController)
 	{
 		if (bisPhaseStart)
