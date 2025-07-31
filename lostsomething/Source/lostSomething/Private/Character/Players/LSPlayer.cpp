@@ -658,7 +658,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
 		//Pickup
-		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
+		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PostPickUp);
 
 		// 숫자키 바인딩
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
@@ -1426,7 +1426,10 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
-
+void ALSPlayer::PostPickUp()
+{
+	PickUp();
+}
 
 //아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
@@ -1527,6 +1530,8 @@ void ALSPlayer::PickUp()
 	}
 	
 }
+
+
 
 void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 {

@@ -83,7 +83,10 @@ public:
 	//Item Section
 
 	//ащ╠Б (Destroy)
+	
 	void PickUp();
+
+	virtual void PostPickUp();
 
 	UFUNCTION(Server, Reliable)
 	void ServerPickUp(AMasterItem* TargetItem);

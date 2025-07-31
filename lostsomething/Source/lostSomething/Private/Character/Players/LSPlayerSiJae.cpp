@@ -46,6 +46,16 @@ void ALSPlayerSiJae::BeginPlay()
 }
 
 
+void ALSPlayerSiJae::PostPickUp()
+{
+    Super::PostPickUp();
+
+
+}
+
+
+
+
 bool ALSPlayerSiJae::CanPushWheelchair() const
 {
     return true;
