@@ -7,6 +7,9 @@
 #include "Character/UI/LSDarkWidget.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/Players/LSPlayer.h"
+#include "Character/Item/Weapon.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -46,12 +49,81 @@ void ALSPlayerSiJae::BeginPlay()
 }
 
 
+
+ALSPlayerSiJae::ALSPlayerSiJae()
+{
+//    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+// 
+//
+//    //소켓 붙이기
+//    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+//    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+//
+//    //Weapon = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
+//    Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+}
+
+
+
+
 void ALSPlayerSiJae::PostPickUp()
 {
     Super::PostPickUp();
 
+    FHitResult OutHitResult;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
+    const float PickupRange = 200.0f;
+    const float PickupRadius = 100.0f;
+    const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+    const FVector End = Start + GetActorForwardVector() * PickupRange;
+    FColor DrawColor;
 
+    bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
+    if (HitDetected)
+    {
+        AActor* HitActor = OutHitResult.GetActor();
+
+        AWeapon* HitItem = Cast<AWeapon>(HitActor);
+        if (HitItem)
+        {
+            FName WeaponSocketName = TEXT("WeaponSocket");
+            USkeletalMeshComponent* PlayerMesh = GetMesh();
+
+            if (PlayerMesh->DoesSocketExist(WeaponSocketName))
+            {
+             
+                HitItem->AttachToComponent(
+                    PlayerMesh,
+                    FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                    WeaponSocketName
+                );
+
+                // 위치, 회전 조정 (원하면 여기에 추가)
+                HitItem->SetActorRelativeLocation(FVector::ZeroVector);
+                HitItem->SetActorRelativeRotation(FRotator::ZeroRotator);
+
+                // 들고 있는 무기로 저장해도 됨
+                // CurrentWeapon = HitItem;
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("Socket %s does not exist!"), *WeaponSocketName.ToString());
+            }
+
+            return; 
+        }
+
+ 
+
+        if (!HitItem)
+        {
+
+            return; // 마스터 아이템이 아니면 픽업 무시하고 종료
+        }
+
+    }
 }
+
 
 
 
@@ -83,6 +155,7 @@ void ALSPlayerSiJae::Attack() {
         ServerProcessAttack();
     } 
 }
+
 
 
 void ALSPlayerSiJae::Tick(float DeltaTime)

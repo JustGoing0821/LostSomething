@@ -13,5 +13,13 @@ UCLASS()
 class LOSTSOMETHING_API AWeapon : public AMasterItem
 {
 	GENERATED_BODY()
+
+
+public:
+	AWeapon();
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* WeaponMesh;
+
 	
 };
