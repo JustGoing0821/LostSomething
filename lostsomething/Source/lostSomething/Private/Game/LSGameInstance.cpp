@@ -172,15 +172,15 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		if (hasRoomName && hasHostName)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), *StringBase64Decode(roomName));
-			UE_LOG(LogTemp, Warning, TEXT("host: %s"), *StringBase64Decode(hostName));
+			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), FromHex(roomName));
+			UE_LOG(LogTemp, Warning, TEXT("host: %s"), StringBase64Decode(hostName));
 
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = FromHex(roomName);
+				roomInfo.RoomName = FromHex(roomName);  // 이미 올바름
 				roomInfo.HostName = StringBase64Decode(hostName);
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
@@ -261,15 +261,13 @@ FString ToHex(const FString& InStr)
 		UE_LOG(LogTemp, Warning, TEXT("ToHex: Input string is empty!"));
 		return FString();
 	}
-
 	FTCHARToUTF8 Convert(InStr);
 	FString Result;
 	for (int32 i = 0; i < Convert.Length(); ++i)
 	{
 		Result += FString::Printf(TEXT("%02X"), (uint8)Convert.Get()[i]);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("ToHex: '%s' -> '%s'"), InStr, Result);
+	UE_LOG(LogTemp, Warning, TEXT("ToHex: '%s' -> '%s'"), InStr, *Result);
 	return Result;
 }
 
@@ -310,7 +308,7 @@ FString FromHex(const FString& HexStr)
 	std::string Utf8((char)Bytes.GetData(), Bytes.Num() - 1); // null terminator 제외
 	FString Result = UTF8_TO_TCHAR(Utf8.c_str());
 
-	UE_LOG(LogTemp, Warning, TEXT("FromHex: '%s' -> '%s'"), HexStr, *Result);
+	UE_LOG(LogTemp, Warning, TEXT("FromHex: '%s' -> '%s'"), HexStr, Result);
 	return Result;
 }
 
