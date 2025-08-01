@@ -52,7 +52,7 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString EncodedRoomName = StringBase64Encode(RoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
 
-	Setting.Set(FName("room_name"), ToHex(RoomName), EOnlineDataAdvertisementType::ViaOnlineService);
+	Setting.Set(FName("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineService);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -179,7 +179,7 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = FromHex(roomName);
+				roomInfo.RoomName = StringBase64Decode(roomName);
 				roomInfo.HostName = StringBase64Decode(hostName);
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
