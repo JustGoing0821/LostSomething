@@ -61,6 +61,8 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString DecodedTest = StringBase64Decode(EncodedRoomName);
 	UE_LOG(LogTemp, Warning, TEXT("Decode Test: %s"), *DecodedTest);
 
+	// 게임 식별을 위한 고유 키 추가
+	Setting.Set(TEXT("game_id"), FString("lostSomething_v1"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
@@ -114,6 +116,10 @@ void ULSGameInstance::FindOtherRooms()
 	RoomSearch = MakeShareable(new FOnlineSessionSearch());
 	// 2. 세션 검색 조건 설정
 	RoomSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+
+	// 게임 식별자로 필터링 추가
+	RoomSearch->QuerySettings.Set(FName(TEXT("game_id")), FString("lostSomething_v1"), EOnlineComparisonOp::Equals);
+
 	// 3. 최대 검색 갯수를 정하고싶다.
 	RoomSearch->MaxSearchResults = 10;
 	// 4. 랜선인지 아닌지를 정하고싶다.
@@ -159,6 +165,8 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 	UE_LOG(LogTemp, Warning, TEXT("search success: %d"), bWasSuccesful);
 	UE_LOG(LogTemp, Warning, TEXT("find room numbers: %d"), RoomSearch->SearchResults.Num());
 
+	int32 ValidRoomCount = 0;
+
 	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
 	{
 		auto SearchResult = RoomSearch->SearchResults[i];
@@ -173,10 +181,24 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
 
+		// 게임 ID 확인 (추가 필터링)
+		FString gameId;
+		bool hasGameId = Settings.Get(FName(TEXT("game_id")), gameId);
+
+		if (!hasGameId || gameId != "lostSomething_v1")
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Different game session - GameId: %s"), hasGameId ? *gameId : TEXT("None"));
+			continue;
+		}
+
 		// 우리가 설정한 키들만 체크
 		FString roomName, hostName;
 		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
 		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
+
+		UE_LOG(LogTemp, Warning, TEXT("hasRoomName: %d, hasHostName: %d"), hasRoomName, hasHostName);
+		UE_LOG(LogTemp, Warning, TEXT("Raw roomName: %s"), hasRoomName ? *roomName : TEXT("NULL"));
+		UE_LOG(LogTemp, Warning, TEXT("Raw hostName: %s"), hasHostName ? *hostName : TEXT("NULL"));
 
 		if (hasRoomName && hasHostName)
 		{
@@ -189,13 +211,26 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
 			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
+			// 디코딩 검증
+			if (DecodedRoomName.IsEmpty() && !roomName.IsEmpty())
+			{
+				UE_LOG(LogTemp, Error, TEXT("Base64 decode failed for room name! Using raw value."));
+				DecodedRoomName = roomName;
+			}
+
+			if (DecodedHostName.IsEmpty() && !hostName.IsEmpty())
+			{
+				UE_LOG(LogTemp, Error, TEXT("Base64 decode failed for host name! Using raw value."));
+				DecodedHostName = hostName;
+			}
+
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
 				FRoomInfo roomInfo;
-				roomInfo.Index = i;
-				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
-				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
+				roomInfo.Index = ValidRoomCount;  // 유효한 방만 카운트
+				roomInfo.RoomName = DecodedRoomName;
+				roomInfo.HostName = DecodedHostName;
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
@@ -203,20 +238,68 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 				OnAddRoomInfoDelegate.Broadcast(roomInfo);
 				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
 				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
+
+				ValidRoomCount++;
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("no room"));
+			UE_LOG(LogTemp, Warning, TEXT("Missing required keys - hasRoomName: %d, hasHostName: %d"), hasRoomName, hasHostName);
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Total valid rooms found: %d"), ValidRoomCount);
 }
 
 void ULSGameInstance::JoinRoom(int32 index)
 {
-	auto r = RoomSearch->SearchResults[index];
+	// 유효한 방들만 필터링했으므로, 실제 SearchResults 인덱스와 다를 수 있음
+	int32 ValidRoomIndex = 0;
+	int32 ActualIndex = -1;
+
+	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
+	{
+		auto SearchResult = RoomSearch->SearchResults[i];
+
+		if (!SearchResult.IsValid())
+			continue;
+
+		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
+
+		// 게임 ID 확인
+		FString gameId;
+		bool hasGameId = Settings.Get(FName(TEXT("game_id")), gameId);
+		if (!hasGameId || gameId != "lostSomething_v1")
+			continue;
+
+		// room_name과 host_name 확인
+		FString roomName, hostName;
+		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
+		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
+
+		if (!hasRoomName || !hasHostName)
+			continue;
+
+		// 유효한 방을 찾았고, 원하는 인덱스인지 확인
+		if (ValidRoomIndex == index)
+		{
+			ActualIndex = i;
+			break;
+		}
+		ValidRoomIndex++;
+	}
+
+	if (ActualIndex == -1)
+	{
+		UE_LOG(LogTemp, Error, TEXT("JoinRoom: Invalid room index %d"), index);
+		return;
+	}
+
+	auto r = RoomSearch->SearchResults[ActualIndex];
 	FString sessionName;
 	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
+
+	UE_LOG(LogTemp, Warning, TEXT("Joining room with encoded name: %s"), *sessionName);
 	SessionInterface->JoinSession(0, FName(*sessionName), r);
 }
 
