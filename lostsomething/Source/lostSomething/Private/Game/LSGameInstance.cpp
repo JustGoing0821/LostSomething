@@ -52,7 +52,7 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString EncodedRoomName = StringBase64Encode(RoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
 
-	Setting.Set(FName("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineService);
+	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineService);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
