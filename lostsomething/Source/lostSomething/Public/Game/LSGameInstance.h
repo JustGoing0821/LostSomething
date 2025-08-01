@@ -63,6 +63,9 @@ public:
 	FAddRoomInfoDelegate OnAddRoomInfoDelegate;
 	// 방검색에 타이밍에 관련 델리게이트
 	FFindingRoomsDelegate OnFindingRoomsDelegate;
+
+	static const FName ROOM_NAME_KEY(TEXT("CUSTOM_ROOM_NAME"));
+	static const FName HOST_NAME_KEY(TEXT("CUSTOM_HOST_NAME"));
 	
 	virtual void Init() override;
 
