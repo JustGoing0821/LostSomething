@@ -52,9 +52,6 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString EncodedRoomName = StringBase64Encode(RoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
 
-	Setting.Set(TEXT("room_name"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
@@ -254,6 +251,27 @@ FString ULSGameInstance::StringBase64Decode(const FString& str)
 
 	std::string utf8String(reinterpret_cast<char*>(arrayData.GetData()), arrayData.Num());
 	return UTF8_TO_TCHAR(utf8String.c_str());
+}
+
+FString ToHex(const FString& InStr)
+{
+	FTCHARToUTF8 Convert(*InStr);
+	FString Result;
+	for (int32 i = 0; i < Convert.Length(); ++i)
+		Result += FString::Printf(TEXT("%02X"), (uint8)Convert.Get()[i]);
+	return Result;
+}
+
+FString FromHex(const FString& HexStr)
+{
+	TArray<uint8> Bytes;
+	for (int32 i = 0; i < HexStr.Len(); i += 2)
+	{
+		FString ByteStr = HexStr.Mid(i, 2);
+		Bytes.Add((uint8)FParse::HexDigit(ByteStr[0]) << 4 | (uint8)FParse::HexDigit(ByteStr[1]));
+	}
+	std::string Utf8((char*)Bytes.GetData(), Bytes.Num());
+	return UTF8_TO_TCHAR(Utf8.c_str());
 }
 
 void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
