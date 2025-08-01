@@ -49,9 +49,17 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.bAllowJoinViaPresence = true;
 	Setting.NumPublicConnections = 2;
 
-	//FString EncodedRoomName = StringBase64Encode(RoomName);
-	FString EncodedRoomName = ToHex(RoomName);
+	// Base64로 통일
+	FString EncodedRoomName = StringBase64Encode(RoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
+
+	// 디버깅 로그 추가
+	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *RoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Encoded RoomName: %s"), *EncodedRoomName);
+
+	// 즉시 디코딩해서 검증
+	FString DecodedTest = StringBase64Decode(EncodedRoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Decode Test: %s"), *DecodedTest);
 
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -135,7 +143,7 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 		SessionInterface->GetResolvedConnectString(SessionName, url);
 		// 여행을 떠나고 싶다.
 		auto pc = GetWorld()->GetFirstPlayerController();
-		if(pc)
+		if (pc)
 			pc->ClientTravel(url, TRAVEL_Absolute);
 	}
 	// 그렇지않다면
@@ -172,20 +180,28 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		if (hasRoomName && hasHostName)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), FromHex(roomName));
-			UE_LOG(LogTemp, Warning, TEXT("host: %s"), StringBase64Decode(hostName));
+			// Base64 디코딩으로 변경
+			FString DecodedRoomName = StringBase64Decode(roomName);
+			FString DecodedHostName = StringBase64Decode(hostName);
+
+			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
+			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = FromHex(roomName);  // 이미 올바름
-				roomInfo.HostName = StringBase64Decode(hostName);
+				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
 				OnAddRoomInfoDelegate.Broadcast(roomInfo);
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
 				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
 			}
 		}
@@ -252,64 +268,6 @@ FString ULSGameInstance::StringBase64Decode(const FString& str)
 
 	std::string utf8String(reinterpret_cast<char*>(arrayData.GetData()), arrayData.Num());
 	return UTF8_TO_TCHAR(utf8String.c_str());
-}
-
-FString ToHex(const FString& InStr)
-{
-	if (InStr.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ToHex: Input string is empty!"));
-		return FString();
-	}
-	FTCHARToUTF8 Convert(InStr);
-	FString Result;
-	for (int32 i = 0; i < Convert.Length(); ++i)
-	{
-		Result += FString::Printf(TEXT("%02X"), (uint8)Convert.Get()[i]);
-	}
-	UE_LOG(LogTemp, Warning, TEXT("ToHex: '%s' -> '%s'"), InStr, *Result);
-	return Result;
-}
-
-FString FromHex(const FString& HexStr)
-{
-	if (HexStr.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FromHex: Input hex string is empty!"));
-		return FString();
-	}
-
-	// Hex 문자열 길이가 홀수인 경우 처리
-	if (HexStr.Len() % 2 != 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("FromHex: Invalid hex string length: %d"), HexStr.Len());
-		return FString();
-	}
-
-	TArray<uint8> Bytes;
-	for (int32 i = 0; i < HexStr.Len(); i += 2)
-	{
-		FString ByteStr = HexStr.Mid(i, 2);
-
-		// 각 문자가 유효한 hex인지 확인
-		if (!FChar::IsHexDigit(ByteStr[0]) || !FChar::IsHexDigit(ByteStr[1]))
-		{
-			UE_LOG(LogTemp, Error, TEXT("FromHex: Invalid hex characters in: %s"), ByteStr);
-			return FString();
-		}
-
-		uint8 Byte = (FParse::HexDigit(ByteStr[0]) << 4) | FParse::HexDigit(ByteStr[1]);
-		Bytes.Add(Byte);
-	}
-
-	// Null terminator 추가
-	Bytes.Add(0);
-
-	std::string Utf8((char)Bytes.GetData(), Bytes.Num() - 1); // null terminator 제외
-	FString Result = UTF8_TO_TCHAR(Utf8.c_str());
-
-	UE_LOG(LogTemp, Warning, TEXT("FromHex: '%s' -> '%s'"), HexStr, Result);
-	return Result;
 }
 
 void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
