@@ -256,23 +256,62 @@ FString ULSGameInstance::StringBase64Decode(const FString& str)
 
 FString ToHex(const FString& InStr)
 {
-	FTCHARToUTF8 Convert(*InStr);
+	if (InStr.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ToHex: Input string is empty!"));
+		return FString();
+	}
+
+	FTCHARToUTF8 Convert(InStr);
 	FString Result;
 	for (int32 i = 0; i < Convert.Length(); ++i)
+	{
 		Result += FString::Printf(TEXT("%02X"), (uint8)Convert.Get()[i]);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ToHex: '%s' -> '%s'"), InStr, Result);
 	return Result;
 }
 
 FString FromHex(const FString& HexStr)
 {
+	if (HexStr.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FromHex: Input hex string is empty!"));
+		return FString();
+	}
+
+	// Hex 문자열 길이가 홀수인 경우 처리
+	if (HexStr.Len() % 2 != 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("FromHex: Invalid hex string length: %d"), HexStr.Len());
+		return FString();
+	}
+
 	TArray<uint8> Bytes;
 	for (int32 i = 0; i < HexStr.Len(); i += 2)
 	{
 		FString ByteStr = HexStr.Mid(i, 2);
-		Bytes.Add((uint8)FParse::HexDigit(ByteStr[0]) << 4 | (uint8)FParse::HexDigit(ByteStr[1]));
+
+		// 각 문자가 유효한 hex인지 확인
+		if (!FChar::IsHexDigit(ByteStr[0]) || !FChar::IsHexDigit(ByteStr[1]))
+		{
+			UE_LOG(LogTemp, Error, TEXT("FromHex: Invalid hex characters in: %s"), ByteStr);
+			return FString();
+		}
+
+		uint8 Byte = (FParse::HexDigit(ByteStr[0]) << 4) | FParse::HexDigit(ByteStr[1]);
+		Bytes.Add(Byte);
 	}
-	std::string Utf8((char*)Bytes.GetData(), Bytes.Num());
-	return UTF8_TO_TCHAR(Utf8.c_str());
+
+	// Null terminator 추가
+	Bytes.Add(0);
+
+	std::string Utf8((char)Bytes.GetData(), Bytes.Num() - 1); // null terminator 제외
+	FString Result = UTF8_TO_TCHAR(Utf8.c_str());
+
+	UE_LOG(LogTemp, Warning, TEXT("FromHex: '%s' -> '%s'"), HexStr, *Result);
+	return Result;
 }
 
 void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
