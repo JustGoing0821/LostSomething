@@ -8,9 +8,6 @@
 #include <string>
 #include <Game/LobbyGameMode.h>
 
-static const FName ROOM_NAME_KEY(TEXT("CUSTOM_ROOM_NAME"));
-static const FName HOST_NAME_KEY(TEXT("CUSTOM_HOST_NAME"));
-
 
 ULSGameInstance::ULSGameInstance()
 {
@@ -64,8 +61,8 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	FString DecodedTest = StringBase64Decode(EncodedRoomName);
 	UE_LOG(LogTemp, Warning, TEXT("Decode Test: %s"), *DecodedTest);
 
-	Setting.Set(ROOM_NAME_KEY, EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(HOST_NAME_KEY, EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("slot_count"), FString::FromInt(3), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -164,7 +161,8 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
 	{
-		const auto& SearchResult = RoomSearch->SearchResults[i];
+		auto SearchResult = RoomSearch->SearchResults[i];
+
 		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);
 
 		if (!SearchResult.IsValid())
@@ -175,43 +173,44 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
 
-		// CreateRoom 쪽과 동일한 키로 꺼내야 함
-		FString EncRoom, EncHost;
-		bool hasRoom = Settings.Get(ROOM_NAME_KEY, EncRoom);
-		bool hasHost = Settings.Get(HOST_NAME_KEY, EncHost);
+		// 우리가 설정한 키들만 체크
+		FString roomName, hostName;
+		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
+		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
 
-		if (hasRoom && hasHost)
+		if (hasRoomName && hasHostName)
 		{
-			// Base64 디코딩
-			FString DecRoom = StringBase64Decode(EncRoom);
-			FString DecHost = StringBase64Decode(EncHost);
+			// Base64 디코딩으로 변경
+			FString DecodedRoomName = StringBase64Decode(roomName);
+			FString DecodedHostName = StringBase64Decode(hostName);
 
-			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *EncRoom);
-			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecRoom);
-			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *EncHost);
-			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecHost);
+			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
+			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
+			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
-				FRoomInfo Info;
-				Info.Index = i;
-				Info.RoomName = DecRoom;
-				Info.HostName = DecHost;
-				Info.PlayerCount = TEXT("1");
-				Info.PingMS = FString::FromInt(SearchResult.PingInMs);
+				FRoomInfo roomInfo;
+				roomInfo.Index = i;
+				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
+				roomInfo.PlayerCount = TEXT("1");
+				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
 				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
-				OnAddRoomInfoDelegate.Broadcast(Info);
+				OnAddRoomInfoDelegate.Broadcast(roomInfo);
 				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
+				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("no room : 키가 일치하지 않음"));
+			UE_LOG(LogTemp, Warning, TEXT("no room"));
 		}
 	}
 }
-
 
 void ULSGameInstance::JoinRoom(int32 index)
 {
