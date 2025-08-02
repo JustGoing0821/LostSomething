@@ -1817,9 +1817,9 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 
 
-
-
-
+void ALSPlayer::SpawnThrowableItemInside(const FItemDetails& ItemToThrow)
+{
+}
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
@@ -1829,7 +1829,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	{
 		
 		ServerSpawnThrowableItem(ItemToThrow);
-		
+		return;
 	}
 
 	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
@@ -1845,18 +1845,11 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 
-	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
-		ItemClass,
-		ThrowStartLocation,
-		ThrowRotation,
-		SpawnParams
-	);
+	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass,ThrowStartLocation,ThrowRotation,SpawnParams);
 
 	if (ThrownItem)
 	{
 		ThrownItem->bIsThrown = true;
-
-		
 
 		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 		{
@@ -1881,6 +1874,8 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 		LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
 	}
 }
+
+
 
 void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
 {

@@ -83,9 +83,8 @@ public:
 	//줍기 (Destroy)
 	
 	void PickUp();
-
 	virtual void PostPickUp();
-
+	
 	UFUNCTION(Server, Reliable)
 	void ServerPickUp(AMasterItem* TargetItem);
 
@@ -112,6 +111,8 @@ public:
 
 	//던지기 (impulse로 아이템 스폰)
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
+	void SpawnThrowableItemInside(const FItemDetails& ItemToThrow);
+
 
 	UFUNCTION(Server, Reliable)
 	void ServerSpawnThrowableItem(const FItemDetails& ItemToThrow);
