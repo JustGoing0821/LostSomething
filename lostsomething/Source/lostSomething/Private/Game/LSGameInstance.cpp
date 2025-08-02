@@ -49,11 +49,17 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.bAllowJoinViaPresence = true;
 	Setting.NumPublicConnections = 2;
 
+	// Base64로 통일
 	FString EncodedRoomName = StringBase64Encode(RoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
 
-	Setting.Set(TEXT("room_name"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	// 디버깅 로그 추가
+	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *RoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Encoded RoomName: %s"), *EncodedRoomName);
+
+	// 즉시 디코딩해서 검증
+	FString DecodedTest = StringBase64Decode(EncodedRoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Decode Test: %s"), *DecodedTest);
 
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -137,7 +143,7 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 		SessionInterface->GetResolvedConnectString(SessionName, url);
 		// 여행을 떠나고 싶다.
 		auto pc = GetWorld()->GetFirstPlayerController();
-		if(pc)
+		if (pc)
 			pc->ClientTravel(url, TRAVEL_Absolute);
 	}
 	// 그렇지않다면
@@ -174,20 +180,28 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		if (hasRoomName && hasHostName)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), *StringBase64Decode(roomName));
-			UE_LOG(LogTemp, Warning, TEXT("host: %s"), *StringBase64Decode(hostName));
+			// Base64 디코딩으로 변경
+			FString DecodedRoomName = StringBase64Decode(roomName);
+			FString DecodedHostName = StringBase64Decode(hostName);
+
+			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
+			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = StringBase64Decode(roomName);
-				roomInfo.HostName = StringBase64Decode(hostName);
+				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
 				OnAddRoomInfoDelegate.Broadcast(roomInfo);
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
 				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
 			}
 		}
