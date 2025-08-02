@@ -45,7 +45,7 @@ protected:
 	virtual bool CanPushWheelchair() const override;
 
 	virtual void Attack() override;
-	virtual void PostPickUp() override;
+	
 	void Tick(float DeltaTime);
 
 };
