@@ -13,19 +13,22 @@ AVRPlayer::AVRPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    // 카메라 컴포넌트 생성
+    // VROrigin 생성
+    VROrigin = CreateDefaultSubobject<USceneComponent>(TEXT("VROrigin"));
+    VROrigin->SetupAttachment(GetRootComponent());
+
+    // 카메라
     VRCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("VRCamera"));
-    VRCamera->SetupAttachment(GetRootComponent()); // Root에 붙이기
+    VRCamera->SetupAttachment(VROrigin);
     VRCamera->bUsePawnControlRotation = false;
 
-    // 왼손 Motion Controller
+    // Motion Controllers
     LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
-    LeftController->SetupAttachment(GetRootComponent());
-    LeftController->SetTrackingSource(EControllerHand::Left); // 왼손 지정
+    LeftController->SetupAttachment(VROrigin);
+    LeftController->SetTrackingSource(EControllerHand::Left);
 
-    // 오른손 Motion Controller
     RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
-    RightController->SetupAttachment(GetRootComponent());
+    RightController->SetupAttachment(VROrigin);
     RightController->SetTrackingSource(EControllerHand::Right);
 
 }

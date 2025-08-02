@@ -11,6 +11,7 @@ class UCameraComponent;
 class UMotionControllerComponent;
 class UInputMappingContext;
 class UInputAction;
+class USceneComponent;
 
 UCLASS()
 class LOSTSOMETHING_API AVRPlayer : public ACharacter
@@ -32,6 +33,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	/** Carmera & VR Components */
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* VROrigin;
+
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* VRCamera;
 
