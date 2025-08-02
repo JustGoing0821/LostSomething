@@ -1782,7 +1782,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-			const float THROW_FORCE = 1000.0f;
+			const float THROW_FORCE = 300.0f;
 			ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
 
 			ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
