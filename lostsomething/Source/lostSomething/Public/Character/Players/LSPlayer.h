@@ -72,9 +72,7 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//void PickItem(const FItemDetails& PickedItemInfo);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	UStaticMeshComponent* Weapon;
-
+	
 
 	//voice
 	void VoiceStart(const FInputActionValue& Value);
@@ -83,8 +81,10 @@ public:
 	//Item Section
 
 	//줍기 (Destroy)
+	
 	void PickUp();
-
+	
+	
 	UFUNCTION(Server, Reliable)
 	void ServerPickUp(AMasterItem* TargetItem);
 
@@ -111,6 +111,7 @@ public:
 
 	//던지기 (impulse로 아이템 스폰)
 	void SpawnThrowableItem(const FItemDetails& ItemToThrow);
+	
 
 	UFUNCTION(Server, Reliable)
 	void ServerSpawnThrowableItem(const FItemDetails& ItemToThrow);
