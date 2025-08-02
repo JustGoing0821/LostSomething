@@ -190,59 +190,6 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	return DamageAmount;
 
 
-	//기존 코드
-	//if (HpComponent)
-	//{
-	//	const float NewHp = HpComponent->GetHp() - DamageAmount;
-	//	//HpComponent->SetHp(NewHp);
-	//	CurrentHp -= DamageAmount;
-	//	if (HasAuthority())
-	//	{
-	//		HpComponent->SetHp(CurrentHp);
-	//		CurrentHp = HpComponent->GetHp();  //0 이하로 내려가지 않게 동기화
-
-	//	}
-
-
-	//	//UI 업데이트 시도
-	//	UE_LOG(LogTemp, Warning, TEXT("TakeDamage: Attempting direct HUD update"));
-
-	//	// 손상을 입힌 컨트롤러가 있는 경우 확인
-	//	AController* ValidController = EventInstigator;
-	//	if (!ValidController)
-	//	{
-	//		// 없으면 현재 월드의 첫 번째 플레이어 컨트롤러 가져오기
-	//		if (GetWorld())
-	//		{
-	//			for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	//			{
-	//				ValidController = It->Get();
-	//				if (ValidController)
-	//					break;
-	//			}
-	//		}
-	//	}
-
-	//	if (ValidController)
-	//	{
-	//		ALSPlayerController* LSController = Cast<ALSPlayerController>(ValidController);
-	//		if (LSController && LSController->GetLSHUDWidget())
-	//		{
-	//			UE_LOG(LogTemp, Warning, TEXT("Directly updating HUD with HP: %.1f"), NewHp);
-	//			LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
-	//		}
-	//		else
-	//		{
-	//			UE_LOG(LogTemp, Error, TEXT("Could not get LSPlayerController or HUDWidget"));
-	//		}
-	//	}
-	//	else
-	//	{
-	//		UE_LOG(LogTemp, Error, TEXT("No valid controller found for HUD update"));
-	//	}
-	//}
-
-	//return DamageAmount;
 }
 
 void ALSPlayer::ApplyDamage(float DamageAmount)
@@ -270,25 +217,6 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 	{
 		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
 	}
-
-	//if (HpComponent)
-	//{
-	//	// 현재 HP에서 데미지만큼 감소한 값을 계산
-	//	float NewHp = HpComponent->GetHp() - DamageAmount;
-
-	//	// HpComponent에서 Clamp 처리 (0~MaxHp)
-	//	HpComponent->SetHp(NewHp);
-
-	//	// HpComponent에서 제한된 값을 CurrentHp에 할당
-	//	CurrentHp = HpComponent->GetHp();  // 이제 0 이하로 내려가지 않음
-
-	//	LS_LOG(LogLS, Log, TEXT("SetHp Called"));
-	//}
-	//else
-	//{
-	//	LS_LOG(LogLS, Error, TEXT("No HpComponent"));
-	//}
-
 
 
 
@@ -1448,19 +1376,8 @@ void ALSPlayer::PickUp()
 	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-	if (!CurrentSlotItem.IsEmpty)
-	{
-		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-		//DropItemFromSlot();
-		DrawColor = FColor::Orange;
-
-		//// 디버그 라인
-		//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-		//float CapsuleHalfHeight = PickupRange * 0.5f;
-		//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-	}
-
+	//슬롯이 차있다면
+	
 
 	//아이템 hit 시
 
@@ -1474,7 +1391,7 @@ void ALSPlayer::PickUp()
 		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
 		if (HitItem)
 		{
-
+			//아이템 중첩상태에서 pick (인벤차있는상태에서 콜리전 겹쳐서 주우면)
 			if (!CurrentSlotItem.IsEmpty)
 			{
 				LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
@@ -1522,11 +1439,25 @@ void ALSPlayer::PickUp()
 	}
 	else
 	{
+		if (!CurrentSlotItem.IsEmpty)
+		{
+			LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+			DropItemFromSlot();
+			DrawColor = FColor::Orange;
+
+			//// 디버그 라인
+			//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+			//float CapsuleHalfHeight = PickupRange * 0.5f;
+			//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
+		}
 
 		DrawColor = FColor::Yellow;
 	}
 	
 }
+
+
 
 void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 {
@@ -1813,9 +1744,6 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 
 
-
-
-
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
 	
@@ -1824,7 +1752,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	{
 		
 		ServerSpawnThrowableItem(ItemToThrow);
-		
+		return;
 	}
 
 	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
@@ -1840,18 +1768,11 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 
-	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
-		ItemClass,
-		ThrowStartLocation,
-		ThrowRotation,
-		SpawnParams
-	);
+	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass,ThrowStartLocation,ThrowRotation,SpawnParams);
 
 	if (ThrownItem)
 	{
 		ThrownItem->bIsThrown = true;
-
-		
 
 		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 		{
@@ -1861,7 +1782,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-			const float THROW_FORCE = 1000.0f;
+			const float THROW_FORCE = 300.0f;
 			ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
 
 			ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
@@ -1876,6 +1797,8 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 		LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
 	}
 }
+
+
 
 void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
 {

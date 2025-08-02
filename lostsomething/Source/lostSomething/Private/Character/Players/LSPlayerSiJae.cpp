@@ -7,6 +7,9 @@
 #include "Character/UI/LSDarkWidget.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/Players/LSPlayer.h"
+#include "Character/Item/Weapon.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -46,6 +49,23 @@ void ALSPlayerSiJae::BeginPlay()
 }
 
 
+
+ALSPlayerSiJae::ALSPlayerSiJae()
+{
+//    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+// 
+//
+//    //소켓 붙이기
+//    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+//    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+//
+//    //Weapon = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
+//    Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+}
+
+
+
+
 bool ALSPlayerSiJae::CanPushWheelchair() const
 {
     return true;
@@ -75,6 +95,7 @@ void ALSPlayerSiJae::Attack() {
 }
 
 
+
 void ALSPlayerSiJae::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -102,33 +123,6 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
 
     
 
-    //순회하면서 찾기
-    //if (!IJae)
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("SiJae: Searching for IJae player..."));
-
-    //    for (TActorIterator<ALSPlayerIJae> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-    //    {
-    //        if (IsValid(*ActorItr))
-    //        {
-    //            IJae = *ActorItr;
-    //            UE_LOG(LogTemp, Warning, TEXT("SiJae: Found IJae player!"));
-    //            break;
-    //        }
-    //    }
-
-    //    if (!IJae)
-    //    {
-    //        UE_LOG(LogTemp, Warning, TEXT("SiJae: IJae player not found yet"));
-    //        return; // IJae가 없으면 거리 계산 안 함
-    //    }
-    //}
-
-    //if (IJae != nullptr)
-    //{
-    //    float Distance = FVector::Dist(GetActorLocation(), IJae->GetActorLocation());
-    //    UE_LOG(LogTemp, Warning, TEXT("SiJae: Distance to IJae = %.2f"), Distance);
-    //}
 
     
 }
