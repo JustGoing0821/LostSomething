@@ -26,8 +26,8 @@ protected:
 //Interaction Section
 public:
 	virtual void InteractionProcess(APlayerController* InPlayerController) override;
-	virtual void InteractionProcessSiJae() {};
-	virtual void InteractionProcessIJae() {};
+	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) {};
+	virtual void InteractionProcessIJae(APlayerController* InPlayerController) {};
 
 protected:
 	UPROPERTY(Replicated)

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractionActor/LSInteractionActorBase.h"
+#include "Interaction/LSInteractionActorBase.h"
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
 #include "Interaction/LSInteractionEnum.h"
 #include "LSVendingMachineManager.generated.h"
@@ -56,8 +56,8 @@ protected:
 
 //Interaction
 public:
-	virtual void InteractionProcessSiJae() override;
-	virtual void InteractionProcessIJae() override;
+	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) override;
+	virtual void InteractionProcessIJae(APlayerController* InPlayerController) override;
 
 
 //Puzzle Section
@@ -75,7 +75,7 @@ protected:
 	int32 CurrentColorSet;
 	TMap<ECurrentPhase, EVendingMachineColor> AnswerColors;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
 	void StartPhase();

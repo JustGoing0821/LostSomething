@@ -36,7 +36,6 @@ void ULSGameInstance::Init()
 void ULSGameInstance::CreateRoom(FString RoomName)
 {
 	FOnlineSessionSettings Setting;
-
 	Setting.bIsDedicated = false;
 
 	auto SubSys = IOnlineSubsystem::Get();
@@ -50,20 +49,27 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.bAllowJoinViaPresence = true;
 	Setting.NumPublicConnections = 2;
 
-	// ? 값은 반드시 UTF-8 또는 FString로 저장 (Base64 제거)
-	FString EncodedRoomName = StringBase64Encode(RoomName);  // 변경!
-	FString EncodedHostName = StringBase64Encode(NickName);  // 변경!
+	// Base64로 통일
+	FString EncodedRoomName = StringBase64Encode(RoomName);
+	FString EncodedHostName = StringBase64Encode(NickName);
 
-	Setting.Set(TEXT("room_name"), RoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	// 디버깅 로그 추가
+	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *RoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Encoded RoomName: %s"), *EncodedRoomName);
+
+	// 즉시 디코딩해서 검증
+	FString DecodedTest = StringBase64Decode(EncodedRoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Decode Test: %s"), *DecodedTest);
+
+	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
-	// 숫자 값도 반드시 FString으로 변환
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("slot_count"), FString::FromInt(3), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("password_required"), FString("false"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
-	FUniqueNetIdPtr netID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
-	SessionInterface->CreateSession(*netID, FName("MySession"), Setting);
+	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+	SessionInterface->CreateSession(*NetID, FName("MySession"), Setting);
 }
 
 void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccessful)
@@ -137,7 +143,7 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 		SessionInterface->GetResolvedConnectString(SessionName, url);
 		// 여행을 떠나고 싶다.
 		auto pc = GetWorld()->GetFirstPlayerController();
-		if(pc)
+		if (pc)
 			pc->ClientTravel(url, TRAVEL_Absolute);
 	}
 	// 그렇지않다면
@@ -174,20 +180,28 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		if (hasRoomName && hasHostName)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("room name: %s"), *StringBase64Decode(roomName));
-			UE_LOG(LogTemp, Warning, TEXT("host: %s"), *StringBase64Decode(hostName));
+			// Base64 디코딩으로 변경
+			FString DecodedRoomName = StringBase64Decode(roomName);
+			FString DecodedHostName = StringBase64Decode(hostName);
+
+			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
+			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
+			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = StringBase64Decode(roomName);
-				roomInfo.HostName = StringBase64Decode(hostName);
+				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
 				OnAddRoomInfoDelegate.Broadcast(roomInfo);
+				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
 				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
 			}
 		}
@@ -239,19 +253,21 @@ void ULSGameInstance::OnMyExitRoomComplete(FName SessionName, bool bWasSuccesful
 
 FString ULSGameInstance::StringBase64Encode(const FString& str)
 {
-	// Set 할 때 : FString -> UTF8 (std::string) -> TArray<uint8> -> base64 로 Encode
 	std::string utf8String = TCHAR_TO_UTF8(*str);
-	TArray<uint8> arrayData = TArray<uint8>((uint8*)(utf8String.c_str()), utf8String.length());
+	TArray<uint8> arrayData;
+	arrayData.Append(reinterpret_cast<const uint8*>(utf8String.data()), utf8String.size());
+
 	return FBase64::Encode(arrayData);
 }
 
 FString ULSGameInstance::StringBase64Decode(const FString& str)
 {
-	// Get 할 때 : base64 로 Decode -> TArray<uint8> -> TCHAR
 	TArray<uint8> arrayData;
-	FBase64::Decode(str, arrayData);
-	std::string ut8String((char*)(arrayData.GetData()), arrayData.Num());
-	return UTF8_TO_TCHAR(ut8String.c_str());
+	if (!FBase64::Decode(str, arrayData))
+		return FString();
+
+	std::string utf8String(reinterpret_cast<char*>(arrayData.GetData()), arrayData.Num());
+	return UTF8_TO_TCHAR(utf8String.c_str());
 }
 
 void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)

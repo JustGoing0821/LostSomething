@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InteractionActor/LSInteractionActorBase.h"
+#include "Interaction/LSInteractionActorBase.h"
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
@@ -166,7 +166,7 @@ void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerCont
 		{
 			if (bSiJaeCanInteraction)
 			{
-				InteractionProcessSiJae();
+				InteractionProcessSiJae(InPlayerController);
 			}
 			else
 			{
@@ -177,7 +177,7 @@ void ALSInteractionActorBase::InteractionProcess(APlayerController* InPlayerCont
 		{
 			if (bIJaeCanInteraction)
 			{
-				InteractionProcessIJae();
+				InteractionProcessIJae(InPlayerController);
 			}
 			else
 			{

@@ -57,7 +57,7 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	}
 	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
 
-	PuzzleActivateEnum = ELSInteractionEnum::Quest5;
+	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
 }
 
 void ALSVendingMachineManager::BeginPlay()
@@ -110,7 +110,7 @@ void ALSVendingMachineManager::SetVisibleIJae()
 	}
 }
 
-void ALSVendingMachineManager::InteractionProcessSiJae()
+void ALSVendingMachineManager::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
 	if (HasAuthority())
 	{
@@ -122,7 +122,7 @@ void ALSVendingMachineManager::InteractionProcessSiJae()
 	}
 }
 
-void ALSVendingMachineManager::InteractionProcessIJae()
+void ALSVendingMachineManager::InteractionProcessIJae(APlayerController* InPlayerController)
 {
 	//if (HasAuthority())
 	//{

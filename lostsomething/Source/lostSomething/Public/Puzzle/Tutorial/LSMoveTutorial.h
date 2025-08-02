@@ -17,6 +17,7 @@ public:
 	ALSMoveTutorial();
 
 protected:
+	virtual void PostInitializeComponents() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -41,6 +42,17 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
+
+//Script Section
+protected:
+	FName ScriptAssetNameSiJae;
+	FName ScriptAssetNameIJae;
+
+	UPROPERTY(EditAnywhere, Category = ScriptData)
+	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataSiJae;
+
+	UPROPERTY(EditAnywhere, Category = ScriptData)
+	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataIJae;
 
 //RPC
 public:

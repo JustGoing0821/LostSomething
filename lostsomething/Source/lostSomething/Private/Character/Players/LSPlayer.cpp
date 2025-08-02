@@ -1454,7 +1454,7 @@ void ALSPlayer::PickUp()
 	if (!CurrentSlotItem.IsEmpty)
 	{
 		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-		DropItemFromSlot();
+		//DropItemFromSlot();
 		DrawColor = FColor::Orange;
 
 		//// 디버그 라인

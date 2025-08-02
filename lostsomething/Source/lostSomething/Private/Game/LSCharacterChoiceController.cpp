@@ -17,6 +17,7 @@ ALSCharacterChoiceController::ALSCharacterChoiceController()
 		CharacterChooseWidgetClass = CharacterChooseWidgetRef.Class;
 	}
 
+	SetShowMouseCursor(true);
 	bReplicates = true;
 }
 
