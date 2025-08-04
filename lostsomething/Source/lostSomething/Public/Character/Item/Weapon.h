@@ -17,7 +17,6 @@ class LOSTSOMETHING_API AWeapon : public AMasterItem
 
 public:
 	AWeapon();
-
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* WeaponMesh;
 

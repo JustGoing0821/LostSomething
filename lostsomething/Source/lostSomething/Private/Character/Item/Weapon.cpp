@@ -12,5 +12,5 @@ AWeapon::AWeapon()
     RootComponent = WeaponMesh;
 
     WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    WeaponMesh->SetSimulatePhysics(false);
+    
 }

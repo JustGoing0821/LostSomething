@@ -333,10 +333,10 @@ protected:
 
 	// 휠체어 관련 프로퍼티
 	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float NormalCombineDistance = 100.0f;
+	float NormalCombineDistance = 150.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float MaxCombineDistance = 200.0f;
+	float MaxCombineDistance = 250.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Wheelchair")
 	float DistanceCheckInterval = 0.1f;
