@@ -42,8 +42,10 @@ void ULobbyWidget::SwitchPanel(int32 index)
 void ULobbyWidget::OnMyClicked_doCreateRoom()
 {
 	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
-	FString roomName = edit_RoomName->GetText().ToString();
+	//FString roomName = edit_RoomName->GetText().ToString();
+	FString roomName = TEXT("RoomName");
 
+	/**/
 	if (roomName.TrimStartAndEnd().IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("방 이름을 안 적었어요!!"));
@@ -62,8 +64,14 @@ void ULobbyWidget::OnMyClicked_doCreateRoom()
 		}
 	}
 
-	// UNetGameInstance::CreateRoom 를 호출하고싶다.
-	GI->CreateRoom(roomName);
+	if (!GI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameInstance is null! Cannot create room"));
+		return;
+	}
+		// UNetGameInstance::CreateRoom 를 호출하고싶다.
+		GI->CreateRoom(roomName);
+	
 }
 
 void ULobbyWidget::OnMyGoMenu()
@@ -88,6 +96,7 @@ void ULobbyWidget::OnMyGoCreateRoom()
 			edit_NickName->SetText(FText::FromString(GI->NickName));
 		}
 		SwitchPanel(SWITCHER_INDEX_CREATEROOM);
+	
 	}
 }
 
