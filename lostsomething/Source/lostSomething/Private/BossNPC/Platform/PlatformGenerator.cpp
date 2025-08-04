@@ -89,14 +89,19 @@ TArray<TArray<bool>> APlatformGenerator::GenerateConnectedSpecialPath()
 void APlatformGenerator::OnSpecialTileStepped(int32 CurrentCol)
 {
     int32 NextCol = CurrentCol - 1;
+
+    if (NextCol < 0)
     {
-        SpawnTilesColumn(NextCol);
+        UE_LOG(LogTemp, Warning, TEXT("No more columns to spawn, CurrentCol=%d"), CurrentCol);
+        return;
     }
+
+    SpawnTilesColumn(NextCol);
 }
 
 void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
 {
-    if (SpecialMap.Num() == 0 || ColIndex >= SpecialMap[0].Num()) return;
+    if (SpecialMap.Num() == 0 || ColIndex < 0 || ColIndex >= SpecialMap[0].Num()) return;
     if (!BossNPC) return;
 
     int32 Rows = SpecialMap.Num();
