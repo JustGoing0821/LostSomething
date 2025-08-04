@@ -336,7 +336,7 @@ protected:
 	float NormalCombineDistance = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float MaxCombineDistance = 200.0f;
+	float MaxCombineDistance = 2000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Wheelchair")
 	float DistanceCheckInterval = 0.1f;
