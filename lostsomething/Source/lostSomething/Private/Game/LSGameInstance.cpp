@@ -69,6 +69,12 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.Set(TEXT("password_required"), FString("false"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+
+	if (!SessionInterface.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("SessionInterface is null"));
+		return;
+	}
 	SessionInterface->CreateSession(*NetID, FName("MySession"), Setting);
 }
 

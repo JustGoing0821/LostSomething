@@ -69,8 +69,8 @@ void ULobbyWidget::OnMyClicked_doCreateRoom()
 		UE_LOG(LogTemp, Error, TEXT("GameInstance is null! Cannot create room"));
 		return;
 	}
-		// UNetGameInstance::CreateRoom 를 호출하고싶다.
-		GI->CreateRoom(roomName);
+	// UNetGameInstance::CreateRoom 를 호출하고싶다.
+	GI->CreateRoom(roomName);
 	
 }
 
