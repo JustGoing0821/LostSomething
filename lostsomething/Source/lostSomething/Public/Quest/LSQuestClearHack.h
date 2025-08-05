@@ -30,6 +30,9 @@ public:
 protected:
 	void QuestClear();
 
+	UPROPERTY(EditAnywhere)
+	bool bIsStartClear;
+
 //RPC Section
 public:
 	UFUNCTION(Server, Unreliable)
