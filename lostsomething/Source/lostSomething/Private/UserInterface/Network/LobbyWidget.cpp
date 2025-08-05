@@ -42,7 +42,6 @@ void ULobbyWidget::SwitchPanel(int32 index)
 void ULobbyWidget::OnMyClicked_doCreateRoom()
 {
 	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
-	//FString roomName = edit_RoomName->GetText().ToString();
 	FString roomName = TEXT("RoomName");
 
 	/**/
