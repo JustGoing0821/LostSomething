@@ -65,39 +65,48 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.Set(TEXT("password_required"), FString("false"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	// NetID 가져오기 전 로그
-	if (!GetWorld())
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		UE_LOG(LogTemp, Error, TEXT("World is null!"));
+		UE_LOG(LogTemp, Error, TEXT("World is null! Cannot create room."));
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("World is valid."));
 
-	auto* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	// LocalPlayer 체크
+	ULocalPlayer* LocalPlayer = World->GetFirstLocalPlayerFromController();
 	if (!LocalPlayer)
 	{
-		UE_LOG(LogTemp, Error, TEXT("LocalPlayer is null!"));
+		UE_LOG(LogTemp, Error, TEXT("LocalPlayer is null! Cannot create room."));
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("LocalPlayer is valid."));
 
-	auto NetIdRepl = LocalPlayer->GetUniqueNetIdForPlatformUser();
+	// NetId 체크
+	FUniqueNetIdRepl NetIdRepl = LocalPlayer->GetUniqueNetIdForPlatformUser();
 	if (!NetIdRepl.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("NetID is invalid! Player might not be logged in."));
+		UE_LOG(LogTemp, Error, TEXT("NetID is invalid! Player probably not logged in."));
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("NetID is valid."));
+
+	FUniqueNetIdPtr NetID = NetIdRepl.GetUniqueNetId();
+	if (!NetID.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("NetID ptr is invalid!"));
+		return;
+	}
 
 	// 세션 인터페이스 체크
 	if (!SessionInterface.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("SessionInterface is null"));
+		UE_LOG(LogTemp, Error, TEXT("SessionInterface is null!"));
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("SessionInterface is valid. Creating session now..."));
 
 	// 세션 생성
-	SessionInterface->CreateSession(*NetIdRepl.GetUniqueNetId(), FName("MySession"), Setting);
+	UE_LOG(LogTemp, Warning, TEXT("All checks passed, creating session now..."));
+	SessionInterface->CreateSession(*NetID, FName("MySession"), Setting);
+
+	UE_LOG(LogTemp, Warning, TEXT("CreateRoom finished without crash."));
 }
 
 void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccessful)
