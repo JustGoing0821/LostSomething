@@ -37,7 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	UStaticMeshComponent* Weapon;
 	ALSPlayerSiJae();
-
+	void WeaponPickUp();
 	
 
 
@@ -47,5 +47,7 @@ protected:
 	virtual void Attack() override;
 	
 	void Tick(float DeltaTime);
+
+	
 
 };

@@ -82,11 +82,11 @@ public:
 
 	//ащ╠Б (Destroy)
 	
-	void PickUp();
+	virtual void PickUp();
 	
 	
 	UFUNCTION(Server, Reliable)
-	void ServerPickUp(AMasterItem* TargetItem);
+	virtual void ServerPickUp(AMasterItem* TargetItem);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiPickUp(AActor* TargetItem);
@@ -391,5 +391,6 @@ protected:
 	void AutoSeparateFromWheelchair();
 
 public:
+	
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

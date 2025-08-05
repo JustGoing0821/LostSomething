@@ -20,6 +20,7 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
@@ -1360,6 +1361,12 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
+	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	{
+		SiJae->WeaponPickUp();
+		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+	}
+
 	if (bIsDead) return;
 
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
