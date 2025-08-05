@@ -8,9 +8,9 @@ AWeapon::AWeapon()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+   /* WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMesh;
 
-    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);*/
     
 }
