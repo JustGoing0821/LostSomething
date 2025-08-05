@@ -6,6 +6,8 @@
 #include <EnhancedInputComponent.h>
 #include "Camera/CameraComponent.h"
 #include "MotionControllerComponent.h"
+#include "Components/CapsuleComponent.h"
+
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -13,23 +15,35 @@ AVRPlayer::AVRPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    // VROrigin 생성
+    // RootComponent는 ACharacter의 CapsuleComponent 사용
+    GetCapsuleComponent()->InitCapsuleSize(40.f, 88.f);
+
+    // VROrigin 생성 (HMD 기준점)
     VROrigin = CreateDefaultSubobject<USceneComponent>(TEXT("VROrigin"));
-    VROrigin->SetupAttachment(GetRootComponent());
+    VROrigin->SetupAttachment(GetCapsuleComponent());
 
     // 카메라
     VRCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("VRCamera"));
     VRCamera->SetupAttachment(VROrigin);
     VRCamera->bUsePawnControlRotation = false;
 
-    // Motion Controllers
+    // 왼손 MotionController (Grip + Tracking)
     LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
     LeftController->SetupAttachment(VROrigin);
     LeftController->SetTrackingSource(EControllerHand::Left);
 
+    // 왼손 SkeletalMesh (손 메시)
+    HandLeft = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandLeft"));
+    HandLeft->SetupAttachment(LeftController); // MotionController 바로 밑
+
+    // 오른손 MotionController (Grip + Tracking)
     RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
     RightController->SetupAttachment(VROrigin);
     RightController->SetTrackingSource(EControllerHand::Right);
+
+    // 오른손 SkeletalMesh (손 메시)
+    HandRight = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandRight"));
+    HandRight->SetupAttachment(RightController); // MotionController 바로 밑
 
 }
 
@@ -84,4 +98,20 @@ void AVRPlayer::Turn(const FInputActionValue& Value)
 {
     float AxisValue = Value.Get<float>();
     AddControllerYawInput(AxisValue * 2.0f);
+}
+
+void AVRPlayer::Grab_Left(const FInputActionValue& Value)
+{
+}
+
+void AVRPlayer::Grab_Right(const FInputActionValue& Value)
+{
+}
+
+void AVRPlayer::Toggle_Left(const FInputActionValue& Value)
+{
+}
+
+void AVRPlayer::Toggle_Right(const FInputActionValue& Value)
+{
 }
