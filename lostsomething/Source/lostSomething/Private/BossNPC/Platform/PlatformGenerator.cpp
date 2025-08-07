@@ -119,7 +119,7 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
             Origin +
             Forward * (ColIndex * TileSpacing + 300.f) +
             Right * (Row * TileSpacing - RowOffset) +  // ¿©±â¼­ ÁÂÃøÀ¸·Î ¶¯±è
-            FVector(0, 0, -140.f);
+            FVector(0, 0, -220.f);
 
         bool bIsSpecial = SpecialMap[Row][ColIndex];
         FRotator TileRotation = Forward.Rotation();
