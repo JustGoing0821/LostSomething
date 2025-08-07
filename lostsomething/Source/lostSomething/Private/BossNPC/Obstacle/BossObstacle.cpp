@@ -36,8 +36,8 @@ ABossObstacle::ABossObstacle()
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
-		ObstacleMesh->SetRelativeScale3D(FVector(0.01f));
-		ObstacleMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -70.0f)); // Z축으로 50만큼 올림
+		ObstacleMesh->SetRelativeScale3D(FVector(0.02f));
+		ObstacleMesh->SetRelativeLocation(FVector(35.0f, 0.0f, -128.0f)); // Z축으로 50만큼 올림
 		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 30.0f));
 	}
 
