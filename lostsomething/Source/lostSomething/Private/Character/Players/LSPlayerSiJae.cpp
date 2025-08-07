@@ -171,11 +171,19 @@ void ALSPlayerSiJae::WeaponPickUp()
     // ¹°¸® ²ô±â + Ãæµ¹ ²ô±â
     HitWeapon->SetActorEnableCollision(false);
 
+    if (UStaticMeshComponent* WeaponMesh = HitWeapon->FindComponentByClass<UStaticMeshComponent>())
+    {
+        WeaponMesh->SetSimulatePhysics(false);
+        WeaponMesh->SetEnableGravity(false);
+    }
+
+
+
     if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HitWeapon->GetRootComponent()))
     {
         RootComp->SetSimulatePhysics(false);
     }
-
+    
     UE_LOG(LogTemp, Log, TEXT("Weapon successfully picked up and attached."));
 }
 

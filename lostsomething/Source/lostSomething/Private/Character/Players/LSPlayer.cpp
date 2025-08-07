@@ -670,16 +670,6 @@ void ALSPlayer::Attack()
 		}
 	}
 
-	// 현재 선택된 슬롯에 아이템이 있는지 확인
-	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	//{
-	//	
-
-	//	/*if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-	//	{
-	//		
-	//	}*/
-	//}
 
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
@@ -711,6 +701,7 @@ void ALSPlayer::ProcessAttack()
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	MultiProcessAttack();
 
 	if (HitDetected)
 	{
@@ -731,13 +722,7 @@ void ALSPlayer::ProcessAttack()
 			DrawColor = FColor::Blue;
 		}
 
-		/*ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		if (HitNPC)
-		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
-		}*/
+		
 	}
 	else
 	{
@@ -761,7 +746,7 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
-	MultiProcessAttack();
+	
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()
@@ -781,50 +766,6 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 
 
 
-
-//
-//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
-//	// 현재 선택된 슬롯의 아이템을 드롭
-//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
-//	DropItemFromSlot();
-//	DrawColor = FColor::Red;
-//
-//	// 디버그 라인
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = PickupRange * 0.5f;
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//}
-
-
-//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectNextSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-//	}
-//}
-//
-//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectPreviousSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-//	}
-//}
 
 void ALSPlayer::Interreact()
 {
@@ -1366,6 +1307,7 @@ void ALSPlayer::PickUp()
 		SiJae->WeaponPickUp();
 		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
 	}
+
 
 	if (bIsDead) return;
 
