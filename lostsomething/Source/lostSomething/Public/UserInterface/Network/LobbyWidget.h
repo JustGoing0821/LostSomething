@@ -36,8 +36,6 @@ public:
 	class  UEditableText* edit_NickName;
 
 	//--------------------------------------------Create Room
-	//UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	//class UEditableText* edit_RoomName;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_DoCreateRoom;

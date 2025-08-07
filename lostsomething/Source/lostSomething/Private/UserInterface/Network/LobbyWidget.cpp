@@ -42,7 +42,6 @@ void ULobbyWidget::SwitchPanel(int32 index)
 void ULobbyWidget::OnMyClicked_doCreateRoom()
 {
 	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
-	//FString roomName = edit_RoomName->GetText().ToString();
 	FString roomName = TEXT("RoomName");
 
 	/**/
@@ -69,8 +68,8 @@ void ULobbyWidget::OnMyClicked_doCreateRoom()
 		UE_LOG(LogTemp, Error, TEXT("GameInstance is null! Cannot create room"));
 		return;
 	}
-		// UNetGameInstance::CreateRoom 를 호출하고싶다.
-		GI->CreateRoom(roomName);
+	// UNetGameInstance::CreateRoom 를 호출하고싶다.
+	GI->CreateRoom(roomName);
 	
 }
 
