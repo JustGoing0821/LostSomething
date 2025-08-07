@@ -24,15 +24,16 @@ ABossNPC::ABossNPC()
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // 예시: SceneComponent 생성
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
-        float YOffset = (i - 1) * 82.0f;
+        float YOffset = (i - 2) * 82.0f;
         SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -40.f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
+   
 
     CurrentHP = MaxHP;
 
@@ -423,7 +424,20 @@ void ABossNPC::SpawnObstacles()
 
 void ABossNPC::ServerSpawnObstacles_Implementation()
 {
-    TArray<int32> Indexes = { 0, 1, 2 };
+    int32 SpawnPointCount = ObstacleSpawnPoints.Num();
+
+    if (SpawnPointCount == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ObstacleSpawnPoints is empty!"));
+        return;
+    }
+
+    // 동적으로 인덱스 리스트 생성
+    TArray<int32> Indexes;
+    for (int32 i = 0; i < SpawnPointCount; ++i)
+    {
+        Indexes.Add(i);
+    }
 
     // 랜덤 셔플
     for (int32 i = 0; i < Indexes.Num(); ++i)
@@ -432,25 +446,27 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
         Indexes.Swap(i, RandIdx);
     }
 
-    // 1 또는 2개 선택
-    int32 NumToSpawn = FMath::RandBool() ? 1 : 2;
-    //UE_LOG(LogTemp, Warning, TEXT("Spawning %d obstacles"), NumToSpawn);
+    // 3 또는 4개 스폰하려 했지만, 그 수보다 SpawnPoint가 적으면 문제 발생
+    // 따라서 Clamp 필요
+    int32 NumToSpawn = FMath::Clamp(FMath::RandBool() ? 3 : 4, 1, SpawnPointCount);
 
     for (int32 i = 0; i < NumToSpawn; ++i)
     {
         USceneComponent* SpawnPoint = ObstacleSpawnPoints[Indexes[i]];
+        if (!SpawnPoint) continue;
+
         FVector SpawnLocation = SpawnPoint->GetComponentLocation();
         FRotator SpawnRotation = GetActorRotation();
 
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        ABossObstacle* SpawnedObstacle = GetWorld()->SpawnActor<ABossObstacle>(
+        GetWorld()->SpawnActor<ABossObstacle>(
             ABossObstacle::StaticClass(),
             SpawnLocation,
             SpawnRotation,
             Params
-        );      
+        );
     }
 }
 
