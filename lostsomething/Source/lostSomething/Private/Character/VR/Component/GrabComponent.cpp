@@ -23,8 +23,19 @@ void UGrabComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+    /*&*/
 
+    SetShouldSimulateOnDrop();
+
+    USceneComponent* ParentComp = GetAttachParent();
+    if (ParentComp)
+    {
+        UPrimitiveComponent* PrimitiveParent = Cast<UPrimitiveComponent>(ParentComp);
+        if (PrimitiveParent)
+        {
+            PrimitiveParent->SetCollisionProfileName(FName("PhysicsActor"));
+        }
+    }
 }
 
 bool UGrabComponent::TryGrab(UMotionControllerComponent* MotionController)
