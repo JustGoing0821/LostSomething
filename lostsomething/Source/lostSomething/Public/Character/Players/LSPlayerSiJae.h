@@ -58,6 +58,10 @@ protected:
 	
 	void Tick(float DeltaTime);
 
-	
+	UFUNCTION()
+	void AnimNotify_AttackHitChek();
+
+	/*UFUNCTION()
+	void AnimNotify_PickChek();*/
 
 };

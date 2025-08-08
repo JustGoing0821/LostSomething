@@ -20,6 +20,10 @@ public:
 	void SetPickUpAnim();
 	void SetAttackAnim();
 
+	UFUNCTION()
+	void AnimNotify_PickCheck();
+
+
 protected:
 	//딱 한번 호출. 초기화.
 	virtual void NativeInitializeAnimation() override;

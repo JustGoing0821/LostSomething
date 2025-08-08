@@ -73,6 +73,12 @@ void ULSPlayerSiJaeAnimInstance::SetAttackAnim()
 	}
 }
 
+void ULSPlayerSiJaeAnimInstance::AnimNotify_PickCheck()
+{
+	if (ALSPlayer* Player = Cast<ALSPlayer>(TryGetPawnOwner()))
+	Player->PickUp();
+}
+
 void ULSPlayerSiJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);

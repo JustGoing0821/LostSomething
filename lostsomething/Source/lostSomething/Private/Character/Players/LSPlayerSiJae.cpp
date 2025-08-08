@@ -126,6 +126,16 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
     
 }
 
+void ALSPlayerSiJae::AnimNotify_AttackHitChek()
+{
+    UE_LOG(LogTemp, Log, TEXT("Animation_AttackHit"));
+}
+
+//
+//void ALSPlayerSiJae::AnimNotify_PickChek()
+//{
+//    UE_LOG(LogTemp, Log, TEXT("Animation_PickCheck"));
+//}
 
 
 
