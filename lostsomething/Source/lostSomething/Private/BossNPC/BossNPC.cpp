@@ -279,6 +279,21 @@ void ABossNPC::DieMontagePlay()
     ServerDieMontagePlay();
 }
 
+void ABossNPC::Despawn()
+{
+    ServerDespawn();
+}
+
+void ABossNPC::ServerDespawn_Implementation()
+{
+    MultiDespawn();
+}
+
+void ABossNPC::MultiDespawn_Implementation()
+{
+    SetLifeSpan(3.0f);
+}
+
 void ABossNPC::ServerDieMontagePlay_Implementation()
 {
     MultiDieMontagePlay();
@@ -288,12 +303,12 @@ void ABossNPC::MultiDieMontagePlay_Implementation()
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
-    if (!NPCAnimInstance || !NPCAnimInstance->NextMotionMontage) return;
+    if (!NPCAnimInstance || !NPCAnimInstance->DeathMontage) return;
 
     // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
-    if (NPCAnimInstance->NextMotionMontage)
+    if (NPCAnimInstance->DeathMontage)
     {
-        NPCAnimInstance->MontagePlay(NPCAnimInstance->NextMotionMontage);
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->DeathMontage);
     }
 }
 

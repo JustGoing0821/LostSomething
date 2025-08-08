@@ -62,6 +62,12 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     UFUNCTION(NetMulticast, Reliable)
     void MultiDieMontagePlay();
 
+    void Despawn();
+    UFUNCTION(Server, Reliable)
+    void ServerDespawn();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDespawn();
+
     FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
