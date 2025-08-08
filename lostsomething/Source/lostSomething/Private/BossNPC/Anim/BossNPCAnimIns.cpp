@@ -55,6 +55,7 @@ void UBossNPCAnimIns::AnimNotify_DeathMoment()
 {
     auto Pawn = TryGetPawnOwner();
     ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+    NPCCharacter->Despawn();
 }
 
 float UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
