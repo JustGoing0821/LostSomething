@@ -82,6 +82,10 @@ public:
 
 	//줍기 (Destroy)
 	
+	//줍기 내부
+	void PickUpCore();
+	
+	//줍기 애니메이션
 	virtual void PickUp();
 	
 	

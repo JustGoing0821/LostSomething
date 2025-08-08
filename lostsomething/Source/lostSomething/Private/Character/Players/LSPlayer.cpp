@@ -1297,11 +1297,25 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
-
-
-//아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
+
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetPickUpAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
+
+}
+
+
+
+void ALSPlayer::PickUpCore()
+{
+
+
+
 	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
 	{
 		SiJae->WeaponPickUp();
@@ -1327,7 +1341,7 @@ void ALSPlayer::PickUp()
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
 	//슬롯이 차있다면
-	
+
 
 	//아이템 hit 시
 
@@ -1356,7 +1370,7 @@ void ALSPlayer::PickUp()
 			}
 		}
 
-		
+
 		if (!HitItem)
 		{
 			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
@@ -1365,7 +1379,7 @@ void ALSPlayer::PickUp()
 
 		//수정
 		// 아이템 픽업
-		
+
 
 		if (HasAuthority())
 		{
@@ -1377,11 +1391,9 @@ void ALSPlayer::PickUp()
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
 			ServerPickUp(HitItem);
-			
+
 		}
 
-		// 아이템 제거
-		//HitItem->Destroy();
 
 		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
 		DrawColor = FColor::Green;
@@ -1404,7 +1416,7 @@ void ALSPlayer::PickUp()
 
 		DrawColor = FColor::Yellow;
 	}
-	
+
 }
 
 
@@ -1417,12 +1429,6 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 	TargetItem->Destroy();
 	MultiPickUp(TargetItem);
 	ClientPickUp(ItemData);
-
-	
-	//PickItemInSlot(TargetItem->GetItemInfo());
-	//TargetItem->Destroy();
-	//ClientPickUp(TargetItem);
-	
 	
 }
 

@@ -2,6 +2,7 @@
 
 #include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
 #include "GameFramework/Character.h"
+#include "Character/Players/LSPlayer.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -77,6 +78,7 @@ void ULSPlayerSiJaeAnimInstance::AnimNotify_PickCheck()
 {
 	if (ALSPlayer* Player = Cast<ALSPlayer>(TryGetPawnOwner()))
 	Player->PickUp();
+	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_PickCheck fired"));
 }
 
 void ULSPlayerSiJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
