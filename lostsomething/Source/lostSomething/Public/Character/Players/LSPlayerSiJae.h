@@ -38,6 +38,16 @@ public:
 	UStaticMeshComponent* Weapon;
 	ALSPlayerSiJae();
 	void WeaponPickUp();
+
+
+	UFUNCTION(Server, Reliable)
+	virtual void ServerWeaponPickUp();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiWeaponPickUp();
+
+	UFUNCTION(Client, Reliable)
+	void ClientWeaponPickUp();
 	
 
 

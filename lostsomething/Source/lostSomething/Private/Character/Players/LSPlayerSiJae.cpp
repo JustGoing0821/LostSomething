@@ -160,13 +160,10 @@ void ALSPlayerSiJae::WeaponPickUp()
     }
 
     // 손에 붙이기
-    HitWeapon->AttachToComponent(
-        GetMesh(),
-        FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-        TEXT("WeaponSocket")
+    HitWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket")
     );
 
-    HitWeapon->SetOwner(this);
+    //HitWeapon->SetOwner(this);
 
     // 물리 끄기 + 충돌 끄기
     HitWeapon->SetActorEnableCollision(false);
@@ -183,8 +180,25 @@ void ALSPlayerSiJae::WeaponPickUp()
     {
         RootComp->SetSimulatePhysics(false);
     }
-    
+
     UE_LOG(LogTemp, Log, TEXT("Weapon successfully picked up and attached."));
+    
+
+   
+}
+
+void ALSPlayerSiJae::ServerWeaponPickUp_Implementation()
+{
+   
+}
+
+void ALSPlayerSiJae::MultiWeaponPickUp_Implementation()
+{
+    
+}
+
+void ALSPlayerSiJae::ClientWeaponPickUp_Implementation()
+{
 }
 
 
