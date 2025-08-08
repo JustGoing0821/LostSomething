@@ -12,30 +12,44 @@
 
 ALTGameMode::ALTGameMode()
 {
-	// Player Character Class Initialize
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Level/TestPlayer/BP_LTPlayer.BP_LTPlayer_C"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}
+	//// Player Character Class Initialize
+	//static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Level/TestPlayer/BP_LTPlayer.BP_LTPlayer_C"));
+	//if (PlayerPawnBPClass.Class != NULL)
+	//{
+	//	DefaultPawnClass = PlayerPawnBPClass.Class;
+	//}
 
-	static ConstructorHelpers::FClassFinder<APawn> IJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerIJae.BP_LTPlayerIJae_C"));
-	if (IJaePawnClassRef.Class != NULL)
-	{
-		IJaePawnClass = IJaePawnClassRef.Class;
-	}
+	//static ConstructorHelpers::FClassFinder<APawn> IJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerIJae.BP_LTPlayerIJae_C"));
+	//if (IJaePawnClassRef.Class != NULL)
+	//{
+	//	IJaePawnClass = IJaePawnClassRef.Class;
+	//}
 
-	static ConstructorHelpers::FClassFinder<APawn> SiJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerSiJae.BP_LTPlayerSiJae_C"));
-	if (SiJaePawnClassRef.Class != NULL)
-	{
-		SiJaePawnClass = SiJaePawnClassRef.Class;
-	}
+	//static ConstructorHelpers::FClassFinder<APawn> SiJaePawnClassRef(TEXT("/Game/Level/TestPlayer/BP_LTPlayerSiJae.BP_LTPlayerSiJae_C"));
+	//if (SiJaePawnClassRef.Class != NULL)
+	//{
+	//	SiJaePawnClass = SiJaePawnClassRef.Class;
+	//}
 
-	//Quest System
-	QuestManager = CreateDefaultSubobject<ALSQuestManager>(TEXT("Quest"));
+	////Quest System
+	//QuestManager = CreateDefaultSubobject<ALSQuestManager>(TEXT("Quest"));
+
+	////Player Controller Class
+	//static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/lostSomething.LTPlayerController"));
+	//if (PlayerControllerClassRef.Class)
+	//{
+	//	PlayerControllerClass = PlayerControllerClassRef.Class;
+	//}
+	//else
+	//{
+	//	LS_LOG(LogLS, Error, TEXT("PlayerControllerClassRef Not Found"));
+	//}
+
+	//bIsSiJaeServer = true;
+	//CurrentPlayerCount = 0;
 
 	//Player Controller Class
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/lostSomething.LTPlayerController"));
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/lostSomething.LSCharacterChoiceController"));
 	if (PlayerControllerClassRef.Class)
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
@@ -44,10 +58,6 @@ ALTGameMode::ALTGameMode()
 	{
 		LS_LOG(LogLS, Error, TEXT("PlayerControllerClassRef Not Found"));
 	}
-
-	bIsSiJaeServer = true;
-	CurrentPlayerCount = 0;
-
 }
 
 void ALTGameMode::BeginPlay()
