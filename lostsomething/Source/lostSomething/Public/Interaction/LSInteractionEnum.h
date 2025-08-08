@@ -15,5 +15,8 @@ enum class ELSInteractionEnum : uint8
 	Quest6,
 	Quest7,
 	Quest8,
-	Quest9
+	Quest9,
+	Quest10,
+	Quest11,
+	Quest12
 };

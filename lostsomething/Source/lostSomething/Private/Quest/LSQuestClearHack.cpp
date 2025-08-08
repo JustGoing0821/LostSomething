@@ -48,6 +48,16 @@ void ALSQuestClearHack::BeginPlay()
 			}
 		), 1.0f, false, 2.0f);
 	}
+
+	if (bIsStartClear)
+	{
+		FTimerHandle Handle2;
+		GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
+			{
+				QuestClear();
+			}
+		), 3.0f, false);
+	}
 }
 
 void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController)
