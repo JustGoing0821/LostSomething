@@ -26,6 +26,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UImage> ImgCursor;
 
+	UPROPERTY()
+	TObjectPtr<class ULS2DDragPuzzleWidget> DragPuzzleWidget;
+
 // Cursor Section
 public:
 	//FORCEINLINE void SetCursorPosition(float InCursorX, float InCursorY) { SiJaeCursorX = InCursorX; SiJaeCursorY = InCursorY; }
@@ -35,4 +38,15 @@ protected:
 	float SiJaeCursorX;
 
 	float SiJaeCursorY;
+
+
+// Drag Puzzle Section
+protected:
+	uint8 bIsDragPuzzlePressed : 1;
+
+	UFUNCTION()
+	void OnDragPuzzlePressed();
+
+	UFUNCTION()
+	void OnDragPuzzleReleased();
 };

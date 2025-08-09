@@ -16,7 +16,7 @@ ALS2DPuzzleController::ALS2DPuzzleController()
 	bReplicates = true;
 	NetUpdateFrequency = 60.0f;
 
-	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
+	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/Blueprints/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
 	if (LS2DPuzzleHUDRef.Class)
 	{
 		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
