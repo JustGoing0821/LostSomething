@@ -29,8 +29,7 @@ void ALS2DPuzzleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALS2DPuzzleController, SiJaeCursorX);
-	DOREPLIFETIME(ALS2DPuzzleController, SiJaeCursorY);
+	DOREPLIFETIME(ALS2DPuzzleController, SiJaeCursorPos);
 	DOREPLIFETIME(ALS2DPuzzleController, CharacterChoice);
 }
 
@@ -82,21 +81,18 @@ void ALS2DPuzzleController::Tick(float DeltaTime)
 			SijaeCursorPosData = GameModeCursor->GetSijaeCursorPos();
 		}
 
-		SiJaeCursorX = SijaeCursorPosData.SiJaeCursorX;
-		SiJaeCursorY = SijaeCursorPosData.SiJaeCursorY;
+		SiJaeCursorPos = FVector2D(SijaeCursorPosData.SiJaeCursorX, SijaeCursorPosData.SiJaeCursorY);
 	}
 
 	if (IsLocalPlayerController())
 	{
-
-
 		if (LS2DPuzzleHUDWidget)
 		{
-			LS2DPuzzleHUDWidget->SetCursorPosition(SiJaeCursorX, SiJaeCursorY);
+			LS2DPuzzleHUDWidget->SetCursorPosition(SiJaeCursorPos);
 		}
 		else
 		{
-			LS_LOG(LogLS, Error, TEXT("No LS2DPuzzleHUDWidget"));
+			//LS_LOG(LogLS, Error, TEXT("No LS2DPuzzleHUDWidget"));
 		}
 	}
 }

@@ -6,8 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "LS2DDragPuzzleWidget.generated.h"
 
-DECLARE_DELEGATE(FOnPuzzlePressedDelegate);
-DECLARE_DELEGATE(FOnPuzzleReleasedDelegate);
+DECLARE_DELEGATE(FOnDraggingStartDelegate);
+DECLARE_DELEGATE(FOnDraggingEndDelegate);
 
 /**
  * 
@@ -20,12 +20,14 @@ class LOSTSOMETHING_API ULS2DDragPuzzleWidget : public UUserWidget
 public:
 	ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer);
 
-	FOnPuzzlePressedDelegate OnPuzzlePressed;
-	FOnPuzzleReleasedDelegate OnPuzzleReleased;
+	FOnDraggingStartDelegate OnDraggingStart;
+	FOnDraggingEndDelegate OnDraggingEnd;
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
 	void SetBallLocation(FVector2D InCursorPos);
@@ -35,11 +37,9 @@ protected:
 	TObjectPtr<class UImage> ImgGoal1;
 
 	UPROPERTY()
-	TObjectPtr<class UButton> BtnBall1;
+	TObjectPtr<class UImage> ImgPiece1;
 
-	UFUNCTION()
-	void OnImagePressed();
+	bool bIsDragging;
 
-	UFUNCTION()
-	void OnImageReleased();
+	bool IsMouseOverImage(UImage* TargetImage, const FPointerEvent& MouseEvent);
 };

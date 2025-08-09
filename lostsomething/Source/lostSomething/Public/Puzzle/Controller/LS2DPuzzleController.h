@@ -51,10 +51,7 @@ protected:
 	void SetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos);
 
 	UPROPERTY(Replicated)
-	float SiJaeCursorX;
-
-	UPROPERTY(Replicated)
-	float SiJaeCursorY;
+	FVector2D SiJaeCursorPos;
 
 // RPC
 public:

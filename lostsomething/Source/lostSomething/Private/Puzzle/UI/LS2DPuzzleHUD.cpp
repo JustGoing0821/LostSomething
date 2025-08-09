@@ -9,9 +9,8 @@
 
 ULS2DPuzzleHUD::ULS2DPuzzleHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	SiJaeCursorX = 0.f;
-	SiJaeCursorY = 0.f;
-	bIsDragPuzzlePressed = false;
+	SiJaeCursorPos = FVector2D(0.f, 0.f);
+	bIsDragPuzzleDragging = false;
 }
 
 void ULS2DPuzzleHUD::NativeConstruct()
@@ -26,8 +25,8 @@ void ULS2DPuzzleHUD::NativeConstruct()
 
 	if (DragPuzzleWidget)
 	{
-		DragPuzzleWidget->OnPuzzlePressed.BindUObject(this, &ULS2DPuzzleHUD::OnDragPuzzlePressed);
-		DragPuzzleWidget->OnPuzzleReleased.BindUObject(this, &ULS2DPuzzleHUD::OnDragPuzzleReleased);
+		DragPuzzleWidget->OnDraggingStart.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingStart);
+		DragPuzzleWidget->OnDraggingEnd.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingEnd);
 	}
 }
 
@@ -37,30 +36,31 @@ void ULS2DPuzzleHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	// ½ºÅ©¸° ÁÂÇ¥¸¦ À§Á¬ ·ÎÄÃ ÁÂÇ¥·Î º¯È¯
 	FVector2D ViewportPosition;
-	USlateBlueprintLibrary::ScreenToViewport(GetOwningPlayer(), FVector2D(SiJaeCursorX, SiJaeCursorY), ViewportPosition);
+	USlateBlueprintLibrary::ScreenToViewport(GetOwningPlayer(), SiJaeCursorPos, ViewportPosition);
 
 	//LS_WDGLOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorX, SiJaeCursorY);
 	ImgCursor->SetRenderTranslation(ViewportPosition);
 
-	if (bIsDragPuzzlePressed)
+	if (bIsDragPuzzleDragging)
 	{
-		DragPuzzleWidget->SetBallLocation(FVector2D(SiJaeCursorX, SiJaeCursorY));
+		DragPuzzleWidget->SetBallLocation(SiJaeCursorPos);
 	}
 }
 
-void ULS2DPuzzleHUD::SetCursorPosition(float InCursorX, float InCursorY)
+void ULS2DPuzzleHUD::SetCursorPosition(FVector2D InCursorPos)
 {
-	SiJaeCursorX = InCursorX;
-	SiJaeCursorY = InCursorY;
+	SiJaeCursorPos = InCursorPos;
 	//LS_WDGLOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorX, SiJaeCursorY);
 }
 
-void ULS2DPuzzleHUD::OnDragPuzzlePressed()
+void ULS2DPuzzleHUD::OnDraggingStart()
 {
-	bIsDragPuzzlePressed = true;
+	LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	bIsDragPuzzleDragging = true;
 }
 
-void ULS2DPuzzleHUD::OnDragPuzzleReleased()
+void ULS2DPuzzleHUD::OnDraggingEnd()
 {
-	bIsDragPuzzlePressed = false;
+	LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	bIsDragPuzzleDragging = false;
 }

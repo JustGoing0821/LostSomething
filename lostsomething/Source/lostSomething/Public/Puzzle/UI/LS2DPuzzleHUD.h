@@ -32,21 +32,18 @@ protected:
 // Cursor Section
 public:
 	//FORCEINLINE void SetCursorPosition(float InCursorX, float InCursorY) { SiJaeCursorX = InCursorX; SiJaeCursorY = InCursorY; }
-	void SetCursorPosition(float InCursorX, float InCursorY);
+	void SetCursorPosition(FVector2D InCursorPos);
 
 protected:
-	float SiJaeCursorX;
-
-	float SiJaeCursorY;
-
+	FVector2D SiJaeCursorPos;
 
 // Drag Puzzle Section
 protected:
-	uint8 bIsDragPuzzlePressed : 1;
+	uint8 bIsDragPuzzleDragging : 1;
 
 	UFUNCTION()
-	void OnDragPuzzlePressed();
+	void OnDraggingStart();
 
 	UFUNCTION()
-	void OnDragPuzzleReleased();
+	void OnDraggingEnd();
 };
