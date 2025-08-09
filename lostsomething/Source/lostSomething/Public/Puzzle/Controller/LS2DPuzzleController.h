@@ -25,13 +25,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(Replicated)
-	float SijaeMousePosX;
 
-	UPROPERTY(Replicated)
-	float SijaeMousePosY;
-
-//CharacterChoice Section
+// CharacterChoice Section
 public:
 	FORCEINLINE virtual ELSCharacterChoice GetCharacterChoice() override { return CharacterChoice; }
 	FORCEINLINE virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override { CharacterChoice = InCharacterChoice; }
@@ -41,8 +36,28 @@ protected:
 	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
 
 
-//RPC
+// Widget Section
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class ULS2DPuzzleHUD> LS2DPuzzleHUDClass;
+
+	UPROPERTY()
+	TObjectPtr<class ULS2DPuzzleHUD> LS2DPuzzleHUDWidget;
+
+
+// SiJaeCursor Section
+protected:
+	void GetSiJaeLocalCursor();
+	void SetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos);
+
+	UPROPERTY(Replicated)
+	float SiJaeCursorX;
+
+	UPROPERTY(Replicated)
+	float SiJaeCursorY;
+
+// RPC
 public:
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCSetMousePosition(float InMouseX, float InMouseY);
+	void ServerRPCSetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos);
 };
