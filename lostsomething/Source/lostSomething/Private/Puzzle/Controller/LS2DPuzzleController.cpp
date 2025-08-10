@@ -98,16 +98,6 @@ void ALS2DPuzzleController::Tick(float DeltaTime)
 	}
 }
 
-void ALS2DPuzzleController::SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos)
-{
-	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
-	ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
-	if (GameModeCursor)
-	{
-		GameModeCursor->SetSiJaeCursorPos(InSiJaeCursorPos);
-	}
-}
-
 void ALS2DPuzzleController::GetSiJaeLocalCursor()
 {
 	FVector2D CurPos;
@@ -128,8 +118,62 @@ void ALS2DPuzzleController::GetSiJaeLocalCursor()
 	}
 }
 
+void ALS2DPuzzleController::SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos)
+{
+	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+	ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
+	if (GameModeCursor)
+	{
+		GameModeCursor->SetSiJaeCursorPos(InSiJaeCursorPos);
+	}
+}
+
+void ALS2DPuzzleController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	if (HasAuthority())
+	{
+		SendOnChangeSiJaeDragState(InIsSiJaeDragging);
+	}
+	else
+	{
+		ServerRPCSendOnChangeSiJaeDragState(InIsSiJaeDragging);
+	}
+}
+
+void ALS2DPuzzleController::SendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	if (HasAuthority())
+	{
+		AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+		ILSSiJaeCursorDragInterface* GameModeCursor = Cast<ILSSiJaeCursorDragInterface>(GameMode);
+		if (GameModeCursor)
+		{
+			GameModeCursor->OnChangeSiJaeDragState(InIsSiJaeDragging);
+		}
+	}
+}
+
+void ALS2DPuzzleController::CalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	LS2DPuzzleHUDWidget->SetbIsSiJaeDragging(InIsSiJaeDragging);
+}
+
 void ALS2DPuzzleController::ServerRPCSetGameModeSiJaeCursor_Implementation(const FVector2D& InSiJaeCursorPos)
 {
 	SetGameModeSiJaeCursor(InSiJaeCursorPos);
 }
+
+void ALS2DPuzzleController::ServerRPCSendOnChangeSiJaeDragState_Implementation(uint8 InIsSiJaeDragging)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	SendOnChangeSiJaeDragState(InIsSiJaeDragging);
+}
+
+void ALS2DPuzzleController::ClientRPCCalledOnChangeSiJaeDragState_Implementation(uint8 InIsSiJaeDragging)
+{
+	CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+}
+
 

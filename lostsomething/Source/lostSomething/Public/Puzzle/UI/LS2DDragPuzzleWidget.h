@@ -6,9 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "LS2DDragPuzzleWidget.generated.h"
 
-DECLARE_DELEGATE(FOnDraggingStartDelegate);
-DECLARE_DELEGATE(FOnDraggingEndDelegate);
-
 /**
  * 
  */
@@ -19,9 +16,6 @@ class LOSTSOMETHING_API ULS2DDragPuzzleWidget : public UUserWidget
 	
 public:
 	ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer);
-
-	FOnDraggingStartDelegate OnDraggingStart;
-	FOnDraggingEndDelegate OnDraggingEnd;
 
 protected:
 	virtual void NativeConstruct() override;

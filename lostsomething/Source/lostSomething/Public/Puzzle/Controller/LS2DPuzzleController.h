@@ -6,13 +6,14 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSSiJaeCursorDragInterface.h"
 #include "LS2DPuzzleController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALS2DPuzzleController : public APlayerController, public ILSCharacterChoiceInterface
+class LOSTSOMETHING_API ALS2DPuzzleController : public APlayerController, public ILSCharacterChoiceInterface, public ILSSiJaeCursorDragInterface
 {
 	GENERATED_BODY()
 	
@@ -46,9 +47,14 @@ protected:
 
 
 // SiJaeCursor Section
+public:
+	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
+	void CalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
 protected:
 	void GetSiJaeLocalCursor();
 	void SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
+	void SendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 
 	UPROPERTY(Replicated)
 	FVector2D SiJaeCursorPos;
@@ -57,4 +63,10 @@ protected:
 public:
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCSetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCSendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 };

@@ -19,6 +19,7 @@ ALT2DPuzzleTestGameMode::ALT2DPuzzleTestGameMode()
 	}
 
 	bIsSiJaeServer = true;
+	bIsSiJaeDragging = false;
 }
 
 APlayerController* ALT2DPuzzleTestGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -74,4 +75,25 @@ APlayerController* ALT2DPuzzleTestGameMode::Login(UPlayer* NewPlayer, ENetRole I
 
 
 	return ResultController;
+}
+
+void ALT2DPuzzleTestGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+
+	bIsSiJaeDragging = InIsSiJaeDragging;
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALS2DPuzzleController* PC = Cast<ALS2DPuzzleController>(Iterator->Get()))
+		{
+			if (PC->IsLocalController())
+			{
+				PC->CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+			else
+			{
+				PC->ClientRPCCalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+		}
+	}
 }

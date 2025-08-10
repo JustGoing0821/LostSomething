@@ -12,7 +12,7 @@
 ULS2DPuzzleHUD::ULS2DPuzzleHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	SiJaeCursorPos = FVector2D(0.f, 0.f);
-	bIsDragPuzzleDragging = false;
+	bIsSiJaeDragging = false;
 }
 
 void ULS2DPuzzleHUD::NativeConstruct()
@@ -27,8 +27,8 @@ void ULS2DPuzzleHUD::NativeConstruct()
 
 	if (DragPuzzleWidget)
 	{
-		DragPuzzleWidget->OnDraggingStart.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingStart);
-		DragPuzzleWidget->OnDraggingEnd.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingEnd);
+		//DragPuzzleWidget->OnDraggingStart.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingStart);
+		//DragPuzzleWidget->OnDraggingEnd.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingEnd);
 	}
 }
 
@@ -51,7 +51,7 @@ void ULS2DPuzzleHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		//LS_WDGLOG(LogLS, Log, TEXT("Begin. PixelPosition : %f, %f"), PixelPosition.X, PixelPosition.Y);
 	}
 
-	if (bIsDragPuzzleDragging)
+	if (bIsSiJaeDragging)
 	{
 		//LS_WDGLOG(LogLS, Log, TEXT("Begin. SiJaeCursorPos : %f, %f"), SiJaeCursorPos.X, SiJaeCursorPos.Y);
 		DragPuzzleWidget->SetPieceLocation(SiJaeCursorPos);
@@ -62,16 +62,4 @@ void ULS2DPuzzleHUD::SetCursorPosition(FVector2D InCursorPos)
 {
 	SiJaeCursorPos = InCursorPos;
 	//LS_WDGLOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorX, SiJaeCursorY);
-}
-
-void ULS2DPuzzleHUD::OnDraggingStart()
-{
-	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	bIsDragPuzzleDragging = true;
-}
-
-void ULS2DPuzzleHUD::OnDraggingEnd()
-{
-	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	bIsDragPuzzleDragging = false;
 }

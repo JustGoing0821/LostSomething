@@ -34,16 +34,9 @@ public:
 	//FORCEINLINE void SetCursorPosition(float InCursorX, float InCursorY) { SiJaeCursorX = InCursorX; SiJaeCursorY = InCursorY; }
 	void SetCursorPosition(FVector2D InCursorPos);
 
+	FORCEINLINE void SetbIsSiJaeDragging(uint8 InIsSiJaeDragging) { bIsSiJaeDragging = InIsSiJaeDragging; }
+
 protected:
 	FVector2D SiJaeCursorPos;
-
-// Drag Puzzle Section
-protected:
-	uint8 bIsDragPuzzleDragging : 1;
-
-	UFUNCTION()
-	void OnDraggingStart();
-
-	UFUNCTION()
-	void OnDraggingEnd();
+	uint8 bIsSiJaeDragging : 1;
 };

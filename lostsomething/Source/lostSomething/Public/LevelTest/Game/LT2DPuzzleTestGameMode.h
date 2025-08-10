@@ -5,13 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSSijaeCursorPosInterface.h"
+#include "Interface/LSSiJaeCursorDragInterface.h"
 #include "LT2DPuzzleTestGameMode.generated.h"
+
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALT2DPuzzleTestGameMode : public AGameModeBase, public ILSSijaeCursorPosInterface
+class LOSTSOMETHING_API ALT2DPuzzleTestGameMode : public AGameModeBase, public ILSSijaeCursorPosInterface, public ILSSiJaeCursorDragInterface
 {
 	GENERATED_BODY()
 	
@@ -28,7 +30,9 @@ protected:
 public:
 	FORCEINLINE virtual const FVector2D& GetSiJaeCursorPos() override { return SiJaeCursorPos; }
 	FORCEINLINE virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) override { SiJaeCursorPos = InSiJaeCursorPos; }
+	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
 
 protected:
 	FVector2D SiJaeCursorPos;
+	uint8 bIsSiJaeDragging : 1;
 };

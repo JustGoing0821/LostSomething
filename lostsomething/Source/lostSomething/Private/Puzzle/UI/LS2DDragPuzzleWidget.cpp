@@ -8,6 +8,8 @@
 #include "Components/Image.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
+#include "Interface/LSSiJaeCursorDragInterface.h"
+
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -53,7 +55,11 @@ FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonDown(const FGeometry& InGeometr
 	if (IsMouseOverImage(ImgPiece1, InMouseEvent))
 	{
 		bIsDragging = true;
-		OnDraggingStart.ExecuteIfBound();
+		ILSSiJaeCursorDragInterface* PC = Cast<ILSSiJaeCursorDragInterface>(GetOwningPlayer());
+		if (PC)
+		{
+			PC->OnChangeSiJaeDragState(true);
+		}
 	}
 	else
 	{
@@ -69,7 +75,11 @@ FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry,
 	if (bIsDragging)
 	{
 		bIsDragging = false;
-		OnDraggingEnd.ExecuteIfBound();
+		ILSSiJaeCursorDragInterface* PC = Cast<ILSSiJaeCursorDragInterface>(GetOwningPlayer());
+		if (PC)
+		{
+			PC->OnChangeSiJaeDragState(false);
+		}
 	}
 
 	return FReply::Handled();

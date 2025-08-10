@@ -4,13 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "LSSijaeCursorPosInterface.generated.h"
-
-
+#include "LSSiJaeCursorDragInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class ULSSijaeCursorPosInterface : public UInterface
+class ULSSiJaeCursorDragInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,12 +16,11 @@ class ULSSijaeCursorPosInterface : public UInterface
 /**
  * 
  */
-class LOSTSOMETHING_API ILSSijaeCursorPosInterface
+class LOSTSOMETHING_API ILSSiJaeCursorDragInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual const FVector2D& GetSiJaeCursorPos() = 0;
-	virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) = 0;
+	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) = 0;
 };
