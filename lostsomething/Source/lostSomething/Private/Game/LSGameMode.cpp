@@ -3,12 +3,15 @@
 
 #include "Game/LSGameMode.h"
 #include "lostSomething.h"
+#include "Kismet/GameplayStatics.h"
 #include "Quest/LSQuestManager.h"
 #include "Character/Players/LSPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 #include "UserInterface/LSQuestWidget.h"
 #include "Game/LSGameInstance.h"
+#include "Level/LSMapVersionControll.h"
 
 ALSGameMode::ALSGameMode()
 {
@@ -47,6 +50,10 @@ ALSGameMode::ALSGameMode()
 
 	bIsSiJaeServer = true;
 	CurrentPlayerCount = 0;
+
+	MapVersions.Add("LSStage1Map1", 0);
+	MapVersions.Add("LSStage1Map2", 0);
+	MapVersions.Add("LSStage1Map3", 0);
 }
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -142,6 +149,14 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 void ALSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			CheckMapVersion();
+		}
+	), 3.0, false);
 }
 
 void ALSGameMode::QuestStart()
@@ -237,5 +252,53 @@ void ALSGameMode::TestLoginProcess(APlayerController* ResultController)
 		//Quest Widget Update Bind
 		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
 		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
+	}
+}
+
+void ALSGameMode::BroadcastScript(const FString& InScript)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), FoundActors);
+
+	for (AActor* Actor : FoundActors)
+	{
+		APlayerController* PC = Cast<APlayerController>(Actor);
+		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(PC);
+		if (ScriptWidget)
+		{
+			LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+			ScriptWidget->UpdateScriptWidget(InScript);
+		}
+	}
+}
+
+void ALSGameMode::CheckMapVersion()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld());
+	if (MapVersions.Contains(MapName))
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSMapVersionControll::StaticClass(), FoundActors);
+
+		if (FoundActors.Num() == 0)
+		{
+			BroadcastScript("No Map Version Controller. Update Map From GoogleDrive.");
+		}
+		else
+		{
+			for (AActor* Actor : FoundActors)
+			{
+				if (ALSMapVersionControll* MapVersion = Cast<ALSMapVersionControll>(Actor))
+				{
+					int32 CurrentMapVersion = MapVersion->GetCurrentMapVersion();
+					if (CurrentMapVersion != MapVersions[MapName])
+					{
+						BroadcastScript("Not Match Map Version. Update Map From GoogleDrive.");
+					}
+				}
+			}
+		}
 	}
 }
