@@ -112,6 +112,7 @@ void ABossNPC::SetHP(float NewHP)
         CurrentPhase = 3;
         bIsPhaseChanging = true;
         DamageMontagePlay();
+        DestroyObstacles();
     }
 
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
@@ -279,21 +280,6 @@ void ABossNPC::DieMontagePlay()
     ServerDieMontagePlay();
 }
 
-void ABossNPC::Despawn()
-{
-    ServerDespawn();
-}
-
-void ABossNPC::ServerDespawn_Implementation()
-{
-    MultiDespawn();
-}
-
-void ABossNPC::MultiDespawn_Implementation()
-{
-    SetLifeSpan(3.0f);
-}
-
 void ABossNPC::ServerDieMontagePlay_Implementation()
 {
     MultiDieMontagePlay();
@@ -312,6 +298,20 @@ void ABossNPC::MultiDieMontagePlay_Implementation()
     }
 }
 
+void ABossNPC::Despawn()
+{
+    ServerDespawn();
+}
+
+void ABossNPC::ServerDespawn_Implementation()
+{
+    MultiDespawn();
+}
+
+void ABossNPC::MultiDespawn_Implementation()
+{
+    SetLifeSpan(3.0f);
+}
 
 // AOE 공격 패턴 시작
 void ABossNPC::StartAOEAttackPattern()
@@ -476,18 +476,42 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        GetWorld()->SpawnActor<ABossObstacle>(
+        SpawnedObstacles.Empty();
+
+        ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
             ABossObstacle::StaticClass(),
             SpawnLocation,
             SpawnRotation,
             Params
         );
+
+        if (NewObstacle)
+        {
+            SpawnedObstacles.Add(NewObstacle);
+        }
     }
 }
 
-void ABossNPC::MultiSpawnObstacles_Implementation()
+void ABossNPC::DestroyObstacles()
 {
-    
+    ServerDestroyObstacles();
+}
+
+void ABossNPC::ServerDestroyObstacles_Implementation()
+{
+    MultiDestroyObstacles();
+}
+
+void ABossNPC::MultiDestroyObstacles_Implementation()
+{
+    for (ABossObstacle* Obstacle : SpawnedObstacles)
+    {
+        if (Obstacle)
+        {
+            Obstacle->Destroy();
+        }
+    }
+    SpawnedObstacles.Empty(); // 배열 비움
 }
 
 // 플랫폼 스폰
