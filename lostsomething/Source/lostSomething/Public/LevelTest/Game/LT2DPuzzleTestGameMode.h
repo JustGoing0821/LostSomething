@@ -26,9 +26,9 @@ protected:
 
 // 2D Puzzle Section
 public:
-	FORCEINLINE virtual const FSijaeCursorPosData& GetSijaeCursorPos() override { return SijaeCursorPosData; }
-	FORCEINLINE virtual void SetSijaeCursorPos(const FSijaeCursorPosData& InSijaeCursorPos) override { SijaeCursorPosData.SiJaeCursorX = InSijaeCursorPos.SiJaeCursorX; SijaeCursorPosData.SiJaeCursorY = InSijaeCursorPos.SiJaeCursorY;};
+	FORCEINLINE virtual const FVector2D& GetSiJaeCursorPos() override { return SiJaeCursorPos; }
+	FORCEINLINE virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) override { SiJaeCursorPos = InSiJaeCursorPos; }
 
 protected:
-	FSijaeCursorPosData SijaeCursorPosData;
+	FVector2D SiJaeCursorPos;
 };

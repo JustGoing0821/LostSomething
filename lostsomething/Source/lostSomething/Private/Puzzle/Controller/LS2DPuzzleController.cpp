@@ -72,16 +72,17 @@ void ALS2DPuzzleController::Tick(float DeltaTime)
 
 	if (HasAuthority())
 	{
-		FSijaeCursorPosData SijaeCursorPosData;
+		FVector2D SijaeCursorPosData;
 
 		AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
 		ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
 		if (GameModeCursor)
 		{
-			SijaeCursorPosData = GameModeCursor->GetSijaeCursorPos();
+			SijaeCursorPosData = GameModeCursor->GetSiJaeCursorPos();
 		}
 
-		SiJaeCursorPos = FVector2D(SijaeCursorPosData.SiJaeCursorX, SijaeCursorPosData.SiJaeCursorY);
+		SiJaeCursorPos = SijaeCursorPosData;
+		//LS_LOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorPos.X, SiJaeCursorPos.Y);
 	}
 
 	if (IsLocalPlayerController())
@@ -97,35 +98,38 @@ void ALS2DPuzzleController::Tick(float DeltaTime)
 	}
 }
 
-void ALS2DPuzzleController::SetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos)
+void ALS2DPuzzleController::SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos)
 {
 	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
 	ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
 	if (GameModeCursor)
 	{
-		GameModeCursor->SetSijaeCursorPos(InSijaeCursorPos);
+		GameModeCursor->SetSiJaeCursorPos(InSiJaeCursorPos);
 	}
 }
 
 void ALS2DPuzzleController::GetSiJaeLocalCursor()
 {
-	float MouseX, MouseY;
-	GetMousePosition(MouseX, MouseY);
-
-	FSijaeCursorPosData SijaeCursorPosData = { MouseX , MouseY };
+	FVector2D CurPos;
+	FVector2D MousePosition;
+	FVector2D ViewportSize;
+	GetWorld()->GetGameViewport()->GetMousePosition(MousePosition);
+	GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
+	CurPos = FVector2D(MousePosition.X / ViewportSize.X, MousePosition.Y / ViewportSize.Y);
+	//LS_LOG(LogLS, Log, TEXT("Begin : %f, %f"), CurPos.X, CurPos.Y);
 
 	if (HasAuthority())
 	{
-		SetGameModeSiJaeCursor(SijaeCursorPosData);
+		SetGameModeSiJaeCursor(CurPos);
 	}
 	else
 	{
-		ServerRPCSetGameModeSiJaeCursor(SijaeCursorPosData);
+		ServerRPCSetGameModeSiJaeCursor(CurPos);
 	}
 }
 
-void ALS2DPuzzleController::ServerRPCSetGameModeSiJaeCursor_Implementation(const FSijaeCursorPosData& InSijaeCursorPos)
+void ALS2DPuzzleController::ServerRPCSetGameModeSiJaeCursor_Implementation(const FVector2D& InSiJaeCursorPos)
 {
-	SetGameModeSiJaeCursor(InSijaeCursorPos);
+	SetGameModeSiJaeCursor(InSiJaeCursorPos);
 }
 

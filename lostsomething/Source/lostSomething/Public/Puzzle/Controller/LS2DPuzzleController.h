@@ -48,7 +48,7 @@ protected:
 // SiJaeCursor Section
 protected:
 	void GetSiJaeLocalCursor();
-	void SetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos);
+	void SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
 
 	UPROPERTY(Replicated)
 	FVector2D SiJaeCursorPos;
@@ -56,5 +56,5 @@ protected:
 // RPC
 public:
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCSetGameModeSiJaeCursor(const FSijaeCursorPosData& InSijaeCursorPos);
+	void ServerRPCSetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
 };

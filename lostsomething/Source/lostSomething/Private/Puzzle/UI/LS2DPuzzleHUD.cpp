@@ -6,6 +6,8 @@
 #include "Components/Image.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Puzzle/UI/LS2DDragPuzzleWidget.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/PanelWidget.h"
 
 ULS2DPuzzleHUD::ULS2DPuzzleHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -34,12 +36,20 @@ void ULS2DPuzzleHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	// ½ºÅ©¸° ÁÂÇ¥¸¦ À§Á¬ ·ÎÄÃ ÁÂÇ¥·Î º¯È¯
-	FVector2D ViewportPosition;
-	USlateBlueprintLibrary::ScreenToViewport(GetOwningPlayer(), SiJaeCursorPos, ViewportPosition);
+	//FVector2D ViewportSize;
+	//GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
 
-	//LS_WDGLOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorX, SiJaeCursorY);
-	ImgCursor->SetRenderTranslation(ViewportPosition);
+	//FVector2D PixelPosition = FVector2D(SiJaeCursorPos.X * ViewportSize.X, SiJaeCursorPos.Y * ViewportSize.Y);
+	//ImgCursor->SetRenderTranslation(PixelPosition);
+	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgCursor->Slot))
+	{
+		FVector2D CanvasSize = ImgCursor->GetParent()->GetCachedGeometry().GetLocalSize();
+
+		FVector2D PixelPosition = FVector2D(SiJaeCursorPos.X * CanvasSize.X, SiJaeCursorPos.Y * CanvasSize.Y);
+		CanvasSlot->SetPosition(PixelPosition);
+		LS_WDGLOG(LogLS, Log, TEXT("Begin. SiJaeCursorPos : %f, %f"), SiJaeCursorPos.X, SiJaeCursorPos.Y);
+		LS_WDGLOG(LogLS, Log, TEXT("Begin. PixelPosition : %f, %f"), PixelPosition.X, PixelPosition.Y);
+	}
 
 	if (bIsDragPuzzleDragging)
 	{

@@ -6,19 +6,6 @@
 #include "UObject/Interface.h"
 #include "LSSijaeCursorPosInterface.generated.h"
 
-USTRUCT(BlueprintType)
-struct FSijaeCursorPosData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float SiJaeCursorX = 0.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float SiJaeCursorY = 0.0f;
-};
-
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class ULSSijaeCursorPosInterface : public UInterface
@@ -35,6 +22,6 @@ class LOSTSOMETHING_API ILSSijaeCursorPosInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual const FSijaeCursorPosData& GetSijaeCursorPos() = 0;
-	virtual void SetSijaeCursorPos(const FSijaeCursorPosData& InSijaeCursorPos) = 0;
+	virtual const FVector2D& GetSiJaeCursorPos() = 0;
+	virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) = 0;
 };
