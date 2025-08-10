@@ -30,7 +30,7 @@ protected:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
-	void SetBallLocation(FVector2D InCursorPos);
+	void SetPieceLocation(FVector2D InCursorPos);
 
 protected:
 	UPROPERTY()

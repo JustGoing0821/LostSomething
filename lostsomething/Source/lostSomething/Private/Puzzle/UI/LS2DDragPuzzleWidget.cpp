@@ -6,6 +6,8 @@
 //#include "Blueprint/SlateBlueprintLibrary.h"
 //#include "Widgets/SWidget.h"
 #include "Components/Image.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/PanelWidget.h"
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -20,6 +22,24 @@ void ULS2DDragPuzzleWidget::NativeConstruct()
 
 	ImgPiece1 = Cast<UImage>(GetWidgetFromName(TEXT("img_piece1")));
 	ensure(ImgPiece1);
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgGoal1->Slot))
+			{
+				FVector2D CanvasSize = ImgGoal1->GetParent()->GetCachedGeometry().GetLocalSize();
+				CanvasSlot->SetSize(CanvasSize * 0.2f);
+				CanvasSlot->SetPosition(CanvasSize*0.5f);
+			}
+			if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgPiece1->Slot))
+			{
+				FVector2D CanvasSize = ImgPiece1->GetParent()->GetCachedGeometry().GetLocalSize();
+				CanvasSlot->SetSize(CanvasSize * 0.1f);
+				CanvasSlot->SetPosition(CanvasSize * 0.2f);
+			}
+		}
+	), 1.f, false);
 }
 
 void ULS2DDragPuzzleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -29,41 +49,51 @@ void ULS2DDragPuzzleWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 
 FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (IsMouseOverImage(ImgPiece1, InMouseEvent))
 	{
 		bIsDragging = true;
 		OnDraggingStart.ExecuteIfBound();
-
-		return FReply::Handled().CaptureMouse(GetCachedWidget().ToSharedRef());
 	}
 	else
 	{
-		LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("IsMouseOverImage False"));
-		return FReply::Handled();
+		//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("IsMouseOverImage False"));
 	}
+
+	return FReply::Handled();
 }
 
 FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (bIsDragging)
 	{
 		bIsDragging = false;
 		OnDraggingEnd.ExecuteIfBound();
 	}
-	return FReply::Handled().ReleaseMouseCapture();
+
+	return FReply::Handled();
 }
 
-void ULS2DDragPuzzleWidget::SetBallLocation(FVector2D InCursorPos)
+void ULS2DDragPuzzleWidget::SetPieceLocation(FVector2D InCursorPos)
 {
 	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	ImgPiece1->SetRenderTranslation(InCursorPos);
+	//ImgPiece1->SetRenderTranslation(InCursorPos);
+
+	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgPiece1->Slot))
+	{
+		FVector2D CanvasSize = ImgPiece1->GetParent()->GetCachedGeometry().GetLocalSize();
+
+		FVector2D PixelPosition = FVector2D(InCursorPos.X * CanvasSize.X, InCursorPos.Y * CanvasSize.Y);
+		CanvasSlot->SetPosition(PixelPosition);
+		//LS_WDGLOG(LogLS, Log, TEXT("Begin. SiJaeCursorPos : %f, %f"), InCursorPos.X, InCursorPos.Y);
+		//LS_WDGLOG(LogLS, Log, TEXT("Begin. PixelPosition : %f, %f"), PixelPosition.X, PixelPosition.Y);
+	}
 }
 
 bool ULS2DDragPuzzleWidget::IsMouseOverImage(UImage* TargetImage, const FPointerEvent& MouseEvent)
 {
-	LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (!TargetImage)
 		return false;
 
