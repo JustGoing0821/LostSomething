@@ -28,15 +28,26 @@ ABossObstacle::ABossObstacle()
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABossObstacle::OnOverlapBegin);
 
 	// 메시 컴포넌트 초기화
+	TArray<FString> MeshPaths = {
+		TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Props/SM_fireex.SM_fireex"),
+		TEXT("/Game/Asset/Map/CyberSubway/Meshes/SM_Seats02.SM_Seats02")
+	};
+	
 	ObstacleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObstacleMesh"));
 	ObstacleMesh->SetupAttachment(CollisionComp);
 	ObstacleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체 충돌 제거
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Asset/NPC/bedsheet_ghost_gltf/scene.scene"));
+
+	int32 RandomIndex = FMath::RandRange(0, MeshPaths.Num() - 1);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshPaths[RandomIndex]);
+	if (MeshAsset.Succeeded())
+	{
+		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
+	}
 
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
-		ObstacleMesh->SetRelativeScale3D(FVector(0.02f));
+		ObstacleMesh->SetRelativeScale3D(FVector(3.0f));
 		ObstacleMesh->SetRelativeLocation(FVector(35.0f, 0.0f, -128.0f)); // Z축으로 50만큼 올림
 		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 30.0f));
 	}
