@@ -29,6 +29,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class ULS2DDragPuzzleWidget> DragPuzzleWidget;
 
+	UPROPERTY()
+	TObjectPtr<class UButton> BtnExit;
+
+	UFUNCTION()
+	void OnBtnExitClicked();
+
 // Cursor Section
 public:
 	//FORCEINLINE void SetCursorPosition(float InCursorX, float InCursorY) { SiJaeCursorX = InCursorX; SiJaeCursorY = InCursorY; }

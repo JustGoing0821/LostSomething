@@ -4,10 +4,13 @@
 #include "Puzzle/UI/LS2DPuzzleHUD.h"
 #include "lostSomething.h"
 #include "Components/Image.h"
+#include "GameFramework/GameModeBase.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Puzzle/UI/LS2DDragPuzzleWidget.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
+#include "Components/Button.h"
+#include "Interface/LS2DPuzzleExitInterface.h"
 
 ULS2DPuzzleHUD::ULS2DPuzzleHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -25,10 +28,12 @@ void ULS2DPuzzleHUD::NativeConstruct()
 	DragPuzzleWidget = Cast<ULS2DDragPuzzleWidget>(GetWidgetFromName(TEXT("wbp_drag_puzzle")));
 	ensure(DragPuzzleWidget);
 
-	if (DragPuzzleWidget)
+	BtnExit = Cast<UButton>(GetWidgetFromName(TEXT("btn_exit")));
+	ensure(BtnExit);
+
+	if (BtnExit)
 	{
-		//DragPuzzleWidget->OnDraggingStart.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingStart);
-		//DragPuzzleWidget->OnDraggingEnd.BindUObject(this, &ULS2DPuzzleHUD::OnDraggingEnd);
+		BtnExit->OnClicked.AddDynamic(this, &ULS2DPuzzleHUD::OnBtnExitClicked);
 	}
 }
 
@@ -55,6 +60,17 @@ void ULS2DPuzzleHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	{
 		//LS_WDGLOG(LogLS, Log, TEXT("Begin. SiJaeCursorPos : %f, %f"), SiJaeCursorPos.X, SiJaeCursorPos.Y);
 		DragPuzzleWidget->SetPieceLocation(SiJaeCursorPos);
+	}
+}
+
+void ULS2DPuzzleHUD::OnBtnExitClicked()
+{
+	LS_WDGLOG(LogLS, Log, TEXT("Begin"));
+
+	ILS2DPuzzleExitInterface* PuzzleInterface = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
+	if (PuzzleInterface)
+	{
+		PuzzleInterface->OnBtnExitClicked();
 	}
 }
 

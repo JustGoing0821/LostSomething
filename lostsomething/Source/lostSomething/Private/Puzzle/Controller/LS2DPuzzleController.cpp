@@ -37,11 +37,11 @@ void ALS2DPuzzleController::BeginPlay()
 {
 	if (CharacterChoice == ELSCharacterChoice::SiJae)
 	{
-		//SetInputMode(FInputModeGameAndUI());
+		SetInputMode(FInputModeUIOnly());
 	}
 	else if (CharacterChoice == ELSCharacterChoice::IJae)
 	{
-		//SetInputMode(FInputModeGameOnly());
+		SetInputMode(FInputModeUIOnly());
 	}
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
