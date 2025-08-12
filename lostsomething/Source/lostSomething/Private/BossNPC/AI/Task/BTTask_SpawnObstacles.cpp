@@ -30,7 +30,7 @@ void UBTTask_SpawnObstacles::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
 {
     TimeSinceLastSpawn += DeltaSeconds;
 
-    if (TimeSinceLastSpawn >= 0.5f)
+    if (TimeSinceLastSpawn >= 0.7f)
     {
         if (CurrentSpawnCount < 10)
         {
