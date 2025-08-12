@@ -15,22 +15,12 @@ class LOSTSOMETHING_API ALSPlayerIJae : public ALSPlayer
 {
 	GENERATED_BODY()
 
-	public:
-	ALSPlayerIJae(); // 생성자 추가
-
-	virtual void Tick(float DeltaTime) override; // Tick 함수 추가
-
 protected:
 	virtual bool CanPushWheelchair() const override;
 	virtual void Jump() override;
 	virtual void Attack() override;
 	virtual void Move(const FInputActionValue& Value) override;
 	void HandleWheelchairInput(const FVector2D& MovementVector);
-
-private:
-	// 합체 상태 추적용 변수들 추가
-	bool bWasBeingPushedLastFrame;
-	FRotator StoredPusherRotation;
 
 public:
 	// 휠체어 회전 속도
