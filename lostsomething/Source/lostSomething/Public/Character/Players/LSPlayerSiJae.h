@@ -17,14 +17,11 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 {
 	GENERATED_BODY()
 
-
-
 	virtual void BeginPlay() override;
 	//virtual void GetDistance()
 
 	UPROPERTY()
 	TObjectPtr<ALSPlayerIJae> IJae;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<ULSDarkWidget> DarkWidgetClass;
@@ -33,19 +30,19 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	ULSDarkWidget* DarkWidgetInstance;
 	
 public: 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UStaticMeshComponent* Weapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheelchair Settings")
+	float WheelchairTurnRate = 90.0f;
+
 	ALSPlayerSiJae();
-
-	
-
 
 protected:
 	virtual bool CanPushWheelchair() const override;
-
 	virtual void Attack() override;
-	
+	virtual void Move(const FInputActionValue& Value) override;
+	virtual void Jump() override;
+	void HandlePusherWheelchairInput(const FVector2D& MovementVector);
 	void Tick(float DeltaTime);
-
 };

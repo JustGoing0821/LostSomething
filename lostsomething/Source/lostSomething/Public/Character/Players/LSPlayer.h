@@ -353,15 +353,6 @@ protected:
 
 // Wheelchair
 protected:
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	bool bIsBeingPushed;
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	TObjectPtr<ACharacter> PusherCharacter;
-
-	UPROPERTY(Replicated)
-	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wheelchair")
 	bool bCanPushWheelchair;
 
@@ -392,4 +383,12 @@ protected:
 
 public:
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	bool bIsBeingPushed;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<ACharacter> PusherCharacter;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
 };
