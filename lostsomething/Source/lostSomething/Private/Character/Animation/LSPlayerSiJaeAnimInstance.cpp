@@ -74,6 +74,24 @@ void ULSPlayerSiJaeAnimInstance::SetAttackAnim()
 	}
 }
 
+void ULSPlayerSiJaeAnimInstance::HitAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HitAnmi called"));
+
+	if (!HitMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT(" is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(HitMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(HitMontage);
+	}
+
+}
+
 void ULSPlayerSiJaeAnimInstance::AnimNotify_PickCheck()
 {
 	if (ALSPlayer* Player = Cast<ALSPlayer>(TryGetPawnOwner()))
