@@ -30,7 +30,7 @@ ABossNPC::ABossNPC()
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
         float YOffset = (i - 2) * 82.0f;
-        SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -40.f));
+        SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -45.f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
    
@@ -112,6 +112,7 @@ void ABossNPC::SetHP(float NewHP)
         CurrentPhase = 3;
         bIsPhaseChanging = true;
         DamageMontagePlay();
+        DestroyObstacles();
     }
 
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
@@ -288,15 +289,29 @@ void ABossNPC::MultiDieMontagePlay_Implementation()
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
-    if (!NPCAnimInstance || !NPCAnimInstance->NextMotionMontage) return;
+    if (!NPCAnimInstance || !NPCAnimInstance->DeathMontage) return;
 
     // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
-    if (NPCAnimInstance->NextMotionMontage)
+    if (NPCAnimInstance->DeathMontage)
     {
-        NPCAnimInstance->MontagePlay(NPCAnimInstance->NextMotionMontage);
+        NPCAnimInstance->MontagePlay(NPCAnimInstance->DeathMontage);
     }
 }
 
+void ABossNPC::Despawn()
+{
+    ServerDespawn();
+}
+
+void ABossNPC::ServerDespawn_Implementation()
+{
+    MultiDespawn();
+}
+
+void ABossNPC::MultiDespawn_Implementation()
+{
+    SetLifeSpan(3.0f);
+}
 
 // AOE 공격 패턴 시작
 void ABossNPC::StartAOEAttackPattern()
@@ -461,18 +476,42 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        GetWorld()->SpawnActor<ABossObstacle>(
+        SpawnedObstacles.Empty();
+
+        ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
             ABossObstacle::StaticClass(),
             SpawnLocation,
             SpawnRotation,
             Params
         );
+
+        if (NewObstacle)
+        {
+            SpawnedObstacles.Add(NewObstacle);
+        }
     }
 }
 
-void ABossNPC::MultiSpawnObstacles_Implementation()
+void ABossNPC::DestroyObstacles()
 {
-    
+    ServerDestroyObstacles();
+}
+
+void ABossNPC::ServerDestroyObstacles_Implementation()
+{
+    MultiDestroyObstacles();
+}
+
+void ABossNPC::MultiDestroyObstacles_Implementation()
+{
+    for (ABossObstacle* Obstacle : SpawnedObstacles)
+    {
+        if (Obstacle)
+        {
+            Obstacle->Destroy();
+        }
+    }
+    SpawnedObstacles.Empty(); // 배열 비움
 }
 
 // 플랫폼 스폰
