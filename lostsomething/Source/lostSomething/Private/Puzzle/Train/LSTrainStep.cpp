@@ -5,11 +5,14 @@
 #include "lostSomething.h"
 #include "EngineUtils.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
 #include "Engine/StaticMeshActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
+#include "Interface/LS2DPuzzleInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
 
 // Sets default values
@@ -68,11 +71,29 @@ void ALSTrainStep::BeginPlay()
 			}
 		}
 	}
+
+	//if (HasAuthority())
+	//{
+	//	FTimerHandle Handle;
+	//	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	//		{
+	//			for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+	//			{
+	//				if (PlayerController && !PlayerController->IsLocalController())
+	//				{
+	//					SetOwner(PlayerController);
+	//					LS_LOG(LogLS, Log, TEXT("Owner Setted."));
+	//					break;
+	//				}
+	//			}
+	//		}
+	//	), 1.0f, false, 2.0f);
+	//}
 }
 
 void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	ILSCharacterChoiceInterface* LSController = Cast<ILSCharacterChoiceInterface>(InPlayerController);
 	if (LSController)
 	{
@@ -81,23 +102,35 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 			if (HasAuthority())
 			{
 				InstallStep();
+				//StartInstallPuzzle();
 			}
 			else
 			{
 				ServerRPCInstallStep();
+				//ServerRPCStartInstallPuzzle();
 			}
 		}
 		else
 		{
 			ILSScriptWidgetInterface* LSScript = Cast<ILSScriptWidgetInterface>(InPlayerController);
 			LSScript->UpdateScriptWidget(TEXT("I Can't Install Step"));
+			//if (HasAuthority())
+			//{
+			//	//InstallStep();
+			//	StartInstallPuzzle();
+			//}
+			//else
+			//{
+			//	//ServerRPCInstallStep();
+			//	ServerRPCStartInstallPuzzle();
+			//}
 		}
 	}
 }
 
 void ALSTrainStep::InstallStep()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	OnStepInstalled.Execute();
 
 	if (bIsStepInstalled)
@@ -115,8 +148,18 @@ void ALSTrainStep::InstallStep()
 
 void ALSTrainStep::PuzzleDeactivate()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	InteractionTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ALSTrainStep::StartInstallPuzzle()
+{
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	ILS2DPuzzleInterface* GameMode = Cast<ILS2DPuzzleInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->Start2DPuzzle(FName(TEXT("InstallPuzzle")), true, GetWorld()->GetFirstPlayerController());
+	}
 }
 
 void ALSTrainStep::ServerRPCInstallStep_Implementation()
@@ -128,5 +171,10 @@ void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
 {
 	MeshComponent->SetVisibility(bIsStepInstalled);
 	//LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
+}
+
+void ALSTrainStep::ServerRPCStartInstallPuzzle_Implementation()
+{
+	StartInstallPuzzle();
 }
 
