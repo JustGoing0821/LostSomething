@@ -29,10 +29,10 @@ ABossObstacle::ABossObstacle()
 
 	// 메시 컴포넌트 초기화
 	TArray<FString> MeshPaths = {
-		TEXT("/Game/Asset/Map/CitySubwayTrainModuler/Meshes/Props/SM_fireex.SM_fireex"),
-		TEXT("/Game/Asset/Map/CyberSubway/Meshes/SM_Seats02.SM_Seats02")
-	};
-	
+		TEXT("/Game/Asset/Map/CyberSubway/Meshes/SM_Seats02.SM_Seats02"),
+		
+	}; 
+	//TEXT("/ Game / Asset / Map / CitySubwayTrainModuler / Meshes / Props / SM_fireex.SM_fireex")
 	ObstacleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObstacleMesh"));
 	ObstacleMesh->SetupAttachment(CollisionComp);
 	ObstacleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체 충돌 제거
@@ -47,9 +47,9 @@ ABossObstacle::ABossObstacle()
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
-		ObstacleMesh->SetRelativeScale3D(FVector(3.0f));
-		ObstacleMesh->SetRelativeLocation(FVector(35.0f, 0.0f, -128.0f)); // Z축으로 50만큼 올림
-		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 30.0f));
+		ObstacleMesh->SetRelativeScale3D(FVector(2.0f));
+		ObstacleMesh->SetRelativeLocation(FVector(-35.0f, 0.0f, -70.0f)); // Z축으로 50만큼 올림
+		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	}
 
 }
