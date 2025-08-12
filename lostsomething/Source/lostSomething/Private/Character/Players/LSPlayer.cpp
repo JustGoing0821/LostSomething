@@ -1299,16 +1299,40 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 
 void ALSPlayer::PickUp()
 {
+	if (!HasAuthority())
+	{
+		ServerPickUp();
+		return;
+	}
 
+	MultiPickUp();
+
+}
+
+
+void ALSPlayer::ServerPickUp_Implementation()
+{
+	
+	MultiPickUp();
+	
+
+}
+
+void ALSPlayer::MultiPickUp_Implementation()
+{
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetPickUpAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
 	}
-
 }
 
+//
+//void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+//{
+//	PickItemInSlot(ItemData);
+//}
 
 
 void ALSPlayer::PickUpCore()
@@ -1390,7 +1414,7 @@ void ALSPlayer::PickUpCore()
 		else
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
-			ServerPickUp(HitItem);
+			ServerPickUpCore(HitItem);
 
 		}
 
@@ -1421,18 +1445,18 @@ void ALSPlayer::PickUpCore()
 
 
 
-void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
+void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
 	if (!TargetItem) return;
 
-	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
+	FItemDetails ItemData = TargetItem->GetItemInfo(); 
 	TargetItem->Destroy();
-	MultiPickUp(TargetItem);
-	ClientPickUp(ItemData);
+	MultiPickUpCore(TargetItem);
+	ClientPickUpCore(ItemData);
 	
 }
 
-void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
+void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 {
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1443,7 +1467,7 @@ void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 }
 
 
-void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
 {
 	PickItemInSlot(ItemData);
 }
