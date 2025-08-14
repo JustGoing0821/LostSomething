@@ -40,6 +40,9 @@ public:
 	void WeaponPickUp();
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheelchair Settings")
+	float WheelchairTurnRate = 90.0f;
+
 	UFUNCTION(Server, Reliable)
 	virtual void ServerWeaponPickUp();
 
@@ -55,7 +58,9 @@ protected:
 	virtual bool CanPushWheelchair() const override;
 
 	virtual void Attack() override;
-	
+	virtual void Move(const FInputActionValue& Value) override;
+	virtual void Jump() override;
+	void HandlePusherWheelchairInput(const FVector2D& MovementVector);
 	void Tick(float DeltaTime);
 
 	UFUNCTION()
