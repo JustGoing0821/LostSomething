@@ -19,6 +19,11 @@ public:
 	void SetDeadAnim();
 	void SetPickUpAnim();
 	void SetAttackAnim();
+	void HitAnim();
+
+	UFUNCTION()
+	void AnimNotify_PickCheck();
+
 
 protected:
 	//딱 한번 호출. 초기화.
@@ -35,6 +40,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* HitMontage;
 
 	//왜 bp에서는 읽기만? 객체 타입선언 Owner 변수추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
