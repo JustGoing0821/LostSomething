@@ -20,7 +20,6 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
-#include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
@@ -91,14 +90,14 @@ ALSPlayer::ALSPlayer()
 
 
 	////camera boom 
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(GetMesh());
-	//CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(GetMesh());
+	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	//FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	//FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 	
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
@@ -200,17 +199,11 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
-
-	
-
 	if (HpComponent)
 	{
 		CurrentHp -= DamageAmount;
 		HpComponent->SetHp(CurrentHp);
 		LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
-
-
-		
 	}
 
 
@@ -240,13 +233,6 @@ void ALSPlayer::OnHpChanged(float NewHp)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
-
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->HitAnim();
-
-	}
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
@@ -683,6 +669,16 @@ void ALSPlayer::Attack()
 		}
 	}
 
+	// 현재 선택된 슬롯에 아이템이 있는지 확인
+	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	//{
+	//	
+
+	//	/*if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+	//	{
+	//		
+	//	}*/
+	//}
 
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
@@ -714,7 +710,6 @@ void ALSPlayer::ProcessAttack()
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
-	MultiProcessAttack();
 
 	if (HitDetected)
 	{
@@ -735,7 +730,13 @@ void ALSPlayer::ProcessAttack()
 			DrawColor = FColor::Blue;
 		}
 
-		
+		/*ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
+		if (HitNPC)
+		{
+			FDamageEvent DamageEvent;
+			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawColor = FColor::Blue;
+		}*/
 	}
 	else
 	{
@@ -759,7 +760,7 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
-	
+	MultiProcessAttack();
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()
@@ -779,6 +780,50 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 
 
 
+
+//
+//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
+//	// 현재 선택된 슬롯의 아이템을 드롭
+//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
+//	DropItemFromSlot();
+//	DrawColor = FColor::Red;
+//
+//	// 디버그 라인
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = PickupRange * 0.5f;
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//}
+
+
+//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectNextSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
+//	}
+//}
+//
+//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectPreviousSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
+//	}
+//}
 
 void ALSPlayer::Interreact()
 {
@@ -906,31 +951,24 @@ void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* Target
 	ALSPlayer* WheelchairPlayer = Cast<ALSPlayer>(TargetActor);
 	if (!WheelchairPlayer) return;
 
-	// 현재 상태 로깅
-	LS_LOG(LogLS, Warning, TEXT("Current wheelchair state: bIsBeingPushed=%s, PusherCharacter=%s"),
-		WheelchairPlayer->bIsBeingPushed ? TEXT("true") : TEXT("false"),
-		WheelchairPlayer->PusherCharacter ? *WheelchairPlayer->PusherCharacter->GetName() : TEXT("nullptr"));
-
 	// 이미 내가 밀고 있다면 중지, 아니면 시작 (단순화된 로직)
 	if (WheelchairPlayer->bIsBeingPushed && WheelchairPlayer->PusherCharacter == this)
 	{
 		// 밀기 중지
 		WheelchairPlayer->bIsBeingPushed = false;
 		WheelchairPlayer->PusherCharacter = nullptr;
+		this->PushedWheelchairCharacter = nullptr;
 		WheelchairPlayer->MulticastWheelchairStateChanged(false, nullptr);
-		LS_LOG(LogLS, Warning, TEXT("Stopping wheelchair push"));
 	}
 	else
 	{
 		// 다른 상태면 강제로 초기화하고 밀기 시작
 		WheelchairPlayer->bIsBeingPushed = true;
 		WheelchairPlayer->PusherCharacter = this;
+		this->PushedWheelchairCharacter = WheelchairPlayer;
 		WheelchairPlayer->MulticastWheelchairStateChanged(true, this);
-		LS_LOG(LogLS, Warning, TEXT("Starting wheelchair push"));
 	}
 }
-
-
 
 // 리플리케이션 설정
 void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -955,7 +993,6 @@ void ALSPlayer::StartPushingWheelchair_Implementation(ACharacter* Pusher)
 		{
 			bIsBeingPushed = true;
 			PusherCharacter = Pusher;
-
 			MulticastWheelchairStateChanged(true, Pusher);
 		}
 	}
@@ -1013,31 +1050,125 @@ bool ALSPlayer::ServerStopPushingWheelchair_Validate()
 void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, ACharacter* Pusher)
 {
 	bIsBeingPushed = bPushing;
-	PusherCharacter = Pusher;
+	PusherCharacter = bPushing ? Pusher : nullptr;
 
-	if (IsLocallyControlled() && CameraBoom)
+	if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
 	{
-		if (bPushing)
+		if (ALSPlayer* Pusher = Cast<ALSPlayer>(Source))
 		{
-			CameraBoom->bDoCollisionTest = false;
+			if (bPushing)
+			{
+				Pusher->PushedWheelchairCharacter = this;
+			}
+			else
+			{
+				if (Pusher->PushedWheelchairCharacter == this)
+				{
+					Pusher->PushedWheelchairCharacter = nullptr;
+				}
+			}
+		}
+	}
+
+	// 타겟 Yaw 계산
+	float TargetYaw = 0.f;
+	if (bPushing) // 3인칭 전환 시 (이제가 시제를 미는 경우)
+	{
+		TargetYaw = GetControlRotation().Yaw; // 이제의 현재 시점
+	}
+	else // 1인칭 전환 시 (시제가 이제를 밀다 해제)
+	{
+		if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
+		{
+			TargetYaw = Source->GetControlRotation().Yaw; // 시제의 시점
 		}
 		else
 		{
-			CameraBoom->bDoCollisionTest = true;
+			TargetYaw = GetActorRotation().Yaw;
 		}
 	}
 
-	// 이제(IJae) 캐릭터의 움직임 제어 설정
+	FRotator TargetRot(0.f, TargetYaw, 0.f);
+
 	if (bIsBeingPushed)
 	{
-		// 이제 캐릭터는 스스로 움직일 수 없음 (MOVE_None)
-		GetCharacterMovement()->SetMovementMode(MOVE_None);
-	}
-	else
-	{
-		// 이제 캐릭터가 다시 스스로 움직일 수 있음
+		// 1인칭 -> 3인칭
+		if (IsLocallyControlled())
+		{
+			if (APlayerController* PC = Cast<APlayerController>(Controller))
+			{
+				PC->SetIgnoreLookInput(true);
+
+				// 컨트롤러 & 액터 회전 동기화
+				PC->SetControlRotation(TargetRot);
+				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+				// 카메라 전환
+				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
+				FirstPersonCameraComponent->SetActive(false);
+				FollowCamera->SetActive(true);
+
+				// 블렌딩 제거
+				if (PC->PlayerCameraManager)
+					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+				// 입력 해제는 다음 틱
+				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+					{
+						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+							PC2->SetIgnoreLookInput(false);
+					});
+			}
+		}
+
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreMoveInput(true);
+		}
+
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		return;
 	}
+
+	// 3인칭 -> 1인칭
+	if (IsLocallyControlled())
+	{
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreLookInput(true);
+
+			// 컨트롤러 & 액터 회전 동기화
+			PC->SetControlRotation(TargetRot);
+			SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+			// 카메라 전환
+			if (CameraBoom) CameraBoom->bDoCollisionTest = true;
+			FollowCamera->SetActive(false);
+			FirstPersonCameraComponent->SetActive(true);
+
+			// 블렌딩 제거
+			if (PC->PlayerCameraManager)
+				PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+			// 입력 해제는 다음 틱
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+				{
+					if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+						PC2->SetIgnoreLookInput(false);
+				});
+		}
+	}
+
+	if (APlayerController* PC = Cast<APlayerController>(Controller))
+	{
+		PC->SetIgnoreMoveInput(false);
+	}
+
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ALSPlayer::HandleWheelchairMovement()
@@ -1049,8 +1180,8 @@ void ALSPlayer::HandleWheelchairMovement()
 	FVector PusherForward = PusherCharacter->GetActorForwardVector();
 
 	FVector TargetLocation = PusherLocation + (PusherForward * NormalCombineDistance);
-
 	FVector CurrentLocation = GetActorLocation();
+	TargetLocation.Z = CurrentLocation.Z;
 	float DistanceToTarget = FVector::Dist(CurrentLocation, TargetLocation);
 
 	FVector NewLocation;
@@ -1083,9 +1214,6 @@ void ALSPlayer::CheckCombineDistance()
 
 	if (CurrentDistance > MaxCombineDistance)
 	{
-		LS_LOG(LogLS, Warning, TEXT("Distance exceeded limit: %.2f > %.2f - Auto separating"),
-			CurrentDistance, MaxCombineDistance);
-
 		if (HasAuthority())
 		{
 			AutoSeparateFromWheelchair();
@@ -1097,8 +1225,6 @@ void ALSPlayer::CheckCombineDistance()
 	}
 	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% 여유분
 	{
-		LS_LOG(LogLS, Warning, TEXT("Distance warning: %.2f (Normal: %.2f)"),
-			CurrentDistance, NormalCombineDistance);
 	}
 }
 
@@ -1106,8 +1232,6 @@ void ALSPlayer::AutoSeparateFromWheelchair()
 {
 	if (!HasAuthority())
 		return;
-
-	LS_LOG(LogLS, Warning, TEXT("Auto-separating wheelchair due to distance limit"));
 
 	// 합체 상태 해제
 	bIsBeingPushed = false;
@@ -1225,13 +1349,6 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 
 		}
 	}
-	
-	
-		
-
-
-
-
 
 		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		//{
@@ -1243,8 +1360,6 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 
 	}
 }
-
-
 
 //void ALSPlayer::ChangeSlot(int32 NewSlot)
 //{
@@ -1270,8 +1385,6 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 //	//UpdateSlotBorderColors();
 //}
 
-
-
 //voice section
 void ALSPlayer::VoiceStart(const FInputActionValue& Value)
 {
@@ -1291,7 +1404,6 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 	}
 }
 
-
 //void ALSPlayer::VoiceStart(const FInputActionValue& Value)
 //{
 //	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
@@ -1310,57 +1422,9 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
+//아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
-	if (!HasAuthority())
-	{
-		ServerPickUp();
-		return;
-	}
-
-	MultiPickUp();
-
-}
-
-
-void ALSPlayer::ServerPickUp_Implementation()
-{
-	
-	MultiPickUp();
-	
-
-}
-
-void ALSPlayer::MultiPickUp_Implementation()
-{
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetPickUpAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
-	}
-}
-
-//
-//void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
-//{
-//	PickItemInSlot(ItemData);
-//}
-
-
-void ALSPlayer::PickUpCore()
-{
-
-
-
-	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
-	{
-		SiJae->WeaponPickUp();
-		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
-		
-	}
-
-
 	if (bIsDead) return;
 
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
@@ -1379,7 +1443,7 @@ void ALSPlayer::PickUpCore()
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
 	//슬롯이 차있다면
-
+	
 
 	//아이템 hit 시
 
@@ -1408,7 +1472,7 @@ void ALSPlayer::PickUpCore()
 			}
 		}
 
-
+		
 		if (!HitItem)
 		{
 			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
@@ -1417,7 +1481,7 @@ void ALSPlayer::PickUpCore()
 
 		//수정
 		// 아이템 픽업
-
+		
 
 		if (HasAuthority())
 		{
@@ -1428,10 +1492,12 @@ void ALSPlayer::PickUpCore()
 		else
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
-			ServerPickUpCore(HitItem);
-
+			ServerPickUp(HitItem);
+			
 		}
 
+		// 아이템 제거
+		//HitItem->Destroy();
 
 		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
 		DrawColor = FColor::Green;
@@ -1454,23 +1520,24 @@ void ALSPlayer::PickUpCore()
 
 		DrawColor = FColor::Yellow;
 	}
-
-}
-
-
-
-void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
-{
-	if (!TargetItem) return;
-
-	FItemDetails ItemData = TargetItem->GetItemInfo(); 
-	TargetItem->Destroy();
-	MultiPickUpCore(TargetItem);
-	ClientPickUpCore(ItemData);
 	
 }
 
-void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
+void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
+{
+	if (!TargetItem) return;
+
+	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
+	TargetItem->Destroy();
+	MultiPickUp(TargetItem);
+	ClientPickUp(ItemData);
+
+	//PickItemInSlot(TargetItem->GetItemInfo());
+	//TargetItem->Destroy();
+	//ClientPickUp(TargetItem);
+}
+
+void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 {
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1481,7 +1548,7 @@ void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 }
 
 
-void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
+void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
 {
 	PickItemInSlot(ItemData);
 }
@@ -1645,9 +1712,6 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 		}
 	}
-		
-	
-
 }
 
 //
@@ -1732,11 +1796,6 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 //	
 //
 //}
-
-
-
-
-
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
