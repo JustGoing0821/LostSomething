@@ -36,17 +36,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheelchair Settings")
 	float WheelchairTurnRate = 90.0f;
 
-
-	UFUNCTION(Server, Reliable)
-	virtual void ServerWeaponPickUp();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiWeaponPickUp();
-
-	UFUNCTION(Client, Reliable)
-	void ClientWeaponPickUp();
-
-
 	ALSPlayerSiJae();
 
 protected:
