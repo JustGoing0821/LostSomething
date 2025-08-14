@@ -2,6 +2,8 @@
 
 
 #include "Character/Players/LSPlayerIJae.h"
+#include "Engine/Engine.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 bool ALSPlayerIJae::CanPushWheelchair() const
 {
@@ -29,7 +31,8 @@ void ALSPlayerIJae::Attack() {
 
 void ALSPlayerIJae::Move(const FInputActionValue& Value)
 {
-    if (bIsDead) return;
+    if (bIsDead) 
+        return;
 
     if (!IsLocallyControlled())
         return;
@@ -59,10 +62,7 @@ void ALSPlayerIJae::HandleWheelchairInput(const FVector2D& MovementVector)
     // 좌우 입력을 회전 처리
     if (FMath::Abs(MovementVector.X) > 0.1f)
     {
-        float TurnInput = MovementVector.X * (WheelchairTurnRate / 100.0f); // 값 조정
+        float TurnInput = MovementVector.X * (WheelchairTurnRate / 200.0f); // 값 조정
         AddControllerYawInput(TurnInput);
-
-        UE_LOG(LogTemp, Warning, TEXT("Wheelchair turning: Input=%.2f, TurnRate=%.2f"),
-            MovementVector.X, WheelchairTurnRate);
     }
 }

@@ -5,6 +5,7 @@
 #include "AOE/ACircleAOE.h"
 #include "Engine/TimerHandle.h"
 #include "Net/UnrealNetwork.h"
+#include "Obstacle/BossObstacle.h"
 #include "BossNPC.generated.h"
 
 UCLASS()
@@ -12,7 +13,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
 {
     GENERATED_BODY()
 
-    public:
+public:
     ABossNPC();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Obstacle")
@@ -61,6 +62,12 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     void ServerDieMontagePlay();
     UFUNCTION(NetMulticast, Reliable)
     void MultiDieMontagePlay();
+
+    void Despawn();
+    UFUNCTION(Server, Reliable)
+    void ServerDespawn();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDespawn();
 
     FORCEINLINE void SetPhaseStatus(bool PhaseStatus) { bIsPhaseChanging = PhaseStatus; }
 
@@ -129,8 +136,15 @@ public:
     void SpawnObstacles();
     UFUNCTION(Server, Reliable)
     void ServerSpawnObstacles();
+
+    void DestroyObstacles();
+    UFUNCTION(Server, Reliable)
+    void ServerDestroyObstacles();
     UFUNCTION(NetMulticast, Reliable)
-    void MultiSpawnObstacles();
+    void MultiDestroyObstacles();
+
+    UPROPERTY()
+    TArray<ABossObstacle*> SpawnedObstacles;
 
     // ÇÃ·§Æû °ü·Ã
     void SpawnPlatform();

@@ -51,6 +51,13 @@ void UBossNPCAnimIns::AnimNotify_NextTiming()
     NPCCharacter->SetPhaseStatus(false);
 }
 
+void UBossNPCAnimIns::AnimNotify_DeathMoment()
+{
+    auto Pawn = TryGetPawnOwner();
+    ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+    NPCCharacter->Despawn();
+}
+
 float UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
 {
     //CurrentMontage = Montage;

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Character/Players/LSPlayerSiJae.h"
 #include "Character/Players/LSPlayerIJae.h"
 #include "Blueprint/UserWidget.h"
@@ -12,10 +11,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
-
-
-
 
 void ALSPlayerSiJae::BeginPlay()
 {
@@ -29,7 +24,7 @@ void ALSPlayerSiJae::BeginPlay()
 
     if (IsLocallyControlled())
     {
-        //darkwidget 생성, 띄우기ㄴ
+        // darkwidget 생성
         if (DarkWidgetClass)
         {
             DarkWidgetInstance = CreateWidget<ULSDarkWidget>(GetWorld(), DarkWidgetClass);
@@ -49,8 +44,6 @@ void ALSPlayerSiJae::BeginPlay()
    
 }
 
-
-
 ALSPlayerSiJae::ALSPlayerSiJae()
 {
     Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
@@ -61,9 +54,6 @@ ALSPlayerSiJae::ALSPlayerSiJae()
             Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
 
 }
-
-
-
 
 bool ALSPlayerSiJae::CanPushWheelchair() const
 {
@@ -93,7 +83,56 @@ void ALSPlayerSiJae::Attack() {
     } 
 }
 
+void ALSPlayerSiJae::Move(const FInputActionValue& Value)
+{
+    if (bIsDead)
+        return;
 
+    if (!IsLocallyControlled())
+        return;
+
+    if (PushedWheelchairCharacter && PushedWheelchairCharacter->bIsBeingPushed)
+    {
+        FVector2D MovementVector = Value.Get<FVector2D>();
+        HandlePusherWheelchairInput(MovementVector);
+        return;
+    }
+    else
+    {
+        Super::Move(Value);
+    }
+}
+
+void ALSPlayerSiJae::Jump()
+{
+    if (PushedWheelchairCharacter && PushedWheelchairCharacter->bIsBeingPushed)
+    {
+        return;
+    }
+    else
+    {
+        Super::Jump();
+    }
+}
+
+void ALSPlayerSiJae::HandlePusherWheelchairInput(const FVector2D& MovementVector)
+{
+    const FRotator Rotation = Controller->GetControlRotation();
+    const FRotator YawRotation(0, Rotation.Yaw, 0);
+    const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+    if (FMath::Abs(MovementVector.Y) > 0.1f)
+    {
+        AddMovementInput(ForwardDirection, MovementVector.Y);
+    }
+
+    // 좌우 입력을 회전 처리
+    if (FMath::Abs(MovementVector.X) > 0.1f)
+    {
+        float TurnInput = MovementVector.X * (WheelchairTurnRate / 200.0f); // 값 조정
+        AddControllerYawInput(TurnInput);
+    }
+}
 
 void ALSPlayerSiJae::Tick(float DeltaTime)
 {
@@ -118,12 +157,6 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
             DarkWidgetInstance->SetOpacityByDistance(Distance);
         }
     }
-
-
-    
-
-
-    
 }
 
 void ALSPlayerSiJae::AnimNotify_AttackHitChek()

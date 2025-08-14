@@ -52,7 +52,19 @@ protected:
 public:
 	void TransferPlayerLocation(FVector InSijaeLocation, FVector InIjaeLocation) override;
 
-//Test Login
+// Test Login
 protected:
 	void TestLoginProcess(class APlayerController* ResultController);
+
+
+// Script Section
+protected:
+	void BroadcastScript(const FString& InScript);
+
+//MapVersionControll
+protected:
+	TMap<FString, int32> MapVersions;
+
+	void CheckMapVersion();
+
 };

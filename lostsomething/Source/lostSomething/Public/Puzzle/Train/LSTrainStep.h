@@ -47,6 +47,7 @@ public:
 //Puzzle Section
 public:
 	void PuzzleDeactivate();
+	void StartInstallPuzzle();
 
 
 //Replicated Section
@@ -59,4 +60,7 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCInstallStep();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCStartInstallPuzzle();
 };
