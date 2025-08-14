@@ -68,3 +68,9 @@ void ULSPlayerIJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		//bIsJumping = bIsFalling & (Velocity.Z > JumpingThreshould);
 	}
 }
+
+void ULSPlayerIJaeAnimInstance::AnimNotify_Throwing()
+{
+	UE_LOG(LogTemp, Log, TEXT("Animation_Throwing"));
+
+}

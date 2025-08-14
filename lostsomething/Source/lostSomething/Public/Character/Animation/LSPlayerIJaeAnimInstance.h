@@ -13,7 +13,7 @@ UCLASS()
 class LOSTSOMETHING_API ULSPlayerIJaeAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
 public:
 	ULSPlayerIJaeAnimInstance();
 	void SetDeadAnim();
@@ -32,7 +32,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* ThrowingMontage;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
@@ -70,4 +70,7 @@ protected:
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	//float JumpingThreshould;
 
+private:
+	UFUNCTION()
+	void AnimNotify_Throwing();
 };
