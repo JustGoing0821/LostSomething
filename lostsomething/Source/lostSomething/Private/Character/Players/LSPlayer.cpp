@@ -208,6 +208,9 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 		CurrentHp -= DamageAmount;
 		HpComponent->SetHp(CurrentHp);
 		LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
+
+
+		
 	}
 
 
@@ -1354,6 +1357,7 @@ void ALSPlayer::PickUpCore()
 	{
 		SiJae->WeaponPickUp();
 		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+		
 	}
 
 
