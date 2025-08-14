@@ -9,6 +9,7 @@
 #include "Character/Players/LSPlayer.h"
 #include "Character/Item/Weapon.h"
 #include "Components/CapsuleComponent.h"
+#include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void ALSPlayerSiJae::BeginPlay()
@@ -45,15 +46,13 @@ void ALSPlayerSiJae::BeginPlay()
 
 ALSPlayerSiJae::ALSPlayerSiJae()
 {
-//    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-// 
-//
-//    //소켓 붙이기
-//    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
-//    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
-//
-//    //Weapon = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
-//    Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+
+            //소켓 붙이기
+            FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+            FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+            Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+
 }
 
 bool ALSPlayerSiJae::CanPushWheelchair() const
@@ -159,3 +158,176 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
         }
     }
 }
+
+void ALSPlayerSiJae::AnimNotify_AttackHitChek()
+{
+    UE_LOG(LogTemp, Log, TEXT("Animation_AttackHit"));
+}
+
+//
+//void ALSPlayerSiJae::AnimNotify_PickChek()
+//{
+//    UE_LOG(LogTemp, Log, TEXT("Animation_PickCheck"));
+//}
+
+
+
+void ALSPlayerSiJae::WeaponPickUp()
+{
+    FHitResult OutHitResult;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(WeaponPickUp), false, this);
+    const float PickupRange = 200.0f;
+    const float PickupRadius = 100.0f;
+
+    FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+    FVector End = Start + GetActorForwardVector() * PickupRange;
+
+    bool bHit = GetWorld()->SweepSingleByChannel(
+        OutHitResult, Start, End, FQuat::Identity,
+        ECC_GameTraceChannel1,
+        FCollisionShape::MakeSphere(PickupRadius),
+        Params
+    );
+
+    if (!bHit)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No weapon found."));
+        return;
+    }
+
+    AWeapon* HitWeapon = Cast<AWeapon>(OutHitResult.GetActor());
+    if (!HitWeapon)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit actor is not a weapon."));
+        return;
+    }
+
+    // 손에 붙이기
+    HitWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket")
+    );
+
+    //HitWeapon->SetOwner(this);
+
+    // 물리 끄기 + 충돌 끄기
+    HitWeapon->SetActorEnableCollision(false);
+
+    if (UStaticMeshComponent* WeaponMesh = HitWeapon->FindComponentByClass<UStaticMeshComponent>())
+    {
+        WeaponMesh->SetSimulatePhysics(false);
+        WeaponMesh->SetEnableGravity(false);
+    }
+
+
+
+    if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HitWeapon->GetRootComponent()))
+    {
+        RootComp->SetSimulatePhysics(false);
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Weapon successfully picked up and attached."));
+    
+
+   
+}
+
+void ALSPlayerSiJae::ServerWeaponPickUp_Implementation()
+{
+   
+}
+
+void ALSPlayerSiJae::MultiWeaponPickUp_Implementation()
+{
+    
+}
+
+void ALSPlayerSiJae::ClientWeaponPickUp_Implementation()
+{
+}
+
+
+
+
+
+
+//void ALSPlayerSiJae::PickUp()
+//{
+//	Super::PickUp();
+//	
+//	FHitResult OutHitResult;
+//	FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
+//	const float PickupRange = 200.0f;
+//	const float PickupRadius = 100.0f;
+//	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+//	const FVector End = Start + GetActorForwardVector() * PickupRange;
+//	FColor DrawColor;
+//
+//
+//	//아이템 hit 시
+//	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
+//	if (HitDetected)
+//	{
+//		AActor* HitActor = OutHitResult.GetActor();
+//		
+//		// MasterItem 픽업 처리
+//		AWeapon* HitItem = Cast<AWeapon>(HitActor);
+//		if (HitItem)
+//		{
+//           
+//		}
+//
+//
+//		if (!HitItem)
+//		{
+//            return;
+//		}
+//
+//
+//		if (HasAuthority())
+//		{
+//			
+//			HitItem->Destroy();
+//		}
+//		else
+//		{
+//			// 클라이언트인 경우: 서버에 삭제 요청
+//			ServerPickUp(HitItem);
+//
+//		}
+//
+//		// 아이템 제거
+//		HitItem->Destroy();
+//
+//		
+//		DrawColor = FColor::Green;
+//		return; // 픽업했으면 함수 종료
+//	}
+//	else
+//	{
+//		
+//	}
+//
+//}
+
+//
+//
+//void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
+//{
+//	if (!TargetItem) return;
+//
+//	TargetItem->Destroy();
+//	MultiPickUp(TargetItem);
+//	
+//
+//
+//}
+//
+//void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
+//{
+//	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+//	if (AnimInstance)
+//	{
+//		AnimInstance->SetPickUpAnim();
+//		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+//	}
+//}
+

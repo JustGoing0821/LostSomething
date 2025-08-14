@@ -2,6 +2,7 @@
 
 #include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
 #include "GameFramework/Character.h"
+#include "Character/Players/LSPlayer.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -71,6 +72,31 @@ void ULSPlayerSiJaeAnimInstance::SetAttackAnim()
 		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
 		Montage_Play(AttackMontage);
 	}
+}
+
+void ULSPlayerSiJaeAnimInstance::HitAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HitAnmi called"));
+
+	if (!HitMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT(" is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(HitMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		Montage_Play(HitMontage);
+	}
+
+}
+
+void ULSPlayerSiJaeAnimInstance::AnimNotify_PickCheck()
+{
+	if (ALSPlayer* Player = Cast<ALSPlayer>(TryGetPawnOwner()))
+	Player->PickUp();
+	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_PickCheck fired"));
 }
 
 void ULSPlayerSiJaeAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
