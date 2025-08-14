@@ -32,7 +32,7 @@ ALSPlayer::ALSPlayer()
 
 	Weapon->SetupAttachment(GetMesh());*/
 
-	//ì†Œì¼“ ë¶™ì´ê¸°
+	//¼ÒÄÏ ºÙÀÌ±â
 	/*FName WeaponSocket(TEXT("hand_rSocket"));
 	if (GetMesh()->DoesSocketExist(WeaponSocket))
 	{
@@ -62,12 +62,12 @@ ALSPlayer::ALSPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-	//ì»¨íŠ¸ë¡¤ëŸ¬ íšŒì „ì‹œ íšŒì „ x
+	//ÄÁÆ®·Ñ·¯ È¸Àü½Ã È¸Àü x
 	//bUseControllerRotationPitch = false;
 
-	//// ì´ë™ ë°©í–¥ì— ë”°ë¼ ìºë¦­í„° íšŒì „
+	//// ÀÌµ¿ ¹æÇâ¿¡ µû¶ó Ä³¸¯ÅÍ È¸Àü
 	////GetCharacterMovement()->bOrientRotationToMovement = true;
-	//bUseControllerRotationYaw = true; //ìˆ˜ì •
+	//bUseControllerRotationYaw = true; //¼öÁ¤
 
 	//bUseControllerRotationRoll = false;
 
@@ -98,15 +98,15 @@ ALSPlayer::ALSPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
+	
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
 	CurrentHp = 100.0f;
 
-	//item ë°©í–¥ arrow
+	//item ¹æÇâ arrow
 	DropItemLoc = CreateDefaultSubobject<UArrowComponent>(TEXT("DropItemLoc"));
 	DropItemLoc->SetupAttachment(RootComponent);
-	// Arrow ìœ„ì¹˜ ì¡°ì • (í”Œë ˆì´ì–´ ì•ìª½ì— ë°°ì¹˜)
+	// Arrow À§Ä¡ Á¶Á¤ (ÇÃ·¹ÀÌ¾î ¾ÕÂÊ¿¡ ¹èÄ¡)
 	DropItemLoc->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 
 	bIsBeingPushed = false;
@@ -128,20 +128,20 @@ void ALSPlayer::BeginPlay()
 
 	if (HpComponent)
 	{
-		// HpComponentì˜ OnHpChanged ë¸ë¦¬ê²Œì´íŠ¸ì— ìš°ë¦¬ì˜ OnHpChanged í•¨ìˆ˜ë¥¼ ë°”ì¸ë”©
+		// HpComponentÀÇ OnHpChanged µ¨¸®°ÔÀÌÆ®¿¡ ¿ì¸®ÀÇ OnHpChanged ÇÔ¼ö¸¦ ¹ÙÀÎµù
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
 		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
 		
 		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
 		UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
 
-		// í˜„ì¬ ì²´ë ¥ê°’ìœ¼ë¡œ HUD ì´ˆê¸°í™”
+		// ÇöÀç Ã¼·Â°ªÀ¸·Î HUD ÃÊ±âÈ­
 		OnHpChanged(HpComponent->GetHp());
 
 
 	}
 
-	//ì¸ë²¤í† ë¦¬ ì´ˆê¸°í™”
+	//ÀÎº¥Åä¸® ÃÊ±âÈ­
 	InitializeInventory();
 
 }
@@ -151,7 +151,7 @@ void ALSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// ì´ì œ(IJae) ìºë¦­í„°ê°€ ë°€ë¦¬ê³  ìˆëŠ” ìƒíƒœë¼ë©´ ì´ë™ ì²˜ë¦¬
+	// ÀÌÁ¦(IJae) Ä³¸¯ÅÍ°¡ ¹Ğ¸®°í ÀÖ´Â »óÅÂ¶ó¸é ÀÌµ¿ Ã³¸®
 	if (bIsBeingPushed && PusherCharacter)
 	{
 		HandleWheelchairMovement();
@@ -177,7 +177,7 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//ì¶”ê°€ ì½”ë“œ (feat.ìŠ¬)
+	//Ãß°¡ ÄÚµå (feat.½½)
 	if (HasAuthority())
 	{
 		ApplyDamage(DamageAmount);
@@ -234,11 +234,11 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
-	// í”Œë ˆì´ì–´ ì»¨íŠ¸ë¡¤ëŸ¬ ê°€ì ¸ì˜¤ê¸°
+	// ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ °¡Á®¿À±â
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
 	if (LSController && LSController->GetLSHUDWidget())
 	{
-		// HUD ìœ„ì ¯ì˜ HP ë°” ì—…ë°ì´íŠ¸
+		// HUD À§Á¬ÀÇ HP ¹Ù ¾÷µ¥ÀÌÆ®
 		LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
 		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
 	}
@@ -269,7 +269,7 @@ void ALSPlayer::MeshHide()
 
 void ALSPlayer::Die()
 {
-	if (bIsDead) return; // ì´ë¯¸ ì£½ì—ˆìœ¼ë©´ ë¦¬í„´
+	if (bIsDead) return; // ÀÌ¹Ì Á×¾úÀ¸¸é ¸®ÅÏ
 
 	bIsDead = true;
 	UE_LOG(LogTemp, Warning, TEXT("Player died"));
@@ -279,14 +279,14 @@ void ALSPlayer::Die()
 	if (HasAuthority())
 	{
 		MultiDie();
-		// ëª¨ë“  ì…ë ¥ ì°¨ë‹¨
+		// ¸ğµç ÀÔ·Â Â÷´Ü
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		{
 			//PC->ShowDeathWidget();
 			//DisableInput(PC);
 		}
 
-		// ë©”ì‹œ ìˆ¨ê¸°ê¸°
+		// ¸Ş½Ã ¼û±â±â
 		if (GetMesh())
 		{
 			
@@ -296,13 +296,13 @@ void ALSPlayer::Die()
 
 
 
-		// ì¶©ëŒ ë¹„í™œì„±í™”
+		// Ãæµ¹ ºñÈ°¼ºÈ­
 		//SetActorEnableCollision(false);
 
-		// ì´ë™ ë¹„í™œì„±í™”
+		// ÀÌµ¿ ºñÈ°¼ºÈ­
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
 
-		// 5ì´ˆ í›„ ë¶€í™œ íƒ€ì´ë¨¸ ì‹œì‘
+		// 5ÃÊ ÈÄ ºÎÈ° Å¸ÀÌ¸Ó ½ÃÀÛ
 		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle,this,&ALSPlayer::Respawn,5.0f,false);
 		
 	}
@@ -338,7 +338,7 @@ void ALSPlayer::MultiDie_Implementation()
 		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
-	// ë³¸ì¸ í´ë¼ì´ì–¸íŠ¸ì—ì„œë§Œ UI ì²˜ë¦¬
+	// º»ÀÎ Å¬¶óÀÌ¾ğÆ®¿¡¼­¸¸ UI Ã³¸®
 	if (IsLocallyControlled())
 	{
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
@@ -356,7 +356,7 @@ void ALSPlayer::ClientDie_Implementation()
 
 void ALSPlayer::Respawn()
 {
-	if (!bIsDead) return; // ì´ë¯¸ ì‚´ì•„ìˆìœ¼ë©´ ë¦¬í„´
+	if (!bIsDead) return; // ÀÌ¹Ì »ì¾ÆÀÖÀ¸¸é ¸®ÅÏ
 
 	bIsDead = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
@@ -364,14 +364,14 @@ void ALSPlayer::Respawn()
 	if (HasAuthority())
 	{
 		
-		// HP í’€ë¡œ íšŒë³µ
+		// HP Ç®·Î È¸º¹
 		if (HpComponent)
 		{
 			HpComponent->SetHp(100.0f);
 			CurrentHp = 100.0f;
 		}
 
-		// íƒ€ì´ë¨¸ í´ë¦¬ì–´
+		// Å¸ÀÌ¸Ó Å¬¸®¾î
 		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
 
 		MultiRespawn();
@@ -386,31 +386,31 @@ void ALSPlayer::ServerRespawn_Implementation()
 
 void ALSPlayer::MultiRespawn_Implementation()
 {
-		// ë©”ì‹œ ë‹¤ì‹œ ë³´ì´ê²Œ
+		// ¸Ş½Ã ´Ù½Ã º¸ÀÌ°Ô
 	if (GetMesh())
 	{
 		GetMesh()->SetVisibility(true);
 		
 	}
 
-	// HP í’€ë¡œ íšŒë³µ
+	// HP Ç®·Î È¸º¹
 	if (HpComponent)
 	{
-		HpComponent->SetHp(100.0f); // MaxHpë¡œ ì„¤ì •
+		HpComponent->SetHp(100.0f); // MaxHp·Î ¼³Á¤
 		CurrentHp = 100.0f;
 	}
 
-	// ì…ë ¥ ì¬í™œì„±í™”
+	// ÀÔ·Â ÀçÈ°¼ºÈ­
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
 		PC->HideDeathWidget();
 		EnableInput(PC);
 	}
 
-	// ì¶©ëŒ ì¬í™œì„±í™”
+	// Ãæµ¹ ÀçÈ°¼ºÈ­
 	SetActorEnableCollision(true);
 
-	// ì´ë™ ì¬í™œì„±í™”
+	// ÀÌµ¿ ÀçÈ°¼ºÈ­
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 
 	
@@ -423,15 +423,15 @@ void ALSPlayer::ClientRespawn_Implementation()
 
 
 
-//ì•„ì´í…œ í”½ì—…í•¨ìˆ˜
+//¾ÆÀÌÅÛ ÇÈ¾÷ÇÔ¼ö
 //void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
 //{
-//	// Pick Item In Slot í•¨ìˆ˜ í˜¸ì¶œ
+//	// Pick Item In Slot ÇÔ¼ö È£Ãâ
 //	//PickItemInSlot(PickedItemInfo);
 //
 //}
 
-//ìŠ¬ë¡¯ì— ì•„ì´í…œ ë„£ê¸°
+//½½·Ô¿¡ ¾ÆÀÌÅÛ ³Ö±â
 void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
@@ -442,30 +442,30 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 		{
 			int32 CurrentSelectedSlot = SelectedSlot;
 
-			//ìŠ¬ë¡¯ ë²ˆí˜¸ ìœ íš¨í•œì§€ ì²´í¬
+			//½½·Ô ¹øÈ£ À¯È¿ÇÑÁö Ã¼Å©
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
 			
-				//ìŠ¬ë¡¯ ë°°ì—´ì—ì„œ ì•„ì´í…œ ì •ã…‡ë³´ ë³µì‚¬í•´ì˜¤ê¸°
+				//½½·Ô ¹è¿­¿¡¼­ ¾ÆÀÌÅÛ Á¤¤·º¸ º¹»çÇØ¿À±â
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-				if (bCurrentSlotIsEmpty)  // ë¹ˆ ìŠ¬ë¡¯ì¸ ê²½ìš°ì—ë§Œ í”½ì—…
+				if (bCurrentSlotIsEmpty)  // ºó ½½·ÔÀÎ °æ¿ì¿¡¸¸ ÇÈ¾÷
 				{
-					// ìƒˆ ì•„ì´í…œ ì €ì¥
+					// »õ ¾ÆÀÌÅÛ ÀúÀå
 					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
 
-					// ì•„ì´ì½˜ ì—…ë°ì´íŠ¸
+					// ¾ÆÀÌÄÜ ¾÷µ¥ÀÌÆ®
 					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
 					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
 					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
 				}
-				else  // ì´ë¯¸ ì°¨ìˆëŠ” ìŠ¬ë¡¯ì¸ ê²½ìš°
+				else  // ÀÌ¹Ì Â÷ÀÖ´Â ½½·ÔÀÎ °æ¿ì
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
 
-					// ê¸°ì¡´ ì•„ì´í…œë§Œ ë“œë¡­í•˜ê³  ë (ìƒˆ ì•„ì´í…œì€ í”½ì—…í•˜ì§€ ì•ŠìŒ)
+					// ±âÁ¸ ¾ÆÀÌÅÛ¸¸ µå·ÓÇÏ°í ³¡ (»õ ¾ÆÀÌÅÛÀº ÇÈ¾÷ÇÏÁö ¾ÊÀ½)
 					DropItemFromSlot();
 				}
 			}
@@ -478,12 +478,12 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 
 
-//ì¸ë²¤í† ë¦¬ ì´ˆê¸°í™”
+//ÀÎº¥Åä¸® ÃÊ±âÈ­
 void ALSPlayer::InitializeInventory()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
 
-	// Empty Item ìƒì„±
+	// Empty Item »ı¼º
 	FItemDetails EmptyItem;
 	EmptyItem.Item_Name = NAME_None;
 	EmptyItem.Item_Icon = nullptr;
@@ -491,9 +491,9 @@ void ALSPlayer::InitializeInventory()
 	EmptyItem.IsEmpty = true;
 	EmptyItem.Item_Class = nullptr;
 
-	// ItemInfoArrayë¥¼ Empty Itemìœ¼ë¡œ ì±„ì›€
+	// ItemInfoArray¸¦ Empty ItemÀ¸·Î Ã¤¿ò
 	MaxSlots = 5; 
-	ItemInfoArray.Empty(); //ë°°ì—´ ë¹„ìš°ê¸°
+	ItemInfoArray.Empty(); //¹è¿­ ºñ¿ì±â
 
 	for (int32 i = 0; i < MaxSlots; ++i)
 	{
@@ -504,14 +504,14 @@ void ALSPlayer::InitializeInventory()
 
 
 
-	// ì´ˆê¸°í™” í›„ ëª¨ë“  ìŠ¬ë¡¯ì— ê¸°ë³¸ ì•„ì´ì½˜ ì„¤ì •
+	// ÃÊ±âÈ­ ÈÄ ¸ğµç ½½·Ô¿¡ ±âº» ¾ÆÀÌÄÜ ¼³Á¤
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
 			for (int32 i = 0; i < MaxSlots; ++i)
 			{
-				HUD->SetIcon(i, nullptr); // nullì„ ì „ë‹¬í•˜ë©´ ê¸°ë³¸ ì•„ì´ì½˜ í‘œì‹œ
+				HUD->SetIcon(i, nullptr); // nullÀ» Àü´ŞÇÏ¸é ±âº» ¾ÆÀÌÄÜ Ç¥½Ã
 			}
 		}
 	}
@@ -531,15 +531,15 @@ void ALSPlayer::ThrowItem()
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 				if (!CurrentSlotItem.IsEmpty)
 				{
-					// í¬ë¬¼ì„ ìœ¼ë¡œ ì•„ì´í…œ ìŠ¤í°
+					// Æ÷¹°¼±À¸·Î ¾ÆÀÌÅÛ ½ºÆù
 					SpawnThrowableItem(CurrentSlotItem);
 
-					// ìŠ¬ë¡¯ ë¹„ìš°ê¸° (DropItemFromSlotê³¼ ë™ì¼)
+					// ½½·Ô ºñ¿ì±â (DropItemFromSlot°ú µ¿ÀÏ)
 					FItemDetails EmptySlot;
 					EmptySlot.IsEmpty = true;
 					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
 
-					// UI ì•„ì´ì½˜ ì œê±°
+					// UI ¾ÆÀÌÄÜ Á¦°Å
 					HUD->SetIcon(CurrentSelectedSlot, nullptr);
 
 					UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
@@ -589,7 +589,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
 
-		// ìˆ«ìí‚¤ ë°”ì¸ë”©
+		// ¼ıÀÚÅ° ¹ÙÀÎµù
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
 		EnhancedInputComponent->BindAction(SelectSlot2Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot2);
 		EnhancedInputComponent->BindAction(SelectSlot3Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot3);
@@ -612,11 +612,11 @@ void ALSPlayer::Move(const FInputActionValue& Value)
 {
 	if (bIsDead) return;
 
-	// ë¡œì»¬ì—ì„œ ì œì–´ ì¤‘ì¸ì§€ í™•ì¸
+	// ·ÎÄÃ¿¡¼­ Á¦¾î ÁßÀÎÁö È®ÀÎ
 	if (!IsLocallyControlled())
 		return;
 
-	// ì´ì œ(IJae) ìºë¦­í„°ê°€ ë°€ë¦¬ê³  ìˆë‹¤ë©´ ì…ë ¥ ë¬´ì‹œ
+	// ÀÌÁ¦(IJae) Ä³¸¯ÅÍ°¡ ¹Ğ¸®°í ÀÖ´Ù¸é ÀÔ·Â ¹«½Ã
 	if (bIsBeingPushed)
 		return;
 
@@ -630,7 +630,7 @@ void ALSPlayer::Move(const FInputActionValue& Value)
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// ì¼ë°˜ ì´ë™ ë¡œì§
+		// ÀÏ¹İ ÀÌµ¿ ·ÎÁ÷
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -662,14 +662,14 @@ void ALSPlayer::Attack()
 	{
 		if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
 		{
-			// ì•„ì´í…œì´ ìˆìœ¼ë©´ ë˜ì§€ê¸°
+			// ¾ÆÀÌÅÛÀÌ ÀÖÀ¸¸é ´øÁö±â
 			LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
 			ThrowItem();
 			return;
 		}
 	}
 
-	// í˜„ì¬ ì„ íƒëœ ìŠ¬ë¡¯ì— ì•„ì´í…œì´ ìˆëŠ”ì§€ í™•ì¸
+	// ÇöÀç ¼±ÅÃµÈ ½½·Ô¿¡ ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö È®ÀÎ
 	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	//{
 	//	
@@ -680,7 +680,7 @@ void ALSPlayer::Attack()
 	//	}*/
 	//}
 
-	// ì•„ì´í…œì´ ì—†ìœ¼ë©´
+	// ¾ÆÀÌÅÛÀÌ ¾øÀ¸¸é
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 
 
@@ -717,14 +717,14 @@ void ALSPlayer::ProcessAttack()
 
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
 		{
-			// Playerë©´ ë°ë¯¸ì§€ x
+			// Player¸é µ¥¹ÌÁö x
 			UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
 			DrawColor = FColor::Red;
 		}
 
 		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
 		{
-			// NPCë§Œ ë°ë¯¸ì§€ ì ìš©
+			// NPC¸¸ µ¥¹ÌÁö Àû¿ë
 			FDamageEvent DamageEvent;
 			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
 			DrawColor = FColor::Blue;
@@ -782,13 +782,13 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 
 
 //
-//	// ì•„ì´í…œì´ ê°ì§€ë˜ì§€ ì•Šì•˜ê±°ë‚˜ MasterItemì´ ì•„ë‹Œ ê²½ìš°
-//	// í˜„ì¬ ì„ íƒëœ ìŠ¬ë¡¯ì˜ ì•„ì´í…œì„ ë“œë¡­
+//	// ¾ÆÀÌÅÛÀÌ °¨ÁöµÇÁö ¾Ê¾Ò°Å³ª MasterItemÀÌ ¾Æ´Ñ °æ¿ì
+//	// ÇöÀç ¼±ÅÃµÈ ½½·ÔÀÇ ¾ÆÀÌÅÛÀ» µå·Ó
 //	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
 //	DropItemFromSlot();
 //	DrawColor = FColor::Red;
 //
-//	// ë””ë²„ê·¸ ë¼ì¸
+//	// µğ¹ö±× ¶óÀÎ
 //	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
 //	float CapsuleHalfHeight = PickupRange * 0.5f;
 //	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
@@ -799,7 +799,7 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 //{
 //	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
 //
-//	// PlayerControllerë¥¼ í†µí•´ HUDì— ì ‘ê·¼
+//	// PlayerController¸¦ ÅëÇØ HUD¿¡ Á¢±Ù
 //	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 //	{
 //		PC->SelectNextSlot();
@@ -814,7 +814,7 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 //{
 //	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
 //
-//	// PlayerControllerë¥¼ í†µí•´ HUDì— ì ‘ê·¼
+//	// PlayerController¸¦ ÅëÇØ HUD¿¡ Á¢±Ù
 //	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 //	{
 //		PC->SelectPreviousSlot();
@@ -834,7 +834,7 @@ void ALSPlayer::Interaction()
 {
 	if (bIsDead) return;
 
-	// ë¡œì»¬ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ìˆëŠ”ì§€ í™•ì¸
+	// ·ÎÄÃ ÄÁÆ®·Ñ·¯°¡ ÀÖ´ÂÁö È®ÀÎ
 	if (!IsLocallyControlled())
 	{
 		return;
@@ -859,41 +859,41 @@ void ALSPlayer::Interaction()
 
 		LS_LOG(LogLS, Warning, TEXT("Hit Actor: %s"), *HitActor->GetName());
 
-		// íœ ì²´ì–´ ì¸í„°í˜ì´ìŠ¤ ì²´í¬
+		// ÈÙÃ¼¾î ÀÎÅÍÆäÀÌ½º Ã¼Å©
 		if (HitActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
 		{
-			// íƒ€ê²Ÿ ì•¡í„°ê°€ ë‹¤ë¥¸ í”Œë ˆì´ì–´ì¸ì§€ í™•ì¸
+			// Å¸°Ù ¾×ÅÍ°¡ ´Ù¸¥ ÇÃ·¹ÀÌ¾îÀÎÁö È®ÀÎ
 			ALSPlayer* HitPlayer = Cast<ALSPlayer>(HitActor);
 			if (HitPlayer)
 			{
-				// ë‚´ê°€ íœ ì²´ì–´ë¥¼ ë°€ ìˆ˜ ìˆëŠ”ì§€ í™•ì¸
+				// ³»°¡ ÈÙÃ¼¾î¸¦ ¹Ğ ¼ö ÀÖ´ÂÁö È®ÀÎ
 				if (CanPushWheelchair())
 				{
-					// ì‹œì œ(SiJae)ê°€ ì´ì œ(IJae)ì™€ ìƒí˜¸ì‘ìš©
+					// ½ÃÁ¦(SiJae)°¡ ÀÌÁ¦(IJae)¿Í »óÈ£ÀÛ¿ë
 					if (HasAuthority())
 					{
-						// ì„œë²„ì—ì„œ ì§ì ‘ ì‹¤í–‰
+						// ¼­¹ö¿¡¼­ Á÷Á¢ ½ÇÇà
 						bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(HitActor);
 						if (bIsPushed && HitPlayer->PusherCharacter == this)
 						{
-							// ë°€ê¸° ì¤‘ì§€
+							// ¹Ğ±â ÁßÁö
 							ILSWheelchairInterface::Execute_StopPushingWheelchair(HitActor, this);
 						}
 						else if (!bIsPushed)
 						{
-							// ë°€ê¸° ì‹œì‘
+							// ¹Ğ±â ½ÃÀÛ
 							ILSWheelchairInterface::Execute_StartPushingWheelchair(HitActor, this);
 						}
 					}
 					else
 					{
-						// í´ë¼ì´ì–¸íŠ¸ì—ì„œëŠ” ì„œë²„ì— ìš”ì²­
+						// Å¬¶óÀÌ¾ğÆ®¿¡¼­´Â ¼­¹ö¿¡ ¿äÃ»
 						ServerRequestWheelchairInteraction(HitActor);
 					}
 				}
 				else
 				{
-					// ì´ì œ(IJae)ëŠ” ë‹¤ë¥¸ í”Œë ˆì´ì–´ë¥¼ ë°€ ìˆ˜ ì—†ìŒì„ ë¡œê·¸ë¡œ ë‚¨ê¹€
+					// ÀÌÁ¦(IJae)´Â ´Ù¸¥ ÇÃ·¹ÀÌ¾î¸¦ ¹Ğ ¼ö ¾øÀ½À» ·Î±×·Î ³²±è
 					LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
 				}
 				DrawColor = FColor::Yellow;
@@ -901,7 +901,7 @@ void ALSPlayer::Interaction()
 			}
 		}
 
-		// ì—¬ê¸°ì„œë¶€í„°ëŠ” ì¼ë°˜ ìƒí˜¸ì‘ìš© ì²˜ë¦¬ (ëª¨ë“  ìºë¦­í„°ê°€ ìˆ˜í–‰ ê°€ëŠ¥)
+		// ¿©±â¼­ºÎÅÍ´Â ÀÏ¹İ »óÈ£ÀÛ¿ë Ã³¸® (¸ğµç Ä³¸¯ÅÍ°¡ ¼öÇà °¡´É)
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 		ILSInteractionInterface* HitInteractable = Cast<ILSInteractionInterface>(HitActor);
 		if (HitInteractable)
@@ -942,7 +942,7 @@ bool ALSPlayer::ServerRequestWheelchairInteraction_Validate(AActor* TargetActor)
 
 void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* TargetActor)
 {
-	// ì„œë²„ì—ì„œ ìš”ì²­ ì²˜ë¦¬
+	// ¼­¹ö¿¡¼­ ¿äÃ» Ã³¸®
 	if (!TargetActor || !TargetActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
 	{
 		return;
@@ -951,10 +951,10 @@ void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* Target
 	ALSPlayer* WheelchairPlayer = Cast<ALSPlayer>(TargetActor);
 	if (!WheelchairPlayer) return;
 
-	// ì´ë¯¸ ë‚´ê°€ ë°€ê³  ìˆë‹¤ë©´ ì¤‘ì§€, ì•„ë‹ˆë©´ ì‹œì‘ (ë‹¨ìˆœí™”ëœ ë¡œì§)
+	// ÀÌ¹Ì ³»°¡ ¹Ğ°í ÀÖ´Ù¸é ÁßÁö, ¾Æ´Ï¸é ½ÃÀÛ (´Ü¼øÈ­µÈ ·ÎÁ÷)
 	if (WheelchairPlayer->bIsBeingPushed && WheelchairPlayer->PusherCharacter == this)
 	{
-		// ë°€ê¸° ì¤‘ì§€
+		// ¹Ğ±â ÁßÁö
 		WheelchairPlayer->bIsBeingPushed = false;
 		WheelchairPlayer->PusherCharacter = nullptr;
 		this->PushedWheelchairCharacter = nullptr;
@@ -962,7 +962,7 @@ void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* Target
 	}
 	else
 	{
-		// ë‹¤ë¥¸ ìƒíƒœë©´ ê°•ì œë¡œ ì´ˆê¸°í™”í•˜ê³  ë°€ê¸° ì‹œì‘
+		// ´Ù¸¥ »óÅÂ¸é °­Á¦·Î ÃÊ±âÈ­ÇÏ°í ¹Ğ±â ½ÃÀÛ
 		WheelchairPlayer->bIsBeingPushed = true;
 		WheelchairPlayer->PusherCharacter = this;
 		this->PushedWheelchairCharacter = WheelchairPlayer;
@@ -970,7 +970,7 @@ void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* Target
 	}
 }
 
-// ë¦¬í”Œë¦¬ì¼€ì´ì…˜ ì„¤ì •
+// ¸®ÇÃ¸®ÄÉÀÌ¼Ç ¼³Á¤
 void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -983,12 +983,12 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, PushedWheelchairCharacter);
 }
 
-// íœ ì²´ì–´ ì¸í„°í˜ì´ìŠ¤ êµ¬í˜„
+// ÈÙÃ¼¾î ÀÎÅÍÆäÀÌ½º ±¸Çö
 void ALSPlayer::StartPushingWheelchair_Implementation(ACharacter* Pusher)
 {
 	if (HasAuthority())
 	{
-		// ì„œë²„ì¼ ê²½ìš° ì§ì ‘ ì²˜ë¦¬
+		// ¼­¹öÀÏ °æ¿ì Á÷Á¢ Ã³¸®
 		if (!bIsBeingPushed && Pusher != nullptr)
 		{
 			bIsBeingPushed = true;
@@ -1046,13 +1046,12 @@ bool ALSPlayer::ServerStopPushingWheelchair_Validate()
 	return true;
 }
 
-
 // Multicast RPC
 void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, ACharacter* Pusher)
 {
 	bIsBeingPushed = bPushing;
 	PusherCharacter = bPushing ? Pusher : nullptr;
-  
+
 	if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
 	{
 		if (ALSPlayer* Pusher = Cast<ALSPlayer>(Source))
@@ -1071,18 +1070,17 @@ void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, AC
 		}
 	}
 
-	// íƒ€ê²Ÿ Yaw ê³„ì‚°
+	// Å¸°Ù Yaw °è»ê
 	float TargetYaw = 0.f;
-	if (bPushing) // 3ì¸ì¹­ ì „í™˜ ì‹œ (ì´ì œê°€ ì‹œì œë¥¼ ë¯¸ëŠ” ê²½ìš°)
+	if (bPushing) // 3ÀÎÄª ÀüÈ¯ ½Ã (ÀÌÁ¦°¡ ½ÃÁ¦¸¦ ¹Ì´Â °æ¿ì)
 	{
-		TargetYaw = GetControlRotation().Yaw; // ì´ì œì˜ í˜„ì¬ ì‹œì 
+		TargetYaw = GetControlRotation().Yaw; // ÀÌÁ¦ÀÇ ÇöÀç ½ÃÁ¡
 	}
-	else // 1ì¸ì¹­ ì „í™˜ ì‹œ (ì‹œì œê°€ ì´ì œë¥¼ ë°€ë‹¤ í•´ì œ)
+	else // 1ÀÎÄª ÀüÈ¯ ½Ã (½ÃÁ¦°¡ ÀÌÁ¦¸¦ ¹Ğ´Ù ÇØÁ¦)
 	{
 		if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
 		{
-
-			TargetYaw = Source->GetControlRotation().Yaw; // ì‹œì œì˜ ì‹œì 
+			TargetYaw = Source->GetControlRotation().Yaw; // ½ÃÁ¦ÀÇ ½ÃÁ¡
 		}
 		else
 		{
@@ -1094,27 +1092,27 @@ void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, AC
 
 	if (bIsBeingPushed)
 	{
-		// 1ì¸ì¹­ -> 3ì¸ì¹­
+		// 1ÀÎÄª -> 3ÀÎÄª
 		if (IsLocallyControlled())
 		{
 			if (APlayerController* PC = Cast<APlayerController>(Controller))
 			{
 				PC->SetIgnoreLookInput(true);
 
-				// ì»¨íŠ¸ë¡¤ëŸ¬ & ì•¡í„° íšŒì „ ë™ê¸°í™”
+				// ÄÁÆ®·Ñ·¯ & ¾×ÅÍ È¸Àü µ¿±âÈ­
 				PC->SetControlRotation(TargetRot);
 				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
 
-				// ì¹´ë©”ë¼ ì „í™˜
+				// Ä«¸Ş¶ó ÀüÈ¯
 				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
 				FirstPersonCameraComponent->SetActive(false);
 				FollowCamera->SetActive(true);
 
-				// ë¸”ë Œë”© ì œê±°
+				// ºí·»µù Á¦°Å
 				if (PC->PlayerCameraManager)
 					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
 
-				// ì…ë ¥ í•´ì œëŠ” ë‹¤ìŒ í‹±
+				// ÀÔ·Â ÇØÁ¦´Â ´ÙÀ½ Æ½
 				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
 					{
 						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
@@ -1134,27 +1132,27 @@ void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, AC
 		return;
 	}
 
-	// 3ì¸ì¹­ -> 1ì¸ì¹­
+	// 3ÀÎÄª -> 1ÀÎÄª
 	if (IsLocallyControlled())
 	{
 		if (APlayerController* PC = Cast<APlayerController>(Controller))
 		{
 			PC->SetIgnoreLookInput(true);
 
-			// ì»¨íŠ¸ë¡¤ëŸ¬ & ì•¡í„° íšŒì „ ë™ê¸°í™”
+			// ÄÁÆ®·Ñ·¯ & ¾×ÅÍ È¸Àü µ¿±âÈ­
 			PC->SetControlRotation(TargetRot);
 			SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
 
-			// ì¹´ë©”ë¼ ì „í™˜
+			// Ä«¸Ş¶ó ÀüÈ¯
 			if (CameraBoom) CameraBoom->bDoCollisionTest = true;
 			FollowCamera->SetActive(false);
 			FirstPersonCameraComponent->SetActive(true);
 
-			// ë¸”ë Œë”© ì œê±°
+			// ºí·»µù Á¦°Å
 			if (PC->PlayerCameraManager)
 				PC->PlayerCameraManager->SetGameCameraCutThisFrame();
 
-			// ì…ë ¥ í•´ì œëŠ” ë‹¤ìŒ í‹±
+			// ÀÔ·Â ÇØÁ¦´Â ´ÙÀ½ Æ½
 			GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
 				{
 					if (APlayerController* PC2 = Cast<APlayerController>(Controller))
@@ -1189,7 +1187,7 @@ void ALSPlayer::HandleWheelchairMovement()
 	FVector NewLocation;
 	if (DistanceToTarget > NormalCombineDistance * 0.5f)
 	{
-		float InterpSpeed = 5.0f;
+		float InterpSpeed = 5.0f; 
 		NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation,
 			GetWorld()->GetDeltaSeconds(), InterpSpeed);
 	}
@@ -1225,7 +1223,7 @@ void ALSPlayer::CheckCombineDistance()
 			ServerRequestAutoSeparation();
 		}
 	}
-	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% ì—¬ìœ ë¶„
+	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% ¿©À¯ºĞ
 	{
 	}
 }
@@ -1235,12 +1233,12 @@ void ALSPlayer::AutoSeparateFromWheelchair()
 	if (!HasAuthority())
 		return;
 
-	// í•©ì²´ ìƒíƒœ í•´ì œ
+	// ÇÕÃ¼ »óÅÂ ÇØÁ¦
 	bIsBeingPushed = false;
 	ACharacter* FormerPusher = PusherCharacter;
 	PusherCharacter = nullptr;
 
-	// ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì— ìƒíƒœ ë³€ê²½ ì•Œë¦¼
+	// ¸ğµç Å¬¶óÀÌ¾ğÆ®¿¡ »óÅÂ º¯°æ ¾Ë¸²
 	MulticastWheelchairStateChanged(false, nullptr);
 }
 
@@ -1251,7 +1249,7 @@ bool ALSPlayer::ServerRequestAutoSeparation_Validate()
 
 void ALSPlayer::ServerRequestAutoSeparation_Implementation()
 {
-	// ì„œë²„ì—ì„œ ê±°ë¦¬ ì¬í™•ì¸ í›„ ë¶„ë¦¬
+	// ¼­¹ö¿¡¼­ °Å¸® ÀçÈ®ÀÎ ÈÄ ºĞ¸®
 	if (bIsBeingPushed && PusherCharacter)
 	{
 		FVector MyLocation = GetActorLocation();
@@ -1323,18 +1321,18 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			// ìŠ¬ë¡¯ ì¸ë±ìŠ¤ ìœ íš¨ì„± ê²€ì‚¬
-			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 ìŠ¬ë¡¯
+			// ½½·Ô ÀÎµ¦½º À¯È¿¼º °Ë»ç
+			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 ½½·Ô
 			{
 				SelectedSlot = SlotIndex;
 				//ChangeSlot(SlotIndex);
 				UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
 
-				// ìŠ¬ë¡¯ ìƒ‰ìƒ ì—…ë°ì´íŠ¸
+				// ½½·Ô »ö»ó ¾÷µ¥ÀÌÆ®
 				//LSHUDWidget->UpdateSlotBorderColors();
 
 
-				// í”Œë ˆì´ì–´ ì»¨íŠ¸ë¡¤ëŸ¬ ê°€ì ¸ì˜¤ê¸°
+				// ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ °¡Á®¿À±â
 				ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
 				if (LSController && LSController->GetLSHUDWidget())
 				{
@@ -1367,7 +1365,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 //{
 //	//SelectedSlot = NewSlot;
 //
-//	//// ìŠ¬ë¡¯ ë²”ìœ„ ê²€ì¦ ë° ìˆœí™˜ ì²˜ë¦¬
+//	//// ½½·Ô ¹üÀ§ °ËÁõ ¹× ¼øÈ¯ Ã³¸®
 //	//if (NewSlot < 0)
 //	//{
 //	//	SelectedSlot = MaxSlots;
@@ -1383,7 +1381,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 //
 //	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
 //
-//	// ìŠ¬ë¡¯ ìƒ‰ìƒ ì—…ë°ì´íŠ¸
+//	// ½½·Ô »ö»ó ¾÷µ¥ÀÌÆ®
 //	//UpdateSlotBorderColors();
 //}
 
@@ -1424,7 +1422,7 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
-//ì•„ì´í…œ ì¤ê¸°. PickItemInSlotìœ¼ë¡œ ì—°ê²°
+//¾ÆÀÌÅÛ Áİ±â. PickItemInSlotÀ¸·Î ¿¬°á
 void ALSPlayer::PickUp()
 {
 	if (bIsDead) return;
@@ -1439,15 +1437,15 @@ void ALSPlayer::PickUp()
 	const FVector End = Start + GetActorForwardVector() * PickupRange;
 	FColor DrawColor;
 
-	//ì•„ì´í…œ ë²„ë¦¬ê¸° (ì¤‘ì²© ì•„ì´í…œ ì—†ì„ë•Œ)
+	//¾ÆÀÌÅÛ ¹ö¸®±â (ÁßÃ¸ ¾ÆÀÌÅÛ ¾øÀ»¶§)
 	int32 CurrentSelectedSlot = SelectedSlot;
 	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-	//ìŠ¬ë¡¯ì´ ì°¨ìˆë‹¤ë©´
+	//½½·ÔÀÌ Â÷ÀÖ´Ù¸é
 	
 
-	//ì•„ì´í…œ hit ì‹œ
+	//¾ÆÀÌÅÛ hit ½Ã
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
 	if (HitDetected)
@@ -1455,22 +1453,22 @@ void ALSPlayer::PickUp()
 		AActor* HitActor = OutHitResult.GetActor();
 		LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
 
-		// MasterItem í”½ì—… ì²˜ë¦¬
+		// MasterItem ÇÈ¾÷ Ã³¸®
 		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
 		if (HitItem)
 		{
-			//ì•„ì´í…œ ì¤‘ì²©ìƒíƒœì—ì„œ pick (ì¸ë²¤ì°¨ìˆëŠ”ìƒíƒœì—ì„œ ì½œë¦¬ì „ ê²¹ì³ì„œ ì£¼ìš°ë©´)
+			//¾ÆÀÌÅÛ ÁßÃ¸»óÅÂ¿¡¼­ pick (ÀÎº¥Â÷ÀÖ´Â»óÅÂ¿¡¼­ Äİ¸®Àü °ãÃÄ¼­ ÁÖ¿ì¸é)
 			if (!CurrentSlotItem.IsEmpty)
 			{
 				LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
 				DropItemFromSlot();
 				DrawColor = FColor::Orange;
 
-				// ë””ë²„ê·¸ ë¼ì¸
+				// µğ¹ö±× ¶óÀÎ
 				FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
 				float CapsuleHalfHeight = PickupRange * 0.5f;
 				DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-				return; // ë“œë¡­ë§Œ í•˜ê³  í•¨ìˆ˜ ì¢…ë£Œ
+				return; // µå·Ó¸¸ ÇÏ°í ÇÔ¼ö Á¾·á
 			}
 		}
 
@@ -1478,32 +1476,32 @@ void ALSPlayer::PickUp()
 		if (!HitItem)
 		{
 			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
-			return; // ë§ˆìŠ¤í„° ì•„ì´í…œì´ ì•„ë‹ˆë©´ í”½ì—… ë¬´ì‹œí•˜ê³  ì¢…ë£Œ
+			return; // ¸¶½ºÅÍ ¾ÆÀÌÅÛÀÌ ¾Æ´Ï¸é ÇÈ¾÷ ¹«½ÃÇÏ°í Á¾·á
 		}
 
-		//ìˆ˜ì •
-		// ì•„ì´í…œ í”½ì—…
+		//¼öÁ¤
+		// ¾ÆÀÌÅÛ ÇÈ¾÷
 		
 
 		if (HasAuthority())
 		{
-			// ì„œë²„
+			// ¼­¹ö
 			PickItemInSlot(HitItem->GetItemInfo());
 			HitItem->Destroy();
 		}
 		else
 		{
-			// í´ë¼ì´ì–¸íŠ¸ì¸ ê²½ìš°: ì„œë²„ì— ì‚­ì œ ìš”ì²­
+			// Å¬¶óÀÌ¾ğÆ®ÀÎ °æ¿ì: ¼­¹ö¿¡ »èÁ¦ ¿äÃ»
 			ServerPickUp(HitItem);
 			
 		}
 
-		// ì•„ì´í…œ ì œê±°
+		// ¾ÆÀÌÅÛ Á¦°Å
 		//HitItem->Destroy();
 
 		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
 		DrawColor = FColor::Green;
-		return; // í”½ì—…í–ˆìœ¼ë©´ í•¨ìˆ˜ ì¢…ë£Œ
+		return; // ÇÈ¾÷ÇßÀ¸¸é ÇÔ¼ö Á¾·á
 	}
 	else
 	{
@@ -1513,7 +1511,7 @@ void ALSPlayer::PickUp()
 			DropItemFromSlot();
 			DrawColor = FColor::Orange;
 
-			//// ë””ë²„ê·¸ ë¼ì¸
+			//// µğ¹ö±× ¶óÀÎ
 			//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
 			//float CapsuleHalfHeight = PickupRange * 0.5f;
 			//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
@@ -1529,7 +1527,7 @@ void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
 {
 	if (!TargetItem) return;
 
-	FItemDetails ItemData = TargetItem->GetItemInfo();  // êµ¬ì¡°ì²´ ë³µì‚¬
+	FItemDetails ItemData = TargetItem->GetItemInfo();  // ±¸Á¶Ã¼ º¹»ç
 	TargetItem->Destroy();
 	MultiPickUp(TargetItem);
 	ClientPickUp(ItemData);
@@ -1555,7 +1553,7 @@ void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
 	PickItemInSlot(ItemData);
 }
 
-//ì•„ì´í…œ drop
+//¾ÆÀÌÅÛ drop
 void ALSPlayer::DropItemFromSlot()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
@@ -1568,22 +1566,22 @@ void ALSPlayer::DropItemFromSlot()
 
 			int32 CurrentSelectedSlot = SelectedSlot;
 
-			//í˜„ì¬ ìŠ¬ë¡¯ ì•„ì´í…œ ê°€ì ¸ì˜¤ê¸°
+			//ÇöÀç ½½·Ô ¾ÆÀÌÅÛ °¡Á®¿À±â
 			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 			{
 				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 
-				// ItemDetails: IsEmptyì™€ Item Class ê°’ ì¶”ì¶œ
+				// ItemDetails: IsEmpty¿Í Item Class °ª ÃßÃâ
 				bool bIsSlotEmpty = CurrentSlotItem.IsEmpty;
 				TSubclassOf<AMasterItem> ItemClass = CurrentSlotItem.Item_Class;
 
-				//ìŠ¬ë¡¯ì´ ì°¨ìˆì„ ë•Œ
+				//½½·ÔÀÌ Â÷ÀÖÀ» ¶§
 				if (!bIsSlotEmpty)
 				{
-					// Spawn Actor: DropItemLoc ìœ„ì¹˜ì— Item Classë¡œ ì•¡í„° ìƒì„±
+					// Spawn Actor: DropItemLoc À§Ä¡¿¡ Item Class·Î ¾×ÅÍ »ı¼º
 					if (ItemClass && DropItemLoc)
 					{
-						// Get World Location: DropItemLoc Arrowì˜ ì›”ë“œ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
+						// Get World Location: DropItemLoc ArrowÀÇ ¿ùµå À§Ä¡ °¡Á®¿À±â
 						FVector SpawnLocation = DropItemLoc->GetComponentLocation();
 						FRotator SpawnRotation = DropItemLoc->GetComponentRotation();
 
@@ -1596,7 +1594,7 @@ void ALSPlayer::DropItemFromSlot()
 							//FActorSpawnParameters SpawnParams;
 							//SpawnParams.Instigator = this;
 
-							// ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì•„ì´í…œ ìŠ¤í°
+							// ¸ğµç Å¬¶óÀÌ¾ğÆ®¿¡¼­ ¾ÆÀÌÅÛ ½ºÆù
 							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 								ItemClass,
 								SpawnLocation,
@@ -1604,7 +1602,7 @@ void ALSPlayer::DropItemFromSlot()
 								SpawnParams
 							);
 
-							// Set Array Element: í•´ë‹¹ ìŠ¬ë¡¯ì„ ë¹ˆ ìƒíƒœë¡œ ë§Œë“¤ê¸°
+							// Set Array Element: ÇØ´ç ½½·ÔÀ» ºó »óÅÂ·Î ¸¸µé±â
 							FItemDetails EmptySlot;
 							EmptySlot.IsEmpty = true;
 							EmptySlot.Item_Name = NAME_None;
@@ -1614,17 +1612,17 @@ void ALSPlayer::DropItemFromSlot()
 
 							ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
 
-							// Set Icon: HUDì˜ ì•„ì´ì½˜ë„ ë¹„ìš°ê¸° (Empty Itemì˜ ì•„ì´ì½˜ = nullptr)
-							UTexture2D* EmptyIcon = nullptr; // Empty Itemì˜ Item Icon
+							// Set Icon: HUDÀÇ ¾ÆÀÌÄÜµµ ºñ¿ì±â (Empty ItemÀÇ ¾ÆÀÌÄÜ = nullptr)
+							UTexture2D* EmptyIcon = nullptr; // Empty ItemÀÇ Item Icon
 							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
 
 
-							// ì„œë²„ : í´ë¼ì´ì–¸íŠ¸ ê²ƒë„ ì‚­ì œ
+							// ¼­¹ö : Å¬¶óÀÌ¾ğÆ® °Íµµ »èÁ¦
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
 						}
 						else
 						{
-							// í´ë¼ì´ì–¸íŠ¸  : ì„œë²„ì•¼ ì‚­ì œ í•´ì¤˜
+							// Å¬¶óÀÌ¾ğÆ®  : ¼­¹ö¾ß »èÁ¦ ÇØÁà
 							ServerDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation, SelectedSlot);
 						}
 
@@ -1672,7 +1670,7 @@ void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> I
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 
-	//ì„œë²„ì—ì„œ ì•„ì´í…œ ìŠ¤í°
+	//¼­¹ö¿¡¼­ ¾ÆÀÌÅÛ ½ºÆù
 	AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 		ItemClass,
 		SpawnLocation,
@@ -1681,7 +1679,7 @@ void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> I
 	);
 
 
-	//í´ë¼ì´ì–¸íŠ¸ ì¸ë²¤í† ë¦¬ ìˆ˜ì •ìš”ì²­
+	//Å¬¶óÀÌ¾ğÆ® ÀÎº¥Åä¸® ¼öÁ¤¿äÃ»
 	ClientDropItemFromSlot(SlotIndex);
 }
 
@@ -1697,7 +1695,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
 			
-			// Set Array Element: í•´ë‹¹ ìŠ¬ë¡¯ì„ ë¹ˆ ìƒíƒœë¡œ ë§Œë“¤ê¸°
+			// Set Array Element: ÇØ´ç ½½·ÔÀ» ºó »óÅÂ·Î ¸¸µé±â
 			FItemDetails EmptySlot;
 			EmptySlot.IsEmpty = true;
 			EmptySlot.Item_Name = NAME_None;
@@ -1707,8 +1705,8 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 			ItemInfoArray[SlotIndex] = EmptySlot;
 
-			// Set Icon: HUDì˜ ì•„ì´ì½˜ë„ ë¹„ìš°ê¸° (Empty Itemì˜ ì•„ì´ì½˜ = nullptr)
-			UTexture2D* EmptyIcon = nullptr; // Empty Itemì˜ Item Icon
+			// Set Icon: HUDÀÇ ¾ÆÀÌÄÜµµ ºñ¿ì±â (Empty ItemÀÇ ¾ÆÀÌÄÜ = nullptr)
+			UTexture2D* EmptyIcon = nullptr; // Empty ItemÀÇ Item Icon
 			HUD->SetIcon(SlotIndex, EmptyIcon);
 
 
@@ -1725,7 +1723,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 //	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
 //	if (ItemClass && DropItemLoc)
 //	{
-//		// ë˜ì§€ê¸° ì‹œì‘ ìœ„ì¹˜ (í”Œë ˆì´ì–´ ì•ìª½)
+//		// ´øÁö±â ½ÃÀÛ À§Ä¡ (ÇÃ·¹ÀÌ¾î ¾ÕÂÊ)
 //		FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
 //		FRotator ThrowRotation = GetActorRotation();
 //
@@ -1737,7 +1735,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 //		if (HasAuthority()) 
 //		{
 //
-//			//ìŠ¤í°ë¶€ë¶„
+//			//½ºÆùºÎºĞ
 //			AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
 //				ItemClass,
 //				ThrowStartLocation,
@@ -1748,27 +1746,27 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 //
 //			if (ThrownItem)
 //			{
-//				// ë˜ì ¸ì§„ ì•„ì´í…œìœ¼ë¡œ ì„¤ì •
+//				// ´øÁ®Áø ¾ÆÀÌÅÛÀ¸·Î ¼³Á¤
 //				ThrownItem->bIsThrown = true;
 //
 //				if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 //				{
-//					// ë¬¼ë¦¬ ì‹œë®¬ë ˆì´ì…˜ í™œì„±í™”
+//					// ¹°¸® ½Ã¹Ä·¹ÀÌ¼Ç È°¼ºÈ­
 //					//ItemMesh->SetSimulatePhysics(true);
 //					//ItemMesh->SetNotifyRigidBodyCollision(true); 
 //
-//					// Hit ì´ë²¤íŠ¸ë¥¼ ìœ„í•´ ì¶©ëŒ ì„¤ì •
+//					// Hit ÀÌº¥Æ®¸¦ À§ÇØ Ãæµ¹ ¼³Á¤
 //					//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 //					//ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 //
-//					// ë˜ì§€ëŠ” ë°©í–¥ê³¼ í˜ 
+//					// ´øÁö´Â ¹æÇâ°ú Èû 
 //					FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
 //					const float THROW_FORCE = 1000.0f;
 //
-//					// ì„í„ìŠ¤ ì ìš©
+//					// ÀÓÆŞ½º Àû¿ë
 //					ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
 //
-//					// Hit ì´ë²¤íŠ¸ ë°”ì¸ë”© 
+//					// Hit ÀÌº¥Æ® ¹ÙÀÎµù 
 //					ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
 //
 //					LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
