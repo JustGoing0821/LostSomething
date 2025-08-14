@@ -48,6 +48,8 @@ ALTGameMode::ALTGameMode()
 	bIsSiJaeServer = true;
 	CurrentPlayerCount = 0;
 
+	//2D Section
+	bIsSiJaeDragging = false;
 }
 
 void ALTGameMode::BeginPlay()
@@ -204,4 +206,68 @@ void ALTGameMode::QuestStart()
 void ALTGameMode::QuestComplete()
 {
 	QuestManager->QuestComplete();
+}
+
+void ALTGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	bIsSiJaeDragging = InIsSiJaeDragging;
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
+		{
+			if (PC->IsLocalController())
+			{
+				PC->CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+			else
+			{
+				PC->ClientRPCCalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+		}
+	}
+}
+
+void ALTGameMode::Start2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether, APlayerController* InPlayerController)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (InIsStartTogether)
+	{
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
+			{
+				PC->MulticastRPCStart2DPuzzle(InPuzzleName, InIsStartTogether);
+			}
+		}
+	}
+	else
+	{
+		if (ALTPlayerController* PC = Cast<ALTPlayerController>(InPlayerController))
+		{
+			PC->MulticastRPCStart2DPuzzle(InPuzzleName, InIsStartTogether);
+		}
+	}
+}
+
+void ALTGameMode::End2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether, APlayerController* InPlayerController)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (InIsEndTogether)
+	{
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
+			{
+				PC->MulticastRPCEnd2DPuzzle(InPuzzleName, InIsEndTogether);
+			}
+		}
+	}
+	else
+	{
+		if (ALTPlayerController* PC = Cast<ALTPlayerController>(InPlayerController))
+		{
+			PC->MulticastRPCEnd2DPuzzle(InPuzzleName, InIsEndTogether);
+		}
+	}
 }

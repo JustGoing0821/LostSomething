@@ -42,15 +42,15 @@ ASpecialTile::ASpecialTile()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpecialTile::OnMeshBeginOverlap);
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatSiJae(
-		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_FloorTile.MI_FloorTile'")
+		TEXT("Material'/Game/Asset/Asset/Texture/M_Alpha.M_Alpha'")
 	);
 	if (MatSiJae.Succeeded())
 	{
 		Material_SiJae = MatSiJae.Object;
 	}
-
+	
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatIJae(
-		TEXT("Material'/Game/Asset/Map/ModSubwayStation/Materials/MI_Emissive_Green.MI_Emissive_Green'")
+		TEXT("Material'/Game/Asset/Asset/Texture/M_StraightBlock.M_StraightBlock'")
 	);
 	if (MatIJae.Succeeded())
 	{

@@ -82,17 +82,29 @@ public:
 
 	//줍기 (Destroy)
 	
-	void PickUp();
-	
-	
+	//줍기 내부
+	void PickUpCore();
+
 	UFUNCTION(Server, Reliable)
-	void ServerPickUp(AMasterItem* TargetItem);
+	virtual void ServerPickUpCore(AMasterItem* TargetItem);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiPickUp(AActor* TargetItem);
+	void MultiPickUpCore(AActor* TargetItem);
 
 	UFUNCTION(Client, Reliable)
-	void ClientPickUp(FItemDetails ItemData);
+	void ClientPickUpCore(FItemDetails ItemData);
+	
+	//줍기 애니메이션
+	void PickUp();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerPickUp();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiPickUp();
+
+	//UFUNCTION(Client, Reliable)
+	//void ClientPickUp(FItemDetails ItemData);
 
 
 	//버리기 (Item Drop : Spawn)
@@ -353,15 +365,6 @@ protected:
 
 // Wheelchair
 protected:
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	bool bIsBeingPushed;
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	TObjectPtr<ACharacter> PusherCharacter;
-
-	UPROPERTY(Replicated)
-	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wheelchair")
 	bool bCanPushWheelchair;
 
@@ -391,5 +394,14 @@ protected:
 	void AutoSeparateFromWheelchair();
 
 public:
+	
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	bool bIsBeingPushed;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
+	TObjectPtr<ACharacter> PusherCharacter;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
 };

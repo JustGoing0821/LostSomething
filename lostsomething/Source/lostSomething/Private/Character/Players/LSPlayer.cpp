@@ -20,6 +20,7 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
@@ -199,11 +200,17 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
+
+	
+
 	if (HpComponent)
 	{
 		CurrentHp -= DamageAmount;
 		HpComponent->SetHp(CurrentHp);
 		LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
+
+
+		
 	}
 
 
@@ -233,6 +240,13 @@ void ALSPlayer::OnHpChanged(float NewHp)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->HitAnim();
+
+	}
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
@@ -669,16 +683,6 @@ void ALSPlayer::Attack()
 		}
 	}
 
-	// 현재 선택된 슬롯에 아이템이 있는지 확인
-	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	//{
-	//	
-
-	//	/*if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-	//	{
-	//		
-	//	}*/
-	//}
 
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
@@ -710,6 +714,7 @@ void ALSPlayer::ProcessAttack()
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	MultiProcessAttack();
 
 	if (HitDetected)
 	{
@@ -730,13 +735,7 @@ void ALSPlayer::ProcessAttack()
 			DrawColor = FColor::Blue;
 		}
 
-		/*ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		if (HitNPC)
-		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
-		}*/
+		
 	}
 	else
 	{
@@ -760,7 +759,7 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
-	MultiProcessAttack();
+	
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()
@@ -780,50 +779,6 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 
 
 
-
-//
-//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
-//	// 현재 선택된 슬롯의 아이템을 드롭
-//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
-//	DropItemFromSlot();
-//	DrawColor = FColor::Red;
-//
-//	// 디버그 라인
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = PickupRange * 0.5f;
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//}
-
-
-//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectNextSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-//	}
-//}
-//
-//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectPreviousSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-//	}
-//}
 
 void ALSPlayer::Interreact()
 {
@@ -1355,11 +1310,57 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
-
-
-//아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
+	if (!HasAuthority())
+	{
+		ServerPickUp();
+		return;
+	}
+
+	MultiPickUp();
+
+}
+
+
+void ALSPlayer::ServerPickUp_Implementation()
+{
+	
+	MultiPickUp();
+	
+
+}
+
+void ALSPlayer::MultiPickUp_Implementation()
+{
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetPickUpAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
+}
+
+//
+//void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+//{
+//	PickItemInSlot(ItemData);
+//}
+
+
+void ALSPlayer::PickUpCore()
+{
+
+
+
+	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	{
+		SiJae->WeaponPickUp();
+		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+		
+	}
+
+
 	if (bIsDead) return;
 
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
@@ -1378,7 +1379,7 @@ void ALSPlayer::PickUp()
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
 	//슬롯이 차있다면
-	
+
 
 	//아이템 hit 시
 
@@ -1407,7 +1408,7 @@ void ALSPlayer::PickUp()
 			}
 		}
 
-		
+
 		if (!HitItem)
 		{
 			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
@@ -1416,7 +1417,7 @@ void ALSPlayer::PickUp()
 
 		//수정
 		// 아이템 픽업
-		
+
 
 		if (HasAuthority())
 		{
@@ -1427,12 +1428,10 @@ void ALSPlayer::PickUp()
 		else
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
-			ServerPickUp(HitItem);
-			
+			ServerPickUpCore(HitItem);
+
 		}
 
-		// 아이템 제거
-		//HitItem->Destroy();
 
 		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
 		DrawColor = FColor::Green;
@@ -1455,29 +1454,23 @@ void ALSPlayer::PickUp()
 
 		DrawColor = FColor::Yellow;
 	}
-	
+
 }
 
 
 
-void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
+void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
 	if (!TargetItem) return;
 
-	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
+	FItemDetails ItemData = TargetItem->GetItemInfo(); 
 	TargetItem->Destroy();
-	MultiPickUp(TargetItem);
-	ClientPickUp(ItemData);
-
-	
-	//PickItemInSlot(TargetItem->GetItemInfo());
-	//TargetItem->Destroy();
-	//ClientPickUp(TargetItem);
-	
+	MultiPickUpCore(TargetItem);
+	ClientPickUpCore(ItemData);
 	
 }
 
-void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
+void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 {
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1488,7 +1481,7 @@ void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 }
 
 
-void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
 {
 	PickItemInSlot(ItemData);
 }
