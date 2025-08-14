@@ -82,29 +82,17 @@ public:
 
 	//줍기 (Destroy)
 	
-	//줍기 내부
-	void PickUpCore();
-
-	UFUNCTION(Server, Reliable)
-	virtual void ServerPickUpCore(AMasterItem* TargetItem);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiPickUpCore(AActor* TargetItem);
-
-	UFUNCTION(Client, Reliable)
-	void ClientPickUpCore(FItemDetails ItemData);
-	
-	//줍기 애니메이션
 	void PickUp();
 	
+	
 	UFUNCTION(Server, Reliable)
-	void ServerPickUp();
+	void ServerPickUp(AMasterItem* TargetItem);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiPickUp();
+	void MultiPickUp(AActor* TargetItem);
 
-	//UFUNCTION(Client, Reliable)
-	//void ClientPickUp(FItemDetails ItemData);
+	UFUNCTION(Client, Reliable)
+	void ClientPickUp(FItemDetails ItemData);
 
 
 	//버리기 (Item Drop : Spawn)
@@ -394,7 +382,6 @@ protected:
 	void AutoSeparateFromWheelchair();
 
 public:
-	
 	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
 	bool bIsBeingPushed;
