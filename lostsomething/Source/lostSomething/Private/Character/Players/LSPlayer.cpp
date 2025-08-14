@@ -91,15 +91,15 @@ ALSPlayer::ALSPlayer()
 
 
 	////camera boom 
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(GetMesh());
-	//CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(GetMesh());
+	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	//FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	//FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
 	//hp
 	HpComponent = CreateDefaultSubobject<ULSHpComponent>(TEXT("HpComponent"));
 	CurrentHp = 100.0f;
@@ -1009,35 +1009,130 @@ bool ALSPlayer::ServerStopPushingWheelchair_Validate()
 	return true;
 }
 
+
 // Multicast RPC
 void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, ACharacter* Pusher)
 {
 	bIsBeingPushed = bPushing;
-	PusherCharacter = Pusher;
+	PusherCharacter = bPushing ? Pusher : nullptr;
 
-	if (IsLocallyControlled() && CameraBoom)
+	if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
 	{
-		if (bPushing)
+		if (ALSPlayer* Pusher = Cast<ALSPlayer>(Source))
 		{
-			CameraBoom->bDoCollisionTest = false;
+			if (bPushing)
+			{
+				Pusher->PushedWheelchairCharacter = this;
+			}
+			else
+			{
+				if (Pusher->PushedWheelchairCharacter == this)
+				{
+					Pusher->PushedWheelchairCharacter = nullptr;
+				}
+			}
+		}
+	}
+
+	// 타겟 Yaw 계산
+	float TargetYaw = 0.f;
+	if (bPushing) // 3인칭 전환 시 (이제가 시제를 미는 경우)
+	{
+		TargetYaw = GetControlRotation().Yaw; // 이제의 현재 시점
+	}
+	else // 1인칭 전환 시 (시제가 이제를 밀다 해제)
+	{
+		if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
+		{
+			TargetYaw = Source->GetControlRotation().Yaw; // 시제의 시점
 		}
 		else
 		{
-			CameraBoom->bDoCollisionTest = true;
+			TargetYaw = GetActorRotation().Yaw;
 		}
 	}
 
-	// 이제(IJae) 캐릭터의 움직임 제어 설정
+	FRotator TargetRot(0.f, TargetYaw, 0.f);
+
 	if (bIsBeingPushed)
 	{
-		// 이제 캐릭터는 스스로 움직일 수 없음 (MOVE_None)
-		GetCharacterMovement()->SetMovementMode(MOVE_None);
-	}
-	else
-	{
-		// 이제 캐릭터가 다시 스스로 움직일 수 있음
+		// 1인칭 -> 3인칭
+		if (IsLocallyControlled())
+		{
+			if (APlayerController* PC = Cast<APlayerController>(Controller))
+			{
+				PC->SetIgnoreLookInput(true);
+
+				// 컨트롤러 & 액터 회전 동기화
+				PC->SetControlRotation(TargetRot);
+				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+				// 카메라 전환
+				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
+				FirstPersonCameraComponent->SetActive(false);
+				FollowCamera->SetActive(true);
+
+				// 블렌딩 제거
+				if (PC->PlayerCameraManager)
+					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+				// 입력 해제는 다음 틱
+				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+					{
+						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+							PC2->SetIgnoreLookInput(false);
+					});
+			}
+		}
+
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreMoveInput(true);
+		}
+
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		return;
 	}
+
+	// 3인칭 -> 1인칭
+	if (IsLocallyControlled())
+	{
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreLookInput(true);
+
+			// 컨트롤러 & 액터 회전 동기화
+			PC->SetControlRotation(TargetRot);
+			SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+			// 카메라 전환
+			if (CameraBoom) CameraBoom->bDoCollisionTest = true;
+			FollowCamera->SetActive(false);
+			FirstPersonCameraComponent->SetActive(true);
+
+			// 블렌딩 제거
+			if (PC->PlayerCameraManager)
+				PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+			// 입력 해제는 다음 틱
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+				{
+					if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+						PC2->SetIgnoreLookInput(false);
+				});
+		}
+	}
+
+	if (APlayerController* PC = Cast<APlayerController>(Controller))
+	{
+		PC->SetIgnoreMoveInput(false);
+	}
+
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ALSPlayer::HandleWheelchairMovement()
@@ -1049,14 +1144,14 @@ void ALSPlayer::HandleWheelchairMovement()
 	FVector PusherForward = PusherCharacter->GetActorForwardVector();
 
 	FVector TargetLocation = PusherLocation + (PusherForward * NormalCombineDistance);
-
 	FVector CurrentLocation = GetActorLocation();
+	TargetLocation.Z = CurrentLocation.Z;
 	float DistanceToTarget = FVector::Dist(CurrentLocation, TargetLocation);
 
 	FVector NewLocation;
 	if (DistanceToTarget > NormalCombineDistance * 0.5f)
 	{
-		float InterpSpeed = 5.0f; 
+		float InterpSpeed = 5.0f;
 		NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation,
 			GetWorld()->GetDeltaSeconds(), InterpSpeed);
 	}
@@ -1083,9 +1178,6 @@ void ALSPlayer::CheckCombineDistance()
 
 	if (CurrentDistance > MaxCombineDistance)
 	{
-		LS_LOG(LogLS, Warning, TEXT("Distance exceeded limit: %.2f > %.2f - Auto separating"),
-			CurrentDistance, MaxCombineDistance);
-
 		if (HasAuthority())
 		{
 			AutoSeparateFromWheelchair();
@@ -1097,8 +1189,6 @@ void ALSPlayer::CheckCombineDistance()
 	}
 	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% 여유분
 	{
-		LS_LOG(LogLS, Warning, TEXT("Distance warning: %.2f (Normal: %.2f)"),
-			CurrentDistance, NormalCombineDistance);
 	}
 }
 
@@ -1106,8 +1196,6 @@ void ALSPlayer::AutoSeparateFromWheelchair()
 {
 	if (!HasAuthority())
 		return;
-
-	LS_LOG(LogLS, Warning, TEXT("Auto-separating wheelchair due to distance limit"));
 
 	// 합체 상태 해제
 	bIsBeingPushed = false;
