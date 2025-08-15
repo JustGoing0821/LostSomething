@@ -14,6 +14,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "lostSomething.h"
+#include <Pooling/SoundManager.h>
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -354,4 +355,55 @@ void ATestNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATestNPC, bCanNextCombo);
 	DOREPLIFETIME(ATestNPC, bIsComboCheckWindowOpen);
 	DOREPLIFETIME(ATestNPC, bShouldChase);
+}
+
+void ATestNPC::TMSoundPlay(const FString& SoundType)
+{
+	ServerTMSoundPlay(SoundType);
+}
+
+void ATestNPC::ServerTMSoundPlay_Implementation(const FString& SoundType)
+{
+	MultiTMSoundPlay(SoundType);
+}
+
+void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
+{
+	LS_LOG(LogLS, Log, TEXT("MultiTMSoundPlay_Implementation"));
+
+	// SoundManager 존재 확인
+	ASoundManager* SoundMgr = ASoundManager::GetInstance(GetWorld());
+	if (!SoundMgr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SoundManager instance not found in MultiTMSoundPlay"));
+		return;
+	}
+
+	if (SoundType == "Idle")
+	{
+		if (!IdleSound)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IdleSound is nullptr"));
+			return;
+		}
+		SoundMgr->PlaySoundWave2D(IdleSound, ENPCSound::NPCSound1, 0.1f);
+	}
+	else if (SoundType == "Attack")
+	{
+		if (!AttackSound)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AttackSound is nullptr"));
+			return;
+		}
+		SoundMgr->PlaySoundWave2D(AttackSound, ENPCSound::NPCSound1, 0.1f);
+	}
+	else if (SoundType == "Damage")
+	{
+		if (!DamageSound)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DamageSound is nullptr"));
+			return;
+		}
+		SoundMgr->PlaySoundWave2D(DamageSound, ENPCSound::NPCSound1, 0.1f);
+	}
 }

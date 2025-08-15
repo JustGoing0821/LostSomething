@@ -41,7 +41,7 @@ public:
     int32 NumRows = 5;
 
     UPROPERTY(EditAnywhere)
-    int32 NumCols = 20;
+    int32 NumCols = 18;
 
     TArray<TArray<bool>> SpecialMap;
     void SpawnTilesColumn(int32 ColIndex);
