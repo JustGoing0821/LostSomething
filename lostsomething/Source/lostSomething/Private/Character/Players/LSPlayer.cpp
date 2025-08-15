@@ -20,6 +20,7 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Character/Components/LSHpComponent.h"
 
@@ -1425,6 +1426,45 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
+	if (!HasAuthority())
+	{
+		ServerPickUp();
+		return;
+	}
+
+	MultiPickUp();
+
+}
+
+void ALSPlayer::ServerPickUp_Implementation()
+{
+
+	MultiPickUp();
+
+
+}
+
+void ALSPlayer::MultiPickUp_Implementation()
+{
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetPickUpAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
+}
+
+
+void ALSPlayer::PickUpCore()
+{
+
+	/*if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	{
+		SiJae->WeaponPickUp();
+		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+
+	}*/
+
 	if (bIsDead) return;
 
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
@@ -1492,7 +1532,7 @@ void ALSPlayer::PickUp()
 		else
 		{
 			// 클라이언트인 경우: 서버에 삭제 요청
-			ServerPickUp(HitItem);
+			ServerPickUpCore(HitItem);
 			
 		}
 
@@ -1523,21 +1563,18 @@ void ALSPlayer::PickUp()
 	
 }
 
-void ALSPlayer::ServerPickUp_Implementation(AMasterItem* TargetItem)
+void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
 	if (!TargetItem) return;
 
-	FItemDetails ItemData = TargetItem->GetItemInfo();  // 구조체 복사
+	FItemDetails ItemData = TargetItem->GetItemInfo();
 	TargetItem->Destroy();
-	MultiPickUp(TargetItem);
-	ClientPickUp(ItemData);
+	MultiPickUpCore(TargetItem);
+	ClientPickUpCore(ItemData);
 
-	//PickItemInSlot(TargetItem->GetItemInfo());
-	//TargetItem->Destroy();
-	//ClientPickUp(TargetItem);
 }
 
-void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
+void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 {
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1548,7 +1585,7 @@ void ALSPlayer::MultiPickUp_Implementation(AActor* TargetItem)
 }
 
 
-void ALSPlayer::ClientPickUp_Implementation(FItemDetails ItemData)
+void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
 {
 	PickItemInSlot(ItemData);
 }
