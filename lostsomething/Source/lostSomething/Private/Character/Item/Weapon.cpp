@@ -6,11 +6,16 @@
 // AWeapon.cpp
 AWeapon::AWeapon()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    bReplicates = true;
+    SetReplicateMovement(true);
+    bOnlyRelevantToOwner = false;
 
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-    RootComponent = WeaponMesh;
 
-    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    
+    //PrimaryActorTick.bCanEverTick = false;
+
+    //WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+    //RootComponent = WeaponMesh;
+
+    //WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    //
 }
