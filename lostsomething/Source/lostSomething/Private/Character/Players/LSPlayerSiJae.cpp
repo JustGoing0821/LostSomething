@@ -43,6 +43,63 @@ void ALSPlayerSiJae::BeginPlay()
    
 }
 
+void ALSPlayerSiJae::WeaponPickUp()
+{
+    FHitResult OutHitResult;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(WeaponPickUp), false, this);
+    const float PickupRange = 200.0f;
+    const float PickupRadius = 100.0f;
+
+    FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+    FVector End = Start + GetActorForwardVector() * PickupRange;
+
+    bool bHit = GetWorld()->SweepSingleByChannel(
+        OutHitResult, Start, End, FQuat::Identity,
+        ECC_GameTraceChannel1,
+        FCollisionShape::MakeSphere(PickupRadius),
+        Params
+    );
+
+    if (!bHit)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No weapon found."));
+        return;
+    }
+
+    AWeapon* HitWeapon = Cast<AWeapon>(OutHitResult.GetActor());
+    if (!HitWeapon)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit actor is not a weapon."));
+        return;
+    }
+
+    // 손에 붙이기
+    HitWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket")
+    );
+
+    //HitWeapon->SetOwner(this);
+
+    // 물리 끄기 + 충돌 끄기
+    HitWeapon->SetActorEnableCollision(false);
+
+    if (UStaticMeshComponent* WeaponMesh = HitWeapon->FindComponentByClass<UStaticMeshComponent>())
+    {
+        WeaponMesh->SetSimulatePhysics(false);
+        WeaponMesh->SetEnableGravity(false);
+    }
+
+
+
+    if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HitWeapon->GetRootComponent()))
+    {
+        RootComp->SetSimulatePhysics(false);
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Weapon successfully picked up and attached."));
+
+
+}
+
 ALSPlayerSiJae::ALSPlayerSiJae()
 {
 //    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
