@@ -235,6 +235,13 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->HitAnim();
+
+	}
+
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
 	if (LSController && LSController->GetLSHUDWidget())
@@ -1458,12 +1465,12 @@ void ALSPlayer::MultiPickUp_Implementation()
 void ALSPlayer::PickUpCore()
 {
 
-	/*if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
 	{
 		SiJae->WeaponPickUp();
 		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
 
-	}*/
+	}
 
 	if (bIsDead) return;
 
