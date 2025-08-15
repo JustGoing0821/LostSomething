@@ -58,7 +58,7 @@ void ABossObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(3.5f);
+	SetLifeSpan(5.5f);
 
 	// 시작 시 정면 방향을 기억 (Z는 고정)
 	MoveDirection = GetActorForwardVector();

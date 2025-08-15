@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PlatformGenerator.generated.h"
 
+class ABossNPC;
+
 UCLASS()
 class LOSTSOMETHING_API APlatformGenerator : public AActor
 {
@@ -30,7 +32,7 @@ public:
     TSubclassOf<AActor> SpecialTileClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ACharacter* BossNPC;
+    ABossNPC* BossNPC;
 
     UPROPERTY(EditAnywhere)
     float TileSpacing = 200.f;
@@ -39,7 +41,7 @@ public:
     int32 NumRows = 5;
 
     UPROPERTY(EditAnywhere)
-    int32 NumCols = 12;
+    int32 NumCols = 20;
 
     TArray<TArray<bool>> SpecialMap;
     void SpawnTilesColumn(int32 ColIndex);
