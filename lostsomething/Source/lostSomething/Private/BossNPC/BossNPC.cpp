@@ -108,11 +108,11 @@ void ABossNPC::SetHP(float NewHP)
     }
     else if (CurrentPhase == 2 && NewHP <= 40.0f)
     {
+        DestroyObstacles();
         NewHP = 40.0f;
         CurrentPhase = 3;
         bIsPhaseChanging = true;
         DamageMontagePlay();
-        DestroyObstacles();
     }
 
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
