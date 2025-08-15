@@ -47,7 +47,7 @@ ABossObstacle::ABossObstacle()
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
-		ObstacleMesh->SetRelativeScale3D(FVector(2.0f));
+		ObstacleMesh->SetRelativeScale3D(FVector(1.5f));
 		ObstacleMesh->SetRelativeLocation(FVector(-35.0f, 0.0f, -70.0f)); // Z축으로 50만큼 올림
 		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	}
@@ -58,7 +58,7 @@ void ABossObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(3.5f);
+	SetLifeSpan(5.5f);
 
 	// 시작 시 정면 방향을 기억 (Z는 고정)
 	MoveDirection = GetActorForwardVector();
