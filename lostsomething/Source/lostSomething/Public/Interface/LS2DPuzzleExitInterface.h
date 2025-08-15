@@ -23,6 +23,7 @@ class LOSTSOMETHING_API ILS2DPuzzleExitInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual void OnBtnExitClicked()=0;
+	virtual void On2DPuzzleClear() = 0;
 };
 
 //#include "Interface/LS2DPuzzleExitInterface.h"

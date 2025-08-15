@@ -3,14 +3,17 @@
 
 #include "LevelTest/Player/LTPlayerController.h"
 #include "lostSomething.h"
-#include "LevelTest/Game/LTGameMode.h"
+//#include "LevelTest/Game/LTGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
 #include "Quest/LSQuestManager.h"
 #include "Net/UnrealNetwork.h"
 #include "UserInterface/LSQuestWidget.h"
 #include "LevelTest/Player/LTScriptWidget.h"
 #include "Puzzle/UI/LS2DPuzzleHUD.h"
 #include "Interface/LSSijaeCursorPosInterface.h"
+#include "Interface/LSQuestInterface.h"
+#include "Interface/LS2DPuzzleInterface.h"
 
 
 ALTPlayerController::ALTPlayerController()
@@ -219,6 +222,26 @@ void ALTPlayerController::OnBtnExitClicked()
 	}
 }
 
+void ALTPlayerController::On2DPuzzleClear()
+{
+	if (HasAuthority())
+	{
+		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+		if (HasAuthority())
+		{
+			ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (GameModeQuest)
+			{
+				GameModeQuest->QuestComplete();
+			}
+		}
+	}
+	else
+	{
+		ServerRPCOn2DPuzzleClear();
+	}
+}
+
 void ALTPlayerController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 {
 	if (HasAuthority())
@@ -348,6 +371,19 @@ void ALTPlayerController::ServerRPCOnBtnExitClicked_Implementation()
 		if (PuzzleInterface)
 		{
 			PuzzleInterface->End2DPuzzle(TEXT("TestPuzzle"), true, this);
+		}
+	}
+}
+
+void ALTPlayerController::ServerRPCOn2DPuzzleClear_Implementation()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->QuestComplete();
 		}
 	}
 }

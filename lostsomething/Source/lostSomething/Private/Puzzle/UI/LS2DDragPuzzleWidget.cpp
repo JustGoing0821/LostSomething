@@ -9,6 +9,7 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
+#include "Interface/LS2DPuzzleExitInterface.h"
 
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -79,6 +80,16 @@ FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry,
 		if (PC)
 		{
 			PC->OnChangeSiJaeDragState(false);
+		}
+
+		if (IsMouseOverImage(ImgGoal1, InMouseEvent))
+		{
+			ILS2DPuzzleExitInterface* PuzzleInterface = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
+			if (PuzzleInterface)
+			{
+				PuzzleInterface->On2DPuzzleClear();
+				PuzzleInterface->OnBtnExitClicked();
+			}
 		}
 	}
 

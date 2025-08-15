@@ -68,6 +68,7 @@ public:
 	void Start2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether);
 	void End2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether);
 	virtual void OnBtnExitClicked() override;
+	virtual void On2DPuzzleClear() override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -118,4 +119,7 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCOnBtnExitClicked();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCOn2DPuzzleClear();
 };
