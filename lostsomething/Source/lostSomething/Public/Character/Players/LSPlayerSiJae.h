@@ -33,6 +33,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UStaticMeshComponent* Weapon;
 
+	void WeaponPickUp();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheelchair Settings")
 	float WheelchairTurnRate = 90.0f;
 

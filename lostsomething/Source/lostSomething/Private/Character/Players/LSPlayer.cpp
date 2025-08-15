@@ -1465,12 +1465,12 @@ void ALSPlayer::MultiPickUp_Implementation()
 void ALSPlayer::PickUpCore()
 {
 
-	/*if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
 	{
 		SiJae->WeaponPickUp();
 		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
 
-	}*/
+	}
 
 	if (bIsDead) return;
 
