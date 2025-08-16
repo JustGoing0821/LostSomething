@@ -84,6 +84,18 @@ void UTestNPCAnimIns::AnimNotify_EndDamage()
     NPCCharacter->SetDespawn();
 }
 
+void UTestNPCAnimIns::AnimNotify_IdleSound()
+{
+    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
+    if (!NPC)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_IdleSound: NPC is nullptr"));
+        return;
+    }
+
+    NPC->TMSoundPlay(TEXT("Idle"));
+}
+
 void UTestNPCAnimIns::AnimNotify_EndAttack()
 {
     UE_LOG(LogTemp, Warning, TEXT("UTestNPCAnimIns::AnimNotify_EndAttack()"));

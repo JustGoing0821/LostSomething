@@ -116,4 +116,18 @@ public:
     const float AttackRadius = 50.0f;
     const float AttackDamage = 30.0f;
 
+    UPROPERTY(EditAnywhere)
+    USoundWave* IdleSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* AttackSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* DamageSound;
+
+    void TMSoundPlay(const FString& SoundType);
+    UFUNCTION(Server, Reliable)
+    void ServerTMSoundPlay(const FString& SoundType);
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiTMSoundPlay(const FString& SoundType);
 };
