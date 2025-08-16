@@ -14,7 +14,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "lostSomething.h"
-#include <Pooling/SoundManager.h>
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -371,39 +371,18 @@ void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
 {
 	LS_LOG(LogLS, Log, TEXT("MultiTMSoundPlay_Implementation"));
 
-	// SoundManager 존재 확인
-	ASoundManager* SoundMgr = ASoundManager::GetInstance(GetWorld());
-	if (!SoundMgr)
+	USoundBase* SelectedSound = nullptr;
+
+	if (SoundType == "Idle") SelectedSound = IdleSound;
+	else if (SoundType == "Attack") SelectedSound = AttackSound;
+	else if (SoundType == "Damage") SelectedSound = DamageSound;
+
+	if (!SelectedSound)
 	{
-		UE_LOG(LogTemp, Error, TEXT("SoundManager instance not found in MultiTMSoundPlay"));
+		UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
 		return;
 	}
 
-	if (SoundType == "Idle")
-	{
-		if (!IdleSound)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IdleSound is nullptr"));
-			return;
-		}
-		SoundMgr->PlaySoundWave2D(IdleSound, ENPCSound::NPCSound1, 0.1f);
-	}
-	else if (SoundType == "Attack")
-	{
-		if (!AttackSound)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AttackSound is nullptr"));
-			return;
-		}
-		SoundMgr->PlaySoundWave2D(AttackSound, ENPCSound::NPCSound1, 0.1f);
-	}
-	else if (SoundType == "Damage")
-	{
-		if (!DamageSound)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DamageSound is nullptr"));
-			return;
-		}
-		SoundMgr->PlaySoundWave2D(DamageSound, ENPCSound::NPCSound1, 0.1f);
-	}
+	// 핵심: GetWorld() 기반으로 2D 사운드 재생
+	UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
 }
