@@ -718,6 +718,7 @@ void ALSPlayer::ProcessAttack()
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	MultiProcessAttack();
 
 	if (HitDetected)
 	{
@@ -768,7 +769,6 @@ void ALSPlayer::ProcessAttack()
 void ALSPlayer::ServerProcessAttack_Implementation()
 {
 	ProcessAttack();
-	MultiProcessAttack();
 }
 
 void ALSPlayer::MultiProcessAttack_Implementation()

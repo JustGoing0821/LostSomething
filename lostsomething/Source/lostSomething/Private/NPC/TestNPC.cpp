@@ -14,6 +14,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "lostSomething.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -354,4 +355,34 @@ void ATestNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATestNPC, bCanNextCombo);
 	DOREPLIFETIME(ATestNPC, bIsComboCheckWindowOpen);
 	DOREPLIFETIME(ATestNPC, bShouldChase);
+}
+
+void ATestNPC::TMSoundPlay(const FString& SoundType)
+{
+	ServerTMSoundPlay(SoundType);
+}
+
+void ATestNPC::ServerTMSoundPlay_Implementation(const FString& SoundType)
+{
+	MultiTMSoundPlay(SoundType);
+}
+
+void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
+{
+	LS_LOG(LogLS, Log, TEXT("MultiTMSoundPlay_Implementation"));
+
+	USoundBase* SelectedSound = nullptr;
+
+	if (SoundType == "Idle") SelectedSound = IdleSound;
+	else if (SoundType == "Attack") SelectedSound = AttackSound;
+	else if (SoundType == "Damage") SelectedSound = DamageSound;
+
+	if (!SelectedSound)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
+		return;
+	}
+
+	// 핵심: GetWorld() 기반으로 2D 사운드 재생
+	UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
 }

@@ -11,7 +11,9 @@ class UCameraComponent;
 class UMotionControllerComponent;
 class UInputMappingContext;
 class UInputAction;
-class USceneComponent;
+class UCameraComponent;
+class UMotionControllerComponent;
+class USkeletalMeshComponent;
 
 UCLASS()
 class LOSTSOMETHING_API AVRPlayer : public ACharacter
@@ -28,22 +30,32 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// VR Origin & Camera
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR")
+	USceneComponent* VROrigin;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR")
+	UCameraComponent* VRCamera;
+
+	// --------------------
+	// Left Controller
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR|LeftHand")
+	UMotionControllerComponent* LeftController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR|LeftHand")
+	USkeletalMeshComponent* HandLeft;
+
+	// --------------------
+	// Right Controller
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR|RightHand")
+	UMotionControllerComponent* RightController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VR|RightHand")
+	USkeletalMeshComponent* HandRight;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	/** Carmera & VR Components */
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* VROrigin;
-
-	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* VRCamera;
-
-	UPROPERTY(VisibleAnywhere)
-	class UMotionControllerComponent* LeftController;
-
-	UPROPERTY(VisibleAnywhere)
-	class UMotionControllerComponent* RightController;
 
 	/** Enhanced Input Actions */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -55,9 +67,27 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* IA_Turn;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_Grab_Left;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_Grab_Right;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_Toggle_Left;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* IA_Toggle_Right;
+
 	/** Input Callbacks */
 	void Move(const FInputActionValue& Value);
 	void Turn(const FInputActionValue& Value);
+	void Grab_Left(const FInputActionValue& Value);
+	void Grab_Right(const FInputActionValue& Value);
+	void Toggle_Left(const FInputActionValue& Value);
+	void Toggle_Right(const FInputActionValue& Value);
+
+	//UGrabComponent* GetGrabComponentNearMotionController(UMotionControllerComponent MotionController);
 
 
 };
