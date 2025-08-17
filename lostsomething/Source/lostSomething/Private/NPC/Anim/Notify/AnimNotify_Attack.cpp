@@ -4,6 +4,7 @@
 #include "NPC/Anim/Notify/AnimNotify_Attack.h"
 #include "Interface/TestNPCAttackInterface.h"
 #include <NPC/Anim/TestNPCAnimIns.h>
+#include "NPC/TestNPC.h"
 
 void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
@@ -11,9 +12,11 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 	if (MeshComp)
 	{
 		ITestNPCAttackInterface* AttackPawn = Cast<ITestNPCAttackInterface>(MeshComp->GetOwner());
-		if (AttackPawn)
+		ATestNPC* NPC = Cast<ATestNPC>(MeshComp->GetOwner());
+		if (AttackPawn&&NPC)
 		{
 			AttackPawn->AttackHitCheck();
+			NPC->TMSoundPlay(TEXT("Attack"));
 		}
 	}
 }
