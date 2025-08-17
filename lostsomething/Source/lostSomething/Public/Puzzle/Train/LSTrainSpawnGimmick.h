@@ -72,7 +72,7 @@ protected:
 	void OnGateWaitTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-// Train Spawn Section
+// Spawn Section
 public:
 	UPROPERTY(Replicated)
 	ETrainSpawnState CurrentState;
@@ -81,6 +81,7 @@ public:
 
 protected:
 	void SpawnTrain();
+	void SpawnStep();
 
 
 //Puzzle Section

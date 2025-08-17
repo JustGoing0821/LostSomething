@@ -13,6 +13,7 @@
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LS2DPuzzleInterface.h"
+#include "Interface/LS2DPuzzleClearInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
 
 // Sets default values
@@ -72,6 +73,22 @@ void ALSTrainStep::BeginPlay()
 		}
 	}
 
+	if (HasAuthority())
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), FoundActors);
+
+		for (AActor* Actor : FoundActors)
+		{
+			ILS2DPuzzleClearInterface* PC = Cast<ILS2DPuzzleClearInterface>(Actor);
+			if (PC)
+			{
+				PC->Get2DPuzzleClearDelegate().AddUObject(this, &ALSTrainStep::ClearInstallPuzzle);
+			}
+		}
+	}
+
+
 	//if (HasAuthority())
 	//{
 	//	FTimerHandle Handle;
@@ -101,13 +118,13 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 		{
 			if (HasAuthority())
 			{
-				InstallStep();
-				//StartInstallPuzzle();
+				//InstallStep();
+				StartInstallPuzzle();
 			}
 			else
 			{
-				ServerRPCInstallStep();
-				//ServerRPCStartInstallPuzzle();
+				//ServerRPCInstallStep();
+				ServerRPCStartInstallPuzzle();
 			}
 		}
 		else
@@ -160,6 +177,15 @@ void ALSTrainStep::StartInstallPuzzle()
 	{
 		GameMode->Start2DPuzzle(FName(TEXT("InstallPuzzle")), true, GetWorld()->GetFirstPlayerController());
 	}
+}
+
+void ALSTrainStep::ClearInstallPuzzle()
+{
+	InstallStep();
+}
+
+void ALSTrainStep::FailedInstallPuzzle()
+{
 }
 
 void ALSTrainStep::ServerRPCInstallStep_Implementation()

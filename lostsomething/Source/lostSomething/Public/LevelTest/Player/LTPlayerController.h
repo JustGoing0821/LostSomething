@@ -7,17 +7,20 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Puzzle/UI/LS2DPuzzleClearDelegate.h"
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
 #include "Interface/LS2DPuzzleExitInterface.h"
+#include "Interface/LS2DPuzzleClearInterface.h"
 #include "LTPlayerController.generated.h"
+
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleExitInterface
+class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleExitInterface, public ILS2DPuzzleClearInterface
 {
 	GENERATED_BODY()
 	
@@ -68,7 +71,11 @@ public:
 	void Start2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether);
 	void End2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether);
 	virtual void OnBtnExitClicked() override;
-	virtual void On2DPuzzleClear() override;
+	virtual void OnClear2DPuzzle() override;
+	//virtual void BindTo2DPuzzleClearDelegate(UObject* InObject, FName FunctionName) override;
+	virtual FOn2DPuzzleClearDelegate& Get2DPuzzleClearDelegate() override;
+
+	FOn2DPuzzleClearDelegate On2DPuzzleClear;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")

@@ -10,6 +10,7 @@
 #include "Components/PanelWidget.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
 #include "Interface/LS2DPuzzleExitInterface.h"
+#include "Interface/LS2DPuzzleClearInterface.h"
 
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -84,11 +85,16 @@ FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry,
 
 		if (IsMouseOverImage(ImgGoal1, InMouseEvent))
 		{
-			ILS2DPuzzleExitInterface* PuzzleInterface = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
-			if (PuzzleInterface)
+			ILS2DPuzzleClearInterface* PuzzleClear = Cast<ILS2DPuzzleClearInterface>(GetOwningPlayer());
+			if (PuzzleClear)
 			{
-				PuzzleInterface->On2DPuzzleClear();
-				PuzzleInterface->OnBtnExitClicked();
+				PuzzleClear->OnClear2DPuzzle();
+			}
+
+			ILS2DPuzzleExitInterface* PuzzleExit = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
+			if (PuzzleExit)
+			{
+				PuzzleExit->OnBtnExitClicked();
 			}
 		}
 	}

@@ -209,10 +209,10 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	{
 		CurrentState = ETrainSpawnState::Spawned;
 
-		CorrectGate = FMath::RandRange(1, 6);
+		CorrectGate = 1;// FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
-		float DelayTime = FMath::FRandRange(2.f, 10.f);
+		float DelayTime = 3;// FMath::FRandRange(2.f, 10.f);
 		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		MulticastRPCSetPannelMonitor();
@@ -236,6 +236,29 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	}
 }
 
+void ALSTrainSpawnGimmick::SpawnStep()
+{
+	if (StepTriggerClass)
+	{
+		FVector SpawnLocation = StepTriggerLocations[CorrectGate - 1];
+		FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
+		AActor* OpponentStepTrigger = GetWorld()->SpawnActor(StepTriggerClass, &SpawnLocation, &SpawnRotation);
+		OnTrainDespawned.BindLambda([OpponentStepTrigger]
+			{
+				OpponentStepTrigger->Destroy();
+			});
+
+		ALSTrainStep* TrainStep = Cast<ALSTrainStep>(OpponentStepTrigger);
+		TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
+		OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
+
+
+		//LS_LOG(LogLS, Log, TEXT("SpawnLocation = %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
+		//LS_LOG(LogLS, Log, TEXT("SpawnGimmickLocation = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+		//LS_LOG(LogLS, Log, TEXT("StepRelativeLocation = %f, %f, %f"), StepTriggerLocations[CorrectGate - 1].X, StepTriggerLocations[CorrectGate - 1].Y, StepTriggerLocations[CorrectGate - 1].Z);
+	}
+}
+
 void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 {
 	if (CurrentOverlapTrigger[CorrectGate] == CorrectPeopleCount)
@@ -243,24 +266,7 @@ void ALSTrainSpawnGimmick::CheckPuzzleCorrect()
 		if (HasAuthority())
 		{
 			OnPuzzleCheck.Broadcast(true, CorrectGate);
-		}
-		if (StepTriggerClass)
-		{
-			FVector SpawnLocation = StepTriggerLocations[CorrectGate-1];
-			FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
-			AActor* OpponentStepTrigger = GetWorld()->SpawnActor(StepTriggerClass, &SpawnLocation, &SpawnRotation);
-			OnTrainDespawned.BindLambda([OpponentStepTrigger]
-				{
-					OpponentStepTrigger->Destroy();
-				});
-
-			ALSTrainStep* TrainStep = Cast<ALSTrainStep>(OpponentStepTrigger);
-			TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
-			OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
-
-			//LS_LOG(LogLS, Log, TEXT("SpawnLocation = %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
-			//LS_LOG(LogLS, Log, TEXT("SpawnGimmickLocation = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
-			//LS_LOG(LogLS, Log, TEXT("StepRelativeLocation = %f, %f, %f"), StepTriggerLocations[CorrectGate - 1].X, StepTriggerLocations[CorrectGate - 1].Y, StepTriggerLocations[CorrectGate - 1].Z);
+			SpawnStep();
 		}
 	}
 	else

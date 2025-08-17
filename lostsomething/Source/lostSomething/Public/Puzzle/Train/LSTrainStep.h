@@ -48,6 +48,8 @@ public:
 public:
 	void PuzzleDeactivate();
 	void StartInstallPuzzle();
+	void ClearInstallPuzzle();
+	void FailedInstallPuzzle();
 
 
 //Replicated Section

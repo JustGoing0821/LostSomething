@@ -222,24 +222,38 @@ void ALTPlayerController::OnBtnExitClicked()
 	}
 }
 
-void ALTPlayerController::On2DPuzzleClear()
+void ALTPlayerController::OnClear2DPuzzle()
 {
+	//if (HasAuthority())
+	//{
+	//	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//	if (HasAuthority())
+	//	{
+	//		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	//		if (GameModeQuest)
+	//		{
+	//			GameModeQuest->QuestComplete();
+	//		}
+	//	}
+	//}
+	//else
+	//{
+	//	ServerRPCOn2DPuzzleClear();
+	//}
+
 	if (HasAuthority())
 	{
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-		if (HasAuthority())
-		{
-			ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
-			if (GameModeQuest)
-			{
-				GameModeQuest->QuestComplete();
-			}
-		}
+		On2DPuzzleClear.Broadcast();
 	}
 	else
 	{
 		ServerRPCOn2DPuzzleClear();
 	}
+}
+
+FOn2DPuzzleClearDelegate& ALTPlayerController::Get2DPuzzleClearDelegate()
+{
+	return On2DPuzzleClear;
 }
 
 void ALTPlayerController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
@@ -378,12 +392,13 @@ void ALTPlayerController::ServerRPCOnBtnExitClicked_Implementation()
 void ALTPlayerController::ServerRPCOn2DPuzzleClear_Implementation()
 {
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (HasAuthority())
-	{
-		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameModeQuest)
-		{
-			GameModeQuest->QuestComplete();
-		}
-	}
+	//if (HasAuthority())
+	//{
+	//	ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	//	if (GameModeQuest)
+	//	{
+	//		GameModeQuest->QuestComplete();
+	//	}
+	//}
+	On2DPuzzleClear.Broadcast();
 }

@@ -16,6 +16,7 @@ enum class ETrainState : uint8
 };
 
 DECLARE_MULTICAST_DELEGATE(FOnTrainArrivedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnTrainClosedDelegate);
 
 /**
  * 
