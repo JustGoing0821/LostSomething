@@ -369,13 +369,16 @@ void ATestNPC::ServerTMSoundPlay_Implementation(const FString& SoundType)
 
 void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
 {
-	LS_LOG(LogLS, Log, TEXT("MultiTMSoundPlay_Implementation"));
+	LS_LOG(LogLS, Log, TEXT("SoundType : %s"), *SoundType);
 
 	USoundBase* SelectedSound = nullptr;
 
 	if (SoundType == "Idle") SelectedSound = IdleSound;
 	else if (SoundType == "Attack") SelectedSound = AttackSound;
 	else if (SoundType == "Damage") SelectedSound = DamageSound;
+	else if (SoundType == "Chase") SelectedSound = ChaseSound;
+	else if (SoundType == "Walk") SelectedSound = WalkSound;
+	else if (SoundType == "Run") SelectedSound = RunSound;
 
 	if (!SelectedSound)
 	{
