@@ -53,6 +53,13 @@ private:
 	UFUNCTION()
 	void AnimNotify_IdleSound();
 
+	UFUNCTION()
+	void AnimNotify_DamageSound();
+	UFUNCTION()
+	void AnimNotify_WalkSound();
+	UFUNCTION()
+	void AnimNotify_RunSound();
+
 	FName GetAttackMontageSectionName(int32 Section);
 	
 };

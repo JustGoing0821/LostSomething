@@ -3,10 +3,10 @@
 
 #include "BossNPC/Obstacle/BossObstacle.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include <Interface/LSTakeDamageInterface.h>
 #include "Engine/DamageEvents.h"
+#include <Components/CapsuleComponent.h>
 
 // Sets default values
 ABossObstacle::ABossObstacle()
@@ -17,8 +17,8 @@ ABossObstacle::ABossObstacle()
 	bReplicates = true;
 
 	// 콜리전 컴포넌트 초기화
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
-	CollisionComp->InitSphereRadius(32.0f);
+	CollisionComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComp"));
+	//CollisionComp->InitSphereRadius(16.0f);
 	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RootComponent = CollisionComp;
 
@@ -29,7 +29,7 @@ ABossObstacle::ABossObstacle()
 
 	// 메시 컴포넌트 초기화
 	TArray<FString> MeshPaths = {
-		TEXT("/Game/Asset/Map/CyberSubway/Meshes/SM_Seats02.SM_Seats02"),
+		TEXT("/Game/Asset/Map/ModSubwayStation/StaticMeshes/SM_ScreenStanding.SM_ScreenStanding"),
 		
 	}; 
 	//TEXT("/ Game / Asset / Map / CitySubwayTrainModuler / Meshes / Props / SM_fireex.SM_fireex")
@@ -47,9 +47,9 @@ ABossObstacle::ABossObstacle()
 	if (MeshAsset.Succeeded())
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
-		ObstacleMesh->SetRelativeScale3D(FVector(1.5f));
-		ObstacleMesh->SetRelativeLocation(FVector(-35.0f, 0.0f, -70.0f)); // Z축으로 50만큼 올림
-		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+		ObstacleMesh->SetRelativeScale3D(FVector(1.0f));
+		ObstacleMesh->SetRelativeLocation(FVector(-5.0f, 40.0f, -127.0f)); // Z축으로 50만큼 올림
+		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	}
 
 }
