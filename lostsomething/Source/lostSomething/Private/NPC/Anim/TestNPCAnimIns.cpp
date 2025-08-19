@@ -108,6 +108,14 @@ void UTestNPCAnimIns::AnimNotify_DamageSound()
     NPC->TMSoundPlay(TEXT("Damage"));
 }
 
+void UTestNPCAnimIns::AnimNotify_WalkSound()
+{
+}
+
+void UTestNPCAnimIns::AnimNotify_RunSound()
+{
+}
+
 void UTestNPCAnimIns::AnimNotify_EndAttack()
 {
     UE_LOG(LogTemp, Warning, TEXT("UTestNPCAnimIns::AnimNotify_EndAttack()"));
