@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "LS2DPuzzleExitInterface.generated.h"
+#include "Puzzle/UI/LS2DPuzzleDelegate.h"
+#include "LS2DPuzzleControllerInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class ULS2DPuzzleExitInterface : public UInterface
+class ULS2DPuzzleControllerInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,13 +17,17 @@ class ULS2DPuzzleExitInterface : public UInterface
 /**
  * 
  */
-class LOSTSOMETHING_API ILS2DPuzzleExitInterface
+class LOSTSOMETHING_API ILS2DPuzzleControllerInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnBtnExitClicked()=0;
+//Wiget Call
+	virtual void OnExit2DPuzzle()=0;
+	virtual void OnClear2DPuzzle()=0;
 };
 
-//#include "Interface/LS2DPuzzleExitInterface.h"
+
+//#include "Interface/LS2DPuzzleControllerInterface.h"
+

@@ -3,14 +3,11 @@
 
 #include "Puzzle/UI/LS2DDragPuzzleWidget.h"
 #include "lostSomething.h"
-//#include "Blueprint/SlateBlueprintLibrary.h"
-//#include "Widgets/SWidget.h"
 #include "Components/Image.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
-#include "Interface/LS2DPuzzleExitInterface.h"
-#include "Interface/LS2DPuzzleClearInterface.h"
+#include "Interface/LS2DPuzzleControllerInterface.h"
 
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -77,24 +74,18 @@ FReply ULS2DDragPuzzleWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry,
 	if (bIsDragging)
 	{
 		bIsDragging = false;
-		ILSSiJaeCursorDragInterface* PC = Cast<ILSSiJaeCursorDragInterface>(GetOwningPlayer());
-		if (PC)
+		ILSSiJaeCursorDragInterface* PCCursor = Cast<ILSSiJaeCursorDragInterface>(GetOwningPlayer());
+		if (PCCursor)
 		{
-			PC->OnChangeSiJaeDragState(false);
+			PCCursor->OnChangeSiJaeDragState(false);
 		}
 
 		if (IsMouseOverImage(ImgGoal1, InMouseEvent))
 		{
-			ILS2DPuzzleClearInterface* PuzzleClear = Cast<ILS2DPuzzleClearInterface>(GetOwningPlayer());
-			if (PuzzleClear)
+			ILS2DPuzzleControllerInterface* PCPuzzle = Cast<ILS2DPuzzleControllerInterface>(GetOwningPlayer());
+			if (PCPuzzle)
 			{
-				PuzzleClear->OnClear2DPuzzle();
-			}
-
-			ILS2DPuzzleExitInterface* PuzzleExit = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
-			if (PuzzleExit)
-			{
-				PuzzleExit->OnBtnExitClicked();
+				PCPuzzle->OnClear2DPuzzle();
 			}
 		}
 	}
@@ -124,13 +115,8 @@ bool ULS2DDragPuzzleWidget::IsMouseOverImage(UImage* TargetImage, const FPointer
 	if (!TargetImage)
 		return false;
 
-	// 이미지의 지오메트리 정보 가져오기
 	FGeometry ImageGeometry = TargetImage->GetCachedGeometry();
-
-	// 마우스 위치를 로컬 좌표로 변환
 	FVector2D LocalMousePos = ImageGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-
-	// 이미지 영역 내에 있는지 확인
 	FVector2D ImageSize = ImageGeometry.GetLocalSize();
 
 	return (LocalMousePos.X >= 0 && LocalMousePos.X <= ImageSize.X &&

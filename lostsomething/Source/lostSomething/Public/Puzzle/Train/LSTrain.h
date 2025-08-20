@@ -130,6 +130,7 @@ protected:
 public:
 	void PuzzleCheck(bool bCorrect, int32 InCorrectGate);
 	void StopTrain();
+	void LeaveTrain();
 
 protected:
 	void GetOffPassengers();
@@ -155,15 +156,12 @@ public:
 	void MulticastRPCGateOpen();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCGateClose();
+	void MulticastRPCGetOffPassengers();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastGetOffPassengers();
+	void MulticastRPCStopTrain();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastGetOnPassengers();
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastStopTrain();
+	void MulticastRPCLeaveTrain();
 
 };

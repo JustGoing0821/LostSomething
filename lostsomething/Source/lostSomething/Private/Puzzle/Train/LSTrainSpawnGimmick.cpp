@@ -12,12 +12,13 @@
 #include "Physics/LSCollisionProfile.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Players/LSCharacterChoice.h"
-#include "Interface/LSCharacterChoiceInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
-#include "Interface/LSQuestInterface.h"
 #include "Quest/LSQuestManager.h"
+#include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSQuestInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include "Interface/LS2DPuzzleGameModeInterface.h"
 
 
 // Sets default values
@@ -30,7 +31,6 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	StageTrigger->SetBoxExtent(FVector(300, 5000, 200));
 	StageTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
 	RootComponent = StageTrigger;
-	StageTrigger->OnComponentBeginOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap);
 	StageTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap);
 
 	// Trigger Section
@@ -74,19 +74,6 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 		// 블루프린트 로드 실패시 기본 C++ 클래스로 폴백
 		TrainClass = ALSTrain::StaticClass();
 	}
-
-	// Mesh
-	//MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	//MeshComponent->SetupAttachment(RootComponent);
-	//MeshComponent->SetWorldScale3D(FVector(4.0, 200.0f, 0.1f));
-	//MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	//MeshComponent->SetVisibility(false);
-	//MeshComponent->SetRelativeLocation(FVector(-100.0f,-10000.0f, -200.0f));
-	//static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Puzzle/Train/TrainSpawnMeshTest.TrainSpawnMeshTest"));
-	//if (ItemMeshRef.Object)
-	//{
-	//	MeshComponent->SetStaticMesh(ItemMeshRef.Object);
-	//}
 
 	// Pannel Section
 	PannelMesh = CreateDefaultSubobject<UStaticMeshComponent>("PannelMesh");
@@ -143,26 +130,15 @@ void ALSTrainSpawnGimmick::BeginPlay()
 	{
 		BindQuestChange();
 	}
-}
 
-void ALSTrainSpawnGimmick::OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	//ALTPlayerCharacter* OverlapBeginActor = Cast<ALTPlayerCharacter>(OtherActor);
-	//if (OverlapBeginActor)
-	//{
-	//	FString EnumString = StaticEnum<ETrainSpawnState>()->GetNameByValue(static_cast<int64>(CurrentState)).ToString();
-	//	switch (CurrentState)
-	//	{
-	//	case ETrainSpawnState::Spawned:
-	//		break;
-	//	case ETrainSpawnState::Despawned:
-	//		SpawnTrain();
-	//		break;
-	//	default:
-	//		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("No CurrentState"));
-	//		break;
-	//	}
-	//}
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->Get2DPuzzleFailedDelegate().AddUObject(this, &ALSTrainSpawnGimmick::ApplyDamage);
+		}
+	}
 }
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -172,7 +148,7 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* Overlap
 	{
 		OverlapEndActor->Destroy();
 		CurrentState = ETrainSpawnState::Despawned;
-		OnTrainDespawned.ExecuteIfBound();
+		//OnTrainDespawned.ExecuteIfBound();
 		SpawnTrain();
 		//LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
 	}
@@ -223,13 +199,20 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 				FVector SpawnLocation = FVector(-2000.0f, -290.0f, -6.2f);
 				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
+
 				ALSTrain* LSTrain = Cast<ALSTrain>(OpponentTrain);
 				if (LSTrain)
 				{
 					LSTrain->SetCorrectGate(CorrectGate);
 					LSTrain->OnTrainArrived.AddUObject(this, &ALSTrainSpawnGimmick::CheckPuzzleCorrect);
 					OnPuzzleCheck.AddUObject(LSTrain, &ALSTrain::PuzzleCheck);
-					OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::MulticastStopTrain);
+					ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+					if (GameMode)
+					{
+						GameMode->Get2DPuzzleClearDelegate().AddUObject(LSTrain, &ALSTrain::MulticastRPCStopTrain);
+						GameMode->Get2DPuzzleFailedDelegate().AddUObject(LSTrain, &ALSTrain::MulticastRPCLeaveTrain);
+					}
+					//OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::MulticastStopTrain);
 				}
 			}
 		), 1.f, false, DelayTime);
@@ -243,15 +226,21 @@ void ALSTrainSpawnGimmick::SpawnStep()
 		FVector SpawnLocation = StepTriggerLocations[CorrectGate - 1];
 		FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
 		AActor* OpponentStepTrigger = GetWorld()->SpawnActor(StepTriggerClass, &SpawnLocation, &SpawnRotation);
-		OnTrainDespawned.BindLambda([OpponentStepTrigger]
-			{
-				OpponentStepTrigger->Destroy();
-			});
+
+		//OnTrainDespawned.BindLambda([OpponentStepTrigger]
+		//	{
+		//		OpponentStepTrigger->Destroy();
+		//	});
 
 		ALSTrainStep* TrainStep = Cast<ALSTrainStep>(OpponentStepTrigger);
-		TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
-		OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
-
+		//TrainStep->OnStepInstalled.BindUObject(this, &ALSTrainSpawnGimmick::QuestClear);
+		//OnTrainPuzzleCleared.AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->Get2DPuzzleClearDelegate().AddUObject(TrainStep, &ALSTrainStep::PuzzleDeactivate);
+			//GameMode->Get2DPuzzleFailedDelegate().AddUObject(LSTrain, &ALSTrain::MulticastRPCLeaveTrain);
+		}
 
 		//LS_LOG(LogLS, Log, TEXT("SpawnLocation = %f, %f, %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
 		//LS_LOG(LogLS, Log, TEXT("SpawnGimmickLocation = %f, %f, %f"), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
@@ -315,11 +304,6 @@ void ALSTrainSpawnGimmick::PuzzleActivate()
 	SpawnTrain();
 }
 
-void ALSTrainSpawnGimmick::PuzzleDeactivate()
-{
-
-}
-
 void ALSTrainSpawnGimmick::ApplyDamage()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
@@ -356,32 +340,6 @@ void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
 	{
 		MulticastRPCPuzzleActivate();
 	}
-	else
-	{
-		MulticastRPCPuzzleDeactivate();
-	}
-}
-
-void ALSTrainSpawnGimmick::QuestClear()
-{
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (HasAuthority())
-	{
-		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameModeQuest)
-		{
-			GameModeQuest->QuestComplete();
-		}
-	}
-	if (HasAuthority())
-	{
-		OnTrainPuzzleCleared.Broadcast();
-	}
-}
-
-void ALSTrainSpawnGimmick::OnRep_CorrectGate()
-{
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 }
 
 void ALSTrainSpawnGimmick::MulticastRPCSetPannelMonitor_Implementation()
@@ -392,9 +350,4 @@ void ALSTrainSpawnGimmick::MulticastRPCSetPannelMonitor_Implementation()
 void ALSTrainSpawnGimmick::MulticastRPCPuzzleActivate_Implementation()
 {
 	PuzzleActivate();
-}
-
-void ALSTrainSpawnGimmick::MulticastRPCPuzzleDeactivate_Implementation()
-{
-	PuzzleDeactivate();
 }

@@ -8,6 +8,7 @@
 #include "LSTrainStep.generated.h"
 
 DECLARE_DELEGATE(FOnStepInstalledDelegate);
+DECLARE_DELEGATE(FOnStepInstallFailedDelegate);
 
 UCLASS()
 class LOSTSOMETHING_API ALSTrainStep : public AActor, public ILSInteractionInterface
@@ -41,15 +42,19 @@ protected:
 	void InstallStep();
 
 public:
-	FOnStepInstalledDelegate OnStepInstalled;
+	//FOnStepInstalledDelegate OnStepInstalled;
+	//FOnStepInstallFailedDelegate OnStepInstallFailed;
 
 
 //Puzzle Section
 public:
 	void PuzzleDeactivate();
 	void StartInstallPuzzle();
-	void ClearInstallPuzzle();
-	void FailedInstallPuzzle();
+	//void ClearInstallPuzzle();
+	//void FailedInstallPuzzle();
+
+protected:
+	float PuzzleTimer;
 
 
 //Replicated Section
@@ -65,4 +70,7 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCStartInstallPuzzle();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCFailedInstallPuzzle();
 };

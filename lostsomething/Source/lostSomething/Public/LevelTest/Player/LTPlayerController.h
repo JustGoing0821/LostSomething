@@ -7,12 +7,11 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interaction/LSInteractionEnum.h"
-#include "Puzzle/UI/LS2DPuzzleClearDelegate.h"
+#include "Puzzle/UI/LS2DPuzzleDelegate.h"
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
-#include "Interface/LS2DPuzzleExitInterface.h"
-#include "Interface/LS2DPuzzleClearInterface.h"
+#include "Interface/LS2DPuzzleControllerInterface.h"
 #include "LTPlayerController.generated.h"
 
 
@@ -20,7 +19,7 @@
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleExitInterface, public ILS2DPuzzleClearInterface
+class LOSTSOMETHING_API ALTPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface
 {
 	GENERATED_BODY()
 	
@@ -68,14 +67,14 @@ public:
 
 // 2DPuzzle Widget
 public:
-	void Start2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether);
-	void End2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether);
-	virtual void OnBtnExitClicked() override;
+	void Start2DPuzzle();
+	void End2DPuzzle();
+	void Update2DPuzzleTimer(float Timer);
+	virtual void OnExit2DPuzzle() override;
 	virtual void OnClear2DPuzzle() override;
-	//virtual void BindTo2DPuzzleClearDelegate(UObject* InObject, FName FunctionName) override;
-	virtual FOn2DPuzzleClearDelegate& Get2DPuzzleClearDelegate() override;
 
-	FOn2DPuzzleClearDelegate On2DPuzzleClear;
+
+
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -118,15 +117,22 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCStart2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether);
+
+
+
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCEnd2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether);
+	void MulticastRPCStart2DPuzzle();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCEnd2DPuzzle();
 
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCOnBtnExitClicked();
+	void ServerRPCOnExit2DPuzzle();
 
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCOn2DPuzzleClear();
+	void ServerRPCOnClear2DPuzzle();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCUpdate2DPuzzleTimer(float Timer);
 };
