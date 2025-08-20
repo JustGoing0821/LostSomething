@@ -12,7 +12,7 @@ ABMSpawner::ABMSpawner()
 
 	bReplicates = true;
 
-	static ConstructorHelpers::FClassFinder<ABossNPC> MonsterBP(TEXT("/Game/BossNPC/BluePrints/BP_BossNPC.BP_BossNPC_C"));
+	static ConstructorHelpers::FClassFinder<ABossNPC> MonsterBP(TEXT("/Game/BossNPC/BluePrints/BP_BossNPC01.BP_BossNPC01_C"));
 	if (MonsterBP.Succeeded())
 	{
 		MonsterClass = MonsterBP.Class;

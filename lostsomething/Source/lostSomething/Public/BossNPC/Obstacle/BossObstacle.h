@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include <Components/SphereComponent.h>
+#include <Components/CapsuleComponent.h>
 #include "BossObstacle.generated.h"
 
 UCLASS()
@@ -24,7 +24,7 @@ public:
 
 	// 콜리전
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USphereComponent* CollisionComp;
+	UCapsuleComponent* CollisionComp;
 
 	// 이동 관련
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
