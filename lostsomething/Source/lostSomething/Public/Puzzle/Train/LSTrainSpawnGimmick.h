@@ -60,9 +60,6 @@ protected:
 
 
 	UFUNCTION()
-	void OnSpawnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
 	void OnSpawnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
@@ -72,15 +69,14 @@ protected:
 	void OnGateWaitTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-// Train Spawn Section
+// Spawn Section
 public:
 	UPROPERTY(Replicated)
 	ETrainSpawnState CurrentState;
 
-	FOnTrainDespawnedDelegate OnTrainDespawned;
-
 protected:
 	void SpawnTrain();
+	void SpawnStep();
 
 
 //Puzzle Section
@@ -88,9 +84,8 @@ public:
 	FORCEINLINE void SetCorrectGate(int32 InCorrectOpenGate) { CorrectGate = InCorrectOpenGate; }
 
 	FOnTrainPuzzleCheckDelegate OnPuzzleCheck;
-	FOnTrainPuzzleClearedDelegate OnTrainPuzzleCleared;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CorrectGate)
+	UPROPERTY(Replicated)
 	int32 CorrectGate;
 
 protected:
@@ -100,7 +95,6 @@ protected:
 	UFUNCTION()
 	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
 	void PuzzleActivate();
-	void PuzzleDeactivate();
 	void ApplyDamage();
 
 	UPROPERTY(EditAnywhere, Category="Puzzle")
@@ -113,22 +107,11 @@ protected:
 	float DamageAmount;
 
 
-//Queset Section
-protected:
-	void QuestClear();
-
-
 //RPC Section
 public:
-	UFUNCTION()
-	void OnRep_CorrectGate();
-
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSetPannelMonitor();
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCPuzzleActivate();
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCPuzzleDeactivate();
 };
