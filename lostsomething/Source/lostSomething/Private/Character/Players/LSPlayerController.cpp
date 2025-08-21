@@ -299,6 +299,11 @@ void ALSPlayerController::OnClear2DPuzzle()
 	}
 }
 
+void ALSPlayerController::UpdateAim(const FString& InString)
+{
+	LSHUDWidget->UpdateAim(InString);
+}
+
 void ALSPlayerController::Update2DPuzzleTimer(float Timer)
 {
 	LS2DPuzzleHUDWidget->UpdateTimer(Timer);
