@@ -110,10 +110,26 @@ void UTestNPCAnimIns::AnimNotify_DamageSound()
 
 void UTestNPCAnimIns::AnimNotify_WalkSound()
 {
+    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
+    if (!NPC)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_WalkSound: NPC is nullptr"));
+        return;
+    }
+
+    NPC->TMSoundPlay(TEXT("Walk"));
 }
 
 void UTestNPCAnimIns::AnimNotify_RunSound()
 {
+    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
+    if (!NPC)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_RunSound: NPC is nullptr"));
+        return;
+    }
+
+    NPC->TMSoundPlay(TEXT("Run"));
 }
 
 void UTestNPCAnimIns::AnimNotify_EndAttack()
