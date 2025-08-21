@@ -97,8 +97,19 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI")
     void SetShouldChase(bool bNewShouldChase)
     {
+        if (bNewShouldChase && bSoundPlay)
+        {
+            TMSoundPlay("Chase");
+            bSoundPlay = true;
+        }
+        else {
+            bSoundPlay = false;
+        }
+
         bShouldChase = bNewShouldChase;
     }
+
+    bool bSoundPlay = false;
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void SetMaxWalkSpeed(float NewSpeed);
@@ -124,6 +135,15 @@ public:
 
     UPROPERTY(EditAnywhere)
     USoundWave* DamageSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* ChaseSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* WalkSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* RunSound;
 
     void TMSoundPlay(const FString& SoundType);
     UFUNCTION(Server, Reliable)

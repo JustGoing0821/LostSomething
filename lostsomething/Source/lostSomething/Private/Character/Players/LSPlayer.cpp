@@ -198,8 +198,12 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 {
 	if (bIsDead) return;
 
+	
+
+
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
+	
 	if (HpComponent)
 	{
 		CurrentHp -= DamageAmount;
@@ -235,12 +239,12 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->HitAnim();
 
-	}
+	}*/
 
 	// 플레이어 컨트롤러 가져오기
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
@@ -249,6 +253,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 		// HUD 위젯의 HP 바 업데이트
 		LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
 		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+
 	}
 	else
 	{

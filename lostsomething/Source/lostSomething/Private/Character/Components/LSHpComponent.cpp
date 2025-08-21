@@ -2,6 +2,10 @@
 
 
 #include "Character/Components/LSHpComponent.h"
+#include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
+#include "Components/SkeletalMeshComponent.h" 
+#include "GameFramework/Character.h"  
+
 
 // Sets default values for this component's properties
 ULSHpComponent::ULSHpComponent()
@@ -33,6 +37,31 @@ void ULSHpComponent::SetHp(float NewHp)
         CurrentHp = ClampedHp;
         OnHpChanged.Broadcast(CurrentHp);
         UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+
+        /*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+        if (AnimInstance)
+        {
+        AnimInstance->HitAnim();
+
+        }*/
+
+        if (ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
+        {
+            // 2) 메쉬 얻기
+            if (USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
+            {
+                // 3) 애님 인스턴스 얻기
+                if (UAnimInstance* AnyAnim = MeshComp->GetAnimInstance())
+                {
+                    // 4) 내 애님클래스로 캐스팅 후 호출
+                    if (ULSPlayerSiJaeAnimInstance* AnimInstance =
+                        Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
+                    {
+                        AnimInstance->HitAnim();
+                    }
+                }
+            }
+        }
 
         // HP가 0이 되면 델리게이트 호출
         if (CurrentHp <= 0.0f)

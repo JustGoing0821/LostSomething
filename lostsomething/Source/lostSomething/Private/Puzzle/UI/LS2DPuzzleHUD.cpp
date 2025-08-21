@@ -7,10 +7,11 @@
 #include "GameFramework/GameModeBase.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Puzzle/UI/LS2DDragPuzzleWidget.h"
+#include "Puzzle/UI/LS2DPuzzleTimerWidget.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
 #include "Components/Button.h"
-#include "Interface/LS2DPuzzleExitInterface.h"
+#include "Interface/LS2DPuzzleControllerInterface.h"
 
 ULS2DPuzzleHUD::ULS2DPuzzleHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -35,6 +36,9 @@ void ULS2DPuzzleHUD::NativeConstruct()
 	{
 		BtnExit->OnClicked.AddDynamic(this, &ULS2DPuzzleHUD::OnBtnExitClicked);
 	}
+
+	PuzzleTimerWidget = Cast<ULS2DPuzzleTimerWidget>(GetWidgetFromName(TEXT("wbp_puzzle_timer")));
+	ensure(PuzzleTimerWidget);
 }
 
 void ULS2DPuzzleHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -67,10 +71,10 @@ void ULS2DPuzzleHUD::OnBtnExitClicked()
 {
 	LS_WDGLOG(LogLS, Log, TEXT("Begin"));
 
-	ILS2DPuzzleExitInterface* PuzzleInterface = Cast<ILS2DPuzzleExitInterface>(GetOwningPlayer());
+	ILS2DPuzzleControllerInterface* PuzzleInterface = Cast<ILS2DPuzzleControllerInterface>(GetOwningPlayer());
 	if (PuzzleInterface)
 	{
-		PuzzleInterface->OnBtnExitClicked();
+		PuzzleInterface->OnExit2DPuzzle();
 	}
 }
 
@@ -78,4 +82,12 @@ void ULS2DPuzzleHUD::SetCursorPosition(FVector2D InCursorPos)
 {
 	SiJaeCursorPos = InCursorPos;
 	//LS_WDGLOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorX, SiJaeCursorY);
+}
+
+void ULS2DPuzzleHUD::UpdateTimer(float Timer)
+{
+	if (PuzzleTimerWidget)
+	{
+		PuzzleTimerWidget->UpdateTimer(Timer);
+	}
 }

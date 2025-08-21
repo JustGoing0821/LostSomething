@@ -32,6 +32,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UButton> BtnExit;
 
+	UPROPERTY()
+	TObjectPtr<class ULS2DPuzzleTimerWidget> PuzzleTimerWidget;
+
 	UFUNCTION()
 	void OnBtnExitClicked();
 
@@ -45,4 +48,8 @@ public:
 protected:
 	FVector2D SiJaeCursorPos;
 	uint8 bIsSiJaeDragging : 1;
+
+// Timer Section
+public:
+	void UpdateTimer(float Timer);
 };
