@@ -10,10 +10,11 @@
 #include "Engine/StaticMeshActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
+#include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
-#include "Interface/LS2DPuzzleInterface.h"
-#include "Character/Players/LSCharacterChoice.h"
+#include "Interface/LS2DPuzzleGameModeInterface.h"
+
 
 // Sets default values
 ALSTrainStep::ALSTrainStep()
@@ -45,7 +46,7 @@ ALSTrainStep::ALSTrainStep()
 	//Step Install Initialize
 	bReplicates = true;
 	bIsStepInstalled = false;
-
+	PuzzleTimer = 5.f;
 }
 
 void ALSTrainStep::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -71,6 +72,17 @@ void ALSTrainStep::BeginPlay()
 			}
 		}
 	}
+
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->Get2DPuzzleClearDelegate().AddUObject(this, &ALSTrainStep::InstallStep);
+			GameMode->Get2DPuzzleFailedDelegate().AddUObject(this, &ALSTrainStep::MulticastRPCFailedInstallPuzzle);
+		}
+	}
+
 
 	//if (HasAuthority())
 	//{
@@ -101,13 +113,13 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 		{
 			if (HasAuthority())
 			{
-				InstallStep();
-				//StartInstallPuzzle();
+				//InstallStep();
+				StartInstallPuzzle();
 			}
 			else
 			{
-				ServerRPCInstallStep();
-				//ServerRPCStartInstallPuzzle();
+				//ServerRPCInstallStep();
+				ServerRPCStartInstallPuzzle();
 			}
 		}
 		else
@@ -131,7 +143,7 @@ void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 void ALSTrainStep::InstallStep()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	OnStepInstalled.Execute();
+	//OnStepInstalled.Execute();
 
 	if (bIsStepInstalled)
 	{
@@ -155,12 +167,23 @@ void ALSTrainStep::PuzzleDeactivate()
 void ALSTrainStep::StartInstallPuzzle()
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	ILS2DPuzzleInterface* GameMode = Cast<ILS2DPuzzleInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->Start2DPuzzle(FName(TEXT("InstallPuzzle")), true, GetWorld()->GetFirstPlayerController());
+		GameMode->Start2DPuzzle(PuzzleTimer);
 	}
 }
+
+//void ALSTrainStep::ClearInstallPuzzle()
+//{
+//	InstallStep();
+//}
+
+//void ALSTrainStep::FailedInstallPuzzle()
+//{
+//	//OnStepInstallFailed.ExecuteIfBound();
+//	Destroy();
+//}
 
 void ALSTrainStep::ServerRPCInstallStep_Implementation()
 {
@@ -176,5 +199,10 @@ void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
 void ALSTrainStep::ServerRPCStartInstallPuzzle_Implementation()
 {
 	StartInstallPuzzle();
+}
+
+void ALSTrainStep::MulticastRPCFailedInstallPuzzle_Implementation()
+{
+	Destroy();
 }
 

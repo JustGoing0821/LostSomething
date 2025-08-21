@@ -3,11 +3,17 @@
 
 #include "Character/Players/LSPlayerController.h"
 #include "lostSomething.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "UserInterface/LSQuestWidget.h"
 #include "Net/UnrealNetwork.h"
+#include "Puzzle/UI/LS2DPuzzleHUD.h"
+#include "Interface/LSQuestInterface.h"
+#include "Interface/LSSijaeCursorPosInterface.h"
+#include "Interface/LS2DPuzzleGameModeInterface.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -38,6 +44,19 @@ ALSPlayerController::ALSPlayerController()
 	{
 		DeathWidgetClass = DeathWidgetRef.Class;
 	}
+
+	//Puzzle Section
+	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	NetUpdateFrequency = 60.0f;
+
+	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/Blueprints/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
+	if (LS2DPuzzleHUDRef.Class)
+	{
+		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
+	}
+
+	bIs2DPuzzleActive = false;
 }
 
 void ALSPlayerController::BeginPlay()
@@ -87,6 +106,50 @@ void ALSPlayerController::BeginPlay()
 			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ScriptWidget WidgetSetted."));
 		}
 	}
+
+	SetInputMode(FInputModeGameOnly());
+}
+
+void ALSPlayerController::Tick(float DeltaTime)
+{
+	if (bIs2DPuzzleActive)
+	{
+		if (IsLocalPlayerController() && CharacterChoice == ELSCharacterChoice::SiJae)
+		{
+			GetSiJaeLocalCursor();
+		}
+
+		if (HasAuthority())
+		{
+			FVector2D SijaeCursorPosData;
+
+			AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+			ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
+			if (GameModeCursor)
+			{
+				SijaeCursorPosData = GameModeCursor->GetSiJaeCursorPos();
+			}
+
+			SiJaeCursorPos = SijaeCursorPosData;
+		}
+
+		if (IsLocalPlayerController())
+		{
+			if (LS2DPuzzleHUDWidget)
+			{
+				LS2DPuzzleHUDWidget->SetCursorPosition(SiJaeCursorPos);
+				if (!HasAuthority())
+				{
+					//LS_LOG(LogLS, Log, TEXT("Test"));
+					//LS_LOG(LogLS, Log, TEXT("Begin : %f, %f"), SiJaeCursorPos.X, SiJaeCursorPos.Y);
+				}
+			}
+			else
+			{
+				//LS_LOG(LogLS, Error, TEXT("No LS2DPuzzleHUDWidget"));
+			}
+		}
+	}
 }
 
 void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -94,6 +157,7 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
+	DOREPLIFETIME(ALSPlayerController, SiJaeCursorPos);
 }
 
 //Death
@@ -132,8 +196,6 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 	}
 }
 
-
-
 void ALSPlayerController::UpdateScriptWidget(const FString& ScriptText)
 {
 	if (IsLocalController())
@@ -152,6 +214,155 @@ void ALSPlayerController::UpdateScriptWidget(const FString& ScriptText)
 	else if (HasAuthority())
 	{
 		ClientRPCUpdateScriptWidget(ScriptText);
+	}
+}
+
+void ALSPlayerController::StartTalking()
+{
+	UE_LOG(LogTemp, Log, TEXT("Voice started"));
+
+}
+
+void ALSPlayerController::StopTalking()
+{
+	UE_LOG(LogTemp, Log, TEXT("Voice stopped"));
+}
+
+void ALSPlayerController::Start2DPuzzle()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	bIs2DPuzzleActive = true;
+
+	if (IsLocalController() && LS2DPuzzleHUDClass)
+	{
+		SetInputMode(FInputModeUIOnly());
+		if (CharacterChoice == ELSCharacterChoice::IJae)
+		{
+			SetShowMouseCursor(true);
+		}
+
+
+		LS2DPuzzleHUDWidget = CreateWidget<ULS2DPuzzleHUD>(this, LS2DPuzzleHUDClass);
+		if (LS2DPuzzleHUDWidget)
+		{
+			LS2DPuzzleHUDWidget->AddToViewport(0);
+		}
+	}
+}
+
+void ALSPlayerController::End2DPuzzle()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	bIs2DPuzzleActive = false;
+
+	if (IsLocalController() && LS2DPuzzleHUDClass)
+	{
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+
+		if (LS2DPuzzleHUDWidget)
+		{
+			LS2DPuzzleHUDWidget->RemoveFromViewport();
+		}
+	}
+}
+
+void ALSPlayerController::OnExit2DPuzzle()
+{
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
+		if (PuzzleInterface)
+		{
+			PuzzleInterface->End2DPuzzle();
+		}
+	}
+	else
+	{
+		ServerRPCOnExit2DPuzzle();
+	}
+}
+
+void ALSPlayerController::OnClear2DPuzzle()
+{
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->OnClear2DPuzzle();
+		}
+	}
+	else
+	{
+		ServerRPCOnClear2DPuzzle();
+	}
+}
+
+void ALSPlayerController::Update2DPuzzleTimer(float Timer)
+{
+	LS2DPuzzleHUDWidget->UpdateTimer(Timer);
+}
+
+void ALSPlayerController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	if (HasAuthority())
+	{
+		SendOnChangeSiJaeDragState(InIsSiJaeDragging);
+	}
+	else
+	{
+		ServerRPCSendOnChangeSiJaeDragState(InIsSiJaeDragging);
+	}
+}
+
+void ALSPlayerController::CalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	LS2DPuzzleHUDWidget->SetbIsSiJaeDragging(InIsSiJaeDragging);
+}
+
+void ALSPlayerController::GetSiJaeLocalCursor()
+{
+	FVector2D CurPos;
+	FVector2D MousePosition;
+	FVector2D ViewportSize;
+	GetWorld()->GetGameViewport()->GetMousePosition(MousePosition);
+	GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
+	CurPos = FVector2D(MousePosition.X / ViewportSize.X, MousePosition.Y / ViewportSize.Y);
+	//LS_LOG(LogLS, Log, TEXT("Begin : %f, %f"), CurPos.X, CurPos.Y);
+
+	if (HasAuthority())
+	{
+		SetGameModeSiJaeCursor(CurPos);
+	}
+	else
+	{
+		ServerRPCSetGameModeSiJaeCursor(CurPos);
+	}
+}
+
+void ALSPlayerController::SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos)
+{
+	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+	ILSSijaeCursorPosInterface* GameModeCursor = Cast<ILSSijaeCursorPosInterface>(GameMode);
+	if (GameModeCursor)
+	{
+		GameModeCursor->SetSiJaeCursorPos(InSiJaeCursorPos);
+	}
+}
+
+void ALSPlayerController::SendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	if (HasAuthority())
+	{
+		AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+		ILSSiJaeCursorDragInterface* GameModeCursor = Cast<ILSSiJaeCursorDragInterface>(GameMode);
+		if (GameModeCursor)
+		{
+			GameModeCursor->OnChangeSiJaeDragState(InIsSiJaeDragging);
+		}
 	}
 }
 
@@ -188,14 +399,62 @@ void ALSPlayerController::ClientRPCUpdateScriptWidget_Implementation(const FStri
 	}
 }
 
-
-void ALSPlayerController::StartTalking()
+void ALSPlayerController::ServerRPCSetGameModeSiJaeCursor_Implementation(const FVector2D& InSiJaeCursorPos)
 {
-	UE_LOG(LogTemp, Log, TEXT("Voice started"));
-	
+	SetGameModeSiJaeCursor(InSiJaeCursorPos);
 }
 
-void ALSPlayerController::StopTalking()
+void ALSPlayerController::ServerRPCSendOnChangeSiJaeDragState_Implementation(uint8 InIsSiJaeDragging)
 {
-	UE_LOG(LogTemp, Log, TEXT("Voice stopped"));
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
+	SendOnChangeSiJaeDragState(InIsSiJaeDragging);
 }
+
+void ALSPlayerController::ClientRPCCalledOnChangeSiJaeDragState_Implementation(uint8 InIsSiJaeDragging)
+{
+	CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+}
+
+void ALSPlayerController::MulticastRPCStart2DPuzzle_Implementation()
+{
+	Start2DPuzzle();
+}
+
+void ALSPlayerController::MulticastRPCEnd2DPuzzle_Implementation()
+{
+	End2DPuzzle();
+}
+
+void ALSPlayerController::ServerRPCOnExit2DPuzzle_Implementation()
+{
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
+		if (PuzzleInterface)
+		{
+			PuzzleInterface->End2DPuzzle();
+		}
+	}
+}
+
+void ALSPlayerController::ServerRPCOnClear2DPuzzle_Implementation()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->OnClear2DPuzzle();
+		}
+	}
+}
+
+void ALSPlayerController::MulticastRPCUpdate2DPuzzleTimer_Implementation(float Timer)
+{
+	if (IsLocalController())
+	{
+		Update2DPuzzleTimer(Timer);
+	}
+}
+

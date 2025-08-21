@@ -54,6 +54,9 @@ ALSGameMode::ALSGameMode()
 	MapVersions.Add("LSStage1Map1", 0);
 	MapVersions.Add("LSStage1Map2", 0);
 	MapVersions.Add("LSStage1Map3", 0);
+
+	//2D Section
+	bIsSiJaeDragging = false;
 }
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -302,3 +305,105 @@ void ALSGameMode::CheckMapVersion()
 		}
 	}
 }
+
+
+void ALSGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
+{
+	bIsSiJaeDragging = InIsSiJaeDragging;
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
+		{
+			if (PC->IsLocalController())
+			{
+				PC->CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+			else
+			{
+				PC->ClientRPCCalledOnChangeSiJaeDragState(InIsSiJaeDragging);
+			}
+		}
+	}
+}
+
+void ALSGameMode::Start2DPuzzle(float Timer)
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
+		{
+			PC->MulticastRPCStart2DPuzzle();
+		}
+	}
+
+	StartPuzzleTimer(Timer);
+}
+
+void ALSGameMode::End2DPuzzle()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
+		{
+			PC->MulticastRPCEnd2DPuzzle();
+		}
+	}
+
+	EndPuzzleTimer();
+}
+
+void ALSGameMode::OnClear2DPuzzle()
+{
+	QuestComplete();
+	End2DPuzzle();
+	On2DPuzzleClear.Broadcast();
+}
+
+void ALSGameMode::OnFailed2DPuzzle()
+{
+	End2DPuzzle();
+	On2DPuzzleFailed.Broadcast();
+}
+
+void ALSGameMode::StartPuzzleTimer(float InPuzzleTimerCount)
+{
+	if (GetWorldTimerManager().IsTimerActive(PuzzleTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(PuzzleTimerHandle);
+	}
+
+	CurrentPuzzleTime = InPuzzleTimerCount;
+	GetWorldTimerManager().SetTimer(PuzzleTimerHandle, this, &ALSGameMode::SetPuzzleTimer, 1.0f, true);
+}
+
+void ALSGameMode::SetPuzzleTimer()
+{
+	CurrentPuzzleTime--;
+
+	if (CurrentPuzzleTime < KINDA_SMALL_NUMBER)
+	{
+		OnFailed2DPuzzle();
+	}
+	else
+	{
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
+			{
+				PC->MulticastRPCUpdate2DPuzzleTimer(CurrentPuzzleTime);
+			}
+		}
+	}
+}
+
+void ALSGameMode::EndPuzzleTimer()
+{
+	if (GetWorldTimerManager().IsTimerActive(PuzzleTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(PuzzleTimerHandle);
+	}
+}
+

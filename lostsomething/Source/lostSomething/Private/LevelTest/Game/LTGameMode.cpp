@@ -3,6 +3,7 @@
 
 #include "LevelTest/Game/LTGameMode.h"
 #include "lostSomething.h"
+#include "TimerManager.h"
 #include "Quest/LSQuestManager.h"
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Character/Players/LSCharacterChoice.h"
@@ -228,46 +229,82 @@ void ALTGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALTGameMode::Start2DPuzzle(FName InPuzzleName, uint8 InIsStartTogether, APlayerController* InPlayerController)
+void ALTGameMode::Start2DPuzzle(float Timer)
 {
 	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (InIsStartTogether)
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
+		{
+			PC->MulticastRPCStart2DPuzzle();
+		}
+	}
+
+	StartPuzzleTimer(Timer);
+}
+
+void ALTGameMode::End2DPuzzle()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
+		{
+			PC->MulticastRPCEnd2DPuzzle();
+		}
+	}
+
+	EndPuzzleTimer();
+}
+
+void ALTGameMode::OnClear2DPuzzle()
+{
+	QuestComplete();
+	End2DPuzzle();
+	On2DPuzzleClear.Broadcast();
+}
+
+void ALTGameMode::OnFailed2DPuzzle()
+{
+	End2DPuzzle();
+	On2DPuzzleFailed.Broadcast();
+}
+
+void ALTGameMode::StartPuzzleTimer(float InPuzzleTimerCount)
+{
+	if (GetWorldTimerManager().IsTimerActive(PuzzleTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(PuzzleTimerHandle);
+	}
+
+	CurrentPuzzleTime = InPuzzleTimerCount;
+	GetWorldTimerManager().SetTimer(PuzzleTimerHandle, this, &ALTGameMode::SetPuzzleTimer, 1.0f, true);
+}
+
+void ALTGameMode::SetPuzzleTimer()
+{
+	CurrentPuzzleTime--;
+
+	if (CurrentPuzzleTime < KINDA_SMALL_NUMBER)
+	{
+		OnFailed2DPuzzle();
+	}
+	else
 	{
 		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 		{
 			if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
 			{
-				PC->MulticastRPCStart2DPuzzle(InPuzzleName, InIsStartTogether);
+				PC->MulticastRPCUpdate2DPuzzleTimer(CurrentPuzzleTime);
 			}
-		}
-	}
-	else
-	{
-		if (ALTPlayerController* PC = Cast<ALTPlayerController>(InPlayerController))
-		{
-			PC->MulticastRPCStart2DPuzzle(InPuzzleName, InIsStartTogether);
 		}
 	}
 }
 
-void ALTGameMode::End2DPuzzle(FName InPuzzleName, uint8 InIsEndTogether, APlayerController* InPlayerController)
+void ALTGameMode::EndPuzzleTimer()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (InIsEndTogether)
+	if (GetWorldTimerManager().IsTimerActive(PuzzleTimerHandle))
 	{
-		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-		{
-			if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
-			{
-				PC->MulticastRPCEnd2DPuzzle(InPuzzleName, InIsEndTogether);
-			}
-		}
-	}
-	else
-	{
-		if (ALTPlayerController* PC = Cast<ALTPlayerController>(InPlayerController))
-		{
-			PC->MulticastRPCEnd2DPuzzle(InPuzzleName, InIsEndTogether);
-		}
+		GetWorldTimerManager().ClearTimer(PuzzleTimerHandle);
 	}
 }

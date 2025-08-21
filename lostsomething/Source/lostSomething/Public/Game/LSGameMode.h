@@ -7,13 +7,16 @@
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSLocationTransferInterface.h"
 #include "Interaction/LSInteractionEnum.h"
+#include "Interface/LSSijaeCursorPosInterface.h"
+#include "Interface/LSSiJaeCursorDragInterface.h"
+#include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "LSGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface, public ILSLocationTransferInterface
+class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface, public ILSLocationTransferInterface, public ILSSijaeCursorPosInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleGameModeInterface
 {
 	GENERATED_BODY()
 	
@@ -66,5 +69,38 @@ protected:
 	TMap<FString, int32> MapVersions;
 
 	void CheckMapVersion();
+
+
+// 2D Puzzle Section
+public:
+	FORCEINLINE virtual const FVector2D& GetSiJaeCursorPos() override { return SiJaeCursorPos; }
+	FORCEINLINE virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) override { SiJaeCursorPos = InSiJaeCursorPos; }
+	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
+	virtual void Start2DPuzzle(float Timer) override;
+	virtual void End2DPuzzle() override;
+	virtual void OnClear2DPuzzle() override;
+
+	FORCEINLINE virtual FOn2DPuzzleClearDelegate& Get2DPuzzleClearDelegate() override { return On2DPuzzleClear; }
+	virtual void OnFailed2DPuzzle() override;
+	FORCEINLINE virtual FOn2DPuzzleFailedDelegate& Get2DPuzzleFailedDelegate() override { return On2DPuzzleFailed; }
+
+	FOn2DPuzzleClearDelegate On2DPuzzleClear;
+	FOn2DPuzzleFailedDelegate On2DPuzzleFailed;
+
+protected:
+	FVector2D SiJaeCursorPos;
+	uint8 bIsSiJaeDragging : 1;
+
+
+// Puzzle Timer Section
+public:
+
+protected:
+	FTimerHandle PuzzleTimerHandle;
+	float CurrentPuzzleTime;
+
+	void StartPuzzleTimer(float InPuzzleTimerCount);
+	void SetPuzzleTimer();
+	void EndPuzzleTimer();
 
 };

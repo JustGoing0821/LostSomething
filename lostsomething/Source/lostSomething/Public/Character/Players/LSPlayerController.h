@@ -7,15 +7,17 @@
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
+#include "Character/UI/LSDeathWidget.h" 
 #include "Interaction/LSInteractionEnum.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
-#include "Character/UI/LSDeathWidget.h" 
+#include "Interface/LSSiJaeCursorDragInterface.h"
+#include "Interface/LS2DPuzzleControllerInterface.h"
 #include "LSPlayerController.generated.h"
 
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface
+class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface
 {
 	GENERATED_BODY()
 
@@ -33,6 +35,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
@@ -103,6 +106,39 @@ public:
 	void UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
 
 
+// SiJaeCursor Section
+public:
+	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
+	void CalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
+	UPROPERTY(Replicated)
+	FVector2D SiJaeCursorPos;
+
+protected:
+	void GetSiJaeLocalCursor();
+	void SetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
+	void SendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
+
+// 2DPuzzle Widget
+public:
+	void Start2DPuzzle();
+	void End2DPuzzle();
+	void Update2DPuzzleTimer(float Timer);
+	virtual void OnExit2DPuzzle() override;
+	virtual void OnClear2DPuzzle() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class ULS2DPuzzleHUD> LS2DPuzzleHUDClass;
+
+	UPROPERTY()
+	TObjectPtr<class ULS2DPuzzleHUD> LS2DPuzzleHUDWidget;
+
+	uint8 bIs2DPuzzleActive : 1;
+
+
+
 //RPC
 public:
 	UFUNCTION(Client, Unreliable)
@@ -110,4 +146,28 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCUpdateScriptWidget(const FString& ScriptText);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCSetGameModeSiJaeCursor(const FVector2D& InSiJaeCursorPos);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCSendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCStart2DPuzzle();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCEnd2DPuzzle();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCOnExit2DPuzzle();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCOnClear2DPuzzle();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCUpdate2DPuzzleTimer(float Timer);
 };

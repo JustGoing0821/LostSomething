@@ -169,15 +169,7 @@ void ALSTrain::Tick(float DeltaTime)
 					OnTrainArrived.Broadcast();
 					CurrentTrainAlpha = 0.0f;
 				}
-			), TimeBeforeGateOpen, false);
-
-			//for (TObjectPtr<class UBoxComponent> GateTrigger : GateTriggers)
-			//{
-			//	FVector GateLocation = GateTrigger->GetComponentLocation();
-			//	LS_LOG(LogLS, Log, TEXT("GateLocation : %f, %f, %f"), GateLocation.X, GateLocation.Y, GateLocation.Z);
-			//}
-
-			
+			), TimeBeforeGateOpen, false);			
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Waiting)
@@ -217,10 +209,6 @@ void ALSTrain::Tick(float DeltaTime)
 					}
 				}
 			}
-
-			//FVector CurrentLocation = GetActorLocation();
-			//FVector NewLocation = FMath::Lerp(GetOnLocation, GetOffLocation, CurrentPassengersAlpha);
-			//FVector NewLocation = FMath::Lerp(GetOffLocation, GetOnLocation, CurrentPassengersAlpha);
 		}
 	}
 	else if (CurrentTrainState == ETrainState::Leaving)
@@ -281,16 +269,19 @@ void ALSTrain::GateOpen()
 		}
 	}
 
-	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
+	if (TimeTrainWait > 0.f)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
-	}
-	GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
+		if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 		{
-			MulticastGetOnPassengers();
-			MulticastRPCGateClose();
+			GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
 		}
-	), TimeTrainWait, false);
+		GetWorld()->GetTimerManager().SetTimer(TrainTimerHandle, FTimerDelegate::CreateLambda([&]
+			{
+				LeaveTrain();
+				TimeTrainWait = 0.f;
+			}
+		), TimeTrainWait, false);
+	}
 }
 
 void ALSTrain::GateClose()
@@ -340,10 +331,9 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 	if (bCorrect)
 	{
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
-		TimeTrainWait = 15.0f;
 		MulticastRPCGateOpen();
 		CorrectDoorIndex = InCorrectGate - 1;
-		MulticastGetOffPassengers();
+		MulticastRPCGetOffPassengers();
 	}
 	else
 	{
@@ -351,7 +341,7 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 		TimeTrainWait = 2.0f;
 		MulticastRPCGateOpen();
 		CorrectDoorIndex = -1;
-		MulticastGetOffPassengers();
+		MulticastRPCGetOffPassengers();
 	}
 }
 
@@ -440,27 +430,28 @@ void ALSTrain::StopTrain()
 	}
 }
 
+void ALSTrain::LeaveTrain()
+{
+	GetOnPassengers();
+	GateClose();
+}
+
 void ALSTrain::MulticastRPCGateOpen_Implementation()
 {
 	GateOpen();
 }
 
-void ALSTrain::MulticastRPCGateClose_Implementation()
-{
-	GateClose();
-}
-
-void ALSTrain::MulticastGetOffPassengers_Implementation()
+void ALSTrain::MulticastRPCGetOffPassengers_Implementation()
 {
 	GetOffPassengers();
 }
 
-void ALSTrain::MulticastGetOnPassengers_Implementation()
-{
-	GetOnPassengers();
-}
-
-void ALSTrain::MulticastStopTrain_Implementation()
+void ALSTrain::MulticastRPCStopTrain_Implementation()
 {
 	StopTrain();
+}
+
+void ALSTrain::MulticastRPCLeaveTrain_Implementation()
+{
+	LeaveTrain();
 }
