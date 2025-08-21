@@ -117,10 +117,6 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 
-
-
-
-
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCStart2DPuzzle();
 

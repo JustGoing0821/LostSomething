@@ -42,7 +42,6 @@ ALTPlayerController::ALTPlayerController()
 		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
 	}
 
-	//SetShowMouseCursor(true);
 	bIs2DPuzzleActive = false;
 }
 
