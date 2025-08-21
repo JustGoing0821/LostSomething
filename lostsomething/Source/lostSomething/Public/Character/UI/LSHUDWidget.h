@@ -96,4 +96,13 @@ private:
 	// 특정 슬롯의 테두리 색상 설정
 	void SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color);
 
+
+//Aim Section
+public:
+	void UpdateAim(const FString& InString);
+
+protected:
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> TxtAim;
+
 };
