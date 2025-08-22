@@ -138,6 +138,10 @@ protected:
 	uint8 bIs2DPuzzleActive : 1;
 
 
+// Aim Section
+public:
+	void UpdateAim(const FString& InString);
+
 
 //RPC
 public:

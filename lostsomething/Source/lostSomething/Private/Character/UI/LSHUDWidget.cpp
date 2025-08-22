@@ -4,6 +4,7 @@
 #include "Character/UI/LSHUDWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 
 void ULSHUDWidget::NativeConstruct()
@@ -13,6 +14,9 @@ void ULSHUDWidget::NativeConstruct()
 
     // 초기 슬롯 색상 설정
     UpdateSlotBorderColors(0);
+
+	TxtAim = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_aim")));
+	ensure(TxtAim);
 }
 
 void ULSHUDWidget::UpdateHpBar(float NewHp)
@@ -165,6 +169,14 @@ void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("SlotBorder_%d is null! Check widget binding."), SlotIndex);
+	}
+}
+
+void ULSHUDWidget::UpdateAim(const FString& InString)
+{
+	if (TxtAim)
+	{
+		TxtAim->SetText(FText::FromString(InString));
 	}
 }
 
