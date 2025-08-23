@@ -46,6 +46,35 @@ ABossNPC::ABossNPC()
     bIsPhaseChanging = false;
 }
 
+void ABossNPC::BMSoundPlay(const FString& SoundType)
+{
+    ServerBSoundPlay(SoundType);
+}
+
+void ABossNPC::ServerBSoundPlay_Implementation(const FString& SoundType)
+{
+    MultiBMSoundPlay(SoundType);
+}
+
+void ABossNPC::MultiBMSoundPlay_Implementation(const FString& SoundType)
+{
+    USoundBase* SelectedSound = nullptr;
+
+    if (SoundType == "Phase1") SelectedSound = Phase1Sound;
+    else if (SoundType == "Phase2") SelectedSound = Phase2Sound;
+    else if (SoundType == "Phase3") SelectedSound = Phase3Sound;
+    else if (SoundType == "Damage") SelectedSound = DamageSound;
+    else if (SoundType == "Die") SelectedSound = DieSound;
+    if (!SelectedSound)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
+        return;
+    }
+
+    // 핵심: GetWorld() 기반으로 2D 사운드 재생
+    UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
+}
+
 // Called when the game starts or when spawned
 void ABossNPC::BeginPlay()
 {
