@@ -194,6 +194,17 @@ public:
 
 	
 	virtual void Attack();
+
+	UFUNCTION(Server, Reliable)
+	void ServerAttack();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiAttack();
+
+
+
+
+
 	void ProcessAttack();
 
 	
