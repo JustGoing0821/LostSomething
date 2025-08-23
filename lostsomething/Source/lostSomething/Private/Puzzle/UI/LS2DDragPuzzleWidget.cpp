@@ -6,9 +6,10 @@
 #include "Components/Image.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/PanelWidget.h"
+#include "Character/Players/LSCharacterChoice.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
 #include "Interface/LS2DPuzzleControllerInterface.h"
-
+#include "Interface/LSCharacterChoiceInterface.h"
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -20,6 +21,10 @@ void ULS2DDragPuzzleWidget::NativeConstruct()
 
 	ImgGoal1 = Cast<UImage>(GetWidgetFromName(TEXT("img_goal1")));
 	ensure(ImgGoal1);
+	if (Cast<ILSCharacterChoiceInterface>(GetOwningPlayer())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+	{
+		ImgGoal1->SetOpacity(0.0f);
+	}
 
 	ImgPiece1 = Cast<UImage>(GetWidgetFromName(TEXT("img_piece1")));
 	ensure(ImgPiece1);
