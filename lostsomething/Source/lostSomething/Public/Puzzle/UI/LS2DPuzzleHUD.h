@@ -35,6 +35,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class ULS2DPuzzleTimerWidget> PuzzleTimerWidget;
 
+	UPROPERTY()
+	TObjectPtr<class ULSInformationWidget> InformationWidget;
+
 	UFUNCTION()
 	void OnBtnExitClicked();
 

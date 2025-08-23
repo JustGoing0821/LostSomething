@@ -32,6 +32,9 @@ void ULS2DPuzzleHUD::NativeConstruct()
 	BtnExit = Cast<UButton>(GetWidgetFromName(TEXT("btn_exit")));
 	ensure(BtnExit);
 
+	InformationWidget = Cast<ULSInformationWidget>(GetWidgetFromName(TEXT("wbp_information")));
+	ensure(InformationWidget);
+
 	if (BtnExit)
 	{
 		BtnExit->OnClicked.AddDynamic(this, &ULS2DPuzzleHUD::OnBtnExitClicked);
