@@ -9,6 +9,7 @@
 #include "Character/Players/LSPlayer.h"  
 #include "lostSomething.h"
 #include <BossNPC/Anim/BossNPCAnimIns.h>
+#include <UObject/FastReferenceCollector.h>
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -476,19 +477,12 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        SpawnedObstacles.Empty();
-
         ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
             ABossObstacle::StaticClass(),
             SpawnLocation,
             SpawnRotation,
             Params
         );
-
-        if (NewObstacle)
-        {
-            SpawnedObstacles.Add(NewObstacle);
-        }
     }
 }
 
@@ -504,14 +498,16 @@ void ABossNPC::ServerDestroyObstacles_Implementation()
 
 void ABossNPC::MultiDestroyObstacles_Implementation()
 {
-    for (ABossObstacle* Obstacle : SpawnedObstacles)
+    TArray<AActor*> FoundObstacles;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABossObstacle::StaticClass(), FoundObstacles);
+
+    for (AActor* Obstacle : FoundObstacles)
     {
         if (Obstacle)
         {
             Obstacle->Destroy();
         }
     }
-    SpawnedObstacles.Empty(); // ¹è¿­ ºñ¿ò
 }
 
 // ÇÃ·§Æû ½ºÆù
