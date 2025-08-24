@@ -58,6 +58,20 @@ void UBossNPCAnimIns::AnimNotify_DeathMoment()
     NPCCharacter->Despawn();
 }
 
+void UBossNPCAnimIns::AnimNotify_DamageSound()
+{
+    auto Pawn = TryGetPawnOwner();
+    ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+    NPCCharacter->BMSoundPlay("Damage");
+}
+
+void UBossNPCAnimIns::AnimNotify_DeathSound()
+{
+    auto Pawn = TryGetPawnOwner();
+    ABossNPC* NPCCharacter = Cast<ABossNPC>(Pawn);
+    NPCCharacter->BMSoundPlay("Die");
+}
+
 float UBossNPCAnimIns::MontagePlay(UAnimMontage* Montage)
 {
     //CurrentMontage = Montage;

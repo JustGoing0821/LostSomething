@@ -513,6 +513,8 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
             Params
         );
     }
+
+    BMSoundPlay("Phase2");
 }
 
 void ABossNPC::DestroyObstacles()
