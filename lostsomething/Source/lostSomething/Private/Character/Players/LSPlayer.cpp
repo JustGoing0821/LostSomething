@@ -22,6 +22,9 @@
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
+#include "Interface/LSCharacterChoiceInterface.h"
+#include "Character/Players/LSCharacterChoice.h"
+#include "Kismet/GameplayStatics.h"
 #include "Character/Components/LSHpComponent.h"
 
 
@@ -113,7 +116,7 @@ ALSPlayer::ALSPlayer()
 	bIsBeingPushed = false;
 	PusherCharacter = nullptr;
 	bCanPushWheelchair = false;
-
+	bIsPushing = false;
 }
 
 void ALSPlayer::PostInitializeComponents()
@@ -163,6 +166,7 @@ void ALSPlayer::Tick(float DeltaTime)
 			LastDistanceCheckTime = 0.0f;
 		}
 	}
+	PerformLineTrace();
 }
 
 void ALSPlayer::OnRep_CurrentHp()
@@ -590,7 +594,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 		// Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
-		EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
+		//EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
 
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
@@ -600,7 +604,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
 		//Pickup
-		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
+		//EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
 
 		// 숫자키 바인딩
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
@@ -838,11 +842,7 @@ void ALSPlayer::ClientProcessAttack_Implementation()
 //	}
 //}
 
-void ALSPlayer::Interreact()
-{
-}
 
-//Wheelchair part
 void ALSPlayer::Interaction()
 {
 	if (bIsDead) return;
@@ -852,7 +852,12 @@ void ALSPlayer::Interaction()
 	{
 		return;
 	}
+	if (CurrentDectectActor == nullptr)
+	{
+		return;
+	}
 
+	/*
 	LS_LOG(LogLS, Warning, TEXT("[%s] ALSPlayer::Interaction() called"),
 		HasAuthority() ? TEXT("SERVER") : TEXT("CLIENT"));
 
@@ -922,14 +927,6 @@ void ALSPlayer::Interaction()
 			HitInteractable->InteractionProcess(PlayerController);
 			DrawColor = FColor::Green;
 		}
-
-	/*	ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(HitActor);
-		if (HitNPC)
-		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
-		}*/
 	}
 	else
 	{
@@ -941,7 +938,157 @@ void ALSPlayer::Interaction()
 	float CapsuleHalfHeight = InteractionRange * 0.5f;
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, InteractionRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 #endif
+*/
+
+	if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(CurrentDectectActor))
+	{
+		InteractionActor->InteractionProcess(Cast<APlayerController>(GetController()));
+	}
+	else if (ILSWheelchairInterface* CharacterActor = Cast<ILSWheelchairInterface>(CurrentDectectActor))
+	{
+		if (CanPushWheelchair())
+		{
+			// 시제(SiJae)가 이제(IJae)와 상호작용
+			if (HasAuthority())
+			{
+				// 서버에서 직접 실행
+				bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(CurrentDectectActor);
+				if (bIsPushed && Cast<ALSPlayer>(CurrentDectectActor)->PusherCharacter == this)
+				{
+					// 밀기 중지
+					bIsPushing = false;
+					ILSWheelchairInterface::Execute_StopPushingWheelchair(CurrentDectectActor, this);
+				}
+				else if (!bIsPushed)
+				{
+					// 밀기 시작
+					bIsPushing = true;
+					ILSWheelchairInterface::Execute_StartPushingWheelchair(CurrentDectectActor, this);
+				}
+			}
+			else
+			{
+				// 클라이언트에서는 서버에 요청
+				ServerRequestWheelchairInteraction(CurrentDectectActor);
+			}
+		}
+		else
+		{
+			// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
+			LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
+		}
+		return;
+	}
+	else if (IsActorName(CurrentDectectActor, "BP_LSElevatorStyle2"))
+	{
+		CallElevator(CurrentDectectActor);
+	}
+	else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(CurrentDectectActor))
+	{
+		PickUp();
+	}
 }
+
+//Wheelchair part
+//void ALSPlayer::Interaction()
+//{
+//	if (bIsDead) return;
+//
+//	// 로컬 컨트롤러가 있는지 확인
+//	if (!IsLocallyControlled())
+//	{
+//		return;
+//	}
+//
+//	LS_LOG(LogLS, Warning, TEXT("[%s] ALSPlayer::Interaction() called"),
+//		HasAuthority() ? TEXT("SERVER") : TEXT("CLIENT"));
+//
+//	FHitResult OutHitResult;
+//	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+//	const float InteractionRange = 80.0f;
+//	const float InteractionRadius = 50.0f;
+//	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+//	const FVector End = Start + GetActorForwardVector() * InteractionRange;
+//	FColor DrawColor;
+//
+//	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(InteractionRadius), Params);
+//	if (HitDetected)
+//	{
+//		AActor* HitActor = OutHitResult.GetActor();
+//		if (!HitActor) return;
+//
+//		LS_LOG(LogLS, Warning, TEXT("Hit Actor: %s"), *HitActor->GetName());
+//
+//		// 휠체어 인터페이스 체크
+//		if (HitActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
+//		{
+//			// 타겟 액터가 다른 플레이어인지 확인
+//			ALSPlayer* HitPlayer = Cast<ALSPlayer>(HitActor);
+//			if (HitPlayer)
+//			{
+//				// 내가 휠체어를 밀 수 있는지 확인
+//				if (CanPushWheelchair())
+//				{
+//					// 시제(SiJae)가 이제(IJae)와 상호작용
+//					if (HasAuthority())
+//					{
+//						// 서버에서 직접 실행
+//						bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(HitActor);
+//						if (bIsPushed && HitPlayer->PusherCharacter == this)
+//						{
+//							// 밀기 중지
+//							ILSWheelchairInterface::Execute_StopPushingWheelchair(HitActor, this);
+//						}
+//						else if (!bIsPushed)
+//						{
+//							// 밀기 시작
+//							ILSWheelchairInterface::Execute_StartPushingWheelchair(HitActor, this);
+//						}
+//					}
+//					else
+//					{
+//						// 클라이언트에서는 서버에 요청
+//						ServerRequestWheelchairInteraction(HitActor);
+//					}
+//				}
+//				else
+//				{
+//					// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
+//					LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
+//				}
+//				DrawColor = FColor::Yellow;
+//				return;
+//			}
+//		}
+//
+//		// 여기서부터는 일반 상호작용 처리 (모든 캐릭터가 수행 가능)
+//		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+//		ILSInteractionInterface* HitInteractable = Cast<ILSInteractionInterface>(HitActor);
+//		if (HitInteractable)
+//		{
+//			HitInteractable->InteractionProcess(PlayerController);
+//			DrawColor = FColor::Green;
+//		}
+//
+//	/*	ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(HitActor);
+//		if (HitNPC)
+//		{
+//			FDamageEvent DamageEvent;
+//			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+//			DrawColor = FColor::Blue;
+//		}*/
+//	}
+//	else
+//	{
+//		DrawColor = FColor::Red;
+//	}
+//
+//#if ENABLE_DRAW_DEBUG
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = InteractionRange * 0.5f;
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, InteractionRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//#endif
+//}
 
 bool ALSPlayer::CanPushWheelchair() const
 {
@@ -994,6 +1141,143 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, bIsBeingPushed);
 	DOREPLIFETIME(ALSPlayer, PusherCharacter);
 	DOREPLIFETIME(ALSPlayer, PushedWheelchairCharacter);
+
+	DOREPLIFETIME(ALSPlayer, CurrentDectectActor);
+	DOREPLIFETIME(ALSPlayer, TickDectectResultColor);
+	DOREPLIFETIME(ALSPlayer, AimScript);
+	DOREPLIFETIME(ALSPlayer, CallElevatorParams);
+	DOREPLIFETIME(ALSPlayer, bIsPushing);
+
+}
+
+
+//라인트레이스
+void ALSPlayer::PerformLineTrace()
+{
+	if (!FirstPersonCameraComponent) return;
+
+	if (!IsLocallyControlled()) return;
+
+	FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
+	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
+	FVector EndLocation = StartLocation + (ForwardVector * 1500.0f);
+
+
+	if (bIsPushing && Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+
+		for (AActor* Actor : FoundActors)
+		{
+			if (Cast<ILSCharacterChoiceInterface>(Cast<ALSPlayer>(Actor)->GetController())->GetCharacterChoice() == ELSCharacterChoice::IJae)
+			{
+				CurrentDectectActor = Actor;
+				TickDectectResultColor = FColor::Yellow;
+				AimScript = "Decouple";
+				break;
+			}
+		}
+	}
+	else
+	{
+		FHitResult HitResult;
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			StartLocation,
+			EndLocation,
+			//ECC_Visibility
+			ECC_GameTraceChannel1
+		);
+
+		if (bHit && HitResult.GetActor())
+		{
+			if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(HitResult.GetActor()))
+			{
+				CurrentDectectActor = HitResult.GetActor();
+				TickDectectResultColor = FColor::Green;
+				AimScript = "Interact";
+			}
+			else if (ILSWheelchairInterface* CharacterActor = Cast<ILSWheelchairInterface>(HitResult.GetActor()))
+			{
+				CurrentDectectActor = HitResult.GetActor();
+				TickDectectResultColor = FColor::Green;
+				AimScript = "Combine";
+			}
+			else if (IsActorName(HitResult.GetActor(), "BP_LSElevatorStyle2"))
+			{
+				CurrentDectectActor = HitResult.GetActor();
+				TickDectectResultColor = FColor::Green;
+				AimScript = "Call Elevator";
+
+				FCallElevatorParams Params;
+				//Params.Target = HitResult.GetActor();
+				Params.HitComponent = HitResult.GetComponent();
+				Params.InteractingActor = this;
+				Params.ObjectTracingTheLine = GetCapsuleComponent()->GetComponentLocation();
+				CallElevatorParams = Params;
+			}
+			else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(HitResult.GetActor()))
+			{
+				CurrentDectectActor = HitResult.GetActor();
+				TickDectectResultColor = FColor::Green;
+				AimScript = "Pick Up";
+			}
+			else
+			{
+				TickDectectResultColor = FColor::Black;
+				AimScript = "+";
+				CurrentDectectActor = nullptr;
+			}
+		}
+		else
+		{
+			TickDectectResultColor = FColor::Red;
+			AimScript = "+";
+			CurrentDectectActor = nullptr;
+		}
+	}
+
+#if ENABLE_DRAW_DEBUG
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, TickDectectResultColor, false, 0.0f, 0, 0.2f);
+#endif
+
+	ALSPlayerController* PC = Cast<ALSPlayerController>(GetController());
+	if (PC)
+	{
+		PC->UpdateAim(AimScript);
+	}
+}
+
+bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
+{
+
+	if (!InActor) return false;
+
+	FString ActorName = InActor->GetName();
+
+	//LS_LOG(LogLS, Log, TEXT("Begin : %s"), *ActorName);
+	return ActorName.Contains(InString);
+}
+
+void ALSPlayer::CallElevator(AActor* InActor)
+{
+	if (!InActor) return;
+
+	if (UFunction* TransferFunc = InActor->FindFunction(FName("TrransferObjectName")))
+	{
+		InActor->ProcessEvent(TransferFunc, &CallElevatorParams);
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("No TrransferObjectName"));
+		LS_LOG(LogLS, Warning, TEXT("Available functions in %s:"), *InActor->GetName());
+		for (TFieldIterator<UFunction> FuncIt(InActor->GetClass()); FuncIt; ++FuncIt)
+		{
+			UFunction* Function = *FuncIt;
+			LS_LOG(LogLS, Warning, TEXT("- %s"), *Function->GetName());
+		}
+	}
 }
 
 // 휠체어 인터페이스 구현
