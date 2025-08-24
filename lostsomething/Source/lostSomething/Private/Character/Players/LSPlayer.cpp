@@ -670,9 +670,12 @@ void ALSPlayer::Look(const FInputActionValue& Value)
 
 void ALSPlayer::Attack()
 {
+	UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
+	LS_LOG(LogLS, Warning, TEXT("Attack() called"));
+	MultiAttack();
 	if (bIsDead) return;
 
-	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() called"));
+	LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
 
 	int32 CurrentSelectedSlot = SelectedSlot;
 	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
@@ -686,16 +689,6 @@ void ALSPlayer::Attack()
 		}
 	}
 
-	// 현재 선택된 슬롯에 아이템이 있는지 확인
-	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	//{
-	//	
-
-	//	/*if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-	//	{
-	//		
-	//	}*/
-	//}
 
 	// 아이템이 없으면
 	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
@@ -703,15 +696,30 @@ void ALSPlayer::Attack()
 
 	if (HasAuthority())
 	{
-		ProcessAttack();
+		MultiAttack();
 	}
 	else
 	{
-		ServerProcessAttack();
-	}
+		ServerAttack();
+	}  
 
 	
 
+}
+
+void ALSPlayer::ServerAttack_Implementation()
+{
+	MultiAttack();
+}
+
+void ALSPlayer::MultiAttack_Implementation()
+{
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetAttackAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+	}
 }
 
 void ALSPlayer::ProcessAttack()
@@ -727,7 +735,7 @@ void ALSPlayer::ProcessAttack()
 	FColor DrawColor;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
-	MultiProcessAttack();
+	//MultiProcessAttack();
 
 	if (HitDetected)
 	{
@@ -758,7 +766,7 @@ void ALSPlayer::ProcessAttack()
 	}
 	else
 	{
-		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::Attack() - No hit detected"));
+		LS_LOG(LogLS, Warning, TEXT("processattack() - No hit detected"));
 
 		DrawColor = FColor::Red;
 	}
@@ -782,12 +790,14 @@ void ALSPlayer::ServerProcessAttack_Implementation()
 
 void ALSPlayer::MultiProcessAttack_Implementation()
 {
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
+
+	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetAttackAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
-	}
+	}*/
 }
 
 void ALSPlayer::ClientProcessAttack_Implementation()
@@ -1747,6 +1757,17 @@ void ALSPlayer::MultiPickUp_Implementation()
 	{
 		AnimInstance->SetPickUpAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+	}
+
+	if (IsLocallyControlled())
+	{
+		GetMesh()->SetVisibility(false);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				GetMesh()->SetVisibility(true);
+			}
+		), 2.f, false);
 	}
 }
 
