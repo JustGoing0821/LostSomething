@@ -7,10 +7,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "LSItemStructures.h"
+#include "Interface/LSItemInterface.h"
 #include "MasterItem.generated.h"
 
 UCLASS()
-class AMasterItem : public AActor
+class AMasterItem : public AActor, public ILSItemInterface
 {
 	GENERATED_BODY()
 	
