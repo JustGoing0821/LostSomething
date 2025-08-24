@@ -1758,6 +1758,17 @@ void ALSPlayer::MultiPickUp_Implementation()
 		AnimInstance->SetPickUpAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
 	}
+
+	if (IsLocallyControlled())
+	{
+		GetMesh()->SetVisibility(false);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				GetMesh()->SetVisibility(true);
+			}
+		), 2.f, false);
+	}
 }
 
 
