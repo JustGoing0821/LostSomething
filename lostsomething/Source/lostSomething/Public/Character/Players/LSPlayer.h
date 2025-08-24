@@ -17,14 +17,30 @@
 #include "Character/Item/LSItemStructures.h"
 #include "Interface/LSWheelchairInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
-
 #include "LSPlayer.generated.h"
+
 class UInputAction;
 class UInputMappingContext;
 class UInventoryWidget;
 
 /*************************************Function**************************************/
 /*************************************Property**************************************/
+
+USTRUCT()
+struct FCallElevatorParams
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	UPrimitiveComponent* HitComponent;
+
+	UPROPERTY()
+	AActor* InteractingActor;
+
+	UPROPERTY()
+	FVector ObjectTracingTheLine;
+};
+
 
 
 UCLASS()
@@ -178,6 +194,17 @@ public:
 
 	
 	virtual void Attack();
+
+	UFUNCTION(Server, Reliable)
+	void ServerAttack();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiAttack();
+
+
+
+
+
 	void ProcessAttack();
 
 	
@@ -202,11 +229,30 @@ protected:
 
 	virtual void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Interreact();
+	//void Interreact();
 	void Interaction();
 	void ApplyDamage(float DamageAmount);
 
-	
+	//Interaction Section
+	void PerformLineTrace();
+	bool IsActorName(AActor* InActor, const FString& InString) const;
+	void CallElevator(AActor* InActor);
+
+
+	UPROPERTY(Replicated)
+	TObjectPtr<AActor> CurrentDectectActor;
+
+	UPROPERTY(Replicated)
+	FColor TickDectectResultColor;
+
+	UPROPERTY(Replicated)
+	FString AimScript;
+
+	UPROPERTY(Replicated)
+	FCallElevatorParams CallElevatorParams;
+
+	UPROPERTY(Replicated)
+	uint8 bIsPushing : 1;
 
 
 
@@ -295,14 +341,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> InteractAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> InterreactAction;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	//TObjectPtr<class UInputAction> InterreactAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> PickUpAction;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	//TObjectPtr<class UInputAction> PickUpAction;
 	//ащ╠Б
 
 

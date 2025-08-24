@@ -42,7 +42,7 @@ public:
 
 protected:
 	virtual bool CanPushWheelchair() const override;
-	virtual void Attack() override;
+	//virtual void Attack() override;
 	virtual void Move(const FInputActionValue& Value) override;
 	virtual void Jump() override;
 	void HandlePusherWheelchairInput(const FVector2D& MovementVector);
