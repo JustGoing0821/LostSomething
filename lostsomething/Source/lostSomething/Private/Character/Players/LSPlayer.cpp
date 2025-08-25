@@ -1732,34 +1732,36 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
-	if (!HasAuthority())
+
+	PickUpCore();
+	/*if (!HasAuthority())
 	{
 		ServerPickUp();
 		return;
 	}
 
-	MultiPickUp();
+	MultiPickUp();*/
 
 }
 
 void ALSPlayer::ServerPickUp_Implementation()
 {
 
-	MultiPickUp();
+	//MultiPickUp();
 
 
 }
 
 void ALSPlayer::MultiPickUp_Implementation()
-{
+{/*
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetPickUpAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
-	}
+	}*/
 
-	if (IsLocallyControlled())
+	/*if (IsLocallyControlled())
 	{
 		GetMesh()->SetVisibility(false);
 		FTimerHandle Handle;
@@ -1768,7 +1770,7 @@ void ALSPlayer::MultiPickUp_Implementation()
 				GetMesh()->SetVisibility(true);
 			}
 		), 2.f, false);
-	}
+	}*/
 }
 
 
