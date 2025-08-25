@@ -71,47 +71,47 @@ void AMasterItem::Tick(float DeltaTime)
 void AMasterItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("MasterItem: OnBeginOverlap with %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
+	//UE_LOG(LogTemp, Warning, TEXT("MasterItem: OnBeginOverlap with %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
 
-	// LSPlayer인지 확인
-	if (ALSPlayer* Player = Cast<ALSPlayer>(OtherActor))
-	{
-		// PlayerController 가져오기
-		if (ALSPlayerController* PlayerController = Cast<ALSPlayerController>(Player->GetController()))
-		{
-			// 입력 활성화
-			this->EnableInput(PlayerController);
+	//// LSPlayer인지 확인
+	//if (ALSPlayer* Player = Cast<ALSPlayer>(OtherActor))
+	//{
+	//	// PlayerController 가져오기
+	//	if (ALSPlayerController* PlayerController = Cast<ALSPlayerController>(Player->GetController()))
+	//	{
+	//		// 입력 활성화
+	//		this->EnableInput(PlayerController);
 
-			UE_LOG(LogTemp, Warning, TEXT("Input enabled for player on item: %s"), *GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to get PlayerController from player"));
-		}
-	}
+	//		UE_LOG(LogTemp, Warning, TEXT("Input enabled for player on item: %s"), *GetName());
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("Failed to get PlayerController from player"));
+	//	}
+	//}
 }
 
 void AMasterItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT("MasterItem: OnEndOverlap with %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
+	//UE_LOG(LogTemp, Warning, TEXT("MasterItem: OnEndOverlap with %s"), OtherActor ? *OtherActor->GetName() : TEXT("Unknown"));
 
-	// LSPlayer인지 확인
-	if (ALSPlayer* Player = Cast<ALSPlayer>(OtherActor))
-	{
-		// PlayerController 가져오기
-		if (ALSPlayerController* PlayerController = Cast<ALSPlayerController>(Player->GetController()))
-		{
-			// 입력 비활성화
-			this->DisableInput(PlayerController);
+	//// LSPlayer인지 확인
+	//if (ALSPlayer* Player = Cast<ALSPlayer>(OtherActor))
+	//{
+	//	// PlayerController 가져오기
+	//	//if (ALSPlayerController* PlayerController = Cast<ALSPlayerController>(Player->GetController()))
+	//	//{
+	//	//	// 입력 비활성화
+	//	//	this->DisableInput(PlayerController);
 
-			UE_LOG(LogTemp, Warning, TEXT("Input disabled for player on item: %s"), *GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to get PlayerController from player"));
-		}
-	}
+	//	//	UE_LOG(LogTemp, Warning, TEXT("Input disabled for player on item: %s"), *GetName());
+	//	//}
+	//	//else
+	//	//{
+	//	//	UE_LOG(LogTemp, Error, TEXT("Failed to get PlayerController from player"));
+	//	//}
+	//}
 }
 
 //onhit함수 item
