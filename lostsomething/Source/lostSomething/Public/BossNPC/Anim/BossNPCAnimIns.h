@@ -24,8 +24,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DamageMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* NextMotionMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
 	float MontagePlay(UAnimMontage* Montage);
@@ -50,4 +48,10 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_DeathMoment();
+
+	UFUNCTION()
+	void AnimNotify_DamageSound();
+
+	UFUNCTION()
+	void AnimNotify_DeathSound();
 };
