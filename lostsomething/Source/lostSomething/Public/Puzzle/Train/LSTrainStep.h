@@ -63,7 +63,7 @@ public:
 	uint8 bIsStepInstalled : 1;
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCSetVisibility();
+	void MulticastRPCInstallStep();
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCInstallStep();
