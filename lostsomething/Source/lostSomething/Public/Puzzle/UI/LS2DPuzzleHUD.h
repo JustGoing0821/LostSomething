@@ -6,6 +6,14 @@
 #include "Blueprint/UserWidget.h"
 #include "LS2DPuzzleHUD.generated.h"
 
+UENUM(BlueprintType)
+enum class E2DWidgetProperty : uint8
+{
+	None = 0,
+	Information,
+	Drag
+};
+
 /**
  * 
  */
@@ -55,4 +63,10 @@ protected:
 // Timer Section
 public:
 	void UpdateTimer(float Timer);
+
+// Widget Section
+public:
+	E2DWidgetProperty CurrentActivateWidget;
+
+	void OnStartWidget(E2DWidgetProperty InActivateWidget);
 };
