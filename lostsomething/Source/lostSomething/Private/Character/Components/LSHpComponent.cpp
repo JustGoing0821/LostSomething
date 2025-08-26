@@ -47,13 +47,13 @@ void ULSHpComponent::SetHp(float NewHp)
 
         if (ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
         {
-            // 2) 메쉬 얻기
+            //메쉬 
             if (USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
             {
-                // 3) 애님 인스턴스 얻기
+                // 애님 인스턴스
                 if (UAnimInstance* AnyAnim = MeshComp->GetAnimInstance())
                 {
-                    // 4) 내 애님클래스로 캐스팅 후 호출
+                   
                     if (ULSPlayerSiJaeAnimInstance* AnimInstance =
                         Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
                     {

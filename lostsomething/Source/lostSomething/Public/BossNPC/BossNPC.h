@@ -81,6 +81,27 @@ public:
             : FVector::ZeroVector;
     }
 
+    void BMSoundPlay(const FString& SoundType);
+    UFUNCTION(Server, Reliable)
+    void ServerBSoundPlay(const FString& SoundType);
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiBMSoundPlay(const FString& SoundType);
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* DieSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* DamageSound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* Phase1Sound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* Phase2Sound;
+
+    UPROPERTY(EditAnywhere)
+    USoundWave* Phase3Sound;
+
 protected:
     virtual void BeginPlay() override;
 

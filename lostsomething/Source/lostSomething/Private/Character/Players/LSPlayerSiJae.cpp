@@ -118,28 +118,28 @@ bool ALSPlayerSiJae::CanPushWheelchair() const
     return true;
 }
 
-void ALSPlayerSiJae::Attack() {
-    if (bIsDead) return;
-
-    int32 CurrentSelectedSlot = SelectedSlot;
-    if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-    {
-        if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
-        {
-            ThrowItem();
-            return;
-        }
-    }
-
-    if (HasAuthority())
-    {
-        ProcessAttack();
-    }
-    else
-    {
-        ServerProcessAttack();
-    } 
-}
+//void ALSPlayerSiJae::Attack() {
+//    if (bIsDead) return;
+//
+//    int32 CurrentSelectedSlot = SelectedSlot;
+//    if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+//    {
+//        if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
+//        {
+//            ThrowItem();
+//            return;
+//        }
+//    }
+//
+//    if (HasAuthority())
+//    {
+//        ProcessAttack();
+//    }
+//    else
+//    {
+//        ServerProcessAttack();
+//    } 
+//}
 
 void ALSPlayerSiJae::Move(const FInputActionValue& Value)
 {
