@@ -170,7 +170,7 @@ void ALSTrainStep::StartInstallPuzzle()
 	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->Start2DPuzzle(PuzzleTimer);
+		GameMode->Start2DPuzzle(PuzzleTimer, TEXT("Step"));
 	}
 }
 

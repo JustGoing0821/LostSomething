@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interface/LSStopKeyInputInterface.h"
 #include "Quest/LSQuestManager.h"
 
 // Sets default values
@@ -66,14 +67,23 @@ void ALSLevelTransferVolume::OnTransferTriggerBeginOverlap(UPrimitiveComponent* 
 		ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
 		if (OverlapCharacter)
 		{
-			ILSCharacterChoiceInterface* LSCharacter = Cast<ILSCharacterChoiceInterface>(OverlapCharacter->GetController());
+			ILSStopKeyInputInterface* LSCharacter = Cast<ILSStopKeyInputInterface>(OverlapCharacter->GetController());
 			if (LSCharacter)
 			{
 				CurrentTriggerPlayers ++;
-				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 				if (CurrentTriggerPlayers == 2 && !MoveTargetMap.IsNull())
 				{
 					MulticastRPCTriggerDeactivate();
+
+					for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+					{
+						if (ILSStopKeyInputInterface* PC = Cast<ILSStopKeyInputInterface>(Iterator->Get()))
+						{
+							PC->StopKeyInput();
+						}
+					}
+
 					FString MapPath = MoveTargetMap.GetLongPackageName();
 					GetWorld()->ServerTravel(*MapPath);
 				}

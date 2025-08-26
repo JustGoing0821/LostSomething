@@ -28,7 +28,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	// Stage Section
 	StageTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("StageTrigger"));
-	StageTrigger->SetBoxExtent(FVector(300, 5000, 200));
+	StageTrigger->SetBoxExtent(FVector(300, 3000, 200));
 	StageTrigger->SetCollisionProfileName(CPROFILE_LSTRIGGER);
 	RootComponent = StageTrigger;
 	StageTrigger->OnComponentEndOverlap.AddDynamic(this, &ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap);
@@ -185,10 +185,10 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	{
 		CurrentState = ETrainSpawnState::Spawned;
 
-		CorrectGate = 1;// FMath::RandRange(1, 6);
+		CorrectGate = FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
-		float DelayTime = 3;// FMath::FRandRange(2.f, 10.f);
+		float DelayTime = FMath::FRandRange(3.f, 6.f);
 		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		MulticastRPCSetPannelMonitor();
@@ -196,7 +196,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 			{
-				FVector SpawnLocation = FVector(-2000.0f, -290.0f, -6.2f);
+				FVector SpawnLocation = FVector(-1500.0f, -290.0f, -6.2f);
 				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 
