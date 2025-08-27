@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/PlayerInput.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
@@ -82,7 +83,7 @@ void ALSPlayerController::BeginPlay()
 		if (DeathWidget)
 		{
 			// 생성만 하고 화면에는 추가x(숨김 상태)
-			LS_LOG(LogLS, Log, TEXT("%s"), TEXT("DeathWidget Created."));
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("DeathWidget Created."));
 		}
 	}
 
@@ -166,7 +167,7 @@ void ALSPlayerController::ShowDeathWidget()
 	if (IsLocalController() && DeathWidget)
 	{
 		DeathWidget->AddToViewport();
-		UE_LOG(LogTemp, Warning, TEXT("Death widget shown"));
+		//UE_LOG(LogTemp, Warning, TEXT("Death widget shown"));
 	}
 }
 
@@ -175,7 +176,7 @@ void ALSPlayerController::HideDeathWidget()
 	if (IsLocalController() && DeathWidget)
 	{
 		DeathWidget->RemoveFromParent();
-		UE_LOG(LogTemp, Warning, TEXT("Death widget hidden"));
+		//UE_LOG(LogTemp, Warning, TEXT("Death widget hidden"));
 	}
 }
 
@@ -228,31 +229,30 @@ void ALSPlayerController::StopTalking()
 	UE_LOG(LogTemp, Log, TEXT("Voice stopped"));
 }
 
-void ALSPlayerController::Start2DPuzzle()
+void ALSPlayerController::Start2DPuzzle(const FName& InWidgetName)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	bIs2DPuzzleActive = true;
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
 	{
+		StopKeyInput();
 		SetInputMode(FInputModeUIOnly());
-		if (CharacterChoice == ELSCharacterChoice::IJae)
-		{
-			SetShowMouseCursor(true);
-		}
-
+		SetShowMouseCursor(true);
 
 		LS2DPuzzleHUDWidget = CreateWidget<ULS2DPuzzleHUD>(this, LS2DPuzzleHUDClass);
 		if (LS2DPuzzleHUDWidget)
 		{
 			LS2DPuzzleHUDWidget->AddToViewport(0);
+
+			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
 		}
 	}
 }
 
 void ALSPlayerController::End2DPuzzle()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	bIs2DPuzzleActive = false;
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
@@ -267,19 +267,26 @@ void ALSPlayerController::End2DPuzzle()
 	}
 }
 
-void ALSPlayerController::OnExit2DPuzzle()
+void ALSPlayerController::OnExit2DPuzzle(uint8 InIsExitTogether)
 {
-	if (HasAuthority())
+	if (InIsExitTogether)
 	{
-		ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
-		if (PuzzleInterface)
+		if (HasAuthority())
 		{
-			PuzzleInterface->End2DPuzzle();
+			ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
+			if (PuzzleInterface)
+			{
+				PuzzleInterface->End2DPuzzle();
+			}
+		}
+		else
+		{
+			ServerRPCOnExit2DPuzzle();
 		}
 	}
 	else
 	{
-		ServerRPCOnExit2DPuzzle();
+		End2DPuzzle();
 	}
 }
 
@@ -371,6 +378,21 @@ void ALSPlayerController::SendOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
+void ALSPlayerController::StopKeyInput()
+{
+	if (HasAuthority())
+	{
+		if (IsLocalController())
+		{
+			if (PlayerInput) PlayerInput->FlushPressedKeys();
+		}
+		else
+		{
+			ClientRPCStopKeyInput();
+		}
+	}
+}
+
 void ALSPlayerController::ClientRPCUpdateQuestWidget_Implementation(FLSQuestData InQuestData)
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
@@ -420,9 +442,9 @@ void ALSPlayerController::ClientRPCCalledOnChangeSiJaeDragState_Implementation(u
 	CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
 }
 
-void ALSPlayerController::MulticastRPCStart2DPuzzle_Implementation()
+void ALSPlayerController::MulticastRPCStart2DPuzzle_Implementation(const FName& InWidgetName)
 {
-	Start2DPuzzle();
+	Start2DPuzzle(InWidgetName);
 }
 
 void ALSPlayerController::MulticastRPCEnd2DPuzzle_Implementation()
@@ -444,7 +466,7 @@ void ALSPlayerController::ServerRPCOnExit2DPuzzle_Implementation()
 
 void ALSPlayerController::ServerRPCOnClear2DPuzzle_Implementation()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -463,3 +485,7 @@ void ALSPlayerController::MulticastRPCUpdate2DPuzzleTimer_Implementation(float T
 	}
 }
 
+void ALSPlayerController::ClientRPCStopKeyInput_Implementation()
+{
+	if (PlayerInput) PlayerInput->FlushPressedKeys();
+}

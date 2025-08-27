@@ -165,31 +165,28 @@ void ALTPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 	}
 }
 
-void ALTPlayerController::Start2DPuzzle()
+void ALTPlayerController::Start2DPuzzle(const FName& InWidgetName)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	bIs2DPuzzleActive = true;
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
 	{
 		SetInputMode(FInputModeUIOnly());
-		if (CharacterChoice == ELSCharacterChoice::IJae)
-		{
-			SetShowMouseCursor(true);
-		}
-
+		SetShowMouseCursor(true);
 
 		LS2DPuzzleHUDWidget = CreateWidget<ULS2DPuzzleHUD>(this, LS2DPuzzleHUDClass);
 		if (LS2DPuzzleHUDWidget)
 		{
 			LS2DPuzzleHUDWidget->AddToViewport(0);
+			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
 		}
 	}
 }
 
 void ALTPlayerController::End2DPuzzle()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	bIs2DPuzzleActive = false;
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
@@ -204,20 +201,29 @@ void ALTPlayerController::End2DPuzzle()
 	}
 }
 
-void ALTPlayerController::OnExit2DPuzzle()
+void ALTPlayerController::OnExit2DPuzzle(uint8 InIsExitTogether)
 {
-	if (HasAuthority())
+	if (InIsExitTogether)
 	{
-		ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
-		if (PuzzleInterface)
+		if (HasAuthority())
 		{
-			PuzzleInterface->End2DPuzzle();
+			ILS2DPuzzleGameModeInterface* PuzzleInterface = Cast<ILS2DPuzzleGameModeInterface>(GetWorld()->GetAuthGameMode());
+			if (PuzzleInterface)
+			{
+				PuzzleInterface->End2DPuzzle();
+			}
+		}
+		else
+		{
+			ServerRPCOnExit2DPuzzle();
 		}
 	}
 	else
 	{
-		ServerRPCOnExit2DPuzzle();
+		End2DPuzzle();
 	}
+
+
 }
 
 void ALTPlayerController::OnClear2DPuzzle()
@@ -352,9 +358,9 @@ void ALTPlayerController::ClientRPCCalledOnChangeSiJaeDragState_Implementation(u
 	CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
 }
 
-void ALTPlayerController::MulticastRPCStart2DPuzzle_Implementation()
+void ALTPlayerController::MulticastRPCStart2DPuzzle_Implementation(const FName& InWidgetName)
 {
-	Start2DPuzzle();
+	Start2DPuzzle(InWidgetName);
 }
 
 void ALTPlayerController::MulticastRPCEnd2DPuzzle_Implementation()
@@ -376,7 +382,7 @@ void ALTPlayerController::ServerRPCOnExit2DPuzzle_Implementation()
 
 void ALTPlayerController::ServerRPCOnClear2DPuzzle_Implementation()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));

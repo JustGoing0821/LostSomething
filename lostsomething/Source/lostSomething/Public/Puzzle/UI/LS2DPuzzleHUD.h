@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Puzzle/UI/LS2DWidgetProperty.h"
 #include "LS2DPuzzleHUD.generated.h"
 
 /**
@@ -35,6 +36,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class ULS2DPuzzleTimerWidget> PuzzleTimerWidget;
 
+	UPROPERTY()
+	TObjectPtr<class ULSInformationWidget> InformationWidget;
+
 	UFUNCTION()
 	void OnBtnExitClicked();
 
@@ -52,4 +56,10 @@ protected:
 // Timer Section
 public:
 	void UpdateTimer(float Timer);
+
+// Widget Section
+public:
+	ELS2DWidgetProperty CurrentActivateWidget;
+
+	void OnStartWidget(const FName& InDataName);
 };

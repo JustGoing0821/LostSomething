@@ -66,6 +66,7 @@ protected:
 
 //MapVersionControll
 protected:
+	UPROPERTY(EditAnywhere, Category = "Version")
 	TMap<FString, int32> MapVersions;
 
 	void CheckMapVersion();
@@ -76,7 +77,7 @@ public:
 	FORCEINLINE virtual const FVector2D& GetSiJaeCursorPos() override { return SiJaeCursorPos; }
 	FORCEINLINE virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) override { SiJaeCursorPos = InSiJaeCursorPos; }
 	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
-	virtual void Start2DPuzzle(float Timer) override;
+	virtual void Start2DPuzzle(float Timer, const FName& InWidgetName) override;
 	virtual void End2DPuzzle() override;
 	virtual void OnClear2DPuzzle() override;
 
@@ -102,5 +103,4 @@ protected:
 	void StartPuzzleTimer(float InPuzzleTimerCount);
 	void SetPuzzleTimer();
 	void EndPuzzleTimer();
-
 };
