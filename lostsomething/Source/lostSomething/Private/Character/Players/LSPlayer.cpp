@@ -1732,15 +1732,27 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //아이템 줍기. PickItemInSlot으로 연결
 void ALSPlayer::PickUp()
 {
+	int32 CurrentSelectedSlot = SelectedSlot;
+	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-	PickUpCore();
-	/*if (!HasAuthority())
+	//PickUpCore();
+	if (!CurrentSlotItem.IsEmpty)
 	{
-		ServerPickUp();
-		return;
-	}
+		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+		DropItemFromSlot();
+		//DrawColor = FColor::Orange;
 
-	MultiPickUp();*/
+		//// 디버그 라인
+		//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+		//float CapsuleHalfHeight = PickupRange * 0.5f;
+		//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
+	}
+	else
+	{
+		PickUpCore();
+	}
 
 }
 
@@ -1884,8 +1896,7 @@ void ALSPlayer::PickUpCore()
 
 void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
-	if (!TargetItem) return;
-
+	
 	FItemDetails ItemData = TargetItem->GetItemInfo();
 	TargetItem->Destroy();
 	MultiPickUpCore(TargetItem);
