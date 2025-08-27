@@ -17,10 +17,10 @@ public:
 	ALSInformationCaller();
 
 protected:
-	// Called when the game starts or when spawned
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom", Meta = (AllowPrivateAccess = "true"))
 	bool bIsWaitPlayer;
 
 	UPROPERTY(VisibleAnywhere)
@@ -36,8 +36,15 @@ protected:
 	void OnQuestChange(enum ELSInteractionEnum InQuestEnum);
 	void InformationActivate();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom", Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
+
+
+// Script Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom", Meta = (AllowPrivateAccess = "true"))
+	FName DataAssetName;
+
 
 //RPC Section
 public:

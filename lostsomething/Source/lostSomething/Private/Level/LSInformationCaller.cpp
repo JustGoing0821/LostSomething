@@ -5,9 +5,10 @@
 #include "lostSomething.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "Components/BoxComponent.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Quest/LSQuestManager.h"
-#include "Components/BoxComponent.h"
+#include "Level/LSInformationData.h"
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
@@ -24,6 +25,16 @@ ALSInformationCaller::ALSInformationCaller()
 	TriggerBox->SetBoxExtent(FVector(100, 100, 100));
 	TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ALSInformationCaller::OnTriggerBeginOverlap);
+
+	//Script
+	DataAssetName = FName(TEXT("LSInfoBase"));
+}
+
+void ALSInformationCaller::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+
 }
 
 // Called when the game starts or when spawned
@@ -69,7 +80,7 @@ void ALSInformationCaller::InformationActivate()
 	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->Start2DPuzzle(-1.f, TEXT("Information"));
+		GameMode->Start2DPuzzle(-1.f, DataAssetName);
 	}
 }
 

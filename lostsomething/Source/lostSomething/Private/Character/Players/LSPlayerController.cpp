@@ -245,14 +245,7 @@ void ALSPlayerController::Start2DPuzzle(const FName& InWidgetName)
 		{
 			LS2DPuzzleHUDWidget->AddToViewport(0);
 
-			if (InWidgetName == TEXT("Step"))
-			{
-				LS2DPuzzleHUDWidget->OnStartWidget(E2DWidgetProperty::Drag);
-			}
-			else
-			{
-				LS2DPuzzleHUDWidget->OnStartWidget(E2DWidgetProperty::Information);
-			}
+			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
 		}
 	}
 }
