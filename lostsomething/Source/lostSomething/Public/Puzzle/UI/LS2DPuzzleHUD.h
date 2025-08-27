@@ -4,15 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Puzzle/UI/LS2DWidgetProperty.h"
 #include "LS2DPuzzleHUD.generated.h"
-
-UENUM(BlueprintType)
-enum class E2DWidgetProperty : uint8
-{
-	None = 0,
-	Information,
-	Drag
-};
 
 /**
  * 
@@ -66,7 +59,7 @@ public:
 
 // Widget Section
 public:
-	E2DWidgetProperty CurrentActivateWidget;
+	ELS2DWidgetProperty CurrentActivateWidget;
 
-	void OnStartWidget(E2DWidgetProperty InActivateWidget);
+	void OnStartWidget(const FName& InDataName);
 };
