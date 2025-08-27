@@ -603,8 +603,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
 		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 
-		//Pickup
-		//EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::PickUp);
+		//Drop
+		EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &ALSPlayer::Drop);
 
 		// 숫자키 바인딩
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
@@ -995,7 +995,7 @@ void ALSPlayer::Interaction()
 	}
 	else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(CurrentDectectActor))
 	{
-		PickUp();
+		PickUpCore();
 	}
 }
 
@@ -1730,33 +1730,38 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //}
 
 //아이템 줍기. PickItemInSlot으로 연결
-void ALSPlayer::PickUp()
+void ALSPlayer::Drop()
 {
 	int32 CurrentSelectedSlot = SelectedSlot;
 	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+	UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+		CurrentSelectedSlot,
+		bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
 
 	//PickUpCore();
 	if (!CurrentSlotItem.IsEmpty)
 	{
 		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
 		DropItemFromSlot();
-		//DrawColor = FColor::Orange;
-
-		//// 디버그 라인
-		//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-		//float CapsuleHalfHeight = PickupRange * 0.5f;
-		//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
+		
+		UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			CurrentSelectedSlot,
+			bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
 	}
 	else
 	{
-		PickUpCore();
+		//PickUpCore();
+		UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			CurrentSelectedSlot,
+			bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+
 	}
 
 }
 
-void ALSPlayer::ServerPickUp_Implementation()
+void ALSPlayer::ServerDrop_Implementation()
 {
 
 	//MultiPickUp();
@@ -1764,7 +1769,7 @@ void ALSPlayer::ServerPickUp_Implementation()
 
 }
 
-void ALSPlayer::MultiPickUp_Implementation()
+void ALSPlayer::MultiDrop_Implementation()
 {/*
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1832,7 +1837,7 @@ void ALSPlayer::PickUpCore()
 			if (!CurrentSlotItem.IsEmpty)
 			{
 				LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-				DropItemFromSlot();
+				//DropItemFromSlot();
 				DrawColor = FColor::Orange;
 
 				// 디버그 라인
@@ -1879,7 +1884,7 @@ void ALSPlayer::PickUpCore()
 		if (!CurrentSlotItem.IsEmpty)
 		{
 			LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-			DropItemFromSlot();
+			//DropItemFromSlot();
 			DrawColor = FColor::Orange;
 
 			//// 디버그 라인
@@ -1956,18 +1961,35 @@ void ALSPlayer::DropItemFromSlot()
 						SpawnParams.Instigator = this;
 
 
+
 						if (HasAuthority())
 						{
 							//FActorSpawnParameters SpawnParams;
 							//SpawnParams.Instigator = this;
 
 							// 모든 클라이언트에서 아이템 스폰
-							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+							/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 								ItemClass,
 								SpawnLocation,
 								SpawnRotation,
 								SpawnParams
+							);*/
+
+							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+								ItemClass,
+								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f), // 살짝 띄워주기
+								DropItemLoc->GetComponentRotation()
 							);
+
+							if (SpawnedItem)
+							{
+								if (UStaticMeshComponent* ItemMesh = SpawnedItem->FindComponentByClass<UStaticMeshComponent>())
+								{
+									ItemMesh->SetSimulatePhysics(true);      // 물리 활성화
+									ItemMesh->SetEnableGravity(true);        // 중력 적용
+									ItemMesh->AddImpulse(FVector(0, 0, 100.f)); // 위로 살짝 힘
+								}
+							}
 
 							// Set Array Element: 해당 슬롯을 빈 상태로 만들기
 							FItemDetails EmptySlot;

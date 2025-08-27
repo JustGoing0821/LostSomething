@@ -111,14 +111,14 @@ public:
 	void ClientPickUpCore(FItemDetails ItemData);
 	
 	//줍기 애니메이션
-	void PickUp();
+	void Drop();
 	
 
 	UFUNCTION(Server, Reliable)
-	void ServerPickUp();
+	void ServerDrop();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiPickUp();
+	void MultiDrop();
 
 	//UFUNCTION(Client, Reliable)
 	//void ClientPickUp(FItemDetails ItemData);
@@ -347,8 +347,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<class UInputAction> PickUpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> DropAction;
 	//줍기
 
 
