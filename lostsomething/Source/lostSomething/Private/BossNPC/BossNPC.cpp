@@ -9,6 +9,7 @@
 #include "Character/Players/LSPlayer.h"  
 #include "lostSomething.h"
 #include <BossNPC/Anim/BossNPCAnimIns.h>
+#include <UObject/FastReferenceCollector.h>
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -43,6 +44,35 @@ ABossNPC::ABossNPC()
     AOESpawnRadius = 500.0f;
     CurrentPhase = 1;
     bIsPhaseChanging = false;
+}
+
+void ABossNPC::BMSoundPlay(const FString& SoundType)
+{
+    ServerBSoundPlay(SoundType);
+}
+
+void ABossNPC::ServerBSoundPlay_Implementation(const FString& SoundType)
+{
+    MultiBMSoundPlay(SoundType);
+}
+
+void ABossNPC::MultiBMSoundPlay_Implementation(const FString& SoundType)
+{
+    USoundBase* SelectedSound = nullptr;
+
+    if (SoundType == "Phase1") SelectedSound = Phase1Sound;
+    else if (SoundType == "Phase2") SelectedSound = Phase2Sound;
+    else if (SoundType == "Phase3") SelectedSound = Phase3Sound;
+    else if (SoundType == "Damage") SelectedSound = DamageSound;
+    else if (SoundType == "Die") SelectedSound = DieSound;
+    if (!SelectedSound)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
+        return;
+    }
+
+    // 핵심: GetWorld() 기반으로 2D 사운드 재생
+    UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
 }
 
 // Called when the game starts or when spawned
@@ -476,20 +506,15 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        SpawnedObstacles.Empty();
-
         ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
             ABossObstacle::StaticClass(),
             SpawnLocation,
             SpawnRotation,
             Params
         );
-
-        if (NewObstacle)
-        {
-            SpawnedObstacles.Add(NewObstacle);
-        }
     }
+
+    BMSoundPlay("Phase2");
 }
 
 void ABossNPC::DestroyObstacles()
@@ -504,14 +529,16 @@ void ABossNPC::ServerDestroyObstacles_Implementation()
 
 void ABossNPC::MultiDestroyObstacles_Implementation()
 {
-    for (ABossObstacle* Obstacle : SpawnedObstacles)
+    TArray<AActor*> FoundObstacles;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABossObstacle::StaticClass(), FoundObstacles);
+
+    for (AActor* Obstacle : FoundObstacles)
     {
         if (Obstacle)
         {
             Obstacle->Destroy();
         }
     }
-    SpawnedObstacles.Empty(); // 배열 비움
 }
 
 // 플랫폼 스폰

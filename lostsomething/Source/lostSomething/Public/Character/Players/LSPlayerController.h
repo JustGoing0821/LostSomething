@@ -13,11 +13,12 @@
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
 #include "Interface/LS2DPuzzleControllerInterface.h"
+#include "Interface/LSStopKeyInputInterface.h"
 #include "LSPlayerController.generated.h"
 
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface
+class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface, public ILSStopKeyInputInterface
 {
 	GENERATED_BODY()
 
@@ -78,7 +79,7 @@ public:
 	void HideDeathWidget();
 
 
-//Script Section
+// Script Section
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class ULSScriptWidget> ScriptWidgetClass;
@@ -89,8 +90,10 @@ protected:
 public:
 	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
 
-	void StartTalking();
 
+// Voice Section
+public:
+	void StartTalking();
 	void StopTalking();
 
 
@@ -122,10 +125,10 @@ protected:
 
 // 2DPuzzle Widget
 public:
-	void Start2DPuzzle();
+	void Start2DPuzzle(const FName& InWidgetName);
 	void End2DPuzzle();
 	void Update2DPuzzleTimer(float Timer);
-	virtual void OnExit2DPuzzle() override;
+	virtual void OnExit2DPuzzle(uint8 InIsExitTogether) override;
 	virtual void OnClear2DPuzzle() override;
 
 protected:
@@ -142,6 +145,10 @@ protected:
 public:
 	void UpdateAim(const FString& InString);
 
+
+// Input Section
+public:
+	virtual void StopKeyInput() override;
 
 //RPC
 public:
@@ -161,7 +168,7 @@ public:
 	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCStart2DPuzzle();
+	void MulticastRPCStart2DPuzzle(const FName& InWidgetName);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCEnd2DPuzzle();
@@ -174,4 +181,7 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCUpdate2DPuzzleTimer(float Timer);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCStopKeyInput();
 };

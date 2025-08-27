@@ -104,6 +104,8 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
     if (SpecialMap.Num() == 0 || ColIndex < 0 || ColIndex >= SpecialMap[0].Num()) return;
     if (!BossNPC) return;
 
+    BossNPC->BMSoundPlay("Phase3");
+
     int32 Rows = SpecialMap.Num();
 
     FVector Forward = BossNPC->GetActorForwardVector();

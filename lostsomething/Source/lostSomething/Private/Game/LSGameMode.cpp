@@ -51,8 +51,8 @@ ALSGameMode::ALSGameMode()
 	bIsSiJaeServer = true;
 	CurrentPlayerCount = 0;
 
-	MapVersions.Add("LSStage1Map1", 0);
-	MapVersions.Add("LSStage1Map2", 0);
+	MapVersions.Add("LSStage1Map1", 1);
+	MapVersions.Add("LSStage1Map2", 1);
 	MapVersions.Add("LSStage1Map3", 0);
 
 	//2D Section
@@ -136,9 +136,22 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
+}
 
+void ALSGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			CheckMapVersion();
+		}
+	), 3.0, false);
+
+	FTimerHandle Handle2;
+	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
 		{
 			//Quest Start
 			if (CurrentPlayerCount == 2)
@@ -147,19 +160,6 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 			}
 		}
 	), 1, false, 6.0f);
-}
-
-void ALSGameMode::BeginPlay()
-{
-	Super::BeginPlay();
-
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		{
-			CheckMapVersion();
-		}
-	), 3.0, false);
 }
 
 void ALSGameMode::QuestStart()
@@ -269,7 +269,7 @@ void ALSGameMode::BroadcastScript(const FString& InScript)
 		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(PC);
 		if (ScriptWidget)
 		{
-			LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 			ScriptWidget->UpdateScriptWidget(InScript);
 		}
 	}
@@ -277,7 +277,7 @@ void ALSGameMode::BroadcastScript(const FString& InScript)
 
 void ALSGameMode::CheckMapVersion()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld());
 	if (MapVersions.Contains(MapName))
@@ -327,23 +327,23 @@ void ALSGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALSGameMode::Start2DPuzzle(float Timer)
+void ALSGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
 		{
-			PC->MulticastRPCStart2DPuzzle();
+			PC->MulticastRPCStart2DPuzzle(InWidgetName);
 		}
 	}
 
-	StartPuzzleTimer(Timer);
+	if (Timer > 0) StartPuzzleTimer(Timer);
 }
 
 void ALSGameMode::End2DPuzzle()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))

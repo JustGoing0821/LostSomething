@@ -20,7 +20,7 @@ ALSTrain::ALSTrain()
 
 	// Moving Location
 	WaitLocation = FVector(3586.0f, -290.0f, -6.2f);
-	LeaveLocation = FVector(30000.0f, -290.0f, -6.2f);
+	LeaveLocation = FVector(15000.0f, -290.0f, -6.2f);
 
 	//Root Component
 	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));
@@ -330,14 +330,14 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 
 	if (bCorrect)
 	{
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("True"));
 		MulticastRPCGateOpen();
 		CorrectDoorIndex = InCorrectGate - 1;
 		MulticastRPCGetOffPassengers();
 	}
 	else
 	{
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("False"));
 		TimeTrainWait = 2.0f;
 		MulticastRPCGateOpen();
 		CorrectDoorIndex = -1;
@@ -354,7 +354,7 @@ void ALSTrain::GetOffPassengers()
 			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
 			if (Num == CorrectDoorIndex)
 			{
-				LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
 				LeftSideCrowds[Num]->SetVisibility(false);
 				LeftSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				continue;
@@ -372,7 +372,7 @@ void ALSTrain::GetOffPassengers()
 			//LS_LOG(LogLS, Log, TEXT("Num : %d"), Num);
 			if (Num == CorrectDoorIndex)
 			{
-				LS_LOG(LogLS, Log, TEXT("Correct Gate"));
+				//LS_LOG(LogLS, Log, TEXT("Correct Gate"));
 				RightSideCrowds[Num]->SetVisibility(false);
 				RightSideCrowds[Num]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				continue;
@@ -418,7 +418,7 @@ void ALSTrain::GetOnPassengers()
 
 void ALSTrain::StopTrain()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		CurrentTrainState = ETrainState::Stop;
@@ -426,7 +426,7 @@ void ALSTrain::StopTrain()
 	if (GetWorld()->GetTimerManager().IsTimerActive(TrainTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(TrainTimerHandle);
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("TrainTimerHandle Cleared."));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("TrainTimerHandle Cleared."));
 	}
 }
 

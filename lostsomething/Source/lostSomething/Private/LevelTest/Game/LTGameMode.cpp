@@ -132,7 +132,7 @@ APlayerController* ALTGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 
 void ALTGameMode::TestLoginProcess(APlayerController* ResultController)
 {
-	LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Begin"));
 	ALTPlayerController* LSPlayerController = Cast<ALTPlayerController>(ResultController);
 	if (LSPlayerController)
 	{
@@ -229,23 +229,23 @@ void ALTGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALTGameMode::Start2DPuzzle(float Timer)
+void ALTGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))
 		{
-			PC->MulticastRPCStart2DPuzzle();
+			PC->MulticastRPCStart2DPuzzle(InWidgetName);
 		}
 	}
 
-	StartPuzzleTimer(Timer);
+	if(Timer>0) StartPuzzleTimer(Timer);
 }
 
 void ALTGameMode::End2DPuzzle()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (ALTPlayerController* PC = Cast<ALTPlayerController>(Iterator->Get()))

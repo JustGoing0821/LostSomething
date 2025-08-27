@@ -155,7 +155,7 @@ void ALSTrainStep::InstallStep()
 	}
 	//MeshComponent->SetVisibility(bIsStepInstalled);
 
-	MulticastRPCSetVisibility();
+	MulticastRPCInstallStep();
 }
 
 void ALSTrainStep::PuzzleDeactivate()
@@ -170,7 +170,7 @@ void ALSTrainStep::StartInstallPuzzle()
 	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->Start2DPuzzle(PuzzleTimer);
+		GameMode->Start2DPuzzle(PuzzleTimer, TEXT("Step"));
 	}
 }
 
@@ -190,10 +190,11 @@ void ALSTrainStep::ServerRPCInstallStep_Implementation()
 	InstallStep();
 }
 
-void ALSTrainStep::MulticastRPCSetVisibility_Implementation()
+void ALSTrainStep::MulticastRPCInstallStep_Implementation()
 {
 	MeshComponent->SetVisibility(bIsStepInstalled);
 	//LS_LOG(LogLS, Log, TEXT("Called. bIsStepInstalled : %d"), bIsStepInstalled);
+	PuzzleDeactivate();
 }
 
 void ALSTrainStep::ServerRPCStartInstallPuzzle_Implementation()
