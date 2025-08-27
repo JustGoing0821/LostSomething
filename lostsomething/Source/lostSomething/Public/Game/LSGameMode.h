@@ -66,6 +66,7 @@ protected:
 
 //MapVersionControll
 protected:
+	UPROPERTY(EditAnywhere, Category = "Version")
 	TMap<FString, int32> MapVersions;
 
 	void CheckMapVersion();
@@ -102,5 +103,4 @@ protected:
 	void StartPuzzleTimer(float InPuzzleTimerCount);
 	void SetPuzzleTimer();
 	void EndPuzzleTimer();
-
 };

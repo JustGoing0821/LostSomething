@@ -51,8 +51,8 @@ ALSGameMode::ALSGameMode()
 	bIsSiJaeServer = true;
 	CurrentPlayerCount = 0;
 
-	MapVersions.Add("LSStage1Map1", 1);
-	MapVersions.Add("LSStage1Map2", 1);
+	MapVersions.Add("LSStage1Map1", 0);
+	MapVersions.Add("LSStage1Map2", 0);
 	MapVersions.Add("LSStage1Map3", 0);
 
 	//2D Section
@@ -148,7 +148,7 @@ void ALSGameMode::BeginPlay()
 		{
 			CheckMapVersion();
 		}
-	), 3.0, false);
+	), 3.f, false);
 
 	FTimerHandle Handle2;
 	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
@@ -159,7 +159,7 @@ void ALSGameMode::BeginPlay()
 				QuestStart();
 			}
 		}
-	), 1, false, 6.0f);
+	), 5.f, false);
 }
 
 void ALSGameMode::QuestStart()
