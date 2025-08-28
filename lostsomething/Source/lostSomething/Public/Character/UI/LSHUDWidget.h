@@ -39,6 +39,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon);
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> StaminaBar;
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateStaminaBar(float CurrentStamina, float MaxStamina);
+
+	UFUNCTION(BlueprintCallable)
+	void ShowStaminaBar(bool bShow);
+
+	FLinearColor DefaultBarColor;
+
 protected:
 	// 슬롯 아이콘 이미지 위젯
 	// 
