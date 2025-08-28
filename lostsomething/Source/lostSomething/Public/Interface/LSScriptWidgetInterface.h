@@ -7,7 +7,7 @@
 #include "LSScriptWidgetInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, NotBlueprintable)
 class ULSScriptWidgetInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -22,6 +22,7 @@ class LOSTSOMETHING_API ILSScriptWidgetInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION(BlueprintCallable, Category = "Script Widget")
 	virtual void UpdateScriptWidget(const FString& ScriptText)=0;
 };
 
