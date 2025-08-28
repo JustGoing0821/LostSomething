@@ -43,6 +43,7 @@ protected:
 
 //Script Test
 public:
+	UFUNCTION(BlueprintCallable, Category = "Script Widget")
 	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
 
 protected:

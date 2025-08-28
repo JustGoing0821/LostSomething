@@ -17,6 +17,11 @@ void ULSHUDWidget::NativeConstruct()
 
 	TxtAim = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_aim")));
 	ensure(TxtAim);
+
+	if (StaminaBar)
+	{
+		DefaultBarColor = StaminaBar->GetFillColorAndOpacity();
+	}
 }
 
 void ULSHUDWidget::UpdateHpBar(float NewHp)
@@ -180,4 +185,31 @@ void ULSHUDWidget::UpdateAim(const FString& InString)
 	}
 }
 
+void ULSHUDWidget::UpdateStaminaBar(float CurrentStamina, float MaxStamina)
+{
+	if (StaminaBar)
+	{
+		float Percentage = MaxStamina > 0 ? CurrentStamina / MaxStamina : 0.0f;
+		StaminaBar->SetPercent(Percentage);
 
+		if (Percentage < 0.3f)
+		{
+			StaminaBar->SetFillColorAndOpacity(FLinearColor::Red);
+		}
+		else
+		{
+			StaminaBar->SetFillColorAndOpacity(DefaultBarColor);
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Stamina UI updated: %.1f/%.1f"), CurrentStamina, MaxStamina);
+	}
+}
+
+void ULSHUDWidget::ShowStaminaBar(bool bShow)
+{
+	if (StaminaBar)
+	{
+		ESlateVisibility NewVisibility = bShow ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+		StaminaBar->SetVisibility(NewVisibility);
+	}
+}
