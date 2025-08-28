@@ -402,6 +402,42 @@ protected:
 
 	float LastDistanceCheckTime = 0.0f;
 
+	// 합체 스태미너
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float MaxStamina = 100.0f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentStamina, BlueprintReadOnly, Category = "Stamina")
+	float CurrentStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaDecreaseRate = 10.0f; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaRegenRate = 20.0f; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaRegenDelay = 2.0f; 
+
+	// 스태미너 타이머
+	FTimerHandle StaminaDecreaseTimer;
+	FTimerHandle StaminaRegenTimer;
+	FTimerHandle StaminaRegenDelayTimer;
+
+	// 스태미너 함수
+	UFUNCTION()
+	void DecreaseStamina();
+
+	UFUNCTION()
+	void RegenerateStamina();
+
+	UFUNCTION()
+	void StartStaminaRegeneration();
+
+	bool HasEnoughStamina() const;
+
+	UFUNCTION()
+	void OnRep_CurrentStamina();
+
 
 //	//이렇게 쓰지 말기
 //	/*ULSInventoryWidget* InventoryWidget;

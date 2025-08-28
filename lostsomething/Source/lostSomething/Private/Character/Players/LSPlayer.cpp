@@ -117,6 +117,14 @@ ALSPlayer::ALSPlayer()
 	PusherCharacter = nullptr;
 	bCanPushWheelchair = false;
 	bIsPushing = false;
+
+	// 스태미너
+	CurrentStamina = MaxStamina;
+
+	bIsBeingPushed = false;
+	PusherCharacter = nullptr;
+	bCanPushWheelchair = false;
+	bIsPushing = false;
 }
 
 void ALSPlayer::PostInitializeComponents()
@@ -1158,6 +1166,7 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, CallElevatorParams);
 	DOREPLIFETIME(ALSPlayer, bIsPushing);
 
+	DOREPLIFETIME(ALSPlayer, CurrentStamina);
 }
 
 
@@ -1295,11 +1304,28 @@ void ALSPlayer::StartPushingWheelchair_Implementation(ACharacter* Pusher)
 {
 	if (HasAuthority())
 	{
-		// 서버일 경우 직접 처리
 		if (!bIsBeingPushed && Pusher != nullptr)
 		{
+			ALSPlayer* PusherPlayer = Cast<ALSPlayer>(Pusher);
+			if (!PusherPlayer || !PusherPlayer->HasEnoughStamina())
+			{
+				return;
+			}
+
 			bIsBeingPushed = true;
 			PusherCharacter = Pusher;
+			PusherPlayer->bIsPushing = true;
+			PusherPlayer->PushedWheelchairCharacter = this;
+
+			if (PusherPlayer->CanPushWheelchair())
+			{
+				GetWorld()->GetTimerManager().SetTimer(PusherPlayer->StaminaDecreaseTimer,
+					PusherPlayer, &ALSPlayer::DecreaseStamina, 0.1f, true);
+
+				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaRegenTimer);
+				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaRegenDelayTimer);
+			}
+
 			MulticastWheelchairStateChanged(true, Pusher);
 		}
 	}
@@ -1317,6 +1343,22 @@ void ALSPlayer::StopPushingWheelchair_Implementation(ACharacter* Pusher)
 		{
 			bIsBeingPushed = false;
 			PusherCharacter = nullptr;
+
+			ALSPlayer* PusherPlayer = Cast<ALSPlayer>(Pusher);
+			if (PusherPlayer)
+			{
+				PusherPlayer->bIsPushing = false;
+				PusherPlayer->PushedWheelchairCharacter = nullptr;
+
+				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaDecreaseTimer);
+
+				if (PusherPlayer->CurrentStamina < PusherPlayer->MaxStamina)
+				{
+					GetWorld()->GetTimerManager().SetTimer(PusherPlayer->StaminaRegenDelayTimer,
+						PusherPlayer, &ALSPlayer::StartStaminaRegeneration,
+						PusherPlayer->StaminaRegenDelay, false);
+				}
+			}
 
 			MulticastWheelchairStateChanged(false, nullptr);
 		}
@@ -2261,4 +2303,91 @@ void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemT
 
 void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
 {
+}
+
+// 스태미너
+
+void ALSPlayer::DecreaseStamina()
+{
+	if (!HasAuthority()) return;
+
+	CurrentStamina = FMath::Max(0.0f, CurrentStamina - StaminaDecreaseRate * 0.1f);
+
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+			{
+				HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
+				HUD->ShowStaminaBar(true);
+			}
+		}
+	}
+
+	if (CurrentStamina <= 0.0f && bIsPushing && PushedWheelchairCharacter)
+	{
+		ILSWheelchairInterface::Execute_StopPushingWheelchair(PushedWheelchairCharacter, this);
+		GetWorld()->GetTimerManager().ClearTimer(StaminaDecreaseTimer);
+		GetWorld()->GetTimerManager().SetTimer(StaminaRegenDelayTimer,
+			this, &ALSPlayer::StartStaminaRegeneration, StaminaRegenDelay, false);
+	}
+}
+
+void ALSPlayer::RegenerateStamina()
+{
+	if (!HasAuthority()) return;
+
+	if (CurrentStamina < MaxStamina && !bIsPushing)
+	{
+		CurrentStamina = FMath::Min(MaxStamina, CurrentStamina + StaminaRegenRate * 0.1f);
+
+		if (IsLocallyControlled())
+		{
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+			{
+				if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+				{
+					HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
+					HUD->ShowStaminaBar(true);
+				}
+			}
+		}
+
+		if (CurrentStamina >= MaxStamina)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimer);
+		}
+	}
+}
+
+void ALSPlayer::StartStaminaRegeneration()
+{
+	if (!HasAuthority()) return;
+
+	if (!bIsPushing && CurrentStamina < MaxStamina)
+	{
+		GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimer,
+			this, &ALSPlayer::RegenerateStamina, 0.1f, true);
+	}
+}
+
+bool ALSPlayer::HasEnoughStamina() const
+{
+	return CurrentStamina > 0.0f;
+}
+
+void ALSPlayer::OnRep_CurrentStamina()
+{
+	if (auto PC = Cast<ALSPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		if (PC->IsLocalController())
+		{
+			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+			{
+				HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
+				HUD->ShowStaminaBar(true);
+			}
+		}
+	}
 }
