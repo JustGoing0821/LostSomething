@@ -88,6 +88,7 @@ protected:
 	TObjectPtr<class ULSScriptWidget> ScriptWidget;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Script Widget")
 	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
 
 
