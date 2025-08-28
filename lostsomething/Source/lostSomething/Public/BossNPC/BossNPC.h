@@ -13,7 +13,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
 {
     GENERATED_BODY()
 
-public:
+    public:
     ABossNPC();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Obstacle")
@@ -31,8 +31,6 @@ public:
     void EnterPhase3();
 
     // 몽타주 시작 함수
-
-
     void AOEMontagePlay();
     UFUNCTION(Server, Reliable)
     void ServerAOEMontagePlay();
@@ -110,13 +108,31 @@ protected:
 
     bool bIsPhaseChanging;
 
-    //AOE
+    // AOE - 기존 함수들 (호환성 유지)
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));
     UFUNCTION(Server, Reliable)
     void ServerSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
-
     UFUNCTION(NetMulticast, Reliable)
     void MultiSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
+
+    // AOE - 새로운 타입별 함수들 추가
+    void SpawnSingleCircleAOE(FVector SpawnLocation, FString AOEType = TEXT("Circle AOE"));
+    UFUNCTION(Server, Reliable)
+    void ServerSpawnSingleCircleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Circle AOE"));
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiSpawnSingleCircleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Circle AOE"));
+
+    void SpawnSingleShareAOE(FVector SpawnLocation, FString AOEType = TEXT("Share AOE"));
+    UFUNCTION(Server, Reliable)
+    void ServerSpawnSingleShareAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Share AOE"));
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiSpawnSingleShareAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Share AOE"));
+
+    void SpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, FString AOEType = TEXT("Cone AOE"));
+    UFUNCTION(Server, Reliable)
+    void ServerSpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, const FString& AOEType = TEXT("Cone AOE"));
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiSpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, const FString& AOEType = TEXT("Cone AOE"));
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
     int32 RandomAOECount = 2; // 추가 랜덤 AOE 개수
@@ -184,8 +200,10 @@ private:
     void SpawnAOEAttack();
     void StopAOEPattern();
     void StopObstaclePattern();
-    //FVector GetRandomAOELocation();
-    FVector GetRandomLocationAroundBoss();  // ← 이거 추가!
+    FVector GetRandomLocationAroundBoss();
+
+    // 새로 추가: 근처 플레이어 찾기
+    TArray<AActor*> GetNearbyPlayers(float MaxDistance = 800.0f);
 
     // 네트워크 RPC 함수들
     UFUNCTION(Server, Reliable)
