@@ -148,7 +148,7 @@ void ALSGameMode::BeginPlay()
 		{
 			CheckMapVersion();
 		}
-	), 3.f, false);
+	), 10.f, false);
 
 	FTimerHandle Handle2;
 	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
@@ -159,7 +159,7 @@ void ALSGameMode::BeginPlay()
 				QuestStart();
 			}
 		}
-	), 5.f, false);
+	), 10.f, false);
 }
 
 void ALSGameMode::QuestStart()
