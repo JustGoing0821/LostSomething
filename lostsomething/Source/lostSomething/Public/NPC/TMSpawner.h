@@ -15,6 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	ATMSpawner();
 
+	UFUNCTION()
+	void SpawnNPC();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
