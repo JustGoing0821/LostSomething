@@ -70,8 +70,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
 	UMaterialInterface* ItemOverlayMaterial;
 
-	void SetActorOverlayMaterial(AActor* Actor, UMaterialInterface* Material);
-	UPROPERTY()
+	// ALSPlayer.h
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
+	UMaterialInterface* ItemOverlayMaterial;
+
+
+	void ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial);
+
+	void RemoveOverlayMaterialFromActor(AActor* TargetActor);
 
 
 	AActor* PreviousOverlayActor = nullptr;
@@ -89,7 +95,8 @@ public:
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
+
 	virtual bool isCombining() override;
 	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
