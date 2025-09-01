@@ -152,10 +152,15 @@ void ALSPlayer::BeginPlay()
 
 
 	}
-
+	
 	//인벤토리 초기화
 	InitializeInventory();
 
+	// 이전 오버레이 끄기
+	if (PreviousOverlayActor)
+	{
+		SetActorOverlayMaterial(PreviousOverlayActor, nullptr);
+	}
 }
 
 // Called every frame
@@ -1169,6 +1174,17 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, CurrentStamina);
 }
 
+//outline
+void ALSPlayer::SetActorOverlayMaterial(AActor* Actor, UMaterialInterface* Material)
+{
+	if (!Actor) return;
+
+	UStaticMeshComponent* MeshComp = Actor->FindComponentByClass<UStaticMeshComponent>();
+	if (MeshComp)
+	{
+		MeshComp->SetOverlayMaterial(Material);
+	}
+}
 
 //라인트레이스
 void ALSPlayer::PerformLineTrace()
@@ -1240,7 +1256,23 @@ void ALSPlayer::PerformLineTrace()
 			{
 				CurrentDectectActor = HitResult.GetActor();
 				TickDectectResultColor = FColor::Green;
+
 				AimScript = "Pick Up";
+
+				if (CurrentDectectActor != PreviousOverlayActor)
+				{
+					// 이전 오버레이 끄기
+					if (PreviousOverlayActor)
+					{
+						SetActorOverlayMaterial(PreviousOverlayActor, nullptr);
+					}
+
+					// 새로운 오버레이 켜기
+					SetActorOverlayMaterial(CurrentDectectActor, ItemOverlayMaterial);
+
+					PreviousOverlayActor = CurrentDectectActor;
+				}
+
 			}
 			else
 			{
@@ -1251,9 +1283,15 @@ void ALSPlayer::PerformLineTrace()
 		}
 		else
 		{
+
 			TickDectectResultColor = FColor::Red;
 			AimScript = "+";
 			CurrentDectectActor = nullptr;
+			if (PreviousOverlayActor)
+			{
+				SetActorOverlayMaterial(PreviousOverlayActor, nullptr);
+				PreviousOverlayActor = nullptr;
+			}
 		}
 	}
 
