@@ -18,14 +18,14 @@ public:
 	//=============================================
 	//     PROPERTIES & VARIABLES
 	//=============================================
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	class UTextBlock* txt_RoomName;
+	//UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	//class UTextBlock* txt_RoomName;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* txt_HostName;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	class UTextBlock* txt_Ping;
+	//UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	//class UTextBlock* txt_Ping;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_Join;
