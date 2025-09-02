@@ -70,14 +70,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
 	UMaterialInterface* ItemOverlayMaterial;
 
-	// ALSPlayer.h
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
-	UMaterialInterface* ItemOverlayMaterial;
+	UMaterialInterface* ItemOverlayMaterial2;
 
 
 	void ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial);
+	void RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial);
 
-	void RemoveOverlayMaterialFromActor(AActor* TargetActor);
+	//void RemoveOverlayMaterialFromActor(AActor* TargetActor);
 
 
 	AActor* PreviousOverlayActor = nullptr;

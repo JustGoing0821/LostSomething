@@ -166,11 +166,24 @@ void ALSPlayer::BeginPlay()
 			MeshComp->SetOverlayMaterial(OverlayMat);
 		}
 	}
+
+	UStaticMeshComponent* MeshComp2 = FindComponentByClass<UStaticMeshComponent>();
+	if (MeshComp2)
+	{
+
+		UMaterialInterface* OverlayMat2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Players/Materials/OutlineRemove_MAT.OutlineRemove_MAT"));
+		if (OverlayMat2)
+		{
+			MeshComp2->SetOverlayMaterial(OverlayMat2);
+		}
+	}
+
 }
 
 // Called every frame
 void ALSPlayer::Tick(float DeltaTime)
 {
+
 	Super::Tick(DeltaTime);
 
 	// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
@@ -1180,45 +1193,45 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 }
 
 //outline
-// ALSPlayer.cpp
 
 void ALSPlayer::ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
 {
 	if (!TargetActor || !OverlayMaterial)
 		return;
 
-	// 우선 Static Mesh
 	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
 	{
 		MeshComp->SetOverlayMaterial(OverlayMaterial);
-		MeshComp->SetOverlayMaterialMaxDrawDistance(5000.f); // 원하면 조절
 		return;
 	}
 
-	// Skeletal Mesh fallback
-	if (USkeletalMeshComponent* SkelComp = TargetActor->FindComponentByClass<USkeletalMeshComponent>())
-	{
-		SkelComp->SetOverlayMaterial(OverlayMaterial);
-		SkelComp->SetOverlayMaterialMaxDrawDistance(5000.f); // optional
-	}
 }
 
-void ALSPlayer::RemoveOverlayMaterialFromActor(AActor* TargetActor)
+void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial2)
 {
-	if (!TargetActor)
+	if (!TargetActor || !OverlayMaterial2)
 		return;
 
 	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
 	{
-		MeshComp->SetOverlayMaterial(nullptr);
+		MeshComp->SetOverlayMaterial(OverlayMaterial2);
 		return;
 	}
-
-	if (USkeletalMeshComponent* SkelComp = TargetActor->FindComponentByClass<USkeletalMeshComponent>())
-	{
-		SkelComp->SetOverlayMaterial(nullptr);
-	}
 }
+
+
+
+//void ALSPlayer::RemoveOverlayMaterialFromActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
+//{
+//	if (!TargetActor || !OverlayMaterial)
+//		return;
+//
+//	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+//	{
+//		MeshComp->SetOverlayMaterial(OverlayMaterial);
+//		return;
+//	}
+//}
 
 
 //라인트레이스
@@ -1293,12 +1306,13 @@ void ALSPlayer::PerformLineTrace()
 				TickDectectResultColor = FColor::Green;
 
 				AimScript = "Pick Up";
+				//RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
 				ApplyOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
 				
 			}
 			else
 			{
-				RemoveOverlayMaterialFromActor(PreviousOverlayActor);
+				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 				TickDectectResultColor = FColor::Black;
 				AimScript = "+";
 				CurrentDectectActor = nullptr;
@@ -1306,7 +1320,7 @@ void ALSPlayer::PerformLineTrace()
 		}
 		else
 		{
-			RemoveOverlayMaterialFromActor(PreviousOverlayActor);
+			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 			TickDectectResultColor = FColor::Red;
 			AimScript = "+";
 			CurrentDectectActor = nullptr;
