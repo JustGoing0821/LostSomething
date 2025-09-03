@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
+#include "Character/UI/BloodWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Interaction/LSInteractionEnum.h"
@@ -60,6 +61,34 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
+
+
+
+//Blood
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UBloodWidget> BloodWidgetClass;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UBloodWidget> BloodWidget;
+
+public:
+
+	UFUNCTION()
+	void ShowBloodWidget();
+
+	/*UFUNCTION(Server, Unreliable)
+	void ServerShowBloodWidget();
+
+	UFUNCTION(Client, Unreliable)
+	void ClientShowBloodWidget();*/
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastShowBloodWidget();
+
+
+	UFUNCTION()
+	void RemoveBloodWidget();
 
 
 //Death Section
