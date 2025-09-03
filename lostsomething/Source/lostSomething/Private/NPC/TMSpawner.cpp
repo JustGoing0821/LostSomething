@@ -41,7 +41,7 @@ void ATMSpawner::BeginPlay()
 	{
 		FVector SpawnLocation = GetActorLocation() + Offset;
 		GetWorld()->SpawnActor<ATestNPC>(MonsterClass, SpawnLocation, GetActorRotation());
-		UE_LOG(LogTemp, Warning,TEXT("SpawnActor"))
+		//UE_LOG(LogTemp, Warning,TEXT("SpawnActor"))
 	}
 	
 }
