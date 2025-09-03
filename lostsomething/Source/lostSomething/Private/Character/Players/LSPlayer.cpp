@@ -22,6 +22,9 @@
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Kismet/GameplayStatics.h"
@@ -200,6 +203,11 @@ void ALSPlayer::Tick(float DeltaTime)
 		}
 	}
 	PerformLineTrace();
+	if (bThrowPreview)
+	{
+		UpdateThrowPreview();
+	}
+
 }
 
 void ALSPlayer::OnRep_CurrentHp()
@@ -650,8 +658,12 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
 
 		//Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
+		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
+
+
 		//Mouse
 		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
 		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
@@ -2482,5 +2494,81 @@ void ALSPlayer::OnRep_CurrentStamina()
 				HUD->ShowStaminaBar(true);
 			}
 		}
+	}
+}
+
+FVector ALSPlayer::ComputeThrowInitialVelocity() const
+{
+	const FVector Dir = (GetActorForwardVector() + FVector(0, 0, ThrowUpRatio)).GetSafeNormal();
+	return Dir * ThrowSpeed; // cm/s
+}
+
+
+// 시작
+void ALSPlayer::StartThrowPreview()
+{
+	if (bIsDead) return;
+
+	bThrowPreview = true;
+	CachedPathPoints.Reset();
+	UpdateThrowPreview(); // 즉시 1회 그려줌
+}
+
+void ALSPlayer::UpdateThrowPreview()
+{
+	if (!DropItemLoc) return;
+
+	const FVector StartLoc = DropItemLoc->GetComponentLocation();
+	const FVector InitialVel = ComputeThrowInitialVelocity();
+
+	FPredictProjectilePathParams Params;
+	Params.StartLocation = StartLoc;
+	Params.LaunchVelocity = InitialVel;
+	Params.bTraceWithCollision = true;
+	Params.ProjectileRadius = ProjectileRadius;
+	Params.MaxSimTime = PreviewTime;
+	Params.SimFrequency = PreviewSegments / PreviewTime; // 구간 수에 맞춰 샘플
+	Params.TraceChannel = ECC_Visibility; // 필요시 커스텀 채널로
+	Params.OverrideGravityZ = 0.f; // 월드 중력 사용
+
+	FPredictProjectilePathResult Result;
+	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
+
+	// 화면에 그리기(디버그 라인)
+	CachedPathPoints.Reset();
+	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
+	{
+		const FVector P0 = Result.PathData[i].Location;
+		const FVector P1 = Result.PathData[i + 1].Location;
+		CachedPathPoints.Add(P0);
+
+		// 짧은 선분으로 궤적 만들기
+		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan, /*bPersistentLines=*/false, /*LifeTime=*/0.f, 0, 1.5f);
+	}
+	if (Result.PathData.Num() > 0)
+	{
+		CachedPathPoints.Add(Result.PathData.Last().Location);
+	}
+
+	// 착지 지점 표시(있으면)
+	if (bHit)
+	{
+		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
+	}
+}
+
+// 종료(+ 던지기)
+void ALSPlayer::EndThrowPreview(bool bDoThrow)
+{
+	if (!bThrowPreview) return;
+	bThrowPreview = false;
+
+	// 미리보기 라인은 디버그(프레임 지속형)라 자동 소멸됨
+
+	if (bDoThrow)
+	{
+		// 기존 Attack()→ThrowItem() 경로 대신 직접 호출해도 되고,
+		// 또는 Attack()에서 하던 흐름을 그대로 유지해도 된다.
+		ThrowItem();
 	}
 }

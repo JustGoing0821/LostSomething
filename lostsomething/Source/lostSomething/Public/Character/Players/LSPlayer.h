@@ -507,4 +507,39 @@ public:
 
 	UPROPERTY(Replicated)
 	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
+
+
+
+	//궤적
+
+	 // 초기 속력 (cm/s)
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ThrowSpeed = 1200.f;         
+
+	// 전방 + 위로 올리는 비율
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ThrowUpRatio = 0.3f;          
+
+	// 예측 시간 (초)
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float PreviewTime = 1.5f;          
+
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	int32 PreviewSegments = 20;         // 궤적 샘플 개수
+
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ProjectileRadius = 5.f;       // 충돌 반경
+
+	// 미리보기 상태
+	bool bThrowPreview = false;
+	TArray<FVector> CachedPathPoints;
+
+	// 미리보기 제어
+	void StartThrowPreview();
+	void UpdateThrowPreview();
+	void EndThrowPreview(bool bDoThrow);
+
+	// 공용 계산기
+	FVector ComputeThrowInitialVelocity() const;
+
 };
