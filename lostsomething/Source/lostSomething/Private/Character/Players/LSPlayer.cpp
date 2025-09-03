@@ -152,15 +152,38 @@ void ALSPlayer::BeginPlay()
 
 
 	}
-
+	
 	//인벤토리 초기화
 	InitializeInventory();
+
+	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
+	if (MeshComp)
+	{
+		
+		UMaterialInterface* OverlayMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Players/Materials/Outline_MAT.Outline_MAT"));
+		if (OverlayMat)
+		{
+			MeshComp->SetOverlayMaterial(OverlayMat);
+		}
+	}
+
+	UStaticMeshComponent* MeshComp2 = FindComponentByClass<UStaticMeshComponent>();
+	if (MeshComp2)
+	{
+
+		UMaterialInterface* OverlayMat2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Players/Materials/OutlineRemove_MAT.OutlineRemove_MAT"));
+		if (OverlayMat2)
+		{
+			MeshComp2->SetOverlayMaterial(OverlayMat2);
+		}
+	}
 
 }
 
 // Called every frame
 void ALSPlayer::Tick(float DeltaTime)
 {
+
 	Super::Tick(DeltaTime);
 
 	// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
@@ -1169,6 +1192,47 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, CurrentStamina);
 }
 
+//outline
+
+void ALSPlayer::ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
+{
+	if (!TargetActor || !OverlayMaterial)
+		return;
+
+	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		MeshComp->SetOverlayMaterial(OverlayMaterial);
+		return;
+	}
+
+}
+
+void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial2)
+{
+	if (!TargetActor || !OverlayMaterial2)
+		return;
+
+	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		MeshComp->SetOverlayMaterial(OverlayMaterial2);
+		return;
+	}
+}
+
+
+
+//void ALSPlayer::RemoveOverlayMaterialFromActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
+//{
+//	if (!TargetActor || !OverlayMaterial)
+//		return;
+//
+//	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+//	{
+//		MeshComp->SetOverlayMaterial(OverlayMaterial);
+//		return;
+//	}
+//}
+
 
 //라인트레이스
 void ALSPlayer::PerformLineTrace()
@@ -1240,10 +1304,15 @@ void ALSPlayer::PerformLineTrace()
 			{
 				CurrentDectectActor = HitResult.GetActor();
 				TickDectectResultColor = FColor::Green;
+
 				AimScript = "Pick Up";
+				//RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
+				ApplyOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
+				
 			}
 			else
 			{
+				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 				TickDectectResultColor = FColor::Black;
 				AimScript = "+";
 				CurrentDectectActor = nullptr;
@@ -1251,9 +1320,11 @@ void ALSPlayer::PerformLineTrace()
 		}
 		else
 		{
+			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 			TickDectectResultColor = FColor::Red;
 			AimScript = "+";
 			CurrentDectectActor = nullptr;
+			
 		}
 	}
 
