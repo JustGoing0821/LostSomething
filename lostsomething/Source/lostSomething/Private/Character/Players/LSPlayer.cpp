@@ -138,6 +138,8 @@ void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
+
 	if (HpComponent)
 	{
 		// HpComponent의 OnHpChanged 델리게이트에 우리의 OnHpChanged 함수를 바인딩
@@ -213,6 +215,8 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	
+
 	//추가 코드 (feat.슬)
 	if (HasAuthority())
 	{
@@ -221,6 +225,7 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	}
 	else
 	{
+		
 		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
 	}
 
@@ -235,9 +240,24 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 	
 
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin Apply Damage"));
 
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->ShowBloodWidget();
+		//DisableInput(PC);
 
+	}
+
+	//if (IsLocallyControlled())
+	//{
+	//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	//	{
+	//		PC->ShowBloodWidget();
+	//		//DisableInput(PC);
+	//	}
+	//}
+	
 	
 	if (HpComponent)
 	{
@@ -395,6 +415,8 @@ void ALSPlayer::MultiDie_Implementation()
 			DisableInput(PC);
 		}
 	}
+
+
 }
 
 void ALSPlayer::ClientDie_Implementation()
