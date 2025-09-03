@@ -2527,11 +2527,31 @@ void ALSPlayer::UpdateThrowPreview()
 	P.TraceChannel = ECC_Visibility;       // 필요하면 충돌 채널 맞춰 변경
 	P.OverrideGravityZ = GetWorld()->GetGravityZ(); // 월드 중력과 일치
 
-	FPredictProjectilePathResult R;
-	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, R);
+	FPredictProjectilePathResult Result;
+	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, Result);
 
-	// 디버그 라인/구체 그리기(생략 가능)
-	// ... (네가 쓰던 DrawDebug 구현 유지)
+	// 화면에 그리기(디버그 라인)
+	CachedPathPoints.Reset();
+	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
+	{
+		const FVector P0 = Result.PathData[i].Location;
+		const FVector P1 = Result.PathData[i + 1].Location;
+		CachedPathPoints.Add(P0);
+
+		// 짧은 선분으로 궤적 만들기
+		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan, /*bPersistentLines=*/false, /*LifeTime=*/0.f, 0, 1.5f);
+	}
+	if (Result.PathData.Num() > 0)
+	{
+		CachedPathPoints.Add(Result.PathData.Last().Location);
+	}
+
+	// 착지 지점 표시(있으면)
+	if (bHit)
+	{
+		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
+	}
+
 }
 
 
