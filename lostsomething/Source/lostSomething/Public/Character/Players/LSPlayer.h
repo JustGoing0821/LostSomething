@@ -64,6 +64,25 @@ public:
 	ALSPlayer();
 
 	virtual void PostInitializeComponents() override;
+	
+
+	//outline
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
+	UMaterialInterface* ItemOverlayMaterial;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlay")
+	UMaterialInterface* ItemOverlayMaterial2;
+
+
+	void ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial);
+	void RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial);
+
+	//void RemoveOverlayMaterialFromActor(AActor* TargetActor);
+
+
+	AActor* PreviousOverlayActor = nullptr;
+
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -77,6 +96,8 @@ public:
 	//Take Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
 	virtual bool isCombining() override;
 	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 

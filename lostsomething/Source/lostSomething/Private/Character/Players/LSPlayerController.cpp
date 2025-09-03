@@ -40,10 +40,18 @@ ALSPlayerController::ALSPlayerController()
 		ScriptWidgetClass = ScriptWidgetRef.Class;
 	}
 
+	//Death
 	static ConstructorHelpers::FClassFinder<ULSDeathWidget> DeathWidgetRef(TEXT("/Game/Players/UI/WBP_DeathWidget.WBP_DeathWidget_C"));
 	if (DeathWidgetRef.Class)
 	{
 		DeathWidgetClass = DeathWidgetRef.Class;
+	}
+
+	//Blood
+	static ConstructorHelpers::FClassFinder<UBloodWidget> BloodWidgetRef(TEXT("/Game/Players/UI/WBP_Blood.WBP_Blood_C"));
+	if (BloodWidgetRef.Class)
+	{
+		BloodWidgetClass = BloodWidgetRef.Class;
 	}
 
 	//Puzzle Section
@@ -73,6 +81,16 @@ void ALSPlayerController::BeginPlay()
 		if (LSHUDWidget)
 		{
 			LSHUDWidget->AddToViewport();
+		}
+	}
+
+	if (IsLocalController() && BloodWidgetClass)
+	{
+		BloodWidget = CreateWidget<UBloodWidget>(this, BloodWidgetClass);
+		if (BloodWidget)
+		{
+		
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("BloodhWidget Created."));
 		}
 	}
 
@@ -160,6 +178,35 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
 	DOREPLIFETIME(ALSPlayerController, SiJaeCursorPos);
 }
+
+//Blood
+void ALSPlayerController::ShowBloodWidget()
+{
+	
+	MulticastShowBloodWidget();
+}
+
+void ALSPlayerController::MulticastShowBloodWidget_Implementation()
+{
+
+	if (IsLocalController() && BloodWidget)
+	{
+		BloodWidget->AddToViewport();
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ALSPlayerController::RemoveBloodWidget, 1.0f);
+
+	}
+
+}
+
+void ALSPlayerController::RemoveBloodWidget()
+{
+	if (BloodWidget && BloodWidget->IsInViewport())
+	{
+		BloodWidget->RemoveFromParent();
+	}
+}
+
 
 //Death
 void ALSPlayerController::ShowDeathWidget()
