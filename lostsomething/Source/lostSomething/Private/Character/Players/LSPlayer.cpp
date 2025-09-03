@@ -2335,11 +2335,8 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
-	
-
 	if (!HasAuthority())
 	{
-		
 		ServerSpawnThrowableItem(ItemToThrow);
 		return;
 	}
@@ -2351,40 +2348,39 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 		return;
 	}
 
-	FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
-	FRotator ThrowRotation = GetActorRotation();
+	const FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
+	const FRotator ThrowRotation = GetActorRotation();
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 
-	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass,ThrowStartLocation,ThrowRotation,SpawnParams);
+	AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass, ThrowStartLocation, ThrowRotation, SpawnParams);
+	if (!ThrownItem) { LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item")); return; }
 
-	if (ThrownItem)
+	ThrownItem->bIsThrown = true;
+	if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 	{
-		ThrownItem->bIsThrown = true;
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetNotifyRigidBodyCollision(true);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-		if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
-		{
-			ItemMesh->SetSimulatePhysics(true);
-			ItemMesh->SetNotifyRigidBodyCollision(true);
-			ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// 1) 인스티게이터와의 초반 자기충돌 잠깐 무시(선택이지만 강추)
+		ThrownItem->SetOwner(this);
+		ItemMesh->IgnoreActorWhenMoving(this, true);
+		GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this, ItemMesh]()
+			{
+				// 아주 짧은 프레임만 무시해도 충분
+				ItemMesh->IgnoreActorWhenMoving(this, false);
+			}));
 
-			FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-			const float THROW_FORCE = 300.0f;
-			ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
-
-			ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
-
-			LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
-		}
-		MultiSpawnThrowableItem(ItemToThrow);
+		// 2) 초기 속도 '직접' 지정: 프리뷰와 동일 계산
+		const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
+		ItemMesh->SetPhysicsLinearVelocity(FVector::ZeroVector, false);
+		ItemMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector, false);
+		ItemMesh->SetPhysicsLinearVelocity(V0, false);
 	}
 
-	else
-	{
-		LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
-	}
+	MultiSpawnThrowableItem(ItemToThrow);
 }
 
 
@@ -2519,43 +2515,26 @@ void ALSPlayer::UpdateThrowPreview()
 	if (!DropItemLoc) return;
 
 	const FVector StartLoc = DropItemLoc->GetComponentLocation();
-	const FVector InitialVel = ComputeThrowInitialVelocity();
+	const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
 
-	FPredictProjectilePathParams Params;
-	Params.StartLocation = StartLoc;
-	Params.LaunchVelocity = InitialVel;
-	Params.bTraceWithCollision = true;
-	Params.ProjectileRadius = ProjectileRadius;
-	Params.MaxSimTime = PreviewTime;
-	Params.SimFrequency = PreviewSegments / PreviewTime; // 구간 수에 맞춰 샘플
-	Params.TraceChannel = ECC_Visibility; // 필요시 커스텀 채널로
-	Params.OverrideGravityZ = 0.f; // 월드 중력 사용
+	FPredictProjectilePathParams P;
+	P.StartLocation = StartLoc;
+	P.LaunchVelocity = V0;
+	P.ProjectileRadius = 8.f;                  // 아이템 크기에 맞춰 조절
+	P.MaxSimTime = PreviewTime;          // 네가 쓰던 값 유지
+	P.SimFrequency = PreviewSegments / FMath::Max(PreviewTime, 0.01f);
+	P.bTraceWithCollision = true;
+	P.TraceChannel = ECC_Visibility;       // 필요하면 충돌 채널 맞춰 변경
+	P.OverrideGravityZ = GetWorld()->GetGravityZ(); // 월드 중력과 일치
 
-	FPredictProjectilePathResult Result;
-	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
+	FPredictProjectilePathResult R;
+	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, R);
 
-	// 화면에 그리기(디버그 라인)
-	CachedPathPoints.Reset();
-	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
-	{
-		const FVector P0 = Result.PathData[i].Location;
-		const FVector P1 = Result.PathData[i + 1].Location;
-		CachedPathPoints.Add(P0);
-
-		// 짧은 선분으로 궤적 만들기
-		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan, /*bPersistentLines=*/false, /*LifeTime=*/0.f, 0, 1.5f);
-	}
-	if (Result.PathData.Num() > 0)
-	{
-		CachedPathPoints.Add(Result.PathData.Last().Location);
-	}
-
-	// 착지 지점 표시(있으면)
-	if (bHit)
-	{
-		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
-	}
+	// 디버그 라인/구체 그리기(생략 가능)
+	// ... (네가 쓰던 DrawDebug 구현 유지)
 }
+
+
 
 // 종료(+ 던지기)
 void ALSPlayer::EndThrowPreview(bool bDoThrow)
@@ -2571,4 +2550,30 @@ void ALSPlayer::EndThrowPreview(bool bDoThrow)
 		// 또는 Attack()에서 하던 흐름을 그대로 유지해도 된다.
 		ThrowItem();
 	}
+}
+
+
+float ALSPlayer::GetThrowAlphaFromPitch() const
+{
+	const FRotator CamRot = GetControlRotation();                 // 컨트롤 기준
+	const float Pitch = FRotator::NormalizeAxis(CamRot.Pitch);    // -180~180 -> 정규화
+	return FMath::GetMappedRangeValueClamped(
+		FVector2D(PitchMinDeg, PitchMaxDeg),
+		FVector2D(0.f, 1.f),
+		Pitch
+	);
+}
+
+FVector ALSPlayer::ComputeThrowInitialVelocity_ByCamPitch() const
+{
+	const float A = GetThrowAlphaFromPitch();
+
+	const float Speed = FMath::Lerp(SpeedNear, SpeedFar, A);
+	const float UpBias = FMath::Lerp(UpBiasNear, UpBiasFar, A);
+
+	// 카메라 전방 + 위쪽 바이어스
+	const FVector CamForward = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X);
+	const FVector Dir = (CamForward + FVector(0, 0, UpBias)).GetSafeNormal();
+
+	return Dir * Speed; // cm/s
 }

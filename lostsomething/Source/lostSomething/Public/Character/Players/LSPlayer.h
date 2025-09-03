@@ -542,4 +542,28 @@ public:
 	// 공용 계산기
 	FVector ComputeThrowInitialVelocity() const;
 
+	// === Throw by Camera Pitch ===
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float PitchMinDeg = -20.f;   // 이 각도일 때 가장 가깝게 (고개 약간 숙임)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float PitchMaxDeg = 40.f;    // 이 각도일 때 가장 멀리 (고개 위로 듦)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float SpeedNear = 800.f;     // 가까운 투척 속도 (cm/s)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float SpeedFar = 2200.f;    // 먼 투척 속도 (cm/s)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float UpBiasNear = 0.10f;    // 가까울 때 위쪽 가중치
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float UpBiasFar = 0.55f;    // 멀 때 위쪽 가중치
+
+	// 계산 함수
+	float GetThrowAlphaFromPitch() const;                // Pitch -> [0..1]
+	FVector ComputeThrowInitialVelocity_ByCamPitch() const;
+
+
 };
