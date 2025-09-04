@@ -2360,9 +2360,15 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	ThrownItem->bIsThrown = true;
 	if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 	{
-		ItemMesh->SetSimulatePhysics(true);
+		//ItemMesh->SetSimulatePhysics(true);
 		//ItemMesh->SetNotifyRigidBodyCollision(true);
 		//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetNotifyRigidBodyCollision(true);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
 
 		// 1) 인스티게이터와의 초반 자기충돌 잠깐 무시(선택이지만 강추)
 		//ThrownItem->SetOwner(this);
@@ -2372,6 +2378,9 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 		//		// 아주 짧은 프레임만 무시해도 충분
 		//		ItemMesh->IgnoreActorWhenMoving(this, false);
 		//	}));
+
+		ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
+
 
 		// 2) 초기 속도 '직접' 지정: 프리뷰와 동일 계산
 		const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
