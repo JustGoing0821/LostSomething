@@ -2361,17 +2361,17 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 	{
 		ItemMesh->SetSimulatePhysics(true);
-		ItemMesh->SetNotifyRigidBodyCollision(true);
-		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		//ItemMesh->SetNotifyRigidBodyCollision(true);
+		//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 		// 1) 인스티게이터와의 초반 자기충돌 잠깐 무시(선택이지만 강추)
-		ThrownItem->SetOwner(this);
-		ItemMesh->IgnoreActorWhenMoving(this, true);
-		GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this, ItemMesh]()
-			{
-				// 아주 짧은 프레임만 무시해도 충분
-				ItemMesh->IgnoreActorWhenMoving(this, false);
-			}));
+		//ThrownItem->SetOwner(this);
+		//ItemMesh->IgnoreActorWhenMoving(this, true);
+		//GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this, ItemMesh]()
+		//	{
+		//		// 아주 짧은 프레임만 무시해도 충분
+		//		ItemMesh->IgnoreActorWhenMoving(this, false);
+		//	}));
 
 		// 2) 초기 속도 '직접' 지정: 프리뷰와 동일 계산
 		const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
@@ -2546,7 +2546,7 @@ void ALSPlayer::UpdateThrowPreview()
 		CachedPathPoints.Add(Result.PathData.Last().Location);
 	}
 
-	// 착지 지점 표시(있으면)
+	// 착지 지점 표시
 	if (bHit)
 	{
 		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
@@ -2562,12 +2562,9 @@ void ALSPlayer::EndThrowPreview(bool bDoThrow)
 	if (!bThrowPreview) return;
 	bThrowPreview = false;
 
-	// 미리보기 라인은 디버그(프레임 지속형)라 자동 소멸됨
-
 	if (bDoThrow)
 	{
-		// 기존 Attack()→ThrowItem() 경로 대신 직접 호출해도 되고,
-		// 또는 Attack()에서 하던 흐름을 그대로 유지해도 된다.
+	
 		ThrowItem();
 	}
 }
