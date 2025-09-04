@@ -821,13 +821,7 @@ void ALSPlayer::ProcessAttack()
 			DrawColor = FColor::Blue;
 		}
 
-		/*ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
-		if (HitNPC)
-		{
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
-		}*/
+		
 	}
 	else
 	{
@@ -1255,17 +1249,6 @@ void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInter
 
 
 
-//void ALSPlayer::RemoveOverlayMaterialFromActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
-//{
-//	if (!TargetActor || !OverlayMaterial)
-//		return;
-//
-//	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
-//	{
-//		MeshComp->SetOverlayMaterial(OverlayMaterial);
-//		return;
-//	}
-//}
 
 
 //라인트레이스
@@ -1340,7 +1323,7 @@ void ALSPlayer::PerformLineTrace()
 				TickDectectResultColor = FColor::Green;
 
 				AimScript = "Pick Up";
-				//RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
+				
 				ApplyOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
 				
 			}
@@ -1876,7 +1859,7 @@ void ALSPlayer::VoiceStop(const FInputActionValue& Value)
 //	}
 //}
 
-//아이템 줍기. PickItemInSlot으로 연결
+//아이템 버리기
 void ALSPlayer::Drop()
 {
 	int32 CurrentSelectedSlot = SelectedSlot;
@@ -2124,7 +2107,8 @@ void ALSPlayer::DropItemFromSlot()
 
 							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
 								ItemClass,
-								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f), // 살짝 띄워주기
+								//위로 조금 띄워서 자연스럽게
+								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f), 
 								DropItemLoc->GetComponentRotation()
 							);
 
@@ -2419,32 +2403,47 @@ void ALSPlayer::StartThrowPreview()
 {
 	if (bIsDead) return;
 
+	//궤적 초기화
 	bThrowPreview = true;
 	CachedPathPoints.Reset();
+
+	// 한번만 그림
 	UpdateThrowPreview(); 
 }
 
+//디버그라인 계속 갱신
 void ALSPlayer::UpdateThrowPreview()
 {
 	if (!DropItemLoc) return;
 
+	//포물선 시작점 (BP Arrow)
 	const FVector StartLoc = DropItemLoc->GetComponentLocation();
+
+	//속력
 	const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
 
 	FPredictProjectilePathParams P;
 	P.StartLocation = StartLoc;
 	P.LaunchVelocity = V0;
-	P.ProjectileRadius = 8.f;                  // 아이템 크기에 맞춰 조절
-	P.MaxSimTime = PreviewTime;          // 네가 쓰던 값 유지
+
+
+	
+	P.ProjectileRadius = 8.f; 
+
+	//궤적 그리는 시간
+	P.MaxSimTime = PreviewTime; 
+
+
 	P.SimFrequency = PreviewSegments / FMath::Max(PreviewTime, 0.01f);
 	P.bTraceWithCollision = true;
-	P.TraceChannel = ECC_Visibility;       // 필요하면 충돌 채널 맞춰 변경
-	P.OverrideGravityZ = GetWorld()->GetGravityZ(); // 월드 중력과 일치
+	P.TraceChannel = ECC_Visibility;      
+	P.OverrideGravityZ = GetWorld()->GetGravityZ(); 
 
+	//포물선 계싼
 	FPredictProjectilePathResult Result;
 	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, Result);
 
-	// 화면에 그리기(디버그 라인)
+	// 디버그라인
 	CachedPathPoints.Reset();
 	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
 	{
@@ -2452,8 +2451,8 @@ void ALSPlayer::UpdateThrowPreview()
 		const FVector P1 = Result.PathData[i + 1].Location;
 		CachedPathPoints.Add(P0);
 
-		// 짧은 선분으로 궤적 만들기
-		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan, /*bPersistentLines=*/false, /*LifeTime=*/0.f, 0, 1.5f);
+		// 선분으로 궤적 
+		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan,false,0.f, 0, 1.5f);
 	}
 	if (Result.PathData.Num() > 0)
 	{
@@ -2470,7 +2469,7 @@ void ALSPlayer::UpdateThrowPreview()
 
 
 
-// 종료(+ 던지기)
+// 종료후 던지기
 void ALSPlayer::EndThrowPreview(bool bDoThrow)
 {
 	if (!bThrowPreview) return;
@@ -2484,6 +2483,7 @@ void ALSPlayer::EndThrowPreview(bool bDoThrow)
 }
 
 
+//카메라 피치에 따라서 궤도 수정
 float ALSPlayer::GetThrowAlphaFromPitch() const
 {
 	const FRotator CamRot = GetControlRotation();                 // 컨트롤 기준
@@ -2506,5 +2506,5 @@ FVector ALSPlayer::ComputeThrowInitialVelocity_ByCamPitch() const
 	const FVector CamForward = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X);
 	const FVector Dir = (CamForward + FVector(0, 0, UpBias)).GetSafeNormal();
 
-	return Dir * Speed; // cm/s
+	return Dir * Speed; 
 }
