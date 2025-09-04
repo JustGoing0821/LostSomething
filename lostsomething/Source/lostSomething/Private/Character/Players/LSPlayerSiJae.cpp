@@ -43,6 +43,26 @@ void ALSPlayerSiJae::BeginPlay()
    
 }
 
+// Called to bind functionality to input
+void ALSPlayerSiJae::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+
+        //Attack
+        EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
+
+
+    }
+
+
+
+
+}
+
+
 void ALSPlayerSiJae::WeaponPickUp()
 {
     FHitResult OutHitResult;
