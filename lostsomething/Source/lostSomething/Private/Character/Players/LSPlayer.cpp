@@ -660,8 +660,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//Attack
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 	
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
+		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
+		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
 
 
 		//Mouse
@@ -2242,96 +2242,13 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 			ItemInfoArray[SlotIndex] = EmptySlot;
 
 			// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
-			UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
+			UTexture2D* EmptyIcon = nullptr; 
 			HUD->SetIcon(SlotIndex, EmptyIcon);
 
 
 		}
 	}
 }
-
-//
-//void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
-//{
-//	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::SpawnThrowableItem() called"));
-//
-//
-//	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
-//	if (ItemClass && DropItemLoc)
-//	{
-//		// 던지기 시작 위치 (플레이어 앞쪽)
-//		FVector ThrowStartLocation = DropItemLoc->GetComponentLocation();
-//		FRotator ThrowRotation = GetActorRotation();
-//
-//		FActorSpawnParameters SpawnParams;
-//		SpawnParams.Instigator = this;
-//
-//
-//
-//		if (HasAuthority()) 
-//		{
-//
-//			//스폰부분
-//			AMasterItem* ThrownItem = GetWorld()->SpawnActor<AMasterItem>(
-//				ItemClass,
-//				ThrowStartLocation,
-//				ThrowRotation,
-//				SpawnParams
-//			);
-//
-//
-//			if (ThrownItem)
-//			{
-//				// 던져진 아이템으로 설정
-//				ThrownItem->bIsThrown = true;
-//
-//				if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
-//				{
-//					// 물리 시뮬레이션 활성화
-//					//ItemMesh->SetSimulatePhysics(true);
-//					//ItemMesh->SetNotifyRigidBodyCollision(true); 
-//
-//					// Hit 이벤트를 위해 충돌 설정
-//					//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-//					//ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-//
-//					// 던지는 방향과 힘 
-//					FVector ThrowDirection = GetActorForwardVector() + FVector(0, 0, 0.3f);
-//					const float THROW_FORCE = 1000.0f;
-//
-//					// 임펄스 적용
-//					ItemMesh->AddImpulse(ThrowDirection * THROW_FORCE, NAME_None, true);
-//
-//					// Hit 이벤트 바인딩 
-//					ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
-//
-//					LS_LOG(LogLS, Warning, TEXT("Throwable item spawned: %s"), *ThrownItem->GetName());
-//				}
-//			}
-//			else
-//			{
-//				LS_LOG(LogLS, Error, TEXT("Failed to spawn throwable item"));
-//			}
-//
-//		}
-//		else
-//		{
-//			ServerSpawnThrowableItem();
-//		}
-//
-//	}
-//	else
-//	{
-//		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
-//	}
-//}
-
-//void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
-//{
-//
-//	
-//
-//}
 
 void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 {
@@ -2360,29 +2277,17 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	ThrownItem->bIsThrown = true;
 	if (UStaticMeshComponent* ItemMesh = ThrownItem->FindComponentByClass<UStaticMeshComponent>())
 	{
-		//ItemMesh->SetSimulatePhysics(true);
-		//ItemMesh->SetNotifyRigidBodyCollision(true);
-		//ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 		ItemMesh->SetSimulatePhysics(true);
 		ItemMesh->SetNotifyRigidBodyCollision(true);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 
-		// 1) 인스티게이터와의 초반 자기충돌 잠깐 무시(선택이지만 강추)
-		//ThrownItem->SetOwner(this);
-		//ItemMesh->IgnoreActorWhenMoving(this, true);
-		//GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this, ItemMesh]()
-		//	{
-		//		// 아주 짧은 프레임만 무시해도 충분
-		//		ItemMesh->IgnoreActorWhenMoving(this, false);
-		//	}));
-
+		//NPC HIT
 		ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
 
 
-		// 2) 초기 속도 '직접' 지정: 프리뷰와 동일 계산
+		//초기 속도
 		const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
 		ItemMesh->SetPhysicsLinearVelocity(FVector::ZeroVector, false);
 		ItemMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector, false);
@@ -2509,14 +2414,14 @@ FVector ALSPlayer::ComputeThrowInitialVelocity() const
 }
 
 
-// 시작
+//던기지 시작 (꾹 누를떄)
 void ALSPlayer::StartThrowPreview()
 {
 	if (bIsDead) return;
 
 	bThrowPreview = true;
 	CachedPathPoints.Reset();
-	UpdateThrowPreview(); // 즉시 1회 그려줌
+	UpdateThrowPreview(); 
 }
 
 void ALSPlayer::UpdateThrowPreview()

@@ -21,6 +21,7 @@ protected:
 	virtual void Attack() override;
 	virtual void Move(const FInputActionValue& Value) override;
 	void HandleWheelchairInput(const FVector2D& MovementVector);
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 public:
 	// 휠체어 회전 속도

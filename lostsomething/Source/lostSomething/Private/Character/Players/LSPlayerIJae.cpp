@@ -15,6 +15,23 @@ void ALSPlayerIJae::Jump()
     return;
 }
 
+void ALSPlayerIJae::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+        EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
+        EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview, true);
+
+
+    }
+
+
+
+
+}
+
 void ALSPlayerIJae::Attack() {
     if (bIsDead) return;
 
