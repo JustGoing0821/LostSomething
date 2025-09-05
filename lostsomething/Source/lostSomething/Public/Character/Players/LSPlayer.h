@@ -507,4 +507,63 @@ public:
 
 	UPROPERTY(Replicated)
 	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
+
+
+
+	//궤적
+
+	 // 초기 속력 (cm/s)
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ThrowSpeed = 1200.f;         
+
+	// 전방 + 위로 올리는 비율
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ThrowUpRatio = 0.3f;          
+
+	// 예측 시간 (초)
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float PreviewTime = 1.5f;          
+
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	int32 PreviewSegments = 20;         // 궤적 샘플 개수
+
+	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
+	float ProjectileRadius = 5.f;       // 충돌 반경
+
+	// 미리보기 상태
+	bool bThrowPreview = false;
+	TArray<FVector> CachedPathPoints;
+
+	// 미리보기 제어
+	void StartThrowPreview();
+	void UpdateThrowPreview();
+	void EndThrowPreview(bool bDoThrow);
+
+	// 공용 계산기
+	FVector ComputeThrowInitialVelocity() const;
+
+	// === Throw by Camera Pitch ===
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float PitchMinDeg = -20.f;   // 이 각도일 때 가장 가깝게 (고개 약간 숙임)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float PitchMaxDeg = 40.f;    // 이 각도일 때 가장 멀리 (고개 위로 듦)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float SpeedNear = 800.f;     // 가까운 투척 속도 (cm/s)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float SpeedFar = 2200.f;    // 먼 투척 속도 (cm/s)
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float UpBiasNear = 0.10f;    // 가까울 때 위쪽 가중치
+
+	UPROPERTY(EditAnywhere, Category = "Throw|CamPitch")
+	float UpBiasFar = 0.55f;    // 멀 때 위쪽 가중치
+
+	// 계산 함수
+	float GetThrowAlphaFromPitch() const;                // Pitch -> [0..1]
+	FVector ComputeThrowInitialVelocity_ByCamPitch() const;
+
+
 };
