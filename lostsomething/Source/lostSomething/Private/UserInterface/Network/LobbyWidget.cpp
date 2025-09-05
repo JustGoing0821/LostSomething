@@ -42,7 +42,8 @@ void ULobbyWidget::SwitchPanel(int32 index)
 void ULobbyWidget::OnMyClicked_doCreateRoom()
 {
 	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
-	FString roomName = TEXT("RoomName");
+
+	FString roomName = edit_RoomName->GetText().ToString();
 
 	/**/
 	if (roomName.TrimStartAndEnd().IsEmpty())
@@ -69,6 +70,7 @@ void ULobbyWidget::OnMyClicked_doCreateRoom()
 		return;
 	}
 	// UNetGameInstance::CreateRoom 를 호출하고싶다.
+	GI->MyRoomName = roomName;
 	GI->CreateRoom(roomName);
 	
 }

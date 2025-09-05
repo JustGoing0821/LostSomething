@@ -50,11 +50,11 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.NumPublicConnections = 2;
 
 	// Base64로 통일
-	FString EncodedRoomName = StringBase64Encode(RoomName);
+	FString EncodedRoomName = StringBase64Encode(MyRoomName);
 	FString EncodedHostName = StringBase64Encode(NickName);
 
 	// 디버깅 로그 추가
-	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *RoomName);
+	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *MyRoomName);
 	UE_LOG(LogTemp, Warning, TEXT("Encoded RoomName: %s"), *EncodedRoomName);
 
 	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
