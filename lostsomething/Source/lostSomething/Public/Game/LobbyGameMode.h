@@ -14,4 +14,6 @@ class LOSTSOMETHING_API ALobbyGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void BeginPlay() override;
 };
