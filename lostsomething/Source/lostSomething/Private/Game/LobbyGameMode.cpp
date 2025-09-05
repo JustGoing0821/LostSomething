@@ -2,4 +2,11 @@
 
 
 #include "Game/LobbyGameMode.h"
+#include "lostSomething.h"
 
+void ALobbyGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LS_LOG(LogLS, Error, TEXT("Last Edit Serial Num : %d"), 905755);
+}
