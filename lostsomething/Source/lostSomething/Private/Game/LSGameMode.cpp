@@ -138,28 +138,26 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
 }
 
-void ALSGameMode::BeginPlay()
+void ALSGameMode::StartGame()
 {
-	Super::BeginPlay();
-
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 		{
-			CheckMapVersion();
-		}
-	), 10.f, false);
-
-	FTimerHandle Handle2;
-	GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
-		{
 			//Quest Start
 			if (CurrentPlayerCount == 2)
 			{
+				CheckMapVersion();
 				QuestStart();
 			}
 		}
-	), 10.f, false);
+	), 2.f, false);
+}
+
+void ALSGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
 }
 
 void ALSGameMode::QuestStart()

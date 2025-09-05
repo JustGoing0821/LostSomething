@@ -212,6 +212,12 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCUpdate2DPuzzleTimer(float Timer);
 
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCStartGame();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCStopMovement();
+
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCStopKeyInput();
 };
