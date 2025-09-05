@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerInput.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
@@ -15,6 +16,7 @@
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
+#include "Interface/LSStartGameInterface.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -127,6 +129,12 @@ void ALSPlayerController::BeginPlay()
 	}
 
 	SetInputMode(FInputModeGameOnly());
+
+
+	if (IsLocalController() && !HasAuthority())
+	{
+		ServerRPCStartGame();
+	}
 }
 
 void ALSPlayerController::Tick(float DeltaTime)
@@ -436,6 +444,18 @@ void ALSPlayerController::StopKeyInput()
 		else
 		{
 			ClientRPCStopKeyInput();
+			if (GetPawn())
+			{
+				GetPawn()->GetMovementComponent()->StopMovementImmediately();
+			}
+		}
+	}
+	else
+	{
+		if (IsLocalController())
+		{
+			if (PlayerInput) PlayerInput->FlushPressedKeys();
+			ServerRPCStopMovement();
 		}
 	}
 }
@@ -529,6 +549,26 @@ void ALSPlayerController::MulticastRPCUpdate2DPuzzleTimer_Implementation(float T
 	if (IsLocalController())
 	{
 		Update2DPuzzleTimer(Timer);
+	}
+}
+
+void ALSPlayerController::ServerRPCStartGame_Implementation()
+{
+	ILSStartGameInterface* GameMode = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->StartGame();
+	}
+}
+
+void ALSPlayerController::ServerRPCStopMovement_Implementation()
+{
+	if (!IsLocalController())
+	{
+		if (GetPawn())
+		{
+			GetPawn()->GetMovementComponent()->StopMovementImmediately();
+		}
 	}
 }
 
