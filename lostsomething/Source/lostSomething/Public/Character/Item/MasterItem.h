@@ -23,6 +23,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Throwable")
 	bool bIsThrown = false;
 
+	UFUNCTION(BlueprintCallable, Category = "Throwable")
+	FORCEINLINE void SetThrown(bool bThrown) { bIsThrown = bThrown; }
+
 	// 던진 아이템의 데미지
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throwable")
 	float ThrowDamage = 30.0f;
