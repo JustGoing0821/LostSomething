@@ -31,7 +31,7 @@ void ATMSpawner::BeginPlay()
 	}
 
 
-	if (SpawnOffsets.Num() == 0) // ¸¸¾à ¿¡µðÅÍ¿¡¼­ ÀÔ·Â ¾È µÇ¾î ÀÖ´Ù¸é ±âº»°ª Ã¤¿ì±â
+	if (SpawnOffsets.Num() == 0) // ë§Œì•½ ì—ë””í„°ì—ì„œ ìž…ë ¥ ì•ˆ ë˜ì–´ ìžˆë‹¤ë©´ ê¸°ë³¸ê°’ ì±„ìš°ê¸°
 	{
 		SpawnOffsets.Add(FVector(0.f, 0.f, 0.f));
 	}
@@ -43,7 +43,7 @@ void ATMSpawner::BeginPlay()
 		this,
 		&ATMSpawner::SpawnNPC,
 		7.0f,
-		false // ¹Ýº¹ ¿©ºÎ (false¸é ÇÑ ¹ø¸¸ ½ÇÇà)
+		false // ë°˜ë³µ ì—¬ë¶€ (falseë©´ í•œ ë²ˆë§Œ ì‹¤í–‰)
 	);
 	
 }
@@ -54,7 +54,7 @@ void ATMSpawner::SpawnNPC()
 	{
 		FVector SpawnLocation = GetActorLocation() + Offset;
 		GetWorld()->SpawnActor<ATestNPC>(MonsterClass, SpawnLocation, GetActorRotation());
-		UE_LOG(LogTemp, Warning, TEXT("SpawnActor"))
+
 	}
 }
 
