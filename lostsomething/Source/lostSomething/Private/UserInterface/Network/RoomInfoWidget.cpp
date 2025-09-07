@@ -17,9 +17,9 @@ void URoomInfoWidget::SetInfo(const FRoomInfo& info)
 {
 	RoomIndex = info.Index;
 
-	txt_RoomName->SetText(FText::FromString(info.RoomName));
+	//txt_RoomName->SetText(FText::FromString(info.RoomName));
 	txt_HostName->SetText(FText::FromString(info.HostName));
-	txt_Ping->SetText(FText::FromString(info.PingMS));
+	//txt_Ping->SetText(FText::FromString(info.PingMS));
 }
 
 void URoomInfoWidget::OnMyJoinRoom()

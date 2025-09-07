@@ -10,13 +10,14 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LSSiJaeCursorDragInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
+#include "Interface/LSStartGameInterface.h"
 #include "LSGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface, public ILSLocationTransferInterface, public ILSSijaeCursorPosInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleGameModeInterface
+class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInterface, public ILSLocationTransferInterface, public ILSSijaeCursorPosInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleGameModeInterface, public ILSStartGameInterface
 {
 	GENERATED_BODY()
 	
@@ -25,7 +26,7 @@ public:
 
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
-
+	virtual void StartGame() override;
 
 protected:
 	virtual void BeginPlay() override;
