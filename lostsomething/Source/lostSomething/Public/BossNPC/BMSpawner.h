@@ -15,6 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	ABMSpawner();
 
+	UFUNCTION()
+	void SpawnBoss();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

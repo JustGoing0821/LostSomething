@@ -36,14 +36,26 @@ void ATMSpawner::BeginPlay()
 		SpawnOffsets.Add(FVector(0.f, 0.f, 0.f));
 	}
 
+	FTimerHandle NPCSpawnTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		NPCSpawnTimerHandle,
+		this,
+		&ATMSpawner::SpawnNPC,
+		7.0f,
+		false // 반복 여부 (false면 한 번만 실행)
+	);
 	
+}
+
+void ATMSpawner::SpawnNPC()
+{
 	for (const FVector& Offset : SpawnOffsets)
 	{
 		FVector SpawnLocation = GetActorLocation() + Offset;
 		GetWorld()->SpawnActor<ATestNPC>(MonsterClass, SpawnLocation, GetActorRotation());
-		UE_LOG(LogTemp, Warning,TEXT("SpawnActor"))
+		UE_LOG(LogTemp, Warning, TEXT("SpawnActor"))
 	}
-	
 }
 
 // Called every frame

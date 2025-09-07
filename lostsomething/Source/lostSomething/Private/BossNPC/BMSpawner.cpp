@@ -40,7 +40,20 @@ void ABMSpawner::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("BM : MonsterClass is nullptr. Cannot spawn boss."));
 		return;
 	}
+	
+	FTimerHandle BossSpawnTimerHandle;
 
+	GetWorld()->GetTimerManager().SetTimer(
+		BossSpawnTimerHandle,
+		this,
+		&ABMSpawner::SpawnBoss,
+		7.0f,
+		false // 반복 여부 (false면 한 번만 실행)
+	);
+}
+
+void ABMSpawner::SpawnBoss()
+{
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -60,6 +73,7 @@ void ABMSpawner::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("BM : BossNPC spawned successfully at: %s"), *SpawnedBoss->GetActorLocation().ToString());
 	}
 }
+
 
 // Called every frame
 void ABMSpawner::Tick(float DeltaTime)
