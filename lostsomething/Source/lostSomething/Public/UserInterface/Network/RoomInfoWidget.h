@@ -18,8 +18,8 @@ public:
 	//=============================================
 	//     PROPERTIES & VARIABLES
 	//=============================================
-	//UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	//class UTextBlock* txt_RoomName;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	class UTextBlock* txt_RoomName;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* txt_HostName;
