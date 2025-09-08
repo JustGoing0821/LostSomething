@@ -45,6 +45,7 @@ protected:
 	//virtual void Attack() override;
 	virtual void Move(const FInputActionValue& Value) override;
 	virtual void Jump() override;
+	void ThrowItem() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	void HandlePusherWheelchairInput(const FVector2D& MovementVector);
 	void Tick(float DeltaTime);
