@@ -180,7 +180,7 @@ public:
 
 	// 아이템 던지기
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ThrowItem();
+	virtual void ThrowItem();
 
 
 	// 인벤토리 초기화 

@@ -212,6 +212,12 @@ void ALSPlayerSiJae::HandlePusherWheelchairInput(const FVector2D& MovementVector
     }
 }
 
+void ALSPlayerSiJae::ThrowItem()
+{
+    return;
+}
+
+
 void ALSPlayerSiJae::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
