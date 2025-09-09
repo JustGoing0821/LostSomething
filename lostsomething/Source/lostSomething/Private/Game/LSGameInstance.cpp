@@ -57,8 +57,11 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	UE_LOG(LogTemp, Warning, TEXT("Original RoomName: %s"), *MyRoomName);
 	UE_LOG(LogTemp, Warning, TEXT("Encoded RoomName: %s"), *EncodedRoomName);
 
-	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	//Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	//Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("room_name"), MyRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("host_name"), NickName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
 
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("slot_count"), FString::FromInt(3), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -231,8 +234,12 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
-				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
+				//roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				//roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
+
+				roomInfo.RoomName = roomName;   // 직접 표시
+				roomInfo.HostName = hostName;   // 직접 표시
+
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
@@ -255,6 +262,20 @@ void ULSGameInstance::JoinRoom(int32 index)
 	FString sessionName;
 	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
 	SessionInterface->JoinSession(0, FName(*sessionName), r);
+	
+	/*if (index >= 0 && index < RoomSearch->SearchResults.Num())
+	{
+		auto& SearchResult = RoomSearch->SearchResults[index];
+
+		FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+
+		if (NetID.IsValid())
+		{
+			// 그냥 고정된 세션 이름 사용
+			SessionInterface->JoinSession(*NetID, FName("GameSession"), SearchResult);
+		}
+	}*/
+	
 }
 
 bool ULSGameInstance::IsInRoom()

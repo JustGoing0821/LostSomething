@@ -8,5 +8,5 @@ void ALobbyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	LS_LOG(LogLS, Error, TEXT("Last Edit Serial Num : %d"), 906002);
+	LS_LOG(LogLS, Error, TEXT("Last Edit Serial Num : %d"), 909144);
 }

@@ -152,6 +152,8 @@ void ALSGameMode::StartGame()
 			}
 		}
 	), 2.f, false);
+
+	OnStartGame.Broadcast();
 }
 
 void ALSGameMode::BeginPlay()

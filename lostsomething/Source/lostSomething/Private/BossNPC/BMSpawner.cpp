@@ -2,7 +2,10 @@
 
 
 #include "BossNPC/BMSpawner.h"
-#include <BossNPC/BossNPC.h>
+#include "BossNPC/BossNPC.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSStartGameInterface.h"
 
 // Sets default values
 ABMSpawner::ABMSpawner()
@@ -41,15 +44,14 @@ void ABMSpawner::BeginPlay()
 		return;
 	}
 	
-	FTimerHandle BossSpawnTimerHandle;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		BossSpawnTimerHandle,
-		this,
-		&ABMSpawner::SpawnBoss,
-		7.0f,
-		false // 반복 여부 (false면 한 번만 실행)
-	);
+	if (HasAuthority())
+	{
+		ILSStartGameInterface* GameMode = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->GetOnStartGameDelegate().AddUObject(this, &ABMSpawner::StartGame);
+		}
+	}
 }
 
 void ABMSpawner::SpawnBoss()
@@ -80,5 +82,18 @@ void ABMSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABMSpawner::StartGame()
+{
+	FTimerHandle BossSpawnTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		BossSpawnTimerHandle,
+		this,
+		&ABMSpawner::SpawnBoss,
+		4.0f,
+		false // 반복 여부 (false면 한 번만 실행)
+	);
 }
 

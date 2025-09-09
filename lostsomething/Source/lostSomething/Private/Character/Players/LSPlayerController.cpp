@@ -17,6 +17,7 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "BossNPC/BMSpawner.h"
 
 
 ALSPlayerController::ALSPlayerController()

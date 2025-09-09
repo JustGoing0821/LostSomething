@@ -13,6 +13,8 @@
 #include "Interface/LSStartGameInterface.h"
 #include "LSGameMode.generated.h"
 
+
+
 /**
  * 
  */
@@ -27,6 +29,9 @@ public:
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void StartGame() override;
+
+	FOnStartGameDelegate OnStartGame;
+	FORCEINLINE virtual FOnStartGameDelegate& GetOnStartGameDelegate() override { return OnStartGame;	}
 
 protected:
 	virtual void BeginPlay() override;
