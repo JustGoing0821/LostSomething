@@ -261,11 +261,13 @@ void ULSGameInstance::JoinRoom(int32 index)
 	{
 		auto& SearchResult = RoomSearch->SearchResults[index];
 
-		// 실제 세션 이름 사용 (room_name 설정값 아님)
-		SessionInterface->JoinSession(0, SearchResult.Session.SessionName, SearchResult);
+		FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
 
-		UE_LOG(LogTemp, Warning, TEXT("Trying to join session: %s"),
-			*SearchResult.Session.SessionName.ToString());
+		if (NetID.IsValid())
+		{
+			// 그냥 고정된 세션 이름 사용
+			SessionInterface->JoinSession(*NetID, FName("GameSession"), SearchResult);
+		}
 	}
 }
 
