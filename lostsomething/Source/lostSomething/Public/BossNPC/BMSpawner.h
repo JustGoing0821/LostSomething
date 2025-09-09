@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interface/LSStartGameInterface.h"
 #include "BMSpawner.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ABMSpawner : public AActor
+class LOSTSOMETHING_API ABMSpawner : public AActor, public ILSStartGameInterface
 {
 	GENERATED_BODY()
 	
@@ -20,6 +21,8 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void StartGame() override;
 
 	// 몬스터 클래스 설정용
 	UPROPERTY(EditAnywhere, Category = "Spawning")

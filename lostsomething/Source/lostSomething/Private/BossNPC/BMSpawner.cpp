@@ -41,15 +41,6 @@ void ABMSpawner::BeginPlay()
 		return;
 	}
 	
-	FTimerHandle BossSpawnTimerHandle;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		BossSpawnTimerHandle,
-		this,
-		&ABMSpawner::SpawnBoss,
-		7.0f,
-		false // 반복 여부 (false면 한 번만 실행)
-	);
 }
 
 void ABMSpawner::SpawnBoss()
@@ -80,5 +71,18 @@ void ABMSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABMSpawner::StartGame()
+{
+	FTimerHandle BossSpawnTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		BossSpawnTimerHandle,
+		this,
+		&ABMSpawner::SpawnBoss,
+		4.0f,
+		false // 반복 여부 (false면 한 번만 실행)
+	);
 }
 
