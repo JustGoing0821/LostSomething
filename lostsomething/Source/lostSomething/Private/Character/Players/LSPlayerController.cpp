@@ -564,19 +564,6 @@ void ALSPlayerController::ServerRPCStartGame_Implementation()
 	{
 		GameMode->StartGame();
 	}
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABMSpawner::StaticClass(), FoundActors);
-
-	for (AActor* Actor : FoundActors)
-	{
-		ILSStartGameInterface* BNA = Cast<ILSStartGameInterface>(Actor);
-		if (BNA)
-		{
-			BNA->StartGame();
-		}
-		break;
-	}
 }
 
 void ALSPlayerController::ServerRPCStopMovement_Implementation()
