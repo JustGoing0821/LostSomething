@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interface/LSStartGameInterface.h"
 #include "BMSpawner.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ABMSpawner : public AActor, public ILSStartGameInterface
+class LOSTSOMETHING_API ABMSpawner : public AActor
 {
 	GENERATED_BODY()
 	
@@ -22,8 +21,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void StartGame() override;
-
 	// 몬스터 클래스 설정용
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TSubclassOf<AActor> MonsterClass;
@@ -35,5 +32,5 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	void StartGame();
 };

@@ -2,7 +2,10 @@
 
 
 #include "BossNPC/BMSpawner.h"
-#include <BossNPC/BossNPC.h>
+#include "BossNPC/BossNPC.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSStartGameInterface.h"
 
 // Sets default values
 ABMSpawner::ABMSpawner()
@@ -41,6 +44,14 @@ void ABMSpawner::BeginPlay()
 		return;
 	}
 	
+	if (HasAuthority())
+	{
+		ILSStartGameInterface* GameMode = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->GetOnStartGameDelegate().AddUObject(this, &ABMSpawner::StartGame);
+		}
+	}
 }
 
 void ABMSpawner::SpawnBoss()
