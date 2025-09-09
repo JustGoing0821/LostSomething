@@ -59,6 +59,7 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 
 	//Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	//Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("GAME_ID"), FString("LOSTSOMETHING"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("room_name"), MyRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("host_name"), NickName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
@@ -153,6 +154,7 @@ void ULSGameInstance::FindOtherRooms()
 	// 1. FOnlineSessionSearch객체를 생성
 	RoomSearch = MakeShareable(new FOnlineSessionSearch());
 	// 2. 세션 검색 조건 설정
+	RoomSearch->QuerySettings.Set(FName(TEXT("GAME_ID")), FString("LOSTSOMETHING"), EOnlineComparisonOp::Equals);
 	RoomSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 	// 3. 최대 검색 갯수를 정하고싶다.
 	RoomSearch->MaxSearchResults = 10;
@@ -214,11 +216,12 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 		const FOnlineSessionSettings& Settings = SearchResult.Session.SessionSettings;
 
 		// 우리가 설정한 키들만 체크
-		FString roomName, hostName;
+		FString gameId, roomName, hostName;
+		bool hasGameId = Settings.Get(FName(TEXT("GAME_ID")), gameId);
 		bool hasRoomName = Settings.Get(FName(TEXT("room_name")), roomName);
 		bool hasHostName = Settings.Get(FName(TEXT("host_name")), hostName);
 
-		if (hasRoomName && hasHostName)
+		if (hasGameId && gameId == TEXT("LOSTSOMETHING") && hasRoomName && hasHostName)
 		{
 			// Base64 디코딩으로 변경
 			FString DecodedRoomName = StringBase64Decode(roomName);
