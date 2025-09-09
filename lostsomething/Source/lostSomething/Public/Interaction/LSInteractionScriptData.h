@@ -30,7 +30,18 @@ public:
 		return FPrimaryAssetId("LSScriptData", GetFName());
 	}
 
-	FORCEINLINE const TArray<FString>& GetInteractionScripts(ELSInteractionEnum InSequence) const { return InteractiveScriptsData[InSequence].Scripts; }
+	FORCEINLINE const TArray<FString>& GetInteractionScripts(ELSInteractionEnum InSequence) const
+	{
+		if (InteractiveScriptsData.Contains(InSequence))
+		{
+			return InteractiveScriptsData[InSequence].Scripts;
+		}
+		else
+		{
+			static const TArray<FString> EmptyArray;
+			return EmptyArray;
+		}
+	}
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Scripts)

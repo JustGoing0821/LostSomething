@@ -125,23 +125,29 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 
 void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
+	TArray<FString> ScriptArray;
 	FString Script = "";
-	if (CurrentQuest == ELSInteractionEnum::Quest2)
+	ScriptArray = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
+	if (ScriptArray.Num() == 0)
+	{
+		Script = "Failed to load Script";
+	}
+	else if (CurrentQuest == ELSInteractionEnum::Quest2)
 	{
 		if (!bisCorrectMachine)
 		{
-			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
+			Script = ScriptArray[0];
 		}
 	}
 	else if (CurrentQuest == ELSInteractionEnum::Quest6)
 	{
 		if (!bisPhaseStart)
 		{
-			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
+			Script = ScriptArray[0];
 		}
 		else if (!bisCorrectMachine)
 		{
-			Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[1];
+			Script = ScriptArray[1];
 		}
 	}
 
@@ -163,33 +169,37 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 
 void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerController)
 {
-	LS_LOG(LogLS, Warning, TEXT("%s"), TEXT("IJae can't interact with this"));
-
+	TArray<FString> ScriptArray;
 	FString Script = "";
-	if (CurrentQuest == ELSInteractionEnum::Quest2)
+	ScriptArray = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
+	if (ScriptArray.Num() == 0)
+	{
+		Script = "Failed to load Script";
+	}
+	else if (CurrentQuest == ELSInteractionEnum::Quest2)
 	{
 		if (bisCorrectMachine)
 		{
-			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0];
+			Script = ScriptArray[0];
 		}
 		else
 		{
-			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1];
+			Script = ScriptArray[1];
 		}
 	}
 	else if (CurrentQuest == ELSInteractionEnum::Quest6)
 	{
 		if (!bisPhaseStart)
 		{
-			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0];
+			Script = ScriptArray[0];
 		}
 		else if (bisCorrectMachine)
 		{
-			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[1];
+			Script = ScriptArray[1];
 		}
 		else
 		{
-			Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[2];
+			Script = ScriptArray[2];
 		}
 	}
 

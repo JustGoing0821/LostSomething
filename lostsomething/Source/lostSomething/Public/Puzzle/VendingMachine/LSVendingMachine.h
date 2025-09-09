@@ -58,7 +58,7 @@ public:
 
 	FOnVMPuzzleCheckDelegate OnVMPuzzleCheck;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Puzzle", Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
 protected:
