@@ -251,10 +251,22 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 void ULSGameInstance::JoinRoom(int32 index)
 {
-	auto r = RoomSearch->SearchResults[index];
+	/*auto r = RoomSearch->SearchResults[index];
 	FString sessionName;
 	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
-	SessionInterface->JoinSession(0, FName(*sessionName), r);
+	SessionInterface->JoinSession(0, FName(*sessionName), r);*/
+	
+
+	if (index >= 0 && index < RoomSearch->SearchResults.Num())
+	{
+		auto& SearchResult = RoomSearch->SearchResults[index];
+
+		// 실제 세션 이름 사용 (room_name 설정값 아님)
+		SessionInterface->JoinSession(0, SearchResult.Session.SessionName, SearchResult);
+
+		UE_LOG(LogTemp, Warning, TEXT("Trying to join session: %s"),
+			*SearchResult.Session.SessionName.ToString());
+	}
 }
 
 bool ULSGameInstance::IsInRoom()
