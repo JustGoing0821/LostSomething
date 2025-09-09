@@ -17,6 +17,7 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "BossNPC/BMSpawner.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -558,6 +559,19 @@ void ALSPlayerController::ServerRPCStartGame_Implementation()
 	if (GameMode)
 	{
 		GameMode->StartGame();
+	}
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABMSpawner::StaticClass(), FoundActors);
+
+	for (AActor* Actor : FoundActors)
+	{
+		ILSStartGameInterface* BNA = Cast<ILSStartGameInterface>(Actor);
+		if (BNA)
+		{
+			BNA->StartGame();
+		}
+		break;
 	}
 }
 
