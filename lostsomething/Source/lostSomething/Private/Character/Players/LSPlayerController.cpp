@@ -205,6 +205,8 @@ void ALSPlayerController::MulticastShowBloodWidget_Implementation()
 
 	}
 
+	DisableInput(this);
+
 }
 
 void ALSPlayerController::RemoveBloodWidget()
@@ -213,6 +215,8 @@ void ALSPlayerController::RemoveBloodWidget()
 	{
 		BloodWidget->RemoveFromParent();
 	}
+
+	EnableInput(this);
 }
 
 
