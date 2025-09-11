@@ -536,8 +536,31 @@ public:
 
 	// 미리보기 제어
 	void StartThrowPreview();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStartThrowPreview();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiStartThrowPreview();
+
+
 	void UpdateThrowPreview();
+
+
 	void EndThrowPreview(bool bDoThrow);
+
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiEndThrowPreview(bool bDoThrow);
+
+	UFUNCTION(Server, Reliable)
+	void ServerEndThrowPreview(bool bDoThrow);
+	
+
+
+
+
+
 
 	// 공용 계산기
 	FVector ComputeThrowInitialVelocity() const;

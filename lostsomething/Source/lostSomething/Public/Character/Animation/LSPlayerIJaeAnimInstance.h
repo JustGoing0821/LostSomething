@@ -18,6 +18,8 @@ public:
 	ULSPlayerIJaeAnimInstance();
 	void SetDeadAnim();
 	void ThrowingAnim();
+	void StartThrowingAnim();
+	void EndThrowingAnim();
 
 protected:
 	//딱 한번 호출. 초기화.
@@ -32,6 +34,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* ThrowingMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* StartThrowingMontage;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* EndThrowingMontage;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* DeathMontage;

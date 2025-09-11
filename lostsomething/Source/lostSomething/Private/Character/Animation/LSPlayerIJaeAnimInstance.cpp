@@ -44,6 +44,42 @@ void ULSPlayerIJaeAnimInstance::ThrowingAnim()
 	}
 }
 
+
+void ULSPlayerIJaeAnimInstance::StartThrowingAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("StartThrowingAnim called"));
+
+	if (!StartThrowingMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("StartThrowingAnim is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(StartThrowingMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("StartMontage Playing Now"));
+		Montage_Play(StartThrowingMontage);
+	}
+}
+
+
+void ULSPlayerIJaeAnimInstance::EndThrowingAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("EndTThrowingAnim called"));
+
+	if (!EndThrowingMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("EndTThrowingAnim is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(EndThrowingMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("End Montage Playing Now"));
+		Montage_Play(EndThrowingMontage);
+	}
+}
+
 void ULSPlayerIJaeAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();

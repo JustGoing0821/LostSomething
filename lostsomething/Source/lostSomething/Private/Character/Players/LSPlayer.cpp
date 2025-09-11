@@ -2409,6 +2409,35 @@ void ALSPlayer::StartThrowPreview()
 
 	// 한번만 그림
 	UpdateThrowPreview(); 
+
+	if (HasAuthority())
+	{
+		MultiStartThrowPreview();
+		return;
+	}
+
+	if (!HasAuthority())
+	{
+		ServerStartThrowPreview();
+		return;
+	}
+}
+
+void ALSPlayer::ServerStartThrowPreview_Implementation()
+{
+	MultiStartThrowPreview();
+
+}
+
+void ALSPlayer::MultiStartThrowPreview_Implementation()
+{
+	ULSPlayerIJaeAnimInstance* AnimInstance = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->StartThrowingAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player start throwing ANIMATION"));
+	}
+
 }
 
 //디버그라인 계속 갱신
@@ -2480,7 +2509,37 @@ void ALSPlayer::EndThrowPreview(bool bDoThrow)
 	
 		ThrowItem();
 	}
+	
+	if (HasAuthority())
+	{
+		MultiEndThrowPreview(bDoThrow);
+		return;
+	}
+
+	if (!HasAuthority())
+	{
+		ServerEndThrowPreview(bDoThrow);
+		return;
+	}
+
+
 }
+
+void ALSPlayer::ServerEndThrowPreview_Implementation(bool bDoThrow)
+{
+	MultiEndThrowPreview(bDoThrow);
+}
+
+void ALSPlayer::MultiEndThrowPreview_Implementation(bool bDoThrow)
+{
+	ULSPlayerIJaeAnimInstance* AnimInstance = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->EndThrowingAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player End throwing ANIMATION"));
+	}
+}
+
 
 
 //카메라 피치에 따라서 궤도 수정
