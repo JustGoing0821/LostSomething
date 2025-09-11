@@ -108,14 +108,12 @@ protected:
 
     bool bIsPhaseChanging;
 
-    // AOE - 기존 함수들 (호환성 유지)
     void SpawnSingleAOE(FVector SpawnLocation, FString AOEType = TEXT("AOE"));
     UFUNCTION(Server, Reliable)
     void ServerSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
     UFUNCTION(NetMulticast, Reliable)
     void MultiSpawnSingleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("AOE"));
 
-    // AOE - 새로운 타입별 함수들 추가
     void SpawnSingleCircleAOE(FVector SpawnLocation, FString AOEType = TEXT("Circle AOE"));
     UFUNCTION(Server, Reliable)
     void ServerSpawnSingleCircleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Circle AOE"));
@@ -128,20 +126,20 @@ protected:
     UFUNCTION(NetMulticast, Reliable)
     void MultiSpawnSingleShareAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Share AOE"));
 
-    void SpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, FString AOEType = TEXT("Cone AOE"));
+    void SpawnSingleLargeCircleAOE(FVector SpawnLocation, FString AOEType = TEXT("Large Circle AOE"));
     UFUNCTION(Server, Reliable)
-    void ServerSpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, const FString& AOEType = TEXT("Cone AOE"));
+    void ServerSpawnSingleLargeCircleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Large Circle AOE"));
     UFUNCTION(NetMulticast, Reliable)
-    void MultiSpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, const FString& AOEType = TEXT("Cone AOE"));
+    void MultiSpawnSingleLargeCircleAOE(FVector SpawnLocation, const FString& AOEType = TEXT("Large Circle AOE"));
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
-    int32 RandomAOECount = 2; // 추가 랜덤 AOE 개수
+    int32 RandomAOECount = 2;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
-    float PlayerTargetOffset_Min = 100.0f; // 플레이어 타겟팅 AOE 최소 거리
+    float PlayerTargetOffset_Min = 100.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE", meta = (AllowPrivateAccess = "true"))
-    float PlayerTargetOffset_Max = 200.0f; // 플레이어 타겟팅 AOE 최대 거리
+    float PlayerTargetOffset_Max = 200.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AOE")
     TSubclassOf<class ACircleAOE> CircleAOEClass;
@@ -202,7 +200,8 @@ private:
     void StopObstaclePattern();
     FVector GetRandomLocationAroundBoss();
 
-    // 새로 추가: 근처 플레이어 찾기
+    FVector GetSafeRandomLocationAroundBoss();
+
     TArray<AActor*> GetNearbyPlayers(float MaxDistance = 800.0f);
 
     // 네트워크 RPC 함수들

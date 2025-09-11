@@ -13,7 +13,6 @@ UENUM(BlueprintType)
 enum class EAOEType : uint8
 {
     Circle      UMETA(DisplayName = "Circle"),
-    Cone        UMETA(DisplayName = "Cone"),
     Share       UMETA(DisplayName = "Share")
 };
 
@@ -40,6 +39,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AOE Type")
     EAOEType AOEType = EAOEType::Circle;
 
+    // Large Circle 구분용
+    UPROPERTY(Replicated, BlueprintReadOnly, Category = "AOE Type")
+    bool bIsLargeCircle = false;
+
     // Base AOE
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
     float Radius = 250.0f;
@@ -49,16 +52,6 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
     float Damage = 20.0f;
-
-    // Cone settings
-    UPROPERTY(EditAnywhere, Category = "Cone Settings", meta = (EditCondition = "AOEType == EAOEType::Cone"))
-    float ConeAngle = 90.0f;
-
-    UPROPERTY(EditAnywhere, Category = "Cone Settings", meta = (EditCondition = "AOEType == EAOEType::Cone"))
-    float ConeRange = 500.0f;
-
-    UPROPERTY(EditAnywhere, Category = "Cone Settings", meta = (EditCondition = "AOEType == EAOEType::Cone"))
-    FVector ConeDirection = FVector(1.0f, 0.0f, 0.0f);
 
     // Share settings
     UPROPERTY(EditAnywhere, Category = "Share Settings", meta = (EditCondition = "AOEType == EAOEType::Share"))
@@ -86,8 +79,6 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Visual")
     class UMaterialInterface* ShareWarningMaterial;
 
-    UPROPERTY(EditAnywhere, Category = "Visual")
-    class UMaterialInterface* ConeWarningMaterial;
 
     // Replicated anim vars
     UPROPERTY(Replicated)
@@ -119,13 +110,11 @@ public:
     void SetupAsCircleAOE(float InRadius);
 
     UFUNCTION(BlueprintCallable, Category = "AOE Setup")
-    void SetupAsConeAOE(float InRange, float InAngle, FVector InDirection);
-
-    UFUNCTION(BlueprintCallable, Category = "AOE Setup")
     void SetupAsShareAOE(float InRadius, int32 InMinPlayers = 2);
 
+    // Large Circle AOE Setup (public으로 변경)
     UFUNCTION(BlueprintCallable, Category = "AOE Setup")
-    void SetupAsConeFromBoss(AActor* BossActor, float InRange, float InAngle);
+    void SetupAsLargeCircleAOE(float InRadius);
 
     // Tracking
     UFUNCTION(BlueprintCallable)
@@ -150,20 +139,18 @@ private:
     void SetupWarningVisual();
 
     bool IsPlayerInCircle(AActor* Player);
-    bool IsPlayerInCone(AActor* Player);
     bool IsPlayerInShare(AActor* Player);
 
     float CalculateCircleDamage(AActor* Player);
-    float CalculateConeDamage(AActor* Player);
     float CalculateShareDamage(AActor* Player, const TArray<AActor*>& PlayersInRange);
 
     void SetupCircleVisual();
-    void SetupConeVisual();
     void SetupShareVisual();
+    void SetupLargeCircleVisual();
 
     void UpdateCircleAnimation(float Alpha);
-    void UpdateConeAnimation(float Alpha);
     void UpdateShareAnimation(float Alpha);
+    void UpdateLargeCircleAnimation(float Alpha);
 
     void StartPlayerTracking();
     void StopPlayerTracking();

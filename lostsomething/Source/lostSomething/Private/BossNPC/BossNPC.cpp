@@ -35,7 +35,6 @@ ABossNPC::ABossNPC()
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
 
-
     CurrentHP = MaxHP;
 
     // AOE 관련 기본값 설정
@@ -360,12 +359,10 @@ void ABossNPC::StartAOEAttackPattern()
         );*/
         // 이후 주기적으로 AOE 스폰
 
-
         UE_LOG(LogTemp, Warning, TEXT("AOE Attack Pattern Started"));
     }
 }
 
-// AOE 스폰
 void ABossNPC::SpawnAOEAttack()
 {
     ServerSpawnAOEAttack();
@@ -379,25 +376,68 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         return;
     }
 
-    // 1단계: 플레이어 정보 수집
     TArray<AActor*> FoundPlayers;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundPlayers);
 
-    // 2단계: 쉐어 AOE 플래그 (전체에서 최대 1개만)
+    bool bShouldSpawnLargeAOE = false;
+    int32 PlayersInDangerZone = 0;
+
+    for (AActor* Player : FoundPlayers)
+    {
+        FVector PlayerLocation = Player->GetActorLocation();
+        float PlayerY = PlayerLocation.Y;
+
+        if (PlayerY >= -3885.69f && PlayerY <= -3455.69f)
+        {
+            PlayersInDangerZone++;
+        }
+    }
+
+    if (PlayersInDangerZone > 0)
+    {
+        int32 HighChance = FMath::RandRange(1, 100);
+        if (HighChance <= 60)
+        {
+            bShouldSpawnLargeAOE = true;
+            UE_LOG(LogTemp, Warning, TEXT("%d players in danger zone - HIGH chance Large AOE triggered"), PlayersInDangerZone);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("%d players in danger zone - HIGH chance Large AOE failed (20%% miss)"), PlayersInDangerZone);
+        }
+    }
+    else
+    {
+        int32 LowChance = FMath::RandRange(1, 100);
+        if (LowChance <= 10)
+        {
+            bShouldSpawnLargeAOE = true;
+            UE_LOG(LogTemp, Warning, TEXT("No players in danger zone - LOW chance Large AOE triggered"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("No players in danger zone - LOW chance Large AOE not triggered"));
+        }
+    }
+
+    if (bShouldSpawnLargeAOE)
+    {
+        FVector FixedLargeAOELocation = FVector(-33.409138f, -4088.049805f, 9.5f);
+
+        SpawnSingleLargeCircleAOE(FixedLargeAOELocation, FString::Printf(TEXT("Fixed Position Large Circle AOE")));
+
+        UE_LOG(LogTemp, Warning, TEXT("Spawned LARGE Circle AOE at FIXED position: %s"), *FixedLargeAOELocation.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: LARGE AOE ONLY - No other AOEs spawned"));
+        return; 
+    }
+
     bool bHasSpawnedShareAOE = false;
-
-    // 3단계: 부채꼴 AOE 최대 개수 제한 (맵 크기 고려)
-    int32 MaxConeAOEs = 1; // 부채꼴은 최대 1개만
-    int32 SpawnedConeAOEs = 0;
-
     int32 PlayerAOECount = 0;
 
-    // 4단계: 각 플레이어마다 AOE 하나씩 (확률 조정)
     for (AActor* Player : FoundPlayers)
     {
         FVector PlayerLocation = Player->GetActorLocation();
 
-        // 플레이어 근처에 스폰 (피할 수 있을 정도의 오프셋)
         float OffsetDistance = FMath::RandRange(PlayerTargetOffset_Min, PlayerTargetOffset_Max);
         float OffsetAngle = FMath::RandRange(0.0f, 360.0f);
 
@@ -413,37 +453,33 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
             9.5f
         );
 
-        // 수정된 확률 시스템 (85% 원형, 15% 쉐어링, 부채꼴은 따로 처리)
         int32 RandomChance = FMath::RandRange(1, 100);
 
         if (RandomChance <= 85)
         {
-            // 기본 원형 AOE
             SpawnSingleCircleAOE(SpawnLocation, FString::Printf(TEXT("Player-Target Circle AOE")));
         }
         else if (RandomChance <= 100 && !bHasSpawnedShareAOE)
         {
-            // 쉐어링 AOE (전체에서 최대 1개만)
             SpawnSingleShareAOE(SpawnLocation, FString::Printf(TEXT("Player-Target Share AOE")));
             bHasSpawnedShareAOE = true;
         }
         else
         {
-            // 쉐어 AOE가 이미 있으면 원형 AOE로 대체
             SpawnSingleCircleAOE(SpawnLocation, FString::Printf(TEXT("Player-Target Circle AOE (Share Fallback)")));
         }
 
         PlayerAOECount++;
     }
 
-    // 5단계: 추가 랜덤 위치 AOE 생성
     int32 ExtraRandomAOEs = MaxAOECount;
+    UE_LOG(LogTemp, Warning, TEXT("Generating %d extra random AOEs"), ExtraRandomAOEs);
 
     for (int32 i = 0; i < ExtraRandomAOEs; ++i)
     {
-        FVector RandomLocation = GetRandomLocationAroundBoss();
+        FVector RandomLocation = GetSafeRandomLocationAroundBoss();
+        UE_LOG(LogTemp, Warning, TEXT("Random AOE %d location: %s"), i + 1, *RandomLocation.ToString());
 
-        // 수정된 확률 (90% 원형, 10% 쉐어링, 부채꼴은 따로 처리)
         int32 RandomChance = FMath::RandRange(1, 100);
 
         if (RandomChance <= 90)
@@ -452,70 +488,104 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         }
         else if (RandomChance <= 100 && !bHasSpawnedShareAOE)
         {
-            // 쉐어링 AOE (전체에서 최대 1개만)
             SpawnSingleShareAOE(RandomLocation, FString::Printf(TEXT("Random Share AOE %d"), i + 1));
             bHasSpawnedShareAOE = true;
         }
         else
         {
-            // 쉐어 AOE가 이미 있으면 원형 AOE로 대체
             SpawnSingleCircleAOE(RandomLocation, FString::Printf(TEXT("Random Circle AOE %d (Share Fallback)"), i + 1));
         }
     }
 
-    // 6단계: 부채꼴 AOE 별도 처리 (보스 근처에서만, 30% 확률)
-    int32 ConeChance = FMath::RandRange(1, 100);
-    if (ConeChance <= 30 && SpawnedConeAOEs < MaxConeAOEs)
-    {
-        // 보스 근처의 플레이어를 타겟으로 하는 부채꼴
-        TArray<AActor*> NearbyPlayers;
-        float MaxConeDistance = 800.0f; // 보스 주변 800 유닛 내의 플레이어만 타겟
-
-        for (AActor* Player : FoundPlayers)
-        {
-            float DistanceToBoss = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-            if (DistanceToBoss <= MaxConeDistance)
-            {
-                NearbyPlayers.Add(Player);
-            }
-        }
-
-        if (NearbyPlayers.Num() > 0)
-        {
-            // 근처 플레이어 중 랜덤 선택하여 방향 결정
-            AActor* TargetPlayer = NearbyPlayers[FMath::RandRange(0, NearbyPlayers.Num() - 1)];
-            FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-
-            SpawnSingleConeAOE(GetActorLocation(), Direction, FString::Printf(TEXT("Boss Cone AOE")));
-            SpawnedConeAOEs++;
-        }
-        else
-        {
-            // 근처에 플레이어가 없으면 랜덤 방향
-            float RandomAngle = FMath::RandRange(0.0f, 360.0f);
-            FVector Direction = FVector(
-                FMath::Cos(FMath::DegreesToRadians(RandomAngle)),
-                FMath::Sin(FMath::DegreesToRadians(RandomAngle)),
-                0.0f
-            );
-            SpawnSingleConeAOE(GetActorLocation(), Direction, FString::Printf(TEXT("Boss Random Cone AOE")));
-            SpawnedConeAOEs++;
-        }
-    }
-
-    UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: %d Player-Target AOEs, %d Random AOEs, %d Cone AOEs, Share AOE: %s"),
-        PlayerAOECount, ExtraRandomAOEs, SpawnedConeAOEs, bHasSpawnedShareAOE ? TEXT("YES") : TEXT("NO"));
+    UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: %d Player-Target AOEs, %d Random AOEs, Share AOE: %s"),
+        PlayerAOECount, ExtraRandomAOEs, bHasSpawnedShareAOE ? TEXT("YES") : TEXT("NO"));
 }
 
-// AOE 멀티캐스트 스폰 (핵심 로직)
+FVector ABossNPC::GetSafeRandomLocationAroundBoss()
+{
+    TArray<FVector> SafePositions = {
+        FVector(-200.0f, 300.0f, 9.5f),
+        FVector(-100.0f, 250.0f, 9.5f),
+        FVector(0.0f, 400.0f, 9.5f),
+        FVector(100.0f, 350.0f, 9.5f),
+        FVector(200.0f, 200.0f, 9.5f),
+
+        FVector(-240.0f, -600.0f, 9.5f),
+        FVector(-150.0f, -800.0f, 9.5f),
+        FVector(-50.0f, -700.0f, 9.5f),
+        FVector(50.0f, -900.0f, 9.5f),
+        FVector(150.0f, -750.0f, 9.5f),
+        FVector(220.0f, -600.0f, 9.5f),
+
+        FVector(-230.0f, -1800.0f, 9.5f),
+        FVector(-180.0f, -2000.0f, 9.5f),
+        FVector(-120.0f, -1600.0f, 9.5f),
+        FVector(-60.0f, -2200.0f, 9.5f),
+        FVector(0.0f, -1900.0f, 9.5f),
+        FVector(60.0f, -2400.0f, 9.5f),
+        FVector(120.0f, -1700.0f, 9.5f),
+        FVector(180.0f, -2100.0f, 9.5f),
+        FVector(210.0f, -2300.0f, 9.5f),
+
+        FVector(-200.0f, -2900.0f, 9.5f),
+        FVector(-120.0f, -3100.0f, 9.5f),
+        FVector(-40.0f, -3000.0f, 9.5f),
+        FVector(40.0f, -3200.0f, 9.5f),
+        FVector(120.0f, -2800.0f, 9.5f),
+        FVector(200.0f, -3050.0f, 9.5f),
+
+        FVector(-180.0f, -3650.0f, 9.5f),
+        FVector(-90.0f, -3700.0f, 9.5f),
+        FVector(0.0f, -3600.0f, 9.5f),
+        FVector(90.0f, -3680.0f, 9.5f),
+        FVector(180.0f, -3620.0f, 9.5f)
+    };
+
+    int32 RandomIndex = FMath::RandRange(0, SafePositions.Num() - 1);
+    FVector SelectedPosition = SafePositions[RandomIndex];
+
+    UE_LOG(LogTemp, Warning, TEXT("Selected safe random position: %s (Index: %d)"),
+        *SelectedPosition.ToString(), RandomIndex);
+
+    return SelectedPosition;
+}
+
+void ABossNPC::SpawnSingleLargeCircleAOE(FVector SpawnLocation, FString AOEType)
+{
+    ServerSpawnSingleLargeCircleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::ServerSpawnSingleLargeCircleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
+{
+    MultiSpawnSingleLargeCircleAOE(SpawnLocation, AOEType);
+}
+
+void ABossNPC::MultiSpawnSingleLargeCircleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
+{
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    ACircleAOE* SpawnedAOE = GetWorld()->SpawnActor<ACircleAOE>(
+        CircleAOEClass,
+        SpawnLocation,
+        FRotator::ZeroRotator,
+        Params
+    );
+
+    if (SpawnedAOE)
+    {
+        SpawnedAOE->SetupAsLargeCircleAOE(800.0f);
+        SpawnedAOE->StartAOE();
+        UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - LARGE CIRCLE AOE (Radius: 800)"),
+            *AOEType, *SpawnLocation.ToString());
+    }
+}
+
 void ABossNPC::MultiSpawnAOEAttack_Implementation()
 {
 
 }
-
-// ========================================
-// Circle AOE 스폰 함수들
-// ========================================
 
 void ABossNPC::SpawnSingleCircleAOE(FVector SpawnLocation, FString AOEType)
 {
@@ -549,10 +619,6 @@ void ABossNPC::MultiSpawnSingleCircleAOE_Implementation(FVector SpawnLocation, c
     }
 }
 
-// ========================================
-// Share AOE 스폰 함수들
-// ========================================
-
 void ABossNPC::SpawnSingleShareAOE(FVector SpawnLocation, FString AOEType)
 {
     ServerSpawnSingleShareAOE(SpawnLocation, AOEType);
@@ -578,67 +644,10 @@ void ABossNPC::MultiSpawnSingleShareAOE_Implementation(FVector SpawnLocation, co
 
     if (SpawnedAOE)
     {
-        SpawnedAOE->SetupAsShareAOE(300.0f, 2); // 반지름 300, 최소 2명 필요
+        SpawnedAOE->SetupAsShareAOE(300.0f, 2);
         SpawnedAOE->StartAOE();
         UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - SHARE MECHANICS! (Need 2+ players)"),
             *AOEType, *SpawnLocation.ToString());
-    }
-}
-
-// ========================================
-// Cone AOE 스폰 함수들
-// ========================================
-
-void ABossNPC::SpawnSingleConeAOE(FVector SpawnLocation, FVector Direction, FString AOEType)
-{
-    ServerSpawnSingleConeAOE(SpawnLocation, Direction, AOEType);
-}
-
-void ABossNPC::ServerSpawnSingleConeAOE_Implementation(FVector SpawnLocation, FVector Direction, const FString& AOEType)
-{
-    MultiSpawnSingleConeAOE(SpawnLocation, Direction, AOEType);
-}
-
-void ABossNPC::MultiSpawnSingleConeAOE_Implementation(FVector SpawnLocation, FVector Direction, const FString& AOEType)
-{
-    FActorSpawnParameters Params;
-    Params.Owner = this;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-    // 부채꼴은 항상 보스 위치에서 시작
-    FVector BossLocation = GetActorLocation();
-    BossLocation.Z = 9.5f; // 바닥 높이에 정확히 맞추기
-
-    ACircleAOE* SpawnedAOE = GetWorld()->SpawnActor<ACircleAOE>(
-        CircleAOEClass,
-        BossLocation,
-        FRotator::ZeroRotator, // 회전은 SetupAsConeAOE에서 처리
-        Params
-    );
-
-    if (SpawnedAOE)
-    {
-        // 방향을 수평면으로 정규화
-        FVector NormalizedDirection = Direction;
-        NormalizedDirection.Z = 0.0f;
-        NormalizedDirection.Normalize();
-
-        // 맵 크기에 맞는 충분한 범위 설정 (3000 유닛으로 증가)
-        float ConeRange = 3000.0f;
-        float ConeAngle = 75.0f; // 적당한 각도로 조정
-
-        SpawnedAOE->SetupAsConeAOE(ConeRange, ConeAngle, NormalizedDirection);
-        SpawnedAOE->StartAOE();
-
-        UE_LOG(LogTemp, Warning, TEXT("%s spawned at BOSS location: %s - IMPROVED CONE ATTACK! Direction: %s, Range: %f, Angle: %f"),
-            *AOEType, *BossLocation.ToString(), *NormalizedDirection.ToString(), ConeRange, ConeAngle);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to spawn Cone AOE!"));
- 
-    
-    
     }
 }
 
@@ -664,31 +673,20 @@ TArray<AActor*> ABossNPC::GetNearbyPlayers(float MaxDistance)
     return NearbyPlayers;
 }
 
-// ========================================
-// 기존 SpawnSingleAOE 함수들 (호환성 유지)
-// ========================================
-
 void ABossNPC::SpawnSingleAOE(FVector SpawnLocation, FString AOEType)
 {
-    // 기존 코드와의 호환성을 위해 Circle AOE로 처리
     SpawnSingleCircleAOE(SpawnLocation, AOEType);
 }
 
 void ABossNPC::ServerSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
 {
-    // 기존 코드와의 호환성을 위해 Circle AOE로 처리
     ServerSpawnSingleCircleAOE(SpawnLocation, AOEType);
 }
 
 void ABossNPC::MultiSpawnSingleAOE_Implementation(FVector SpawnLocation, const FString& AOEType)
 {
-    // 기존 코드와의 호환성을 위해 Circle AOE로 처리
     MultiSpawnSingleCircleAOE(SpawnLocation, AOEType);
 }
-
-// ========================================
-// 장애물 관련 함수들 (기존 그대로 유지)
-// ========================================
 
 void ABossNPC::SpawnObstacles()
 {
@@ -769,10 +767,6 @@ void ABossNPC::MultiDestroyObstacles_Implementation()
     }
 }
 
-// ========================================
-// 플랫폼 관련 함수들 (기존 그대로 유지)
-// ========================================
-
 void ABossNPC::SpawnPlatform()
 {
     if (HasAuthority()) // 서버인지 확인
@@ -793,17 +787,11 @@ void ABossNPC::ServerSpawnPlatform_Implementation()
     SpawnPlatform();
 }
 
-// ========================================
-// 유틸리티 함수들 (기존 그대로 유지)
-// ========================================
-
-// 보스 주변 랜덤 위치 생성
 FVector ABossNPC::GetRandomLocationAroundBoss()
 {
     FVector BossLocation = GetActorLocation();
 
-    // Cone AOE가 나올 가능성을 고려하여 보스 근처에는 다른 AOE를 덜 배치
-    float MinSafeDistance = 600.0f; // 거리를 늘려서 Cone AOE와 겹치지 않게
+    float MinSafeDistance = 600.0f;
     float MaxDistance = 1000.0f;
 
     float RandomAngle = FMath::RandRange(0.0f, 360.0f);
