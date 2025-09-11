@@ -2415,6 +2415,18 @@ void ALSPlayer::StartThrowPreview()
 		MultiStartThrowPreview();
 		return;
 	}
+
+	if (!HasAuthority())
+	{
+		ServerStartThrowPreview();
+		return;
+	}
+}
+
+void ALSPlayer::ServerStartThrowPreview_Implementation()
+{
+	MultiStartThrowPreview();
+
 }
 
 void ALSPlayer::MultiStartThrowPreview_Implementation()
@@ -2497,14 +2509,25 @@ void ALSPlayer::EndThrowPreview(bool bDoThrow)
 	
 		ThrowItem();
 	}
-
-
-
+	
 	if (HasAuthority())
 	{
 		MultiEndThrowPreview(bDoThrow);
 		return;
 	}
+
+	if (!HasAuthority())
+	{
+		ServerEndThrowPreview(bDoThrow);
+		return;
+	}
+
+
+}
+
+void ALSPlayer::ServerEndThrowPreview_Implementation(bool bDoThrow)
+{
+	MultiEndThrowPreview(bDoThrow);
 }
 
 void ALSPlayer::MultiEndThrowPreview_Implementation(bool bDoThrow)

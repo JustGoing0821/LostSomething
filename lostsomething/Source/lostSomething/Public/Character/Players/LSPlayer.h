@@ -537,6 +537,9 @@ public:
 	// 미리보기 제어
 	void StartThrowPreview();
 
+	UFUNCTION(Server, Reliable)
+	void ServerStartThrowPreview();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiStartThrowPreview();
 
@@ -549,6 +552,13 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiEndThrowPreview(bool bDoThrow);
+
+	UFUNCTION(Server, Reliable)
+	void ServerEndThrowPreview(bool bDoThrow);
+	
+
+
+
 
 
 
