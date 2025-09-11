@@ -61,7 +61,12 @@ ALSVendingMachine::ALSVendingMachine()
 	{
 		MeshMaterials.Add(EVendingMachineColor::Blue, BlueMaterialRef.Object);
 	}
-	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> GreyMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_VendingGrey.M_VendingGrey"));
+	if (GreyMaterialRef.Object)
+	{
+		GreyMaterial = GreyMaterialRef.Object;
+	}
+	MeshComponent->SetMaterial(0, GreyMaterial);
 
 
 	//Script Asset
@@ -214,7 +219,7 @@ void ALSVendingMachine::SetVisibleSiJae()
 {
 	Super::SetVisibleSiJae();
 
-	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
+	//MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
 }
 
 void ALSVendingMachine::SetVisibleIJae()
@@ -264,7 +269,7 @@ void ALSVendingMachine::PuzzleActivate()
 void ALSVendingMachine::PuzzleDeactivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetMaterial(0, MeshMaterials[EVendingMachineColor::Red]);
+	MeshComponent->SetMaterial(0, GreyMaterial);
 }
 
 void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet)

@@ -35,6 +35,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TMap<EVendingMachineColor, class UMaterialInterface*> MeshMaterials;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UMaterialInterface> GreyMaterial;
+
 
 //Interaction Section
 public:

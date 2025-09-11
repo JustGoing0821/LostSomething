@@ -29,15 +29,15 @@ ALSTrainStep::ALSTrainStep()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
-	MeshComponent->SetRelativeScale3D(FVector(1.3f, 0.5f, 0.2f));
-	MeshComponent->SetRelativeLocation(FVector(-65.0f, -25.0f, -80.0f));
+	MeshComponent->SetRelativeScale3D(FVector(0.5f, 0.2f, 0.01f));
+	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -80.0f));
 	MeshComponent->SetVisibility(false);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Engine/EngineMeshes/Cube.Cube"));
 	if (ItemMeshRef.Object)
 	{
 		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
 	}
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ItemMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ItemMaterialRef(TEXT("/Game/Level/Puzzle/Train/Materials/StepMaterial/M_MetroStep.M_MetroStep"));
 	if (ItemMaterialRef.Object)
 	{
 		MeshComponent->SetMaterial(0, ItemMaterialRef.Object);

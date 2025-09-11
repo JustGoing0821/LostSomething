@@ -38,7 +38,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StepMeshRef(TEXT("/Game/LevelPrototyping/Meshes/SM_Cube.SM_Cube"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	FVector CreateGateLocation = FVector(-300.f, 785.f, -50.f);
-	FVector CreateStepLocation = FVector(3510.f, -124.f, 59.99f);
+	FVector CreateStepLocation = FVector(3510.f, -124.f, 79.f);
 	for (FName GateName : GateNames)
 	{
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
