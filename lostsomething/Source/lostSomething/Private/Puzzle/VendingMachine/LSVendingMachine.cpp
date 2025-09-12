@@ -12,6 +12,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "LevelTest/Player/LTPlayerController.h"
 #include "Interaction/LSInteractionScriptData.h"
 #include "Game/LSGameMode.h"
@@ -306,6 +309,7 @@ void ALSVendingMachine::PuzzleCheck()
 	if (bisCorrectMachine)
 	{
 		OnVMPuzzleCheck.Execute(true);
+		MulticastRPCSpawnSystem();
 	}
 	else
 	{
@@ -321,6 +325,45 @@ void ALSVendingMachine::ApplyDamage()
 	{
 		FDamageEvent DamageEvent;
 		LSPlayer->TakeDamage(DamageAmount, DamageEvent, nullptr, this);
+	}
+}
+
+void ALSVendingMachine::SpawnSystem()
+{
+	if (!Effect)
+	{
+		LS_LOG(LogLS, Error, TEXT("Effect is null!"));
+		return;
+	}
+
+	// Get Actor Location & Rotation
+	FVector ActorLocation = GetActorLocation() - CollisionBox->GetScaledBoxExtent() * FVector(0, 0, 1);
+	FRotator ActorRotation = GetActorRotation();
+
+	// Spawn System at Location
+	UNiagaraComponent* SpawnedSystem = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		this,
+		Effect,
+		ActorLocation,
+		ActorRotation,
+		FVector(Scale), // Scale을 FVector로 변환
+		true,  // Auto Destroy
+		true,  // Auto Activate
+		ENCPoolMethod::None,
+		true   // Pre Cull Check
+	);
+
+	if (SpawnedSystem)
+	{
+		// Set Niagara Variable (Float) - Scale 설정
+		SpawnedSystem->SetNiagaraVariableFloat(FString("Scale"), Scale);
+
+		// Branch 노드 구현 - Change Color 체크
+		if (bChangeColor)
+		{
+			// Set Niagara Variable (LinearColor) - MainColor 설정
+			SpawnedSystem->SetNiagaraVariableLinearColor(FString("MainColor"), CustomColor);
+		}
 	}
 }
 
@@ -344,4 +387,9 @@ void ALSVendingMachine::MulticastRPCPuzzleDeactivate_Implementation()
 void ALSVendingMachine::ServerRPCSetCurrentInteractController_Implementation(APlayerController* InPlayerController)
 {
 	SetCurrentInteractController(InPlayerController);
+}
+
+void ALSVendingMachine::MulticastRPCSpawnSystem_Implementation()
+{
+	SpawnSystem();
 }
