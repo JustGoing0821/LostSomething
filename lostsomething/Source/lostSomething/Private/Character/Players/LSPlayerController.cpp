@@ -29,6 +29,14 @@ ALSPlayerController::ALSPlayerController()
 		LSHUDWidgetClass = LSHUDWidgetRef.Class;
 	}
 
+	//Hp
+	static ConstructorHelpers::FClassFinder<ULSHpWidget> LSHpWidgetRef(TEXT("/Game/Players/UI/WBP_Hp.WBP_Hp_C"));
+	if (LSHpWidgetRef.Class)
+	{
+		LSHpWidgetClass = LSHpWidgetRef.Class;
+	}
+
+
 	//Quest
 	static ConstructorHelpers::FClassFinder<ULSQuestWidget> NEHUDWidgetRef(TEXT("/Game/UI/Quest/WBP_QuestWidget.WBP_QuestWidget_C"));
 	if (NEHUDWidgetRef.Class)
@@ -86,6 +94,17 @@ void ALSPlayerController::BeginPlay()
 			LSHUDWidget->AddToViewport();
 		}
 	}
+
+
+	if (IsLocalController() && LSHpWidgetClass)
+	{
+		LSHpWidget = CreateWidget<ULSHpWidget>(this, LSHpWidgetClass);
+		if (LSHpWidget)
+		{
+			LSHpWidget->AddToViewport();
+		}
+	}
+
 
 	if (IsLocalController() && BloodWidgetClass)
 	{

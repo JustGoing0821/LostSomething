@@ -20,6 +20,7 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSHpWidget.h"
 #include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Kismet/KismetSystemLibrary.h"
@@ -145,7 +146,7 @@ void ALSPlayer::BeginPlay()
 
 	if (HpComponent)
 	{
-		// HpComponent의 OnHpChanged 델리게이트에 우리의 OnHpChanged 함수를 바인딩
+		// HpComponent의 OnHpChanged 델리게이트에 OnHpChanged 함수를 바인딩
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
 		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
 		
@@ -312,14 +313,29 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	}*/
 
 	// 플레이어 컨트롤러 가져오기
+	//ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	//if (LSController && LSController->GetLSHUDWidget())
+	//{
+	//	// HUD 위젯의 HP 바 업데이트
+	//	LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+
+	//	LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+
+	//	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+
+	//}
+
+	//hpwidget따로
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-	if (LSController && LSController->GetLSHUDWidget())
+	if (LSController && LSController->GetLSHpWidget())
 	{
-		// HUD 위젯의 HP 바 업데이트
-		LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
-		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+		// Hp 위젯의 HP 바 업데이트
+		LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
 
 	}
+
+
 	else
 	{
 		if (!LSController)

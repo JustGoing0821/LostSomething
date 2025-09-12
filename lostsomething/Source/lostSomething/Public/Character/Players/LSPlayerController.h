@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSHpWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "Character/UI/BloodWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
@@ -27,6 +28,7 @@ public:
 	ALSPlayerController();
 	//수정 게터함수
 	FORCEINLINE ULSHUDWidget* GetLSHUDWidget() const { return LSHUDWidget; }
+	FORCEINLINE ULSHpWidget* GetLSHpWidget() const { return LSHpWidget; }
 
 	//UFUNCTION(BlueprintCallable, Category = "HUD")
 	//void SelectNextSlot();
@@ -62,6 +64,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class ULSHUDWidget> LSHUDWidget;
 
+
+// Hp widghet Section
+protected:
+	UPROPERTY()
+	ULSHpWidget* HpWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
+	TSubclassOf<class ULSHpWidget> LSHpWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
+	TObjectPtr<class ULSHpWidget> LSHpWidget;
 
 
 //Blood
