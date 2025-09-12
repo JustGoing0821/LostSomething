@@ -52,6 +52,31 @@ protected:
 	void PuzzleDeactivate();
 
 
+//Effect
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	TObjectPtr<class UNiagaraSystem> Effect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	float LoopDuration = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	float Scale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	bool bChangeColor = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	FLinearColor CustomColor = FLinearColor::Red;
+
+	// 타이머 핸들
+	FTimerHandle SpawnTimerHandle;
+
+	// 커스텀 이벤트 함수들
+	UFUNCTION()
+	void SpawnSystem();
+
+
 //RPC
 public:
 	UFUNCTION(NetMulticast, Unreliable)
