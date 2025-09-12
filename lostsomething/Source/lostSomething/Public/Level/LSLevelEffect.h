@@ -7,16 +7,16 @@
 #include "Engine/TimerHandle.h"
 #include "Interaction/LSInteractionEnum.h"
 #include "Character/Players/LSCharacterChoice.h"
-#include "LSQuestLocationMark.generated.h"
+#include "LSLevelEffect.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API ALSQuestLocationMark : public AActor
+class LOSTSOMETHING_API ALSLevelEffect : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ALSQuestLocationMark();
+    ALSLevelEffect();
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,7 +26,7 @@ protected:
     TObjectPtr<class UBoxComponent> TriggerBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	TObjectPtr<class UNiagaraSystem> LocationMark;
+	TObjectPtr<class UNiagaraSystem> Effect;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
     float LoopDuration = 1.0f;
