@@ -92,6 +92,25 @@ protected:
 	void ApplyDamage();
 
 
+//Effect Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	TObjectPtr<class UNiagaraSystem> Effect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	float Scale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	bool bChangeColor = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	FLinearColor CustomColor = FLinearColor::Red;
+
+	// 커스텀 이벤트 함수들
+	UFUNCTION()
+	void SpawnSystem();
+
+
 //RPC Section
 public:
 	UFUNCTION(Server, Unreliable)
@@ -105,5 +124,8 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCSetCurrentInteractController(APlayerController* InPlayerController);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCSpawnSystem();
 
 };

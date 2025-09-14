@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Quest/LSQuestLocationMark.h"
+#include "Level/LSLevelEffect.h"
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
@@ -18,7 +18,7 @@
 #include "Quest/LSQuestManager.h"
 
 // Sets default values
-ALSQuestLocationMark::ALSQuestLocationMark()
+ALSLevelEffect::ALSLevelEffect()
 {
     bReplicates = true;
 
@@ -27,11 +27,11 @@ ALSQuestLocationMark::ALSQuestLocationMark()
     TriggerBox->SetCollisionProfileName(CPROFILE_LSTRIGGER);
     TriggerBox->SetBoxExtent(FVector(100, 100, 100));
     TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ALSQuestLocationMark::OnTriggerBeginOverlap);
+    TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ALSLevelEffect::OnTriggerBeginOverlap);
 }
 
 // Called when the game starts or when spawned
-void ALSQuestLocationMark::BeginPlay()
+void ALSLevelEffect::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -41,14 +41,14 @@ void ALSQuestLocationMark::BeginPlay()
         ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
         if (GameModeQuest)
         {
-            GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSQuestLocationMark::OnQuestChange);
+            GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSLevelEffect::OnQuestChange);
         }
     }
 }
 
-void ALSQuestLocationMark::SpawnSystem()
+void ALSLevelEffect::SpawnSystem()
 {
-    if (!LocationMark)
+    if (!Effect)
     {
         UE_LOG(LogTemp, Warning, TEXT("LocationMark is null!"));
         return;
@@ -61,7 +61,7 @@ void ALSQuestLocationMark::SpawnSystem()
     // Spawn System at Location
     UNiagaraComponent* SpawnedSystem = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
         this,
-        LocationMark,
+        Effect,
         ActorLocation,
         ActorRotation,
         FVector(Scale), // Scale을 FVector로 변환
@@ -85,7 +85,7 @@ void ALSQuestLocationMark::SpawnSystem()
     }
 }
 
-void ALSQuestLocationMark::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ALSLevelEffect::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
     ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(OverlapCharacter->GetController());
@@ -103,7 +103,7 @@ void ALSQuestLocationMark::OnTriggerBeginOverlap(UPrimitiveComponent* Overlapped
     }
 }
 
-void ALSQuestLocationMark::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+void ALSLevelEffect::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
     if (InQuestEnum == PuzzleActivateEnum)
     {
@@ -115,7 +115,7 @@ void ALSQuestLocationMark::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
     }
 }
 
-void ALSQuestLocationMark::PuzzleActivate()
+void ALSLevelEffect::PuzzleActivate()
 {
     TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -135,10 +135,10 @@ void ALSQuestLocationMark::PuzzleActivate()
 
     // SpawnSystem 커스텀 이벤트 호출
     SpawnSystem();
-    GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALSQuestLocationMark::SpawnSystem, LoopDuration, true);
+    GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALSLevelEffect::SpawnSystem, LoopDuration, true);
 }
 
-void ALSQuestLocationMark::PuzzleDeactivate()
+void ALSLevelEffect::PuzzleDeactivate()
 {
     TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -162,12 +162,12 @@ void ALSQuestLocationMark::PuzzleDeactivate()
     }
 }
 
-void ALSQuestLocationMark::MulticastRPCPuzzleActivate_Implementation()
+void ALSLevelEffect::MulticastRPCPuzzleActivate_Implementation()
 {
     PuzzleActivate();
 }
 
-void ALSQuestLocationMark::MulticastRPCPuzzleDeactivate_Implementation()
+void ALSLevelEffect::MulticastRPCPuzzleDeactivate_Implementation()
 {
     PuzzleDeactivate();
 }

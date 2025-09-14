@@ -5,6 +5,10 @@
 #include "lostSomething.h"
 #include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "TimerManager.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -119,12 +123,59 @@ void ALSAttackTutorial::PuzzleActivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetVisibility(true);
+
+	// SpawnSystem 커스텀 이벤트 호출
+	SpawnSystem();
+	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALSAttackTutorial::SpawnSystem, LoopDuration, true);
 }
 
 void ALSAttackTutorial::PuzzleDeactivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetVisibility(false);
+	if (GetWorld()->GetTimerManager().IsTimerActive(SpawnTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+	}
+}
+
+void ALSAttackTutorial::SpawnSystem()
+{
+	if (!Effect)
+	{
+		LS_LOG(LogLS, Error, TEXT("Effect is null!"));
+		return;
+	}
+
+	// Get Actor Location & Rotation
+	FVector ActorLocation = GetActorLocation() - CollisionBox->GetScaledBoxExtent() * FVector(0, 0, 1);
+	FRotator ActorRotation = GetActorRotation();
+
+	// Spawn System at Location
+	UNiagaraComponent* SpawnedSystem = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		this,
+		Effect,
+		ActorLocation,
+		ActorRotation,
+		FVector(Scale), // Scale을 FVector로 변환
+		true,  // Auto Destroy
+		true,  // Auto Activate
+		ENCPoolMethod::None,
+		true   // Pre Cull Check
+	);
+
+	if (SpawnedSystem)
+	{
+		// Set Niagara Variable (Float) - Scale 설정
+		SpawnedSystem->SetNiagaraVariableFloat(FString("Scale"), Scale);
+
+		// Branch 노드 구현 - Change Color 체크
+		if (bChangeColor)
+		{
+			// Set Niagara Variable (LinearColor) - MainColor 설정
+			SpawnedSystem->SetNiagaraVariableLinearColor(FString("MainColor"), CustomColor);
+		}
+	}
 }
 
 void ALSAttackTutorial::MulticastRPCPuzzleActivate_Implementation()
