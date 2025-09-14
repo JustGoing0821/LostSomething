@@ -1278,7 +1278,7 @@ void ALSPlayer::PerformLineTrace()
 
 	FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
 	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
-	FVector EndLocation = StartLocation + (ForwardVector * 1500.0f);
+	FVector EndLocation = StartLocation + (ForwardVector * 300.0f);
 
 
 	if (bIsPushing && Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
@@ -2500,6 +2500,11 @@ void ALSPlayer::UpdateThrowPreview()
 
 		// 선분으로 궤적 
 		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan,false,0.f, 0, 1.5f);
+
+		//연한 회색 like 배그
+		//FColor LightGray = FColor(150, 150, 150);
+		//DrawDebugLine(GetWorld(), P0, P1, LightGray, false, 0.f, 0, 1.5f);
+
 	}
 	if (Result.PathData.Num() > 0)
 	{
@@ -2509,7 +2514,7 @@ void ALSPlayer::UpdateThrowPreview()
 	// 착지 지점 표시
 	if (bHit)
 	{
-		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
+		//DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
 	}
 
 }
