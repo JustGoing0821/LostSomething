@@ -142,29 +142,28 @@ public:
 
 	virtual void SetupInputComponent() override;
 
-	/** 채팅 열기(화면 표시 + UIOnly + 포커스) */
+	
 	void OpenChat();
-
-	/** 채팅 닫기(화면 숨김 + GameOnly) */
 	void CloseChat();
 
-	/** 클라 → 서버 : 내가 쓴 채팅을 서버에게 전송 */
+	//클라->서버
 	UFUNCTION(Server, Reliable)
 	void ServerSendChatMessage(const FString& Text);
 
-	/** 서버 → 각 클라 : 서버가 브로드캐스트로 전달하는 메시지 */
+	//서버_> 클라
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveChatMessage(const FString& Sender, const FString& Text);
 
 private:
-	/** 실제로 화면에 붙는 채팅 위젯 */
+	UPROPERTY(EditDefaultsOnly, Category = "UI|Chat")
+	TSubclassOf<ULSChatWidget> ChatWidgetClass;
+
 	UPROPERTY()
 	ULSChatWidget* ChatWidget = nullptr;
 
-	/** 스팸 방지용: 마지막 전송 시각(서버 기준) */
 	float LastChatTimeServer = -1000.f;
 
-	/** UIOnly/GameOnly 전환 헬퍼 */
+
 	void SetUIOnlyInput();
 	void SetGameOnlyInput();
 

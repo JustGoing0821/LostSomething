@@ -24,8 +24,6 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
 
-static ConstructorHelpers::FClassFinder<ULSChatWidget> ChatWidgetRef(
-	TEXT("/Game/Players/UI/WBP_Chat.WBP_Chat_C"));
 
 
 ALSPlayerController::ALSPlayerController()
@@ -44,7 +42,13 @@ ALSPlayerController::ALSPlayerController()
 		LSHpWidgetClass = LSHpWidgetRef.Class;
 	}
 
-
+	//chat
+	static ConstructorHelpers::FClassFinder<ULSChatWidget> ChatBP(
+		TEXT("/Game/Players/UI/WBP_Chat.WBP_Chat_C"));
+	if (ChatBP.Succeeded())
+	{
+		ChatWidgetClass = ChatBP.Class; // 이후 BeginPlay에서 이 클래스로 생성
+	}
 
 	//Quest
 	static ConstructorHelpers::FClassFinder<ULSQuestWidget> NEHUDWidgetRef(TEXT("/Game/UI/Quest/WBP_QuestWidget.WBP_QuestWidget_C"));
@@ -117,22 +121,20 @@ void ALSPlayerController::BeginPlay()
 
 
 	//chat
-	if (IsLocalController() && ChatWidgetRef.Class)
+	if (IsLocalController() && ChatWidgetClass)
 	{
-		ChatWidget = CreateWidget<ULSChatWidget>(this, ChatWidgetRef.Class);
+		ChatWidget = CreateWidget<ULSChatWidget>(this, ChatWidgetClass);
 		if (ChatWidget)
 		{
-			ChatWidget->AddToViewport(5);                 
-			ChatWidget->SetVisibility(ESlateVisibility::Collapsed); 
+			ChatWidget->AddToViewport(5);
+			ChatWidget->SetVisibility(ESlateVisibility::Collapsed);
 
-			// 위젯에서 Enter로 커밋되면 호출되는 콜백
 			ChatWidget->OnChatCommitted = ULSChatWidget::FOnChatCommitted::CreateLambda(
 				[this](const FString& Msg)
 				{
 					const FString Clean = Msg.TrimStartAndEnd();
 					if (!Clean.IsEmpty())
 					{
-						// 클라에서 서버로 전송(길이 제한: 200자)
 						ServerSendChatMessage(Clean.Left(200));
 					}
 				});
