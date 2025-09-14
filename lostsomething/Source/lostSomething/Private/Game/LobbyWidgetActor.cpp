@@ -13,7 +13,7 @@ ALobbyWidgetActor::ALobbyWidgetActor()
 
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 	WidgetComponent->SetWidgetSpace(EWidgetSpace::World);
-	WidgetComponent->SetWidgetClass(ULobbyWidget::StaticClass());
+	//WidgetComponent->SetWidgetClass(ULobbyWidget::StaticClass());
 	WidgetComponent->SetDrawSize(FVector2D(1920, 1080));
 	WidgetComponent->SetTwoSided(true);
 
@@ -35,7 +35,7 @@ void ALobbyWidgetActor::BeginPlay()
 		UUserWidget* CreatedWidget = WidgetComponent->GetWidget();
 		if (CreatedWidget)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Widget displayed successfully!"));
+			//UE_LOG(LogTemp, Warning, TEXT("Widget displayed successfully!"));
 		}
 	}
 	
