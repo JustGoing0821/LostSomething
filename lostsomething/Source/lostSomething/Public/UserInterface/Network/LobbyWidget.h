@@ -70,25 +70,25 @@ public:
 	void SwitchPanel(int32 index);
 
 	// 버튼을 누르면 UNetGameInstance::CreateRoom 를 호출하고싶다.
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_doCreateRoom();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnMyGoMenu();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnMyGoCreateRoom();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnMyGoFindRoom();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnMyDoFindRoomList();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void AddRoomInfoWidget(const struct FRoomInfo& roomInfo);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetFindActive(bool bActive);
 	
 };
