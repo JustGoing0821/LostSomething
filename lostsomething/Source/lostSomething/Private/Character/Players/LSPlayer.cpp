@@ -20,6 +20,7 @@
 #include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/ArrowComponent.h"
 #include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSHpWidget.h"
 #include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
 #include "Kismet/KismetSystemLibrary.h"
@@ -145,7 +146,7 @@ void ALSPlayer::BeginPlay()
 
 	if (HpComponent)
 	{
-		// HpComponent의 OnHpChanged 델리게이트에 우리의 OnHpChanged 함수를 바인딩
+		// HpComponent의 OnHpChanged 델리게이트에 OnHpChanged 함수를 바인딩
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
 		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
 		
@@ -277,13 +278,14 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 	if (CurrentHp <= 0)
 	{
-		LS_LOG(LogLS, Error, TEXT("hp is zero call Die"));
+		//LS_LOG(LogLS, Error, TEXT("hp is zero call Die"));
 		Die();
 		return;
 	}
 
 	else
 	{
+		
 		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
 	}
 
@@ -300,6 +302,7 @@ bool ALSPlayer::isCombining()
 void ALSPlayer::OnHpChanged(float NewHp)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	
 	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
 	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
@@ -310,14 +313,29 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	}*/
 
 	// 플레이어 컨트롤러 가져오기
+	//ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	//if (LSController && LSController->GetLSHUDWidget())
+	//{
+	//	// HUD 위젯의 HP 바 업데이트
+	//	LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+
+	//	LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+
+	//	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+
+	//}
+
+	//hpwidget따로
 	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-	if (LSController && LSController->GetLSHUDWidget())
+	if (LSController && LSController->GetLSHpWidget())
 	{
-		// HUD 위젯의 HP 바 업데이트
-		LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
-		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+		// Hp 위젯의 HP 바 업데이트
+		LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
 
 	}
+
+
 	else
 	{
 		if (!LSController)
@@ -339,7 +357,7 @@ void ALSPlayer::MeshHide()
 	if (GetMesh())
 	{
 		GetMesh()->SetVisibility(false);
-		UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden (delayed)"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden (delayed)"));
 	}
 }
 
@@ -348,7 +366,7 @@ void ALSPlayer::Die()
 	if (bIsDead) return; // 이미 죽었으면 리턴
 
 	bIsDead = true;
-	UE_LOG(LogTemp, Warning, TEXT("Player died"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player died"));
 
 	
 
@@ -392,7 +410,7 @@ void ALSPlayer::ServerDie_Implementation()
 
 void ALSPlayer::MultiDie_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
+	//UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
 	if (GetMesh())
 	{
 		GetWorld()->GetTimerManager().SetTimer(MeshHideTimerHandle, this, &ALSPlayer::MeshHide, 2.0f, false);
@@ -404,14 +422,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
 	}
 
 	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstanceIJae)
 	{
 		AnimInstanceIJae->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
+		//E_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
@@ -437,7 +455,7 @@ void ALSPlayer::Respawn()
 	if (!bIsDead) return; // 이미 살아있으면 리턴
 
 	bIsDead = false;
-	UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
 
 	if (HasAuthority())
 	{
@@ -512,7 +530,7 @@ void ALSPlayer::ClientRespawn_Implementation()
 //슬롯에 아이템 넣기
 void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -537,11 +555,11 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
 					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
-					UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
 				}
 				else  // 이미 차있는 슬롯인 경우
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
 
 					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
 					DropItemFromSlot();
@@ -559,7 +577,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 //인벤토리 초기화
 void ALSPlayer::InitializeInventory()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
 
 	// Empty Item 생성
 	FItemDetails EmptyItem;
@@ -578,7 +596,7 @@ void ALSPlayer::InitializeInventory()
 		ItemInfoArray.Add(EmptyItem);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Inventory initialized with %d empty slots"), MaxSlots);
+	//UE_LOG(LogTemp, Warning, TEXT("Inventory initialized with %d empty slots"), MaxSlots);
 
 
 
@@ -620,7 +638,7 @@ void ALSPlayer::ThrowItem()
 					// UI 아이콘 제거
 					HUD->SetIcon(CurrentSelectedSlot, nullptr);
 
-					UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
+					//UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
 				}
 			}
 		}
@@ -735,12 +753,12 @@ void ALSPlayer::Look(const FInputActionValue& Value)
 
 void ALSPlayer::Attack()
 {
-	UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
-	LS_LOG(LogLS, Warning, TEXT("Attack() called"));
+	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
+	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
 	MultiAttack();
 	if (bIsDead) return;
 
-	LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
+	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
 
 	int32 CurrentSelectedSlot = SelectedSlot;
 	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
@@ -756,7 +774,7 @@ void ALSPlayer::Attack()
 
 
 	// 아이템이 없으면
-	LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
+	//LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 
 
 	if (HasAuthority())
@@ -783,7 +801,7 @@ void ALSPlayer::MultiAttack_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetAttackAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
 	}
 }
 
@@ -809,7 +827,7 @@ void ALSPlayer::ProcessAttack()
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
 		{
 			// Player면 데미지 x
-			UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
+			//UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
 			DrawColor = FColor::Red;
 		}
 
@@ -825,20 +843,20 @@ void ALSPlayer::ProcessAttack()
 	}
 	else
 	{
-		LS_LOG(LogLS, Warning, TEXT("processattack() - No hit detected"));
+		//LS_LOG(LogLS, Warning, TEXT("processattack() - No hit detected"));
 
-		DrawColor = FColor::Red;
+		//DrawColor = FColor::Red;
 	}
 
-#if ENABLE_DRAW_DEBUG
-
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = AttackRange * 0.5f;
-
-
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-#endif
+//#if ENABLE_DRAW_DEBUG
+//
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = AttackRange * 0.5f;
+//
+//
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//
+//#endif
 	//
 }
 
@@ -849,7 +867,7 @@ void ALSPlayer::ServerProcessAttack_Implementation()
 
 void ALSPlayer::MultiProcessAttack_Implementation()
 {
-	UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
+	//UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
 
 	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -1044,7 +1062,7 @@ void ALSPlayer::Interaction()
 		else
 		{
 			// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
-			LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
+			//LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
 		}
 		return;
 	}
@@ -1260,7 +1278,7 @@ void ALSPlayer::PerformLineTrace()
 
 	FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
 	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
-	FVector EndLocation = StartLocation + (ForwardVector * 1500.0f);
+	FVector EndLocation = StartLocation + (ForwardVector * 300.0f);
 
 
 	if (bIsPushing && Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
@@ -1273,7 +1291,7 @@ void ALSPlayer::PerformLineTrace()
 			if (Cast<ILSCharacterChoiceInterface>(Cast<ALSPlayer>(Actor)->GetController())->GetCharacterChoice() == ELSCharacterChoice::IJae)
 			{
 				CurrentDectectActor = Actor;
-				TickDectectResultColor = FColor::Yellow;
+				//TickDectectResultColor = FColor::Yellow;
 				AimScript = "Decouple";
 				break;
 			}
@@ -1295,19 +1313,19 @@ void ALSPlayer::PerformLineTrace()
 			if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(HitResult.GetActor()))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				TickDectectResultColor = FColor::Green;
+				//TickDectectResultColor = FColor::Green;
 				AimScript = "Interact";
 			}
 			else if (ILSWheelchairInterface* CharacterActor = Cast<ILSWheelchairInterface>(HitResult.GetActor()))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				TickDectectResultColor = FColor::Green;
+				//TickDectectResultColor = FColor::Green;
 				AimScript = "Combine";
 			}
 			else if (IsActorName(HitResult.GetActor(), "BP_LSElevatorStyle2"))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				TickDectectResultColor = FColor::Green;
+				//TickDectectResultColor = FColor::Green;
 				AimScript = "Call Elevator";
 
 				FCallElevatorParams Params;
@@ -1320,7 +1338,7 @@ void ALSPlayer::PerformLineTrace()
 			else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(HitResult.GetActor()))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				TickDectectResultColor = FColor::Green;
+				//TickDectectResultColor = FColor::Green;
 
 				AimScript = "Pick Up";
 				
@@ -1330,7 +1348,7 @@ void ALSPlayer::PerformLineTrace()
 			else
 			{
 				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
-				TickDectectResultColor = FColor::Black;
+				//TickDectectResultColor = FColor::Black;
 				AimScript = "+";
 				CurrentDectectActor = nullptr;
 			}
@@ -1338,16 +1356,16 @@ void ALSPlayer::PerformLineTrace()
 		else
 		{
 			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
-			TickDectectResultColor = FColor::Red;
+			//TickDectectResultColor = FColor::Red;
 			AimScript = "+";
 			CurrentDectectActor = nullptr;
 			
 		}
 	}
 
-#if ENABLE_DRAW_DEBUG
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, TickDectectResultColor, false, 0.0f, 0, 0.2f);
-#endif
+//#if ENABLE_DRAW_DEBUG
+//	DrawDebugLine(GetWorld(), StartLocation, EndLocation, TickDectectResultColor, false, 0.0f, 0, 0.2f);
+//#endif
 
 	ALSPlayerController* PC = Cast<ALSPlayerController>(GetController());
 	if (PC)
@@ -1702,7 +1720,7 @@ void ALSPlayer::ServerRequestAutoSeparation_Implementation()
 
 void ALSPlayer::OnSelectSlot1()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
 
 	SelectSlot(0);
 
@@ -1714,7 +1732,7 @@ void ALSPlayer::OnSelectSlot1()
 
 void ALSPlayer::OnSelectSlot2()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 2 key pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 2 key pressed"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -1724,7 +1742,7 @@ void ALSPlayer::OnSelectSlot2()
 
 void ALSPlayer::OnSelectSlot3()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 3 key pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 3 key pressed"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -1734,7 +1752,7 @@ void ALSPlayer::OnSelectSlot3()
 
 void ALSPlayer::OnSelectSlot4()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 4 key pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 4 key pressed"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -1744,7 +1762,7 @@ void ALSPlayer::OnSelectSlot4()
 
 void ALSPlayer::OnSelectSlot5()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player: Slot 5 key pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 5 key pressed"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -1763,7 +1781,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 			{
 				SelectedSlot = SlotIndex;
 				//ChangeSlot(SlotIndex);
-				UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+				//UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
 
 				// 슬롯 색상 업데이트
 				//LSHUDWidget->UpdateSlotBorderColors();
@@ -1781,7 +1799,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 
 				else
 				{
-					UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
+					//UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
 				}
 
 		}
@@ -1866,26 +1884,26 @@ void ALSPlayer::Drop()
 	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
 	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
 
-	UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-		CurrentSelectedSlot,
-		bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+	//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+		//CurrentSelectedSlot,
+		//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
 
 	//PickUpCore();
 	if (!CurrentSlotItem.IsEmpty)
 	{
-		LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+		//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
 		DropItemFromSlot();
 		
-		UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-			CurrentSelectedSlot,
-			bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			//CurrentSelectedSlot,
+			//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
 	}
 	else
 	{
 		//PickUpCore();
-		UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-			CurrentSelectedSlot,
-			bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			//CurrentSelectedSlot,
+			//sbCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
 
 	}
 
@@ -1927,13 +1945,13 @@ void ALSPlayer::PickUpCore()
 	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
 	{
 		SiJae->WeaponPickUp();
-		LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+		//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
 
 	}
 
 	if (bIsDead) return;
 
-	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
+	//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
@@ -1941,7 +1959,7 @@ void ALSPlayer::PickUpCore()
 	const float PickupRadius = 100.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * PickupRange;
-	FColor DrawColor;
+	//FColor DrawColor;
 
 	//아이템 버리기 (중첩 아이템 없을때)
 	int32 CurrentSelectedSlot = SelectedSlot;
@@ -1957,7 +1975,7 @@ void ALSPlayer::PickUpCore()
 	if (HitDetected)
 	{
 		AActor* HitActor = OutHitResult.GetActor();
-		LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
+		//LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
 
 		// MasterItem 픽업 처리
 		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
@@ -1966,14 +1984,14 @@ void ALSPlayer::PickUpCore()
 			//아이템 중첩상태에서 pick (인벤차있는상태에서 콜리전 겹쳐서 주우면)
 			if (!CurrentSlotItem.IsEmpty)
 			{
-				LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+				//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
 				//DropItemFromSlot();
-				DrawColor = FColor::Orange;
+				//DrawColor = FColor::Orange;
 
 				// 디버그 라인
 				FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
 				float CapsuleHalfHeight = PickupRange * 0.5f;
-				DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+				//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 				return; // 드롭만 하고 함수 종료
 			}
 		}
@@ -1981,7 +1999,7 @@ void ALSPlayer::PickUpCore()
 		
 		if (!HitItem)
 		{
-			LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
+			//LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
 			return; // 마스터 아이템이 아니면 픽업 무시하고 종료
 		}
 
@@ -2005,17 +2023,17 @@ void ALSPlayer::PickUpCore()
 		// 아이템 제거
 		//HitItem->Destroy();
 
-		LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
-		DrawColor = FColor::Green;
+		//LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
+		//DrawColor = FColor::Green;
 		return; // 픽업했으면 함수 종료
 	}
 	else
 	{
 		if (!CurrentSlotItem.IsEmpty)
 		{
-			LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+			//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
 			//DropItemFromSlot();
-			DrawColor = FColor::Orange;
+			//DrawColor = FColor::Orange;
 
 			//// 디버그 라인
 			//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
@@ -2024,7 +2042,7 @@ void ALSPlayer::PickUpCore()
 
 		}
 
-		DrawColor = FColor::Yellow;
+		//DrawColor = FColor::Yellow;
 	}
 	
 }
@@ -2045,7 +2063,7 @@ void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 	if (AnimInstance)
 	{
 		AnimInstance->SetPickUpAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
 	}
 }
 
@@ -2058,7 +2076,7 @@ void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
 //아이템 drop
 void ALSPlayer::DropItemFromSlot()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
 
 	
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
@@ -2160,26 +2178,26 @@ void ALSPlayer::DropItemFromSlot()
 					}
 
 					
-					UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
+					//UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Slot %d is already empty - nothing to drop"), CurrentSelectedSlot);
+					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is already empty - nothing to drop"), CurrentSelectedSlot);
 				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSelectedSlot);
+				//UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSelectedSlot);
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("HUD Widget not found"));
+			//UE_LOG(LogTemp, Error, TEXT("HUD Widget not found"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerController not found"));
+		//UE_LOG(LogTemp, Error, TEXT("PlayerController not found"));
 	}
 }
 
@@ -2245,7 +2263,7 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	TSubclassOf<AMasterItem> ItemClass = ItemToThrow.Item_Class;
 	if (!ItemClass || !DropItemLoc)
 	{
-		LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
+		//LS_LOG(LogLS, Error, TEXT("ItemClass or DropItemLoc is null"));
 		return;
 	}
 
@@ -2295,7 +2313,7 @@ void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemT
 	if (AnimInstance)
 	{
 		AnimInstance->ThrowingAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player throwing ANIMATION"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player throwing ANIMATION"));
 	}
 	//return;
 }
@@ -2435,7 +2453,7 @@ void ALSPlayer::MultiStartThrowPreview_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->StartThrowingAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player start throwing ANIMATION"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player start throwing ANIMATION"));
 	}
 
 }
@@ -2482,6 +2500,11 @@ void ALSPlayer::UpdateThrowPreview()
 
 		// 선분으로 궤적 
 		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan,false,0.f, 0, 1.5f);
+
+		//연한 회색 like 배그
+		//FColor LightGray = FColor(150, 150, 150);
+		//DrawDebugLine(GetWorld(), P0, P1, LightGray, false, 0.f, 0, 1.5f);
+
 	}
 	if (Result.PathData.Num() > 0)
 	{
@@ -2491,7 +2514,7 @@ void ALSPlayer::UpdateThrowPreview()
 	// 착지 지점 표시
 	if (bHit)
 	{
-		DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
+		//DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
 	}
 
 }
@@ -2536,7 +2559,7 @@ void ALSPlayer::MultiEndThrowPreview_Implementation(bool bDoThrow)
 	if (AnimInstance)
 	{
 		AnimInstance->EndThrowingAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player End throwing ANIMATION"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player End throwing ANIMATION"));
 	}
 }
 
