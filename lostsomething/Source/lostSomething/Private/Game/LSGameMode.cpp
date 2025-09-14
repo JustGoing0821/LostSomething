@@ -410,8 +410,8 @@ void ALSGameMode::EndPuzzleTimer()
 //chat
 void ALSGameMode::BroadcastChatMessage(const FString& Sender, const FString& Text)
 {
-	// 서버는 모든 PlayerController를 알고 있으므로
-	// 각각의 클라에 Client RPC를 호출하여 메시지를 전달한다.
+
+	//메시지 전달
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(It->Get()))

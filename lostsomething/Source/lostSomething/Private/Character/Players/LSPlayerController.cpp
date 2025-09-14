@@ -646,12 +646,10 @@ void ALSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	// 간단 버전: Enter로 열기, Esc로 닫기
+	//엔터로 열고 ESC로 닫음
 	InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
 	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
 
-	// ※ 나중에 Enhanced Input으로 바꾸고 싶으면, Player 쪽 IMC 액션으로 연결한 후
-	//    이 컨트롤러의 OpenChat/CloseChat을 호출하면 된다.
 }
 
 void ALSPlayerController::OpenChat()
@@ -659,7 +657,7 @@ void ALSPlayerController::OpenChat()
 	if (!ChatWidget) return;
 
 	ChatWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	SetUIOnlyInput();     // UI가 키보드/마우스를 우선 소비
+	SetUIOnlyInput();   
 	ChatWidget->FocusInput();
 }
 
@@ -668,7 +666,7 @@ void ALSPlayerController::CloseChat()
 	if (!ChatWidget) return;
 
 	ChatWidget->SetVisibility(ESlateVisibility::Collapsed);
-	SetGameOnlyInput();   // 다시 게임 조작으로 복귀
+	SetGameOnlyInput();  
 }
 
 void ALSPlayerController::SetUIOnlyInput()
@@ -688,25 +686,25 @@ void ALSPlayerController::SetGameOnlyInput()
 
 
 
-// 클라 → 서버 : 내가 쓴 메시지를 서버로 보냄
+// 클라 → 서버 
 void ALSPlayerController::ServerSendChatMessage_Implementation(const FString& Text)
 {
 	if (Text.TrimStartAndEnd().IsEmpty()) return;
 
-	// 서버 권한 확인(리슨 서버에서도 서버 측에서만 브로드캐스트해야 함)
+	// 서버 권한 확인
 	UWorld* World = GetWorld();
 	if (!World) return;
 
 	// 스팸/홍수 방지(서버 시계 기준 쿨다운)
 	const float Now = World->GetTimeSeconds();
-	const float Cooldown = 0.35f; // 0.35초 간격
+	const float Cooldown = 0.35f; 
 	if (Now - LastChatTimeServer < Cooldown)
 	{
 		return;
 	}
 	LastChatTimeServer = Now;
 
-	// 보낸 사람 이름(없으면 기본 "Player")
+	// 보낸 사람 이름
 	const FString Sender = (PlayerState ? PlayerState->GetPlayerName() : TEXT("Player"));
 
 	// GameMode를 통해 모든 PC에 브로드캐스트
@@ -717,7 +715,7 @@ void ALSPlayerController::ServerSendChatMessage_Implementation(const FString& Te
 	}
 }
 
-// 서버 → 각 클라 : UI에 표시
+// UI에 표시
 void ALSPlayerController::ClientReceiveChatMessage_Implementation(const FString& Sender, const FString& Text)
 {
 	if (ChatWidget)

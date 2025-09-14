@@ -19,7 +19,7 @@ class LOSTSOMETHING_API ULSChatWidget : public UUserWidget
 public:
     virtual void NativeConstruct() override;
 
-    /** [Sender] Text 형태로 한 줄 추가 + 자동 스크롤 다운 */
+    //한줄추가하고 스크롤ㄹ
     UFUNCTION(BlueprintCallable)
     void AddChatLine(const FString& Sender, const FString& Text);
 
