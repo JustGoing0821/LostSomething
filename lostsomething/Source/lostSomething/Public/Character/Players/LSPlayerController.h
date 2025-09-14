@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSHpWidget.h"
+#include "Character/UI/LSChatWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "Character/UI/BloodWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
@@ -18,6 +19,8 @@
 #include "Interface/LSStopKeyInputInterface.h"
 #include "LSPlayerController.generated.h"
 
+
+class ULSChatWidget;
 
 UCLASS()
 class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface, public ILSStopKeyInputInterface
@@ -132,6 +135,38 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Script Widget")
 	virtual 	void UpdateScriptWidget(const FString& ScriptText) override;
+
+
+
+//Chat section
+
+	virtual void SetupInputComponent() override;
+
+	
+	void OpenChat();
+	void CloseChat();
+
+	//클라->서버
+	UFUNCTION(Server, Reliable)
+	void ServerSendChatMessage(const FString& Text);
+
+	//서버_> 클라
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveChatMessage(const FString& Sender, const FString& Text);
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "UI|Chat")
+	TSubclassOf<ULSChatWidget> ChatWidgetClass;
+
+	UPROPERTY()
+	ULSChatWidget* ChatWidget = nullptr;
+
+	float LastChatTimeServer = -1000.f;
+
+
+	void SetUIOnlyInput();
+	void SetGameOnlyInput();
+
 
 
 // Voice Section

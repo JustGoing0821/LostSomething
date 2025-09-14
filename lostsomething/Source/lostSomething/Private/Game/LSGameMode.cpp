@@ -407,3 +407,16 @@ void ALSGameMode::EndPuzzleTimer()
 	}
 }
 
+//chat
+void ALSGameMode::BroadcastChatMessage(const FString& Sender, const FString& Text)
+{
+
+	//메시지 전달
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(It->Get()))
+		{
+			PC->ClientReceiveChatMessage(Sender, Text);
+		}
+	}
+}

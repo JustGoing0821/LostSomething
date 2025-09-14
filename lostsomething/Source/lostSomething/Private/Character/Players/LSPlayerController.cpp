@@ -8,6 +8,9 @@
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/UI/LSChatWidget.h"
+#include "Game/LSGameMode.h"
+#include "GameFramework/PlayerState.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "UserInterface/LSQuestWidget.h"
@@ -18,6 +21,9 @@
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
 #include "BossNPC/BMSpawner.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Engine/Engine.h"
+
 
 
 ALSPlayerController::ALSPlayerController()
@@ -36,6 +42,13 @@ ALSPlayerController::ALSPlayerController()
 		LSHpWidgetClass = LSHpWidgetRef.Class;
 	}
 
+	//chat
+	static ConstructorHelpers::FClassFinder<ULSChatWidget> ChatBP(
+		TEXT("/Game/Players/UI/WBP_Chat.WBP_Chat_C"));
+	if (ChatBP.Succeeded())
+	{
+		ChatWidgetClass = ChatBP.Class; // 이후 BeginPlay에서 이 클래스로 생성
+	}
 
 	//Quest
 	static ConstructorHelpers::FClassFinder<ULSQuestWidget> NEHUDWidgetRef(TEXT("/Game/UI/Quest/WBP_QuestWidget.WBP_QuestWidget_C"));
@@ -102,6 +115,29 @@ void ALSPlayerController::BeginPlay()
 		if (LSHpWidget)
 		{
 			LSHpWidget->AddToViewport();
+		}
+	}
+
+
+
+	//chat
+	if (IsLocalController() && ChatWidgetClass)
+	{
+		ChatWidget = CreateWidget<ULSChatWidget>(this, ChatWidgetClass);
+		if (ChatWidget)
+		{
+			ChatWidget->AddToViewport(5);
+			ChatWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+			ChatWidget->OnChatCommitted = ULSChatWidget::FOnChatCommitted::CreateLambda(
+				[this](const FString& Msg)
+				{
+					const FString Clean = Msg.TrimStartAndEnd();
+					if (!Clean.IsEmpty())
+					{
+						ServerSendChatMessage(Clean.Left(200));
+					}
+				});
 		}
 	}
 
@@ -599,4 +635,91 @@ void ALSPlayerController::ServerRPCStopMovement_Implementation()
 void ALSPlayerController::ClientRPCStopKeyInput_Implementation()
 {
 	if (PlayerInput) PlayerInput->FlushPressedKeys();
+}
+
+
+
+
+//chat
+
+void ALSPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	//엔터로 열고 ESC로 닫음
+	InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
+	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
+
+}
+
+void ALSPlayerController::OpenChat()
+{
+	if (!ChatWidget) return;
+
+	ChatWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	SetUIOnlyInput();   
+	ChatWidget->FocusInput();
+}
+
+void ALSPlayerController::CloseChat()
+{
+	if (!ChatWidget) return;
+
+	ChatWidget->SetVisibility(ESlateVisibility::Collapsed);
+	SetGameOnlyInput();  
+}
+
+void ALSPlayerController::SetUIOnlyInput()
+{
+	FInputModeUIOnly M;
+	M.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(M);
+	SetShowMouseCursor(true);
+}
+
+void ALSPlayerController::SetGameOnlyInput()
+{
+	FInputModeGameOnly M;
+	SetInputMode(M);
+	SetShowMouseCursor(false);
+}
+
+
+
+// 클라 → 서버 
+void ALSPlayerController::ServerSendChatMessage_Implementation(const FString& Text)
+{
+	if (Text.TrimStartAndEnd().IsEmpty()) return;
+
+	// 서버 권한 확인
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// 스팸/홍수 방지(서버 시계 기준 쿨다운)
+	const float Now = World->GetTimeSeconds();
+	const float Cooldown = 0.35f; 
+	if (Now - LastChatTimeServer < Cooldown)
+	{
+		return;
+	}
+	LastChatTimeServer = Now;
+
+	// 보낸 사람 이름
+	const FString Sender = (PlayerState ? PlayerState->GetPlayerName() : TEXT("Player"));
+
+	// GameMode를 통해 모든 PC에 브로드캐스트
+	if (ALSGameMode* GM = World->GetAuthGameMode<ALSGameMode>())
+	{
+		// 필요 시 욕설 필터/길이제한/금지어 처리 등을 여기에서 추가
+		GM->BroadcastChatMessage(Sender, Text);
+	}
+}
+
+// UI에 표시
+void ALSPlayerController::ClientReceiveChatMessage_Implementation(const FString& Sender, const FString& Text)
+{
+	if (ChatWidget)
+	{
+		ChatWidget->AddChatLine(Sender, Text);
+	}
 }
