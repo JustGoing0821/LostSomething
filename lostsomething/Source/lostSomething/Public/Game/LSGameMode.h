@@ -23,6 +23,12 @@ class LOSTSOMETHING_API ALSGameMode : public AGameModeBase, public ILSQuestInter
 {
 	GENERATED_BODY()
 	
+//chat
+public:
+	/** 서버에서 받은 채팅을 모든 PlayerController에 전달 */
+	UFUNCTION()
+	void BroadcastChatMessage(const FString& Sender, const FString& Text);
+
 public:
 	ALSGameMode();
 

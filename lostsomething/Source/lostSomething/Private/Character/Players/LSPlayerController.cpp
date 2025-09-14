@@ -8,6 +8,9 @@
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/UI/LSChatWidget.h"
+#include "Game/LSGameMode.h"
+#include "GameFramework/PlayerState.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
 #include "UserInterface/LSQuestWidget.h"
@@ -18,6 +21,11 @@
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
 #include "BossNPC/BMSpawner.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Engine/Engine.h"
+
+static ConstructorHelpers::FClassFinder<ULSChatWidget> ChatWidgetRef(
+	TEXT("/Game/Players/UI/WBP_Chat.WBP_Chat_C"));
 
 
 ALSPlayerController::ALSPlayerController()
@@ -35,6 +43,7 @@ ALSPlayerController::ALSPlayerController()
 	{
 		LSHpWidgetClass = LSHpWidgetRef.Class;
 	}
+
 
 
 	//Quest
@@ -102,6 +111,31 @@ void ALSPlayerController::BeginPlay()
 		if (LSHpWidget)
 		{
 			LSHpWidget->AddToViewport();
+		}
+	}
+
+
+
+	//chat
+	if (IsLocalController() && ChatWidgetRef.Class)
+	{
+		ChatWidget = CreateWidget<ULSChatWidget>(this, ChatWidgetRef.Class);
+		if (ChatWidget)
+		{
+			ChatWidget->AddToViewport(5);                 
+			ChatWidget->SetVisibility(ESlateVisibility::Collapsed); 
+
+			// 위젯에서 Enter로 커밋되면 호출되는 콜백
+			ChatWidget->OnChatCommitted = ULSChatWidget::FOnChatCommitted::CreateLambda(
+				[this](const FString& Msg)
+				{
+					const FString Clean = Msg.TrimStartAndEnd();
+					if (!Clean.IsEmpty())
+					{
+						// 클라에서 서버로 전송(길이 제한: 200자)
+						ServerSendChatMessage(Clean.Left(200));
+					}
+				});
 		}
 	}
 
@@ -599,4 +633,93 @@ void ALSPlayerController::ServerRPCStopMovement_Implementation()
 void ALSPlayerController::ClientRPCStopKeyInput_Implementation()
 {
 	if (PlayerInput) PlayerInput->FlushPressedKeys();
+}
+
+
+
+
+//chat
+
+void ALSPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	// 간단 버전: Enter로 열기, Esc로 닫기
+	InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
+	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
+
+	// ※ 나중에 Enhanced Input으로 바꾸고 싶으면, Player 쪽 IMC 액션으로 연결한 후
+	//    이 컨트롤러의 OpenChat/CloseChat을 호출하면 된다.
+}
+
+void ALSPlayerController::OpenChat()
+{
+	if (!ChatWidget) return;
+
+	ChatWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	SetUIOnlyInput();     // UI가 키보드/마우스를 우선 소비
+	ChatWidget->FocusInput();
+}
+
+void ALSPlayerController::CloseChat()
+{
+	if (!ChatWidget) return;
+
+	ChatWidget->SetVisibility(ESlateVisibility::Collapsed);
+	SetGameOnlyInput();   // 다시 게임 조작으로 복귀
+}
+
+void ALSPlayerController::SetUIOnlyInput()
+{
+	FInputModeUIOnly M;
+	M.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(M);
+	SetShowMouseCursor(true);
+}
+
+void ALSPlayerController::SetGameOnlyInput()
+{
+	FInputModeGameOnly M;
+	SetInputMode(M);
+	SetShowMouseCursor(false);
+}
+
+
+
+// 클라 → 서버 : 내가 쓴 메시지를 서버로 보냄
+void ALSPlayerController::ServerSendChatMessage_Implementation(const FString& Text)
+{
+	if (Text.TrimStartAndEnd().IsEmpty()) return;
+
+	// 서버 권한 확인(리슨 서버에서도 서버 측에서만 브로드캐스트해야 함)
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// 스팸/홍수 방지(서버 시계 기준 쿨다운)
+	const float Now = World->GetTimeSeconds();
+	const float Cooldown = 0.35f; // 0.35초 간격
+	if (Now - LastChatTimeServer < Cooldown)
+	{
+		return;
+	}
+	LastChatTimeServer = Now;
+
+	// 보낸 사람 이름(없으면 기본 "Player")
+	const FString Sender = (PlayerState ? PlayerState->GetPlayerName() : TEXT("Player"));
+
+	// GameMode를 통해 모든 PC에 브로드캐스트
+	if (ALSGameMode* GM = World->GetAuthGameMode<ALSGameMode>())
+	{
+		// 필요 시 욕설 필터/길이제한/금지어 처리 등을 여기에서 추가
+		GM->BroadcastChatMessage(Sender, Text);
+	}
+}
+
+// 서버 → 각 클라 : UI에 표시
+void ALSPlayerController::ClientReceiveChatMessage_Implementation(const FString& Sender, const FString& Text)
+{
+	if (ChatWidget)
+	{
+		ChatWidget->AddChatLine(Sender, Text);
+	}
 }

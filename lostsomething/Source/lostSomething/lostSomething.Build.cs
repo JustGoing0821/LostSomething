@@ -11,9 +11,9 @@ public class lostSomething : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "lostSomething" });
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks", "OnlineSubsystem","OnlineSubsystemSteam", "Niagara", "HeadMountedDisplay" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks", "OnlineSubsystem","OnlineSubsystemSteam", "Niagara", "HeadMountedDisplay", "UMG", "Slate", "SlateCore" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG" });
 
     }
 
