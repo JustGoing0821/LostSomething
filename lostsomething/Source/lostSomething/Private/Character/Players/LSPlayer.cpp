@@ -695,8 +695,19 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	}
 	else
 	{
-
 		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
+	}
+
+	if (bIsCombining)
+	{
+		if (HasAuthority())
+		{
+			ChangeCombineState(false);
+		}
+		else
+		{
+			ServerRPCChangeCombineState(false);
+		}
 	}
 
 	return DamageAmount;
@@ -1826,8 +1837,10 @@ void ALSPlayer::ChangeCombineState(uint8 InIsCombining)
 	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsPushing);
 
 	//제일 먼저 호출되는 함수.
-	//캐릭터에 상관 없이 서버의 로컬 플레이어 캐릭터에서만 호출되도록 구현해놨음!
-	//아래의 코드들은 서버의 로컬플레이어 캐릭터에서 작동하는 코드라고 생각하고 읽어보세요
+	//캐릭터에 상관 없이 서버에서만 호출되도록 구현해놨음!
+	//아래의 코드들은 서버에서 작동하는 코드라고 생각하고 읽어보세요
+	//자동 풀림 (스테미나 고갈, 거리 멀어짐)일땐 서버 중 로컬 플레이어일때만 호출됨.
+	//공격받을때 풀리는건 서버로컬이 아닐 수도 있음.
 
 	if (HasAuthority())
 	{

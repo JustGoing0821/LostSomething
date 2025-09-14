@@ -31,3 +31,4 @@ LS_SUBLOG(LogLS, [Log,Warning,Error], ... ... );
 #define LS_WDGLOG(CatName, Verbosity, Format, ...) UE_LOG(CatName, Verbosity, TEXT("[%s] %s : %s"), LOG_WIDGET_NETMODEINFO, LOG_CALLINFO, *FString::Printf(Format, ##__VA_ARGS__))
 
 DECLARE_LOG_CATEGORY_EXTERN(LogLS, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogLSls, Log, All);

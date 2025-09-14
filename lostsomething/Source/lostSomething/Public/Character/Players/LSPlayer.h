@@ -518,10 +518,10 @@ protected:
 	UPROPERTY(Replicated)
 	TObjectPtr<APawn> PushedIJaeCharacter;
 
-	float CombineDistance = 50.0f;
+	const float CombineDistance = 50.0f;
 
 	//Check Distance
-	float MaxCombineDistance = 100.0f;
+	const float MaxCombineDistance = 100.0f;
 
 	//Stemina
 	FTimerHandle CombineStaminaTimer;
