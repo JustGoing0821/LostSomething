@@ -11,6 +11,19 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+ALSPlayerSiJae::ALSPlayerSiJae()
+{
+    //    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+    // 
+    //
+    //    //소켓 붙이기
+    //    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+    //    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+    //
+    //    //Weapon = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
+    //    Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+}
+
 void ALSPlayerSiJae::BeginPlay()
 {
     Super::BeginPlay();
@@ -48,17 +61,11 @@ void ALSPlayerSiJae::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-
-
+    if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
         //Attack
         EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
-
-
     }
-
-
-
 
 }
 
@@ -116,50 +123,7 @@ void ALSPlayerSiJae::WeaponPickUp()
     }
 
     UE_LOG(LogTemp, Log, TEXT("Weapon successfully picked up and attached."));
-
-
 }
-
-ALSPlayerSiJae::ALSPlayerSiJae()
-{
-//    Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-// 
-//
-//    //소켓 붙이기
-//    FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
-//    FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
-//
-//    //Weapon = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
-//    Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
-}
-
-bool ALSPlayerSiJae::CanPushWheelchair() const
-{
-    return true;
-}
-
-//void ALSPlayerSiJae::Attack() {
-//    if (bIsDead) return;
-//
-//    int32 CurrentSelectedSlot = SelectedSlot;
-//    if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-//    {
-//        if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
-//        {
-//            ThrowItem();
-//            return;
-//        }
-//    }
-//
-//    if (HasAuthority())
-//    {
-//        ProcessAttack();
-//    }
-//    else
-//    {
-//        ServerProcessAttack();
-//    } 
-//}
 
 void ALSPlayerSiJae::Move(const FInputActionValue& Value)
 {
@@ -169,7 +133,7 @@ void ALSPlayerSiJae::Move(const FInputActionValue& Value)
     if (!IsLocallyControlled())
         return;
 
-    if (PushedWheelchairCharacter && PushedWheelchairCharacter->bIsBeingPushed)
+    if (bIsCombining)
     {
         FVector2D MovementVector = Value.Get<FVector2D>();
         HandlePusherWheelchairInput(MovementVector);
@@ -183,7 +147,7 @@ void ALSPlayerSiJae::Move(const FInputActionValue& Value)
 
 void ALSPlayerSiJae::Jump()
 {
-    if (PushedWheelchairCharacter && PushedWheelchairCharacter->bIsBeingPushed)
+    if (bIsCombining)
     {
         return;
     }

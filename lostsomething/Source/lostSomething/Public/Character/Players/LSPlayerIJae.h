@@ -16,7 +16,6 @@ class LOSTSOMETHING_API ALSPlayerIJae : public ALSPlayer
 	GENERATED_BODY()
 
 protected:
-	virtual bool CanPushWheelchair() const override;
 	virtual void Jump() override;
 	virtual void Attack() override;
 	virtual void Move(const FInputActionValue& Value) override;
