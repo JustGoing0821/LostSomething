@@ -2,38 +2,133 @@
 
 #include "Character/Players/LSPlayer.h"
 #include "lostSomething.h"
-#include "InputMappingContext.h"
-#include "Interface/LSInteractionInterface.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/CapsuleComponent.h"
-#include "Blueprint/UserWidget.h"
-#include "EnhancedInputSubsystems.h"
+#include "Components/ArrowComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Engine/DamageEvents.h"
+#include "InputMappingContext.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Interface/LSTakeDamageInterface.h"
-#include "EnhancedInputComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Blueprint/UserWidget.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/DamageEvents.h"
 #include "Character/Players/LSPlayerController.h"
-#include "Net/UnrealNetwork.h"
-#include "Character/Item/MasterItem.h"
-#include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
-#include "Character/Animation/LSPlayerIJaeAnimInstance.h"
-#include "Components/ArrowComponent.h"
+#include "Character/Players/LSPlayerSiJae.h"
+#include "Character/Components/LSHpComponent.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSHpWidget.h"
-#include "Character/Players/LSPlayerSiJae.h"
 #include "Character/UI/LSDeathWidget.h" 
-#include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
-#include "Interface/LSCharacterChoiceInterface.h"
-#include "Character/Players/LSCharacterChoice.h"
-#include "Kismet/GameplayStatics.h"
-#include "Character/Components/LSHpComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameFramework/GameModeBase.h"
+#include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
+#include "Character/Animation/LSPlayerIJaeAnimInstance.h"
+#include "Character/Item/MasterItem.h"
+#include "Interface/LSInteractionInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "Interface/LSCharacterChoiceInterface.h"
+#include "Interface/LSTakeDamageInterface.h"
 
+/*******************
+
+아래의 주석들 확인해보고 없애주라
+
+********************/
+
+//void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
+//{
+//	// Pick Item In Slot 함수 호출
+//	//PickItemInSlot(PickedItemInfo);
+//
+//}
+//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
+//	// 현재 선택된 슬롯의 아이템을 드롭
+//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
+//	DropItemFromSlot();
+//	DrawColor = FColor::Red;
+//	// 디버그 라인
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = PickupRange * 0.5f;
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//}
+//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectNextSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
+//	}
+//}
+//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
+//
+//	// PlayerController를 통해 HUD에 접근
+//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+//	{
+//		PC->SelectPreviousSlot();
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
+//	}
+//}
+//void ALSPlayer::ChangeSlot(int32 NewSlot)
+//{
+//	//SelectedSlot = NewSlot;
+//
+//	//// 슬롯 범위 검증 및 순환 처리
+//	//if (NewSlot < 0)
+//	//{
+//	//	SelectedSlot = MaxSlots;
+//	//}
+//	//else if (NewSlot > MaxSlots)
+//	//{
+//	//	SelectedSlot = 0;
+//	//}
+//	//else
+//	//{
+//	//	
+//	//}
+//	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
+//	// 슬롯 색상 업데이트
+//	//UpdateSlotBorderColors();
+//}
+//void ALSPlayer::VoiceStart(const FInputActionValue& Value)
+//{
+//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
+//	if (pc && pc->IsLocalController())
+//	{
+//		pc->StartTalking();
+//	}
+//}
+//
+//void ALSPlayer::VoiceStop(const FInputActionValue& Value)
+//{
+//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
+//	if (pc && pc->IsLocalController())
+//	{
+//		pc->StopTalking();
+//	}
+//}
+
+
+
+
+
+/*******************
+
+ Main Section - 이 위로 함수 만들지 말기!!!!!!!!!
+
+********************/
 
 // Sets default values
 ALSPlayer::ALSPlayer()
@@ -50,15 +145,6 @@ ALSPlayer::ALSPlayer()
 		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
 	}*/
 
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-
-	// Create a CameraComponent	
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetMesh());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	//Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	//Mesh1P->SetOnlyOwnerSee(true);
@@ -67,11 +153,6 @@ ALSPlayer::ALSPlayer()
 	//Mesh1P->CastShadow = false;
 	////Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	//Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
-
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 
 	//컨트롤러 회전시 회전 x
 	//bUseControllerRotationPitch = false;
@@ -82,6 +163,17 @@ ALSPlayer::ALSPlayer()
 
 	//bUseControllerRotationRoll = false;
 
+	// Set size for collision capsule
+	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+
+	// Create a CameraComponent	
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetMesh());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
 
 	//Capusule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -98,7 +190,6 @@ ALSPlayer::ALSPlayer()
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
-
 
 	////camera boom 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -127,64 +218,6 @@ ALSPlayer::ALSPlayer()
 void ALSPlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	
-}
-
-void ALSPlayer::StartGame()
-{
-	if (HpComponent)
-	{
-		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
-		//UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
-
-		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
-		//UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
-
-
-		if (IsLocallyControlled()) //You have to check "IsLocallyControlled()" when you update widget
-		{
-			OnHpChanged(HpComponent->GetHp());
-		}
-	}
-
-	InitializeInventory();
-
-	if (HasAuthority())
-	{
-		CharacterChoice = Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice();
-		if (CharacterChoice == ELSCharacterChoice::SiJae)
-		{
-			PusherSiJaeCharacter = this;
-		}
-		else
-		{
-			PushedIJaeCharacter = this;
-		}
-
-
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
-
-		for (AActor* Actor : FoundActors)
-		{
-			if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(Actor))
-			{
-				if (LSPlayer->GetCharacterChoice() != CharacterChoice)
-				{
-					if (CharacterChoice == ELSCharacterChoice::SiJae)
-					{
-						PushedIJaeCharacter = LSPlayer;
-					}
-					else
-					{
-						PusherSiJaeCharacter = LSPlayer;
-					}
-				}
-			}
-		}
-
-		CurrentCombineStamina = MaxCombineStamina;
-	}
 }
 
 // Called when the game starts or when spawned
@@ -192,30 +225,10 @@ void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
-
-	if (HpComponent)
-	{
-		// HpComponent의 OnHpChanged 델리게이트에 OnHpChanged 함수를 바인딩
-		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
-		//UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
-		
-		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
-		//UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
-
-		// 현재 체력값으로 HUD 초기화
-		OnHpChanged(HpComponent->GetHp());
-
-
-	}
-	
-	//인벤토리 초기화
-	InitializeInventory();
-
 	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
 	if (MeshComp)
 	{
-		
+
 		UMaterialInterface* OverlayMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Players/Materials/Outline_MAT.Outline_MAT"));
 		if (OverlayMat)
 		{
@@ -245,7 +258,6 @@ void ALSPlayer::BeginPlay()
 
 }
 
-// Called every frame
 void ALSPlayer::Tick(float DeltaTime)
 {
 
@@ -263,7 +275,6 @@ void ALSPlayer::Tick(float DeltaTime)
 		CheckCombineDistance();
 	}
 
-
 	PerformLineTrace();
 	if (bThrowPreview)
 	{
@@ -272,438 +283,23 @@ void ALSPlayer::Tick(float DeltaTime)
 
 }
 
-void ALSPlayer::OnRep_CurrentHp()
+// 리플리케이션 설정
+void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	//LS_LOG(LogLS, Log, TEXT("CurrentHp : %f"), CurrentHp);
-	HpComponent->SetHp(CurrentHp);
-}
-
-float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	//LS_LOG(LogLS, Log, TEXT("Begin : %f"), DamageAmount);
-
-
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	
-
-	//추가 코드 (feat.슬)
-	if (HasAuthority())
-	{
-		ApplyDamage(DamageAmount);
-		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ApplyDamage called"));
-	}
-	else
-	{
-		
-		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
-	}
-
-	return DamageAmount;
-
-
-}
-
-void ALSPlayer::ApplyDamage(float DamageAmount)
-{
-	if (bIsDead) return;
-
-	
-
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin Apply Damage"));
-
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->ShowBloodWidget();
-		//DisableInput(PC);
-
-	}
-
-	//if (IsLocallyControlled())
-	//{
-	//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	//	{
-	//		PC->ShowBloodWidget();
-	//		//DisableInput(PC);
-	//	}
-	//}
-	
-	
-	if (HpComponent)
-	{
-		CurrentHp -= DamageAmount;
-		HpComponent->SetHp(CurrentHp);
-		//LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
-	}
-
-
-	if (CurrentHp <= 0)
-	{
-		//LS_LOG(LogLS, Error, TEXT("hp is zero call Die"));
-		Die();
-		return;
-	}
-
-	else
-	{
-		
-		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
-	}
-
-
-
-}
-
-bool ALSPlayer::isCombining()
-{
-	return bIsCombining;
-}
-
-
-void ALSPlayer::OnHpChanged(float NewHp)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
-	
-	//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
-
-	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->HitAnim();
-
-	}*/
-
-	// 플레이어 컨트롤러 가져오기
-	//ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-	//if (LSController && LSController->GetLSHUDWidget())
-	//{
-	//	// HUD 위젯의 HP 바 업데이트
-	//	LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
-
-	//	LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
-
-	//	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
-
-	//}
-
-	//hpwidget따로
-	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-	if (LSController && LSController->GetLSHpWidget())
-	{
-		// Hp 위젯의 HP 바 업데이트
-		LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
-		//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
-
-	}
-
-
-	else
-	{
-		if (!LSController)
-			UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
-
-	}
-}
-
-
-//is dead
-void ALSPlayer::OnHpReachedZero(float ZeroHp)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
-	Die();
-}
-
-void ALSPlayer::MeshHide()
-{
-	if (GetMesh())
-	{
-		GetMesh()->SetVisibility(false);
-		//UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden (delayed)"));
-	}
-}
-
-void ALSPlayer::Die()
-{
-	if (bIsDead) return; // 이미 죽었으면 리턴
-
-	bIsDead = true;
-	//UE_LOG(LogTemp, Warning, TEXT("Player died"));
-
-	
-
-	if (HasAuthority())
-	{
-		MultiDie();
-		// 모든 입력 차단
-		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		{
-			//PC->ShowDeathWidget();
-			//DisableInput(PC);
-		}
-
-		// 메시 숨기기
-		if (GetMesh())
-		{
-			
-			/*GetMesh()->SetVisibility(false);
-			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));*/
-		}
-
-
-
-		// 충돌 비활성화
-		//SetActorEnableCollision(false);
-
-		// 이동 비활성화
-		GetCharacterMovement()->SetMovementMode(MOVE_None);
-
-		// 5초 후 부활 타이머 시작
-		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle,this,&ALSPlayer::Respawn,5.0f,false);
-		
-	}
-
-	
-}
-
-void ALSPlayer::ServerDie_Implementation()
-{
-}
-
-void ALSPlayer::MultiDie_Implementation()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
-	if (GetMesh())
-	{
-		GetWorld()->GetTimerManager().SetTimer(MeshHideTimerHandle, this, &ALSPlayer::MeshHide, 2.0f, false);
-
-		//GetMesh()->SetVisibility(false);
-	}
-
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetDeadAnim();
-		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
-	}
-
-	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstanceIJae)
-	{
-		AnimInstanceIJae->SetDeadAnim();
-		//E_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
-	}
-
-	// 본인 클라이언트에서만 UI 처리
-	if (IsLocallyControlled())
-	{
-		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		{
-			PC->ShowDeathWidget();
-			DisableInput(PC);
-		}
-	}
-
-
-}
-
-void ALSPlayer::ClientDie_Implementation()
-{
-	
-}
-
-void ALSPlayer::Respawn()
-{
-	if (!bIsDead) return; // 이미 살아있으면 리턴
-
-	bIsDead = false;
-	//UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
-
-	if (HasAuthority())
-	{
-		
-		// HP 풀로 회복
-		if (HpComponent)
-		{
-			HpComponent->SetHp(100.0f);
-			CurrentHp = 100.0f;
-		}
-
-		// 타이머 클리어
-		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
-
-		MultiRespawn();
-	}
-
-
-}
-
-void ALSPlayer::ServerRespawn_Implementation()
-{
-}
-
-void ALSPlayer::MultiRespawn_Implementation()
-{
-		// 메시 다시 보이게
-	if (GetMesh())
-	{
-		GetMesh()->SetVisibility(true);
-		
-	}
-
-	// HP 풀로 회복
-	if (HpComponent)
-	{
-		HpComponent->SetHp(100.0f); // MaxHp로 설정
-		CurrentHp = 100.0f;
-	}
-
-	// 입력 재활성화
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		PC->HideDeathWidget();
-		EnableInput(PC);
-	}
-
-	// 충돌 재활성화
-	SetActorEnableCollision(true);
-
-	// 이동 재활성화
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	
-
-}
-
-void ALSPlayer::ClientRespawn_Implementation()
-{
-}
-
-
-
-//아이템 픽업함수
-//void ALSPlayer::PickItem(const FItemDetails& PickedItemInfo)
-//{
-//	// Pick Item In Slot 함수 호출
-//	//PickItemInSlot(PickedItemInfo);
-//
-//}
-
-//슬롯에 아이템 넣기
-void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
-
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		{
-			int32 CurrentSelectedSlot = SelectedSlot;
-
-			//슬롯 번호 유효한지 체크
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-			{
-			
-				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
-				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
-
-				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
-				{
-					// 새 아이템 저장
-					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
-
-					// 아이콘 업데이트
-					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
-					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
-
-					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
-				}
-				else  // 이미 차있는 슬롯인 경우
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
-
-					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
-					DropItemFromSlot();
-				}
-			}
-		}
-		
-	}
-
-	
-}
-
-
-
-//인벤토리 초기화
-void ALSPlayer::InitializeInventory()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
-
-	// Empty Item 생성
-	FItemDetails EmptyItem;
-	EmptyItem.Item_Name = NAME_None;
-	EmptyItem.Item_Icon = nullptr;
-	EmptyItem.Item_Nature = EItemNature::IsConsumable;
-	EmptyItem.IsEmpty = true;
-	EmptyItem.Item_Class = nullptr;
-
-	// ItemInfoArray를 Empty Item으로 채움
-	MaxSlots = 5; 
-	ItemInfoArray.Empty(); //배열 비우기
-
-	for (int32 i = 0; i < MaxSlots; ++i)
-	{
-		ItemInfoArray.Add(EmptyItem);
-	}
-
-	//UE_LOG(LogTemp, Warning, TEXT("Inventory initialized with %d empty slots"), MaxSlots);
-
-
-
-	// 초기화 후 모든 슬롯에 기본 아이콘 설정
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		{
-			for (int32 i = 0; i < MaxSlots; ++i)
-			{
-				HUD->SetIcon(i, nullptr); // null을 전달하면 기본 아이콘 표시
-			}
-		}
-	}
-
-}
-
-void ALSPlayer::ThrowItem()
-{
-	
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		{
-			int32 CurrentSelectedSlot = SelectedSlot;
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-			{
-				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-				if (!CurrentSlotItem.IsEmpty)
-				{
-					// 포물선으로 아이템 스폰
-					SpawnThrowableItem(CurrentSlotItem);
-
-					// 슬롯 비우기 (DropItemFromSlot과 동일)
-					FItemDetails EmptySlot;
-					EmptySlot.IsEmpty = true;
-					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
-
-					// UI 아이콘 제거
-					HUD->SetIcon(CurrentSelectedSlot, nullptr);
-
-					//UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
-				}
-			}
-		}
-	}
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ALSPlayer, CurrentHp);
+	DOREPLIFETIME(ALSPlayer, bIsDead);
+
+	DOREPLIFETIME(ALSPlayer, CurrentDectectActor);
+	DOREPLIFETIME(ALSPlayer, TickDectectResultColor);
+	DOREPLIFETIME(ALSPlayer, AimScript);
+	DOREPLIFETIME(ALSPlayer, CallElevatorParams);
+
+	DOREPLIFETIME(ALSPlayer, bIsCombining);
+	DOREPLIFETIME(ALSPlayer, CharacterChoice);
+	DOREPLIFETIME(ALSPlayer, PusherSiJaeCharacter);
+	DOREPLIFETIME(ALSPlayer, PushedIJaeCharacter);
 }
 
 // Called to bind functionality to input
@@ -725,49 +321,98 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	//action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALSPlayer::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALSPlayer::Look);
-
-		// Interact
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
-		//EnhancedInputComponent->BindAction(InterreactAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interreact);
-
-		//Attack
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
-	
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
-
-
-		//Mouse
 		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
 		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
-
-		//Drop
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALSPlayer::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALSPlayer::Look);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
 		EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &ALSPlayer::Drop);
-
-		// 숫자키 바인딩
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
 		EnhancedInputComponent->BindAction(SelectSlot2Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot2);
 		EnhancedInputComponent->BindAction(SelectSlot3Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot3);
 		EnhancedInputComponent->BindAction(SelectSlot4Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot4);
 		EnhancedInputComponent->BindAction(SelectSlot5Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot5);
-
-		//voice
-		//Attack
 		EnhancedInputComponent->BindAction(VoiceAction, ETriggerEvent::Started, this, &ALSPlayer::VoiceStart);
 		EnhancedInputComponent->BindAction(VoiceAction, ETriggerEvent::Completed, this, &ALSPlayer::VoiceStop);
+	}
+}
 
+
+
+/*******************
+
+Start Game Section
+
+********************/
+
+void ALSPlayer::StartGame()
+{
+	if (HpComponent)
+	{
+		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
+		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
+		if (IsLocallyControlled())
+		{
+			OnHpChanged(HpComponent->GetHp());
+		}
 	}
 
+	InitializeInventory();
 
+	if (HasAuthority())
+	{
+		CharacterChoice = Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice();
+		if (CharacterChoice == ELSCharacterChoice::SiJae)
+		{
+			PusherSiJaeCharacter = this;
+		}
+		else
+		{
+			PushedIJaeCharacter = this;
+		}
 
-	
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+
+		for (AActor* Actor : FoundActors)
+		{
+			if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(Actor))
+			{
+				if (LSPlayer->GetCharacterChoice() != CharacterChoice)
+				{
+					if (CharacterChoice == ELSCharacterChoice::SiJae)
+					{
+						PushedIJaeCharacter = LSPlayer;
+					}
+					else
+					{
+						PusherSiJaeCharacter = LSPlayer;
+					}
+				}
+			}
+		}
+
+		CurrentCombineStamina = MaxCombineStamina;
+	}
 }
+
+void ALSPlayer::MulticastRPCStartGame_Implementation()
+{
+	StartGame();
+}
+
+
+
+/*******************
+
+Basic Section
+
+********************/
 
 void ALSPlayer::Move(const FInputActionValue& Value)
 {
@@ -812,293 +457,13 @@ void ALSPlayer::Look(const FInputActionValue& Value)
 }
 
 
-void ALSPlayer::Attack()
-{
-	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
-	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
-	MultiAttack();
-	if (bIsDead) return;
 
-	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
+/*******************
 
-	int32 CurrentSelectedSlot = SelectedSlot;
-	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-	{
-		if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
-		{
-			// 아이템이 있으면 던지기
-			//LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
-			ThrowItem();
-			return;
-		}
-	}
+Interaction Section
 
+********************/
 
-	// 아이템이 없으면
-	//LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
-
-
-	if (HasAuthority())
-	{
-		MultiAttack();
-	}
-	else
-	{
-		ServerAttack();
-	}  
-
-	
-
-}
-
-void ALSPlayer::ServerAttack_Implementation()
-{
-	MultiAttack();
-}
-
-void ALSPlayer::MultiAttack_Implementation()
-{
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetAttackAnim();
-		//UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
-	}
-}
-
-void ALSPlayer::ProcessAttack()
-{
-
-	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-	const float AttackRange = 80.0f;
-	const float AttackRadius = 30.0f;
-	const float AttackDamage = 10.0f;
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * AttackRange;
-	FColor DrawColor;
-
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
-	//MultiProcessAttack();
-
-	if (HitDetected)
-	{
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-
-		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
-		{
-			// Player면 데미지 x
-			//UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
-			DrawColor = FColor::Red;
-		}
-
-		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
-		{
-			// NPC만 데미지 적용
-			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-			DrawColor = FColor::Blue;
-		}
-
-		
-	}
-	else
-	{
-		//LS_LOG(LogLS, Warning, TEXT("processattack() - No hit detected"));
-
-		//DrawColor = FColor::Red;
-	}
-
-//#if ENABLE_DRAW_DEBUG
-//
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = AttackRange * 0.5f;
-//
-//
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//
-//#endif
-	//
-}
-
-void ALSPlayer::ServerProcessAttack_Implementation()
-{
-	ProcessAttack();
-}
-
-void ALSPlayer::MultiProcessAttack_Implementation()
-{
-	//UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
-
-	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetAttackAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
-	}*/
-}
-
-void ALSPlayer::ClientProcessAttack_Implementation()
-{
-}
-
-
-
-
-
-//
-//	// 아이템이 감지되지 않았거나 MasterItem이 아닌 경우
-//	// 현재 선택된 슬롯의 아이템을 드롭
-//	LS_LOG(LogLS, Warning, TEXT("No valid item found - attempting to drop current slot item"));
-//	DropItemFromSlot();
-//	DrawColor = FColor::Red;
-//
-//	// 디버그 라인
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = PickupRange * 0.5f;
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//}
-
-
-//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectNextSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-//	}
-//}
-//
-//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectPreviousSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-//	}
-//}
-
-
-void ALSPlayer::Interaction()
-{
-	if (bIsDead) return;
-
-	// 로컬 컨트롤러가 있는지 확인
-	if (!IsLocallyControlled())
-	{
-		return;
-	}
-
-	if (CharacterChoice == ELSCharacterChoice::SiJae && bIsCombining)
-	{
-		if (HasAuthority())
-		{
-			ChangeCombineState(false);
-		}
-		else
-		{
-			ServerRPCChangeCombineState(false);
-		}
-		return;
-	}
-
-	if (CurrentDectectActor == nullptr)
-	{
-		return;
-	}
-
-	if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(CurrentDectectActor))
-	{
-		//액터 상호작용
-		InteractionActor->InteractionProcess(Cast<APlayerController>(GetController()));
-	}
-	else if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(CurrentDectectActor))
-	{
-		if (CharacterChoice == ELSCharacterChoice::SiJae && IsPlayerNear())
-		{
-			if (HasAuthority())
-			{
-				ChangeCombineState(true);
-			}
-			else
-			{
-				ServerRPCChangeCombineState(true);
-			}
-		}
-	}
-	else if (IsActorName(CurrentDectectActor, "BP_LSElevatorStyle2"))
-	{
-		CallElevator(CurrentDectectActor);
-	}
-	else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(CurrentDectectActor))
-	{
-		PickUpCore();
-	}
-}
-
-// 리플리케이션 설정
-void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ALSPlayer, CurrentHp);
-	DOREPLIFETIME(ALSPlayer, bIsDead);
-
-	DOREPLIFETIME(ALSPlayer, CurrentDectectActor);
-	DOREPLIFETIME(ALSPlayer, TickDectectResultColor);
-	DOREPLIFETIME(ALSPlayer, AimScript);
-	DOREPLIFETIME(ALSPlayer, CallElevatorParams);
-
-	DOREPLIFETIME(ALSPlayer, bIsCombining);
-	DOREPLIFETIME(ALSPlayer, CharacterChoice);
-	DOREPLIFETIME(ALSPlayer, PusherSiJaeCharacter);
-	DOREPLIFETIME(ALSPlayer, PushedIJaeCharacter);
-}
-
-//outline
-
-void ALSPlayer::ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
-{
-	if (!TargetActor || !OverlayMaterial)
-		return;
-
-	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
-	{
-		MeshComp->SetOverlayMaterial(OverlayMaterial);
-		return;
-	}
-
-}
-
-void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial2)
-{
-	if (!TargetActor || !OverlayMaterial2)
-		return;
-
-	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
-	{
-		MeshComp->SetOverlayMaterial(OverlayMaterial2);
-		return;
-	}
-}
-
-
-
-
-
-//라인트레이스
 void ALSPlayer::PerformLineTrace()
 {
 	if (!FirstPersonCameraComponent) return;
@@ -1192,9 +557,9 @@ void ALSPlayer::PerformLineTrace()
 		}
 	}
 
-//#if ENABLE_DRAW_DEBUG
-//	DrawDebugLine(GetWorld(), StartLocation, EndLocation, TickDectectResultColor, false, 0.0f, 0, 0.2f);
-//#endif
+	//#if ENABLE_DRAW_DEBUG
+	//	DrawDebugLine(GetWorld(), StartLocation, EndLocation, TickDectectResultColor, false, 0.0f, 0, 0.2f);
+	//#endif
 
 	ALSPlayerController* PC = Cast<ALSPlayerController>(GetController());
 	if (PC)
@@ -1203,15 +568,61 @@ void ALSPlayer::PerformLineTrace()
 	}
 }
 
-bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
+void ALSPlayer::Interaction()
 {
+	if (bIsDead) return;
 
-	if (!InActor) return false;
+	// 로컬 컨트롤러가 있는지 확인
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
 
-	FString ActorName = InActor->GetName();
+	if (CharacterChoice == ELSCharacterChoice::SiJae && bIsCombining)
+	{
+		if (HasAuthority())
+		{
+			ChangeCombineState(false);
+		}
+		else
+		{
+			ServerRPCChangeCombineState(false);
+		}
+		return;
+	}
 
-	//LS_LOG(LogLS, Log, TEXT("Begin : %s"), *ActorName);
-	return ActorName.Contains(InString);
+	if (CurrentDectectActor == nullptr)
+	{
+		return;
+	}
+
+	if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(CurrentDectectActor))
+	{
+		//액터 상호작용
+		InteractionActor->InteractionProcess(Cast<APlayerController>(GetController()));
+	}
+	else if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(CurrentDectectActor))
+	{
+		if (CharacterChoice == ELSCharacterChoice::SiJae && IsPlayerNear())
+		{
+			if (HasAuthority())
+			{
+				ChangeCombineState(true);
+			}
+			else
+			{
+				ServerRPCChangeCombineState(true);
+			}
+		}
+	}
+	else if (IsActorName(CurrentDectectActor, "BP_LSElevatorStyle2"))
+	{
+		CallElevator(CurrentDectectActor);
+	}
+	else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(CurrentDectectActor))
+	{
+		PickUpCore();
+	}
 }
 
 void ALSPlayer::CallElevator(AActor* InActor)
@@ -1234,16 +645,654 @@ void ALSPlayer::CallElevator(AActor* InActor)
 	}
 }
 
+
+
+/*******************
+
+ Overlay Section
+
+********************/
+
+void ALSPlayer::ApplyOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial)
+{
+	if (!TargetActor || !OverlayMaterial)
+		return;
+
+	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		MeshComp->SetOverlayMaterial(OverlayMaterial);
+		return;
+	}
+}
+
+void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInterface* OverlayMaterial2)
+{
+	if (!TargetActor || !OverlayMaterial2)
+		return;
+
+	if (UStaticMeshComponent* MeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		MeshComp->SetOverlayMaterial(OverlayMaterial2);
+		return;
+	}
+}
+
+
+
+/*******************
+
+ Damage Section
+
+********************/
+
+float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HasAuthority())
+	{
+		ApplyDamage(DamageAmount);
+	}
+	else
+	{
+
+		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("This is Client Character"));
+	}
+
+	return DamageAmount;
+}
+
+void ALSPlayer::ApplyDamage(float DamageAmount)
+{
+	if (bIsDead) return;
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->ShowBloodWidget();
+		//DisableInput(PC);
+	}
+
+	//if (IsLocallyControlled())
+	//{
+	//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	//	{
+	//		PC->ShowBloodWidget();
+	//		//DisableInput(PC);
+	//	}
+	//}
+
+	if (HpComponent)
+	{
+		CurrentHp -= DamageAmount;
+		HpComponent->SetHp(CurrentHp);
+		//LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
+	}
+
+	if (CurrentHp <= 0)
+	{
+		//LS_LOG(LogLS, Error, TEXT("hp is zero call Die"));
+		Die();
+		return;
+	}
+	else
+	{
+		LS_LOG(LogLS, Error, TEXT("No HpComponent"));
+	}
+}
+
+void ALSPlayer::OnHpChanged(float NewHp)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->HitAnim();
+
+	}*/
+	// 플레이어 컨트롤러 가져오기
+	//ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	//if (LSController && LSController->GetLSHUDWidget())
+	//{
+	//	// HUD 위젯의 HP 바 업데이트
+	//	LSController->GetLSHUDWidget()->UpdateHpBar(NewHp);
+	//	LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+	//	UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated HUD with new HP: %.1f"), NewHp);
+	//}
+	//hpwidget따로
+	ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+	if (LSController && LSController->GetLSHpWidget())
+	{
+		// Hp 위젯의 HP 바 업데이트
+		LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
+		//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
+	}
+	else
+	{
+		if (!LSController)
+			UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
+	}
+}
+
+void ALSPlayer::OnRep_CurrentHp()
+{
+	//LS_LOG(LogLS, Log, TEXT("CurrentHp : %f"), CurrentHp);
+	HpComponent->SetHp(CurrentHp);
+}
+
+void ALSPlayer::MeshHide()
+{
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(false);
+		//UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden (delayed)"));
+	}
+}
+
+void ALSPlayer::Die()
+{
+	if (bIsDead) return; // 이미 죽었으면 리턴
+
+	bIsDead = true;
+	//UE_LOG(LogTemp, Warning, TEXT("Player died"));
+
+	if (HasAuthority())
+	{
+		MultiDie();
+		// 모든 입력 차단
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			//PC->ShowDeathWidget();
+			//DisableInput(PC);
+		}
+
+		// 메시 숨기기
+		if (GetMesh())
+		{
+			/*GetMesh()->SetVisibility(false);
+			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));*/
+		}
+
+		// 충돌 비활성화
+		//SetActorEnableCollision(false);
+
+		// 이동 비활성화
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+		// 5초 후 부활 타이머 시작
+		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ALSPlayer::Respawn, 5.0f, false);
+	}
+}
+
+void ALSPlayer::Respawn()
+{
+	if (!bIsDead) return; // 이미 살아있으면 리턴
+
+	bIsDead = false;
+	//UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
+
+	if (HasAuthority())
+	{
+		// HP 풀로 회복
+		if (HpComponent)
+		{
+			HpComponent->SetHp(100.0f);
+			CurrentHp = 100.0f;
+		}
+		// 타이머 클리어
+		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+		MultiRespawn();
+	}
+}
+
+void ALSPlayer::MultiDie_Implementation()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
+	if (GetMesh())
+	{
+		GetWorld()->GetTimerManager().SetTimer(MeshHideTimerHandle, this, &ALSPlayer::MeshHide, 2.0f, false);
+
+		//GetMesh()->SetVisibility(false);
+	}
+
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetDeadAnim();
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+	}
+
+	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstanceIJae)
+	{
+		AnimInstanceIJae->SetDeadAnim();
+		//E_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
+	}
+
+	// 본인 클라이언트에서만 UI 처리
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			PC->ShowDeathWidget();
+			DisableInput(PC);
+		}
+	}
+}
+
+void ALSPlayer::MultiRespawn_Implementation()
+{
+	// 메시 다시 보이게
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(true);
+
+	}
+
+	// HP 풀로 회복
+	if (HpComponent)
+	{
+		HpComponent->SetHp(100.0f); // MaxHp로 설정
+		CurrentHp = 100.0f;
+	}
+
+	// 입력 재활성화
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		PC->HideDeathWidget();
+		EnableInput(PC);
+	}
+
+	// 충돌 재활성화
+	SetActorEnableCollision(true);
+
+	// 이동 재활성화
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+
+
+
+/*******************
+
+Voice Section
+
+********************/
+
+void ALSPlayer::VoiceStart(const FInputActionValue& Value)
+{
+	auto pc = GetController<ALSPlayerController>();
+	if (pc && pc->IsLocalController())
+	{
+		pc->StartTalking();
+	}
+}
+
+void ALSPlayer::VoiceStop(const FInputActionValue& Value)
+{
+	auto pc = GetController<ALSPlayerController>();
+	if (pc && pc->IsLocalController())
+	{
+		pc->StopTalking();
+	}
+}
+
+
+
+/*******************
+
+Item	Section
+
+********************/
+
+void ALSPlayer::PickUpCore()
+{
+	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
+	{
+		SiJae->WeaponPickUp();
+		//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
+
+	}
+
+	if (bIsDead) return;
+
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
+	const float PickupRange = 200.0f;
+	const float PickupRadius = 100.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * PickupRange;
+	//FColor DrawColor;
+
+	//아이템 버리기 (중첩 아이템 없을때)
+	int32 CurrentSelectedSlot = SelectedSlot;
+	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+	//슬롯이 차있다면
+	//아이템 hit 시
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
+	if (HitDetected)
+	{
+		AActor* HitActor = OutHitResult.GetActor();
+		//LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
+
+		// MasterItem 픽업 처리
+		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
+		if (HitItem)
+		{
+			//아이템 중첩상태에서 pick (인벤차있는상태에서 콜리전 겹쳐서 주우면)
+			if (!CurrentSlotItem.IsEmpty)
+			{
+				//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+				//DropItemFromSlot();
+				//DrawColor = FColor::Orange;
+
+				// 디버그 라인
+				FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+				float CapsuleHalfHeight = PickupRange * 0.5f;
+				//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+				return; // 드롭만 하고 함수 종료
+			}
+		}
+
+		if (!HitItem)
+		{
+			//LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
+			return; // 마스터 아이템이 아니면 픽업 무시하고 종료
+		}
+
+		//수정
+		// 아이템 픽업
+		if (HasAuthority())
+		{
+			// 서버
+			PickItemInSlot(HitItem->GetItemInfo());
+			HitItem->Destroy();
+		}
+		else
+		{
+			// 클라이언트인 경우: 서버에 삭제 요청
+			ServerPickUpCore(HitItem);
+
+		}
+
+		// 아이템 제거
+		//HitItem->Destroy();
+		//LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
+		//DrawColor = FColor::Green;
+		return; // 픽업했으면 함수 종료
+	}
+	else
+	{
+		if (!CurrentSlotItem.IsEmpty)
+		{
+			//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+			//DropItemFromSlot();
+			//DrawColor = FColor::Orange;
+
+			//// 디버그 라인
+			//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+			//float CapsuleHalfHeight = PickupRange * 0.5f;
+			//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
+		}
+		//DrawColor = FColor::Yellow;
+	}
+}
+
+void ALSPlayer::Drop()
+{
+	int32 CurrentSelectedSlot = SelectedSlot;
+	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+	//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+	//CurrentSelectedSlot,
+	//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+
+	//PickUpCore();
+	if (!CurrentSlotItem.IsEmpty)
+	{
+		//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
+		DropItemFromSlot();
+
+		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			//CurrentSelectedSlot,
+			//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+	}
+	else
+	{
+		//PickUpCore();
+		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
+			//CurrentSelectedSlot,
+			//sbCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
+	}
+}
+
+void ALSPlayer::DropItemFromSlot()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			int32 CurrentSelectedSlot = SelectedSlot;
+
+			//현재 슬롯 아이템 가져오기
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+
+				// ItemDetails: IsEmpty와 Item Class 값 추출
+				bool bIsSlotEmpty = CurrentSlotItem.IsEmpty;
+				TSubclassOf<AMasterItem> ItemClass = CurrentSlotItem.Item_Class;
+
+				//슬롯이 차있을 때
+				if (!bIsSlotEmpty)
+				{
+					// Spawn Actor: DropItemLoc 위치에 Item Class로 액터 생성
+					if (ItemClass && DropItemLoc)
+					{
+						// Get World Location: DropItemLoc Arrow의 월드 위치 가져오기
+						FVector SpawnLocation = DropItemLoc->GetComponentLocation();
+						FRotator SpawnRotation = DropItemLoc->GetComponentRotation();
+
+						FActorSpawnParameters SpawnParams;
+						SpawnParams.Instigator = this;
+
+						if (HasAuthority())
+						{
+							//FActorSpawnParameters SpawnParams;
+							//SpawnParams.Instigator = this;
+
+							// 모든 클라이언트에서 아이템 스폰
+							/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+								ItemClass,
+								SpawnLocation,
+								SpawnRotation,
+								SpawnParams
+							);*/
+
+							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+								ItemClass,
+								//위로 조금 띄워서 자연스럽게
+								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f),
+								DropItemLoc->GetComponentRotation()
+							);
+
+							if (SpawnedItem)
+							{
+								if (UStaticMeshComponent* ItemMesh = SpawnedItem->FindComponentByClass<UStaticMeshComponent>())
+								{
+									ItemMesh->SetSimulatePhysics(true);      // 물리 활성화
+									ItemMesh->SetEnableGravity(true);        // 중력 적용
+									ItemMesh->AddImpulse(FVector(0, 0, 100.f)); // 위로 살짝 힘
+								}
+							}
+
+							// Set Array Element: 해당 슬롯을 빈 상태로 만들기
+							FItemDetails EmptySlot;
+							EmptySlot.IsEmpty = true;
+							EmptySlot.Item_Name = NAME_None;
+							EmptySlot.Item_Icon = nullptr;
+							EmptySlot.Item_Nature = EItemNature::IsConsumable;
+							EmptySlot.Item_Class = nullptr;
+
+							ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
+
+							// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
+							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
+							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
+
+							// 서버 : 클라이언트 것도 삭제
+							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+						}
+						else
+						{
+							// 클라이언트  : 서버야 삭제 해줘
+							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
+						}
+
+						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
+							ItemClass,
+							SpawnLocation,
+							SpawnRotation,
+							SpawnParams
+						);
+
+						if (SpawnedItem)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Item dropped: %s"), *SpawnedItem->GetName());
+						}*/
+					}
+					//UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
+				}
+			}
+		}
+	}
+}
+
+void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
+
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			int32 CurrentSelectedSlot = SelectedSlot;
+
+			//슬롯 번호 유효한지 체크
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+
+				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+				{
+					// 새 아이템 저장
+					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
+
+					// 아이콘 업데이트
+					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
+					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
+
+					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+				}
+				else  // 이미 차있는 슬롯인 경우
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+
+					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
+					DropItemFromSlot();
+				}
+			}
+		}
+	}
+}
+
+void ALSPlayer::InitializeInventory()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::InitializeInventory() called"));
+
+	// Empty Item 생성
+	FItemDetails EmptyItem;
+	EmptyItem.Item_Name = NAME_None;
+	EmptyItem.Item_Icon = nullptr;
+	EmptyItem.Item_Nature = EItemNature::IsConsumable;
+	EmptyItem.IsEmpty = true;
+	EmptyItem.Item_Class = nullptr;
+
+	// ItemInfoArray를 Empty Item으로 채움
+	MaxSlots = 5;
+	ItemInfoArray.Empty(); //배열 비우기
+
+	for (int32 i = 0; i < MaxSlots; ++i)
+	{
+		ItemInfoArray.Add(EmptyItem);
+	}
+
+	//UE_LOG(LogTemp, Warning, TEXT("Inventory initialized with %d empty slots"), MaxSlots);
+	// 초기화 후 모든 슬롯에 기본 아이콘 설정
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			for (int32 i = 0; i < MaxSlots; ++i)
+			{
+				HUD->SetIcon(i, nullptr); // null을 전달하면 기본 아이콘 표시
+			}
+		}
+	}
+}
+
+void ALSPlayer::SelectSlot(int32 SlotIndex)
+{
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			// 슬롯 인덱스 유효성 검사
+			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
+			{
+				SelectedSlot = SlotIndex;
+				//ChangeSlot(SlotIndex);
+				//UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
+
+				// 슬롯 색상 업데이트
+				//LSHUDWidget->UpdateSlotBorderColors();
+
+				// 플레이어 컨트롤러 가져오기
+				ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
+				if (LSController && LSController->GetLSHUDWidget())
+				{
+					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
+				}
+			}
+		}
+
+		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		//{
+		//	if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		//	{
+		//		HUD->UpdateSlotBorderColors();
+		//	}
+		//}
+	}
+}
+
 void ALSPlayer::OnSelectSlot1()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Player: Slot 1 key pressed"));
-
 	SelectSlot(0);
 
-	/*if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		SelectSlot(0); 
-	}*/
+	//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	//{
+	//	SelectSlot(0);
+	//}
 }
 
 void ALSPlayer::OnSelectSlot2()
@@ -1286,156 +1335,37 @@ void ALSPlayer::OnSelectSlot5()
 	}
 }
 
-void ALSPlayer::SelectSlot(int32 SlotIndex)
+void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController())) 
+	FItemDetails ItemData = TargetItem->GetItemInfo();
+	TargetItem->Destroy();
+	MultiPickUpCore(TargetItem);
+	ClientPickUpCore(ItemData);
+}
+
+void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
+{
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
 	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		{
-			// 슬롯 인덱스 유효성 검사
-			if (SlotIndex >= 0 && SlotIndex <= 4) // 0~4 슬롯
-			{
-				SelectedSlot = SlotIndex;
-				//ChangeSlot(SlotIndex);
-				//UE_LOG(LogTemp, Warning, TEXT("Direct slot selection: %d"), SlotIndex);
-
-				// 슬롯 색상 업데이트
-				//LSHUDWidget->UpdateSlotBorderColors();
-
-
-				// 플레이어 컨트롤러 가져오기
-				ALSPlayerController* LSController = Cast<ALSPlayerController>(GetController());
-				if (LSController && LSController->GetLSHUDWidget())
-				{
-					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
-
-
-				}
-
-
-				else
-				{
-					//UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), SlotIndex);
-				}
-
-		}
-	}
-
-		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		//{
-		//	if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		//	{
-		//		HUD->UpdateSlotBorderColors();
-		//	}
-		//}
-
+		AnimInstance->SetPickUpAnim();
+		//UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
 	}
 }
 
-//void ALSPlayer::ChangeSlot(int32 NewSlot)
-//{
-//	//SelectedSlot = NewSlot;
-//
-//	//// 슬롯 범위 검증 및 순환 처리
-//	//if (NewSlot < 0)
-//	//{
-//	//	SelectedSlot = MaxSlots;
-//	//}
-//	//else if (NewSlot > MaxSlots)
-//	//{
-//	//	SelectedSlot = 0;
-//	//}
-//	//else
-//	//{
-//	//	
-//	//}
-//
-//	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
-//
-//	// 슬롯 색상 업데이트
-//	//UpdateSlotBorderColors();
-//}
-
-//voice section
-void ALSPlayer::VoiceStart(const FInputActionValue& Value)
+void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
 {
-	auto pc = GetController<ALSPlayerController>();
-	if (pc && pc->IsLocalController())
-	{
-		pc->StartTalking();
-	}
-}
-
-void ALSPlayer::VoiceStop(const FInputActionValue& Value)
-{
-	auto pc = GetController<ALSPlayerController>();
-	if (pc && pc->IsLocalController())
-	{
-		pc->StopTalking();
-	}
-}
-
-//void ALSPlayer::VoiceStart(const FInputActionValue& Value)
-//{
-//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
-//	if (pc && pc->IsLocalController())
-//	{
-//		pc->StartTalking();
-//	}
-//}
-//
-//void ALSPlayer::VoiceStop(const FInputActionValue& Value)
-//{
-//	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
-//	if (pc && pc->IsLocalController())
-//	{
-//		pc->StopTalking();
-//	}
-//}
-
-//아이템 버리기
-void ALSPlayer::Drop()
-{
-	int32 CurrentSelectedSlot = SelectedSlot;
-	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
-
-	//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-		//CurrentSelectedSlot,
-		//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
-
-	//PickUpCore();
-	if (!CurrentSlotItem.IsEmpty)
-	{
-		//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-		DropItemFromSlot();
-		
-		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-			//CurrentSelectedSlot,
-			//bCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
-	}
-	else
-	{
-		//PickUpCore();
-		//UE_LOG(LogTemp, Warning, TEXT("Slot %d IsEmpty: %s"),
-			//CurrentSelectedSlot,
-			//sbCurrentSlotIsEmpty ? TEXT("true") : TEXT("false"));
-
-	}
-
+	PickItemInSlot(ItemData);
 }
 
 void ALSPlayer::ServerDrop_Implementation()
 {
-
 	//MultiPickUp();
-
-
 }
 
 void ALSPlayer::MultiDrop_Implementation()
-{/*
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+{
+	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetPickUpAnim();
@@ -1454,269 +1384,6 @@ void ALSPlayer::MultiDrop_Implementation()
 	}*/
 }
 
-
-void ALSPlayer::PickUpCore()
-{
-
-	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
-	{
-		SiJae->WeaponPickUp();
-		//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
-
-	}
-
-	if (bIsDead) return;
-
-	//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::PickUp() called"));
-
-	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(PickUp), false, this);
-	const float PickupRange = 200.0f;
-	const float PickupRadius = 100.0f;
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * PickupRange;
-	//FColor DrawColor;
-
-	//아이템 버리기 (중첩 아이템 없을때)
-	int32 CurrentSelectedSlot = SelectedSlot;
-	FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-	bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
-
-	//슬롯이 차있다면
-	
-
-	//아이템 hit 시
-
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(PickupRadius), Params);
-	if (HitDetected)
-	{
-		AActor* HitActor = OutHitResult.GetActor();
-		//LS_LOG(LogLS, Warning, TEXT("HIT DETECTED: %s"), HitActor ? *HitActor->GetName() : TEXT("Unknown"));
-
-		// MasterItem 픽업 처리
-		AMasterItem* HitItem = Cast<AMasterItem>(HitActor);
-		if (HitItem)
-		{
-			//아이템 중첩상태에서 pick (인벤차있는상태에서 콜리전 겹쳐서 주우면)
-			if (!CurrentSlotItem.IsEmpty)
-			{
-				//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-				//DropItemFromSlot();
-				//DrawColor = FColor::Orange;
-
-				// 디버그 라인
-				FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-				float CapsuleHalfHeight = PickupRange * 0.5f;
-				//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-				return; // 드롭만 하고 함수 종료
-			}
-		}
-
-		
-		if (!HitItem)
-		{
-			//LS_LOG(LogLS, Warning, TEXT("HitActor is not a MasterItem - ignoring"));
-			return; // 마스터 아이템이 아니면 픽업 무시하고 종료
-		}
-
-		//수정
-		// 아이템 픽업
-		
-
-		if (HasAuthority())
-		{
-			// 서버
-			PickItemInSlot(HitItem->GetItemInfo());
-			HitItem->Destroy();
-		}
-		else
-		{
-			// 클라이언트인 경우: 서버에 삭제 요청
-			ServerPickUpCore(HitItem);
-			
-		}
-
-		// 아이템 제거
-		//HitItem->Destroy();
-
-		//LS_LOG(LogLS, Warning, TEXT("Item picked up and destroyed: %s"), *HitItem->GetName());
-		//DrawColor = FColor::Green;
-		return; // 픽업했으면 함수 종료
-	}
-	else
-	{
-		if (!CurrentSlotItem.IsEmpty)
-		{
-			//LS_LOG(LogLS, Warning, TEXT("Slot %d is occupied - only dropping existing item"), CurrentSelectedSlot);
-			//DropItemFromSlot();
-			//DrawColor = FColor::Orange;
-
-			//// 디버그 라인
-			//FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-			//float CapsuleHalfHeight = PickupRange * 0.5f;
-			//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-		}
-
-		//DrawColor = FColor::Yellow;
-	}
-	
-}
-
-void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
-{
-	
-	FItemDetails ItemData = TargetItem->GetItemInfo();
-	TargetItem->Destroy();
-	MultiPickUpCore(TargetItem);
-	ClientPickUpCore(ItemData);
-
-}
-
-void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
-{
-	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetPickUpAnim();
-		//UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
-	}
-}
-
-
-void ALSPlayer::ClientPickUpCore_Implementation(FItemDetails ItemData)
-{
-	PickItemInSlot(ItemData);
-}
-
-//아이템 drop
-void ALSPlayer::DropItemFromSlot()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::DropItemFromSlot() called"));
-
-	
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-		{
-
-			int32 CurrentSelectedSlot = SelectedSlot;
-
-			//현재 슬롯 아이템 가져오기
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
-			{
-				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-
-				// ItemDetails: IsEmpty와 Item Class 값 추출
-				bool bIsSlotEmpty = CurrentSlotItem.IsEmpty;
-				TSubclassOf<AMasterItem> ItemClass = CurrentSlotItem.Item_Class;
-
-				//슬롯이 차있을 때
-				if (!bIsSlotEmpty)
-				{
-					// Spawn Actor: DropItemLoc 위치에 Item Class로 액터 생성
-					if (ItemClass && DropItemLoc)
-					{
-						// Get World Location: DropItemLoc Arrow의 월드 위치 가져오기
-						FVector SpawnLocation = DropItemLoc->GetComponentLocation();
-						FRotator SpawnRotation = DropItemLoc->GetComponentRotation();
-
-						FActorSpawnParameters SpawnParams;
-						SpawnParams.Instigator = this;
-
-
-
-						if (HasAuthority())
-						{
-							//FActorSpawnParameters SpawnParams;
-							//SpawnParams.Instigator = this;
-
-							// 모든 클라이언트에서 아이템 스폰
-							/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
-								ItemClass,
-								SpawnLocation,
-								SpawnRotation,
-								SpawnParams
-							);*/
-
-							AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
-								ItemClass,
-								//위로 조금 띄워서 자연스럽게
-								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f), 
-								DropItemLoc->GetComponentRotation()
-							);
-
-							if (SpawnedItem)
-							{
-								if (UStaticMeshComponent* ItemMesh = SpawnedItem->FindComponentByClass<UStaticMeshComponent>())
-								{
-									ItemMesh->SetSimulatePhysics(true);      // 물리 활성화
-									ItemMesh->SetEnableGravity(true);        // 중력 적용
-									ItemMesh->AddImpulse(FVector(0, 0, 100.f)); // 위로 살짝 힘
-								}
-							}
-
-							// Set Array Element: 해당 슬롯을 빈 상태로 만들기
-							FItemDetails EmptySlot;
-							EmptySlot.IsEmpty = true;
-							EmptySlot.Item_Name = NAME_None;
-							EmptySlot.Item_Icon = nullptr;
-							EmptySlot.Item_Nature = EItemNature::IsConsumable;
-							EmptySlot.Item_Class = nullptr;
-
-							ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
-
-							// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
-							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
-							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
-
-
-							// 서버 : 클라이언트 것도 삭제
-							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
-						}
-						else
-						{
-							// 클라이언트  : 서버야 삭제 해줘
-							ServerDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation, SelectedSlot);
-						}
-
-						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
-							ItemClass,
-							SpawnLocation,
-							SpawnRotation,
-							SpawnParams
-						);
-
-						if (SpawnedItem)
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Item dropped: %s"), *SpawnedItem->GetName());
-						}*/
-					}
-
-					
-					//UE_LOG(LogTemp, Warning, TEXT("Slot %d cleared, item dropped, and icon updated"), CurrentSelectedSlot);
-				}
-				else
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is already empty - nothing to drop"), CurrentSelectedSlot);
-				}
-			}
-			else
-			{
-				//UE_LOG(LogTemp, Error, TEXT("Invalid slot index: %d"), CurrentSelectedSlot);
-			}
-		}
-		else
-		{
-			//UE_LOG(LogTemp, Error, TEXT("HUD Widget not found"));
-		}
-	}
-	else
-	{
-		//UE_LOG(LogTemp, Error, TEXT("PlayerController not found"));
-	}
-}
-
 void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation, int32 SlotIndex)
 {
 	//MultiDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation);
@@ -1732,14 +1399,8 @@ void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> I
 		SpawnParams
 	);
 
-
 	//클라이언트 인벤토리 수정요청
 	ClientDropItemFromSlot(SlotIndex);
-}
-
-void ALSPlayer::MultiDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> ItemClass, FVector SpawnLocation, FRotator SpawnRotation)
-{
-	
 }
 
 void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
@@ -1748,7 +1409,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 	{
 		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 		{
-			
+
 			// Set Array Element: 해당 슬롯을 빈 상태로 만들기
 			FItemDetails EmptySlot;
 			EmptySlot.IsEmpty = true;
@@ -1760,10 +1421,144 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 			ItemInfoArray[SlotIndex] = EmptySlot;
 
 			// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
-			UTexture2D* EmptyIcon = nullptr; 
+			UTexture2D* EmptyIcon = nullptr;
 			HUD->SetIcon(SlotIndex, EmptyIcon);
+		}
+	}
+}
 
 
+
+/*******************
+
+ Throw Section
+
+********************/
+
+void ALSPlayer::StartThrowPreview()
+{
+	if (bIsDead) return;
+
+	//궤적 초기화
+	bThrowPreview = true;
+	CachedPathPoints.Reset();
+
+	// 한번만 그림
+	UpdateThrowPreview();
+
+	if (HasAuthority())
+	{
+		MultiStartThrowPreview();
+		return;
+	}
+
+	if (!HasAuthority())
+	{
+		ServerStartThrowPreview();
+		return;
+	}
+}
+
+void ALSPlayer::UpdateThrowPreview()
+{
+	if (!DropItemLoc) return;
+
+	//포물선 시작점 (BP Arrow)
+	const FVector StartLoc = DropItemLoc->GetComponentLocation();
+
+	//속력
+	const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
+
+	FPredictProjectilePathParams P;
+	P.StartLocation = StartLoc;
+	P.LaunchVelocity = V0;
+	P.ProjectileRadius = 8.f;
+	//궤적 그리는 시간
+	P.MaxSimTime = PreviewTime;
+	P.SimFrequency = PreviewSegments / FMath::Max(PreviewTime, 0.01f);
+	P.bTraceWithCollision = true;
+	P.TraceChannel = ECC_Visibility;
+	P.OverrideGravityZ = GetWorld()->GetGravityZ();
+
+	//포물선 계싼
+	FPredictProjectilePathResult Result;
+	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, Result);
+
+	// 디버그라인
+	CachedPathPoints.Reset();
+	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
+	{
+		const FVector P0 = Result.PathData[i].Location;
+		const FVector P1 = Result.PathData[i + 1].Location;
+		CachedPathPoints.Add(P0);
+
+		// 선분으로 궤적 
+		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan, false, 0.f, 0, 1.5f);
+
+		//연한 회색 like 배그
+		//FColor LightGray = FColor(150, 150, 150);
+		//DrawDebugLine(GetWorld(), P0, P1, LightGray, false, 0.f, 0, 1.5f);
+	}
+	if (Result.PathData.Num() > 0)
+	{
+		CachedPathPoints.Add(Result.PathData.Last().Location);
+	}
+
+	// 착지 지점 표시
+	if (bHit)
+	{
+		//DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
+	}
+}
+
+void ALSPlayer::EndThrowPreview(bool bDoThrow)
+{
+	if (!bThrowPreview) return;
+	bThrowPreview = false;
+
+	if (bDoThrow)
+	{
+		ThrowItem();
+	}
+
+	if (HasAuthority())
+	{
+		MultiEndThrowPreview(bDoThrow);
+		return;
+	}
+
+	if (!HasAuthority())
+	{
+		ServerEndThrowPreview(bDoThrow);
+		return;
+	}
+}
+
+void ALSPlayer::ThrowItem()
+{
+	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	{
+		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+		{
+			int32 CurrentSelectedSlot = SelectedSlot;
+			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+			{
+				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+				if (!CurrentSlotItem.IsEmpty)
+				{
+					// 포물선으로 아이템 스폰
+					SpawnThrowableItem(CurrentSlotItem);
+
+					// 슬롯 비우기 (DropItemFromSlot과 동일)
+					FItemDetails EmptySlot;
+					EmptySlot.IsEmpty = true;
+					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
+
+					// UI 아이콘 제거
+					HUD->SetIcon(CurrentSelectedSlot, nullptr);
+					//UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
+				}
+			}
 		}
 	}
 }
@@ -1799,12 +1594,8 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 		ItemMesh->SetNotifyRigidBodyCollision(true);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ItemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-
-
 		//NPC HIT
 		ItemMesh->OnComponentHit.AddDynamic(ThrownItem, &AMasterItem::OnItemHit);
-
-
 		//초기 속도
 		const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
 		ItemMesh->SetPhysicsLinearVelocity(FVector::ZeroVector, false);
@@ -1815,12 +1606,38 @@ void ALSPlayer::SpawnThrowableItem(const FItemDetails& ItemToThrow)
 	MultiSpawnThrowableItem(ItemToThrow);
 }
 
+FVector ALSPlayer::ComputeThrowInitialVelocity() const
+{
+	const FVector Dir = (GetActorForwardVector() + FVector(0, 0, ThrowUpRatio)).GetSafeNormal();
+	return Dir * ThrowSpeed; // cm/s
+}
 
+float ALSPlayer::GetThrowAlphaFromPitch() const
+{
+	const FRotator CamRot = GetControlRotation();                 // 컨트롤 기준
+	const float Pitch = FRotator::NormalizeAxis(CamRot.Pitch);    // -180~180 -> 정규화
+	return FMath::GetMappedRangeValueClamped(
+		FVector2D(PitchMinDeg, PitchMaxDeg),
+		FVector2D(0.f, 1.f),
+		Pitch
+	);
+}
+
+FVector ALSPlayer::ComputeThrowInitialVelocity_ByCamPitch() const
+{
+	const float A = GetThrowAlphaFromPitch();
+	const float Speed = FMath::Lerp(SpeedNear, SpeedFar, A);
+	const float UpBias = FMath::Lerp(UpBiasNear, UpBiasFar, A);
+	// 카메라 전방 + 위쪽 바이어스
+	const FVector CamForward = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X);
+	const FVector Dir = (CamForward + FVector(0, 0, UpBias)).GetSafeNormal();
+
+	return Dir * Speed;
+}
 
 void ALSPlayer::ServerSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
 {
 	SpawnThrowableItem(ItemToThrow);
-	
 }
 
 void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemToThrow)
@@ -1834,46 +1651,9 @@ void ALSPlayer::MultiSpawnThrowableItem_Implementation(const FItemDetails& ItemT
 	//return;
 }
 
-void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
-{
-}
-
-FVector ALSPlayer::ComputeThrowInitialVelocity() const
-{
-	const FVector Dir = (GetActorForwardVector() + FVector(0, 0, ThrowUpRatio)).GetSafeNormal();
-	return Dir * ThrowSpeed; // cm/s
-}
-
-
-//던기지 시작 (꾹 누를떄)
-void ALSPlayer::StartThrowPreview()
-{
-	if (bIsDead) return;
-
-	//궤적 초기화
-	bThrowPreview = true;
-	CachedPathPoints.Reset();
-
-	// 한번만 그림
-	UpdateThrowPreview(); 
-
-	if (HasAuthority())
-	{
-		MultiStartThrowPreview();
-		return;
-	}
-
-	if (!HasAuthority())
-	{
-		ServerStartThrowPreview();
-		return;
-	}
-}
-
 void ALSPlayer::ServerStartThrowPreview_Implementation()
 {
 	MultiStartThrowPreview();
-
 }
 
 void ALSPlayer::MultiStartThrowPreview_Implementation()
@@ -1884,95 +1664,6 @@ void ALSPlayer::MultiStartThrowPreview_Implementation()
 		AnimInstance->StartThrowingAnim();
 		//UE_LOG(LogTemp, Warning, TEXT("Player start throwing ANIMATION"));
 	}
-
-}
-
-//디버그라인 계속 갱신
-void ALSPlayer::UpdateThrowPreview()
-{
-	if (!DropItemLoc) return;
-
-	//포물선 시작점 (BP Arrow)
-	const FVector StartLoc = DropItemLoc->GetComponentLocation();
-
-	//속력
-	const FVector V0 = ComputeThrowInitialVelocity_ByCamPitch();
-
-	FPredictProjectilePathParams P;
-	P.StartLocation = StartLoc;
-	P.LaunchVelocity = V0;
-
-
-	
-	P.ProjectileRadius = 8.f; 
-
-	//궤적 그리는 시간
-	P.MaxSimTime = PreviewTime; 
-
-
-	P.SimFrequency = PreviewSegments / FMath::Max(PreviewTime, 0.01f);
-	P.bTraceWithCollision = true;
-	P.TraceChannel = ECC_Visibility;      
-	P.OverrideGravityZ = GetWorld()->GetGravityZ(); 
-
-	//포물선 계싼
-	FPredictProjectilePathResult Result;
-	const bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), P, Result);
-
-	// 디버그라인
-	CachedPathPoints.Reset();
-	for (int32 i = 0; i < Result.PathData.Num() - 1; ++i)
-	{
-		const FVector P0 = Result.PathData[i].Location;
-		const FVector P1 = Result.PathData[i + 1].Location;
-		CachedPathPoints.Add(P0);
-
-		// 선분으로 궤적 
-		DrawDebugLine(GetWorld(), P0, P1, FColor::Cyan,false,0.f, 0, 1.5f);
-
-		//연한 회색 like 배그
-		//FColor LightGray = FColor(150, 150, 150);
-		//DrawDebugLine(GetWorld(), P0, P1, LightGray, false, 0.f, 0, 1.5f);
-
-	}
-	if (Result.PathData.Num() > 0)
-	{
-		CachedPathPoints.Add(Result.PathData.Last().Location);
-	}
-
-	// 착지 지점 표시
-	if (bHit)
-	{
-		//DrawDebugSphere(GetWorld(), Result.HitResult.Location, 8.f, 12, FColor::Yellow, false, 0.f);
-	}
-
-}
-
-// 종료후 던지기
-void ALSPlayer::EndThrowPreview(bool bDoThrow)
-{
-	if (!bThrowPreview) return;
-	bThrowPreview = false;
-
-	if (bDoThrow)
-	{
-	
-		ThrowItem();
-	}
-	
-	if (HasAuthority())
-	{
-		MultiEndThrowPreview(bDoThrow);
-		return;
-	}
-
-	if (!HasAuthority())
-	{
-		ServerEndThrowPreview(bDoThrow);
-		return;
-	}
-
-
 }
 
 void ALSPlayer::ServerEndThrowPreview_Implementation(bool bDoThrow)
@@ -1992,38 +1683,143 @@ void ALSPlayer::MultiEndThrowPreview_Implementation(bool bDoThrow)
 
 
 
-//카메라 피치에 따라서 궤도 수정
-float ALSPlayer::GetThrowAlphaFromPitch() const
+/*******************
+
+ Attack Section
+
+********************/
+
+void ALSPlayer::Attack()
 {
-	const FRotator CamRot = GetControlRotation();                 // 컨트롤 기준
-	const float Pitch = FRotator::NormalizeAxis(CamRot.Pitch);    // -180~180 -> 정규화
-	return FMath::GetMappedRangeValueClamped(
-		FVector2D(PitchMinDeg, PitchMaxDeg),
-		FVector2D(0.f, 1.f),
-		Pitch
-	);
+	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
+	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
+	MultiAttack();
+	if (bIsDead) return;
+
+	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
+
+	int32 CurrentSelectedSlot = SelectedSlot;
+	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+	{
+		if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
+		{
+			// 아이템이 있으면 던지기
+			//LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
+			ThrowItem();
+			return;
+		}
+	}
+
+	// 아이템이 없으면
+	//LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
+	if (HasAuthority())
+	{
+		MultiAttack();
+	}
+	else
+	{
+		ServerAttack();
+	}
 }
 
-FVector ALSPlayer::ComputeThrowInitialVelocity_ByCamPitch() const
+void ALSPlayer::ProcessAttack()
 {
-	const float A = GetThrowAlphaFromPitch();
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+	const float AttackRange = 80.0f;
+	const float AttackRadius = 30.0f;
+	const float AttackDamage = 10.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+	FColor DrawColor;
 
-	const float Speed = FMath::Lerp(SpeedNear, SpeedFar, A);
-	const float UpBias = FMath::Lerp(UpBiasNear, UpBiasFar, A);
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	//MultiProcessAttack();
 
-	// 카메라 전방 + 위쪽 바이어스
-	const FVector CamForward = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X);
-	const FVector Dir = (CamForward + FVector(0, 0, UpBias)).GetSafeNormal();
+	if (HitDetected)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
-	return Dir * Speed; 
+		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
+		{
+			// Player면 데미지 x
+			//UE_LOG(LogTemp, Warning, TEXT("Hit player - no damage"));
+			DrawColor = FColor::Red;
+		}
+
+		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
+		{
+			// NPC만 데미지 적용
+			FDamageEvent DamageEvent;
+			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			DrawColor = FColor::Blue;
+		}
+	}
+	else
+	{
+		//LS_LOG(LogLS, Warning, TEXT("processattack() - No hit detected"));
+
+		//DrawColor = FColor::Red;
+	}
+
+	//#if ENABLE_DRAW_DEBUG
+	//
+	//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	//	float CapsuleHalfHeight = AttackRange * 0.5f;
+	//
+	//
+	//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+	//
+	//#endif
+		//
+}
+
+void ALSPlayer::ServerAttack_Implementation()
+{
+	MultiAttack();
+}
+
+void ALSPlayer::MultiAttack_Implementation()
+{
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetAttackAnim();
+		//UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+	}
+}
+
+void ALSPlayer::ServerProcessAttack_Implementation()
+{
+	ProcessAttack();
+}
+
+void ALSPlayer::MultiProcessAttack_Implementation()
+{
+	//UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
+
+	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetAttackAnim();
+		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
+	}*/
 }
 
 
 
-/******************Refactoring WheelChairSystem Test*********************/
+/*******************
 
+Combine Section
+
+********************/
 //PusherSiJaeCharacter, PushedIJaeCharacter는 게임이 시작될 때부터 변하지 않으므로 StartGame이 호출될 때 처음 초기화하고 Replicated해놨음.
 //CharacterChoice도 마찬가지로 게임이 시작될 때부터 변하지 않으므로 StartGame이 호출될 때 처음 초기화하고 Replicated해놨음.
+
+bool ALSPlayer::isCombining()
+{
+	return bIsCombining;
+}
 
 void ALSPlayer::ChangeCombineState(uint8 InIsCombining)
 {
@@ -2268,7 +2064,7 @@ bool ALSPlayer::IsPlayerNear()
 		{
 			LS_LOG(LogLS, Error, TEXT("%s"), TEXT("No PushedCharacter!!"));
 		}
-		
+
 		return false;
 	}
 
@@ -2355,12 +2151,6 @@ void ALSPlayer::UpdateCombineStaminaWidget(float InCurrentStemina)
 
 //RPC 함수들은 Wrapper용으로만 동작하게 로컬함수 호출하는 코드만 두고 다른 기능은 작성하지 않는 것이 좋음
 //왜냐면...헤더에서 함수 찾아서 F12눌러도 "_Implementation" 문구때문에 cpp의 구현부로 바로 안 넘어가거든...
-
-void ALSPlayer::MulticastRPCStartGame_Implementation()
-{
-	StartGame();
-}
-
 void ALSPlayer::ServerRPCChangeCombineState_Implementation(uint8 InIsCombining)
 {
 	ChangeCombineState(InIsCombining);
@@ -2375,3 +2165,26 @@ void ALSPlayer::ClientRPCUpdateCombineStaminaWidget_Implementation(float InCurre
 {
 	UpdateCombineStaminaWidget(InCurrentStemina);
 }
+
+
+
+/*******************
+
+ ETC Section
+
+********************/
+
+bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
+{
+
+	if (!InActor) return false;
+
+	FString ActorName = InActor->GetName();
+
+	//LS_LOG(LogLS, Log, TEXT("Begin : %s"), *ActorName);
+	return ActorName.Contains(InString);
+}
+
+
+
+
