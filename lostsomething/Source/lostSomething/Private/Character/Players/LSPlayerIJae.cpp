@@ -5,11 +5,6 @@
 #include "Engine/Engine.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-bool ALSPlayerIJae::CanPushWheelchair() const
-{
-    return false;
-}
-
 void ALSPlayerIJae::Jump()
 {
     return;
@@ -26,10 +21,6 @@ void ALSPlayerIJae::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 
     }
-
-
-
-
 }
 
 void ALSPlayerIJae::Attack() {
@@ -54,7 +45,7 @@ void ALSPlayerIJae::Move(const FInputActionValue& Value)
     if (!IsLocallyControlled())
         return;
 
-    if (bIsBeingPushed)
+    if (bIsCombining)
         return;
 
     FVector2D MovementVector = Value.Get<FVector2D>();

@@ -30,6 +30,9 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/Components/LSHpComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSStartGameInterface.h"
 
 
 // Sets default values
@@ -117,24 +120,71 @@ ALSPlayer::ALSPlayer()
 	// Arrow 위치 조정 (플레이어 앞쪽에 배치)
 	DropItemLoc->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 
-	bIsBeingPushed = false;
-	PusherCharacter = nullptr;
-	bCanPushWheelchair = false;
-	bIsPushing = false;
 
-	// 스태미너
-	CurrentStamina = MaxStamina;
-
-	bIsBeingPushed = false;
-	PusherCharacter = nullptr;
-	bCanPushWheelchair = false;
-	bIsPushing = false;
+	bIsCombining = false;
 }
 
 void ALSPlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
+}
+
+void ALSPlayer::StartGame()
+{
+	if (HpComponent)
+	{
+		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
+		//UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
+
+		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
+		//UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
+
+
+		if (IsLocallyControlled()) //You have to check "IsLocallyControlled()" when you update widget
+		{
+			OnHpChanged(HpComponent->GetHp());
+		}
+	}
+
+	InitializeInventory();
+
+	if (HasAuthority())
+	{
+		CharacterChoice = Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice();
+		if (CharacterChoice == ELSCharacterChoice::SiJae)
+		{
+			PusherSiJaeCharacter = this;
+		}
+		else
+		{
+			PushedIJaeCharacter = this;
+		}
+
+
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+
+		for (AActor* Actor : FoundActors)
+		{
+			if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(Actor))
+			{
+				if (LSPlayer->GetCharacterChoice() != CharacterChoice)
+				{
+					if (CharacterChoice == ELSCharacterChoice::SiJae)
+					{
+						PushedIJaeCharacter = LSPlayer;
+					}
+					else
+					{
+						PusherSiJaeCharacter = LSPlayer;
+					}
+				}
+			}
+		}
+
+		CurrentCombineStamina = MaxCombineStamina;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -148,10 +198,10 @@ void ALSPlayer::BeginPlay()
 	{
 		// HpComponent의 OnHpChanged 델리게이트에 OnHpChanged 함수를 바인딩
 		HpComponent->OnHpChanged.AddDynamic(this, &ALSPlayer::OnHpChanged);
-		UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
+		//UE_LOG(LogTemp, Warning, TEXT("OnHpChanged delegate bound success : LSPlayer"));
 		
 		HpComponent->OnHpZero.AddDynamic(this, &ALSPlayer::OnHpReachedZero);
-		UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
+		//UE_LOG(LogTemp, Warning, TEXT("HPzeero delegates bound success : LSPlayer"));
 
 		// 현재 체력값으로 HUD 초기화
 		OnHpChanged(HpComponent->GetHp());
@@ -184,6 +234,15 @@ void ALSPlayer::BeginPlay()
 		}
 	}
 
+	if (HasAuthority())
+	{
+		ILSStartGameInterface* GameMode = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->GetOnStartGameDelegate().AddUObject(this, &ALSPlayer::MulticastRPCStartGame);
+		}
+	}
+
 }
 
 // Called every frame
@@ -192,17 +251,19 @@ void ALSPlayer::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 
-	// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
-	if (bIsBeingPushed && PusherCharacter)
+	if (bIsCombining)
 	{
-		HandleWheelchairMovement();
-		LastDistanceCheckTime += DeltaTime;
-		if (LastDistanceCheckTime >= DistanceCheckInterval)
+
+		if (CharacterChoice == ELSCharacterChoice::IJae)
 		{
-			CheckCombineDistance();
-			LastDistanceCheckTime = 0.0f;
+			// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
+			HandleCombinedIJaeMovement();
 		}
+
+		CheckCombineDistance();
 	}
+
+
 	PerformLineTrace();
 	if (bThrowPreview)
 	{
@@ -213,13 +274,13 @@ void ALSPlayer::Tick(float DeltaTime)
 
 void ALSPlayer::OnRep_CurrentHp()
 {
-	LS_LOG(LogLS, Log, TEXT("CurrentHp : %f"), CurrentHp);
+	//LS_LOG(LogLS, Log, TEXT("CurrentHp : %f"), CurrentHp);
 	HpComponent->SetHp(CurrentHp);
 }
 
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	LS_LOG(LogLS, Log, TEXT("Begin : %f"), DamageAmount);
+	//LS_LOG(LogLS, Log, TEXT("Begin : %f"), DamageAmount);
 
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -230,7 +291,7 @@ float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	if (HasAuthority())
 	{
 		ApplyDamage(DamageAmount);
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ApplyDamage called"));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("ApplyDamage called"));
 	}
 	else
 	{
@@ -249,7 +310,7 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 	
 
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin Apply Damage"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin Apply Damage"));
 
 	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 	{
@@ -272,7 +333,7 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 	{
 		CurrentHp -= DamageAmount;
 		HpComponent->SetHp(CurrentHp);
-		LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
+		//LS_LOG(LogLS, Log, TEXT("ApplyDamage SetHp Called"));
 	}
 
 
@@ -295,7 +356,7 @@ void ALSPlayer::ApplyDamage(float DamageAmount)
 
 bool ALSPlayer::isCombining()
 {
-	return bIsBeingPushed;
+	return bIsCombining;
 }
 
 
@@ -303,7 +364,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 	
-	LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
+	//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::OnHpChanged called with HP: %.1f"), NewHp);
 
 	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -331,7 +392,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	{
 		// Hp 위젯의 HP 바 업데이트
 		LSController->GetLSHpWidget()->UpdateHpBar(NewHp);
-		UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
+		//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer :: Updated Hhp wbp with new HP: %.1f"), NewHp);
 
 	}
 
@@ -348,7 +409,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 //is dead
 void ALSPlayer::OnHpReachedZero(float ZeroHp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
+	//UE_LOG(LogTemp, Warning, TEXT("HP reached zero - Player dying"));
 	Die();
 }
 
@@ -717,7 +778,7 @@ void ALSPlayer::Move(const FInputActionValue& Value)
 		return;
 
 	// 이제(IJae) 캐릭터가 밀리고 있다면 입력 무시
-	if (bIsBeingPushed)
+	if (bIsCombining)
 		return;
 
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -766,7 +827,7 @@ void ALSPlayer::Attack()
 		if (!ItemInfoArray[CurrentSelectedSlot].IsEmpty)
 		{
 			// 아이템이 있으면 던지기
-			LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
+			//LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
 			ThrowItem();
 			return;
 		}
@@ -939,132 +1000,43 @@ void ALSPlayer::Interaction()
 	{
 		return;
 	}
+
+	if (CharacterChoice == ELSCharacterChoice::SiJae && bIsCombining)
+	{
+		if (HasAuthority())
+		{
+			ChangeCombineState(false);
+		}
+		else
+		{
+			ServerRPCChangeCombineState(false);
+		}
+		return;
+	}
+
 	if (CurrentDectectActor == nullptr)
 	{
 		return;
 	}
 
-	/*
-	LS_LOG(LogLS, Warning, TEXT("[%s] ALSPlayer::Interaction() called"),
-		HasAuthority() ? TEXT("SERVER") : TEXT("CLIENT"));
-
-	FHitResult OutHitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-	const float InteractionRange = 80.0f;
-	const float InteractionRadius = 50.0f;
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + GetActorForwardVector() * InteractionRange;
-	FColor DrawColor;
-
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(InteractionRadius), Params);
-	if (HitDetected)
-	{
-		AActor* HitActor = OutHitResult.GetActor();
-		if (!HitActor) return;
-
-		LS_LOG(LogLS, Warning, TEXT("Hit Actor: %s"), *HitActor->GetName());
-
-		// 휠체어 인터페이스 체크
-		if (HitActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
-		{
-			// 타겟 액터가 다른 플레이어인지 확인
-			ALSPlayer* HitPlayer = Cast<ALSPlayer>(HitActor);
-			if (HitPlayer)
-			{
-				// 내가 휠체어를 밀 수 있는지 확인
-				if (CanPushWheelchair())
-				{
-					// 시제(SiJae)가 이제(IJae)와 상호작용
-					if (HasAuthority())
-					{
-						// 서버에서 직접 실행
-						bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(HitActor);
-						if (bIsPushed && HitPlayer->PusherCharacter == this)
-						{
-							// 밀기 중지
-							ILSWheelchairInterface::Execute_StopPushingWheelchair(HitActor, this);
-						}
-						else if (!bIsPushed)
-						{
-							// 밀기 시작
-							ILSWheelchairInterface::Execute_StartPushingWheelchair(HitActor, this);
-						}
-					}
-					else
-					{
-						// 클라이언트에서는 서버에 요청
-						ServerRequestWheelchairInteraction(HitActor);
-					}
-				}
-				else
-				{
-					// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
-					LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
-				}
-				DrawColor = FColor::Yellow;
-				return;
-			}
-		}
-
-		// 여기서부터는 일반 상호작용 처리 (모든 캐릭터가 수행 가능)
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		ILSInteractionInterface* HitInteractable = Cast<ILSInteractionInterface>(HitActor);
-		if (HitInteractable)
-		{
-			HitInteractable->InteractionProcess(PlayerController);
-			DrawColor = FColor::Green;
-		}
-	}
-	else
-	{
-		DrawColor = FColor::Red;
-	}
-
-#if ENABLE_DRAW_DEBUG
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = InteractionRange * 0.5f;
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, InteractionRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-#endif
-*/
-
 	if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(CurrentDectectActor))
 	{
+		//액터 상호작용
 		InteractionActor->InteractionProcess(Cast<APlayerController>(GetController()));
 	}
-	else if (ILSWheelchairInterface* CharacterActor = Cast<ILSWheelchairInterface>(CurrentDectectActor))
+	else if (ALSPlayer* LSPlayer = Cast<ALSPlayer>(CurrentDectectActor))
 	{
-		if (CanPushWheelchair())
+		if (CharacterChoice == ELSCharacterChoice::SiJae && IsPlayerNear())
 		{
-			// 시제(SiJae)가 이제(IJae)와 상호작용
 			if (HasAuthority())
 			{
-				// 서버에서 직접 실행
-				bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(CurrentDectectActor);
-				if (bIsPushed && Cast<ALSPlayer>(CurrentDectectActor)->PusherCharacter == this)
-				{
-					// 밀기 중지
-					bIsPushing = false;
-					ILSWheelchairInterface::Execute_StopPushingWheelchair(CurrentDectectActor, this);
-				}
-				else if (!bIsPushed)
-				{
-					// 밀기 시작
-					bIsPushing = true;
-					ILSWheelchairInterface::Execute_StartPushingWheelchair(CurrentDectectActor, this);
-				}
+				ChangeCombineState(true);
 			}
 			else
 			{
-				// 클라이언트에서는 서버에 요청
-				ServerRequestWheelchairInteraction(CurrentDectectActor);
+				ServerRPCChangeCombineState(true);
 			}
 		}
-		else
-		{
-			// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
-			//LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
-		}
-		return;
 	}
 	else if (IsActorName(CurrentDectectActor, "BP_LSElevatorStyle2"))
 	{
@@ -1076,147 +1048,6 @@ void ALSPlayer::Interaction()
 	}
 }
 
-//Wheelchair part
-//void ALSPlayer::Interaction()
-//{
-//	if (bIsDead) return;
-//
-//	// 로컬 컨트롤러가 있는지 확인
-//	if (!IsLocallyControlled())
-//	{
-//		return;
-//	}
-//
-//	LS_LOG(LogLS, Warning, TEXT("[%s] ALSPlayer::Interaction() called"),
-//		HasAuthority() ? TEXT("SERVER") : TEXT("CLIENT"));
-//
-//	FHitResult OutHitResult;
-//	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-//	const float InteractionRange = 80.0f;
-//	const float InteractionRadius = 50.0f;
-//	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-//	const FVector End = Start + GetActorForwardVector() * InteractionRange;
-//	FColor DrawColor;
-//
-//	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(InteractionRadius), Params);
-//	if (HitDetected)
-//	{
-//		AActor* HitActor = OutHitResult.GetActor();
-//		if (!HitActor) return;
-//
-//		LS_LOG(LogLS, Warning, TEXT("Hit Actor: %s"), *HitActor->GetName());
-//
-//		// 휠체어 인터페이스 체크
-//		if (HitActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
-//		{
-//			// 타겟 액터가 다른 플레이어인지 확인
-//			ALSPlayer* HitPlayer = Cast<ALSPlayer>(HitActor);
-//			if (HitPlayer)
-//			{
-//				// 내가 휠체어를 밀 수 있는지 확인
-//				if (CanPushWheelchair())
-//				{
-//					// 시제(SiJae)가 이제(IJae)와 상호작용
-//					if (HasAuthority())
-//					{
-//						// 서버에서 직접 실행
-//						bool bIsPushed = ILSWheelchairInterface::Execute_IsBeingPushed(HitActor);
-//						if (bIsPushed && HitPlayer->PusherCharacter == this)
-//						{
-//							// 밀기 중지
-//							ILSWheelchairInterface::Execute_StopPushingWheelchair(HitActor, this);
-//						}
-//						else if (!bIsPushed)
-//						{
-//							// 밀기 시작
-//							ILSWheelchairInterface::Execute_StartPushingWheelchair(HitActor, this);
-//						}
-//					}
-//					else
-//					{
-//						// 클라이언트에서는 서버에 요청
-//						ServerRequestWheelchairInteraction(HitActor);
-//					}
-//				}
-//				else
-//				{
-//					// 이제(IJae)는 다른 플레이어를 밀 수 없음을 로그로 남김
-//					LS_LOG(LogLS, Warning, TEXT("This character cannot push other players in wheelchairs"));
-//				}
-//				DrawColor = FColor::Yellow;
-//				return;
-//			}
-//		}
-//
-//		// 여기서부터는 일반 상호작용 처리 (모든 캐릭터가 수행 가능)
-//		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-//		ILSInteractionInterface* HitInteractable = Cast<ILSInteractionInterface>(HitActor);
-//		if (HitInteractable)
-//		{
-//			HitInteractable->InteractionProcess(PlayerController);
-//			DrawColor = FColor::Green;
-//		}
-//
-//	/*	ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(HitActor);
-//		if (HitNPC)
-//		{
-//			FDamageEvent DamageEvent;
-//			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
-//			DrawColor = FColor::Blue;
-//		}*/
-//	}
-//	else
-//	{
-//		DrawColor = FColor::Red;
-//	}
-//
-//#if ENABLE_DRAW_DEBUG
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = InteractionRange * 0.5f;
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, InteractionRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//#endif
-//}
-
-bool ALSPlayer::CanPushWheelchair() const
-{
-	return bCanPushWheelchair;
-}
-
-bool ALSPlayer::ServerRequestWheelchairInteraction_Validate(AActor* TargetActor)
-{
-	return true;
-}
-
-void ALSPlayer::ServerRequestWheelchairInteraction_Implementation(AActor* TargetActor)
-{
-	// 서버에서 요청 처리
-	if (!TargetActor || !TargetActor->GetClass()->ImplementsInterface(ULSWheelchairInterface::StaticClass()))
-	{
-		return;
-	}
-
-	ALSPlayer* WheelchairPlayer = Cast<ALSPlayer>(TargetActor);
-	if (!WheelchairPlayer) return;
-
-	// 이미 내가 밀고 있다면 중지, 아니면 시작 (단순화된 로직)
-	if (WheelchairPlayer->bIsBeingPushed && WheelchairPlayer->PusherCharacter == this)
-	{
-		// 밀기 중지
-		WheelchairPlayer->bIsBeingPushed = false;
-		WheelchairPlayer->PusherCharacter = nullptr;
-		this->PushedWheelchairCharacter = nullptr;
-		WheelchairPlayer->MulticastWheelchairStateChanged(false, nullptr);
-	}
-	else
-	{
-		// 다른 상태면 강제로 초기화하고 밀기 시작
-		WheelchairPlayer->bIsBeingPushed = true;
-		WheelchairPlayer->PusherCharacter = this;
-		this->PushedWheelchairCharacter = WheelchairPlayer;
-		WheelchairPlayer->MulticastWheelchairStateChanged(true, this);
-	}
-}
-
 // 리플리케이션 설정
 void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -1225,17 +1056,15 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ALSPlayer, CurrentHp);
 	DOREPLIFETIME(ALSPlayer, bIsDead);
 
-	DOREPLIFETIME(ALSPlayer, bIsBeingPushed);
-	DOREPLIFETIME(ALSPlayer, PusherCharacter);
-	DOREPLIFETIME(ALSPlayer, PushedWheelchairCharacter);
-
 	DOREPLIFETIME(ALSPlayer, CurrentDectectActor);
 	DOREPLIFETIME(ALSPlayer, TickDectectResultColor);
 	DOREPLIFETIME(ALSPlayer, AimScript);
 	DOREPLIFETIME(ALSPlayer, CallElevatorParams);
-	DOREPLIFETIME(ALSPlayer, bIsPushing);
 
-	DOREPLIFETIME(ALSPlayer, CurrentStamina);
+	DOREPLIFETIME(ALSPlayer, bIsCombining);
+	DOREPLIFETIME(ALSPlayer, CharacterChoice);
+	DOREPLIFETIME(ALSPlayer, PusherSiJaeCharacter);
+	DOREPLIFETIME(ALSPlayer, PushedIJaeCharacter);
 }
 
 //outline
@@ -1281,21 +1110,11 @@ void ALSPlayer::PerformLineTrace()
 	FVector EndLocation = StartLocation + (ForwardVector * 300.0f);
 
 
-	if (bIsPushing && Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+	if (bIsCombining && CharacterChoice == ELSCharacterChoice::SiJae)
 	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
-
-		for (AActor* Actor : FoundActors)
-		{
-			if (Cast<ILSCharacterChoiceInterface>(Cast<ALSPlayer>(Actor)->GetController())->GetCharacterChoice() == ELSCharacterChoice::IJae)
-			{
-				CurrentDectectActor = Actor;
-				//TickDectectResultColor = FColor::Yellow;
-				AimScript = "Decouple";
-				break;
-			}
-		}
+		CurrentDectectActor = nullptr;
+		TickDectectResultColor = FColor::Yellow;
+		AimScript = "Decouple";
 	}
 	else
 	{
@@ -1313,19 +1132,29 @@ void ALSPlayer::PerformLineTrace()
 			if (ILSInteractionInterface* InteractionActor = Cast<ILSInteractionInterface>(HitResult.GetActor()))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				//TickDectectResultColor = FColor::Green;
+				TickDectectResultColor = FColor::Green;
 				AimScript = "Interact";
 			}
-			else if (ILSWheelchairInterface* CharacterActor = Cast<ILSWheelchairInterface>(HitResult.GetActor()))
+			else if (ALSPlayer* CharacterActor = Cast<ALSPlayer>(HitResult.GetActor()))
 			{
-				CurrentDectectActor = HitResult.GetActor();
-				//TickDectectResultColor = FColor::Green;
-				AimScript = "Combine";
+				if (Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae && IsPlayerNear())
+				{
+					CurrentDectectActor = HitResult.GetActor();
+					TickDectectResultColor = FColor::Green;
+					AimScript = "Combine";
+				}
+				else
+				{
+					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
+					TickDectectResultColor = FColor::Black;
+					AimScript = "Go near to Combine";
+					CurrentDectectActor = nullptr;
+				}
 			}
 			else if (IsActorName(HitResult.GetActor(), "BP_LSElevatorStyle2"))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				//TickDectectResultColor = FColor::Green;
+				TickDectectResultColor = FColor::Green;
 				AimScript = "Call Elevator";
 
 				FCallElevatorParams Params;
@@ -1338,17 +1167,17 @@ void ALSPlayer::PerformLineTrace()
 			else if (ILSItemInterface* LSItem = Cast< ILSItemInterface>(HitResult.GetActor()))
 			{
 				CurrentDectectActor = HitResult.GetActor();
-				//TickDectectResultColor = FColor::Green;
+				TickDectectResultColor = FColor::Green;
 
 				AimScript = "Pick Up";
-				
+
 				ApplyOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
-				
+
 			}
 			else
 			{
 				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
-				//TickDectectResultColor = FColor::Black;
+				TickDectectResultColor = FColor::Black;
 				AimScript = "+";
 				CurrentDectectActor = nullptr;
 			}
@@ -1356,10 +1185,10 @@ void ALSPlayer::PerformLineTrace()
 		else
 		{
 			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
-			//TickDectectResultColor = FColor::Red;
+			TickDectectResultColor = FColor::Red;
 			AimScript = "+";
 			CurrentDectectActor = nullptr;
-			
+
 		}
 	}
 
@@ -1401,319 +1230,6 @@ void ALSPlayer::CallElevator(AActor* InActor)
 		{
 			UFunction* Function = *FuncIt;
 			LS_LOG(LogLS, Warning, TEXT("- %s"), *Function->GetName());
-		}
-	}
-}
-
-// 휠체어 인터페이스 구현
-void ALSPlayer::StartPushingWheelchair_Implementation(ACharacter* Pusher)
-{
-	if (HasAuthority())
-	{
-		if (!bIsBeingPushed && Pusher != nullptr)
-		{
-			ALSPlayer* PusherPlayer = Cast<ALSPlayer>(Pusher);
-			if (!PusherPlayer || !PusherPlayer->HasEnoughStamina())
-			{
-				return;
-			}
-
-			bIsBeingPushed = true;
-			PusherCharacter = Pusher;
-			PusherPlayer->bIsPushing = true;
-			PusherPlayer->PushedWheelchairCharacter = this;
-
-			if (PusherPlayer->CanPushWheelchair())
-			{
-				GetWorld()->GetTimerManager().SetTimer(PusherPlayer->StaminaDecreaseTimer,
-					PusherPlayer, &ALSPlayer::DecreaseStamina, 0.1f, true);
-
-				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaRegenTimer);
-				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaRegenDelayTimer);
-			}
-
-			MulticastWheelchairStateChanged(true, Pusher);
-		}
-	}
-	else
-	{
-		ServerStartPushingWheelchair(Pusher);
-	}
-}
-
-void ALSPlayer::StopPushingWheelchair_Implementation(ACharacter* Pusher)
-{
-	if (HasAuthority())
-	{
-		if (bIsBeingPushed && PusherCharacter == Pusher)
-		{
-			bIsBeingPushed = false;
-			PusherCharacter = nullptr;
-
-			ALSPlayer* PusherPlayer = Cast<ALSPlayer>(Pusher);
-			if (PusherPlayer)
-			{
-				PusherPlayer->bIsPushing = false;
-				PusherPlayer->PushedWheelchairCharacter = nullptr;
-
-				GetWorld()->GetTimerManager().ClearTimer(PusherPlayer->StaminaDecreaseTimer);
-
-				if (PusherPlayer->CurrentStamina < PusherPlayer->MaxStamina)
-				{
-					GetWorld()->GetTimerManager().SetTimer(PusherPlayer->StaminaRegenDelayTimer,
-						PusherPlayer, &ALSPlayer::StartStaminaRegeneration,
-						PusherPlayer->StaminaRegenDelay, false);
-				}
-			}
-
-			MulticastWheelchairStateChanged(false, nullptr);
-		}
-	}
-	else
-	{
-		ServerStopPushingWheelchair();
-	}
-}
-
-bool ALSPlayer::IsBeingPushed_Implementation() const
-{
-	return bIsBeingPushed;
-}
-
-// Server RPC
-void ALSPlayer::ServerStartPushingWheelchair_Implementation(ACharacter* Pusher)
-{
-	StartPushingWheelchair(Pusher);
-}
-
-bool ALSPlayer::ServerStartPushingWheelchair_Validate(ACharacter* Pusher)
-{
-	return true;
-}
-
-void ALSPlayer::ServerStopPushingWheelchair_Implementation()
-{
-	StopPushingWheelchair(PusherCharacter);
-}
-
-bool ALSPlayer::ServerStopPushingWheelchair_Validate()
-{
-	return true;
-}
-
-// Multicast RPC
-void ALSPlayer::MulticastWheelchairStateChanged_Implementation(bool bPushing, ACharacter* Pusher)
-{
-	bIsBeingPushed = bPushing;
-	PusherCharacter = bPushing ? Pusher : nullptr;
-
-	if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
-	{
-		if (ALSPlayer* Pusher = Cast<ALSPlayer>(Source))
-		{
-			if (bPushing)
-			{
-				Pusher->PushedWheelchairCharacter = this;
-			}
-			else
-			{
-				if (Pusher->PushedWheelchairCharacter == this)
-				{
-					Pusher->PushedWheelchairCharacter = nullptr;
-				}
-			}
-		}
-	}
-
-	// 타겟 Yaw 계산
-	float TargetYaw = 0.f;
-	if (bPushing) // 3인칭 전환 시 (이제가 시제를 미는 경우)
-	{
-		TargetYaw = GetControlRotation().Yaw; // 이제의 현재 시점
-	}
-	else // 1인칭 전환 시 (시제가 이제를 밀다 해제)
-	{
-		if (ACharacter* Source = (Pusher ? Pusher : PusherCharacter.Get()))
-		{
-			TargetYaw = Source->GetControlRotation().Yaw; // 시제의 시점
-		}
-		else
-		{
-			TargetYaw = GetActorRotation().Yaw;
-		}
-	}
-
-	FRotator TargetRot(0.f, TargetYaw, 0.f);
-
-	if (bIsBeingPushed)
-	{
-		// 1인칭 -> 3인칭
-		if (IsLocallyControlled())
-		{
-			if (APlayerController* PC = Cast<APlayerController>(Controller))
-			{
-				PC->SetIgnoreLookInput(true);
-
-				// 컨트롤러 & 액터 회전 동기화
-				PC->SetControlRotation(TargetRot);
-				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
-
-				// 카메라 전환
-				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
-				FirstPersonCameraComponent->SetActive(false);
-				FollowCamera->SetActive(true);
-
-				// 블렌딩 제거
-				if (PC->PlayerCameraManager)
-					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
-
-				// 입력 해제는 다음 틱
-				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
-					{
-						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
-							PC2->SetIgnoreLookInput(false);
-					});
-			}
-		}
-
-		if (APlayerController* PC = Cast<APlayerController>(Controller))
-		{
-			PC->SetIgnoreMoveInput(true);
-		}
-
-		bUseControllerRotationYaw = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		return;
-	}
-
-	// 3인칭 -> 1인칭
-	if (IsLocallyControlled())
-	{
-		if (APlayerController* PC = Cast<APlayerController>(Controller))
-		{
-			PC->SetIgnoreLookInput(true);
-
-			// 컨트롤러 & 액터 회전 동기화
-			PC->SetControlRotation(TargetRot);
-			SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
-
-			// 카메라 전환
-			if (CameraBoom) CameraBoom->bDoCollisionTest = true;
-			FollowCamera->SetActive(false);
-			FirstPersonCameraComponent->SetActive(true);
-
-			// 블렌딩 제거
-			if (PC->PlayerCameraManager)
-				PC->PlayerCameraManager->SetGameCameraCutThisFrame();
-
-			// 입력 해제는 다음 틱
-			GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
-				{
-					if (APlayerController* PC2 = Cast<APlayerController>(Controller))
-						PC2->SetIgnoreLookInput(false);
-				});
-		}
-	}
-
-	if (APlayerController* PC = Cast<APlayerController>(Controller))
-	{
-		PC->SetIgnoreMoveInput(false);
-	}
-
-	bUseControllerRotationYaw = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-}
-
-void ALSPlayer::HandleWheelchairMovement()
-{
-	if (!PusherCharacter)
-		return;
-
-	FVector PusherLocation = PusherCharacter->GetActorLocation();
-	FVector PusherForward = PusherCharacter->GetActorForwardVector();
-
-	FVector TargetLocation = PusherLocation + (PusherForward * NormalCombineDistance);
-	FVector CurrentLocation = GetActorLocation();
-	TargetLocation.Z = CurrentLocation.Z;
-	float DistanceToTarget = FVector::Dist(CurrentLocation, TargetLocation);
-
-	FVector NewLocation;
-	if (DistanceToTarget > NormalCombineDistance * 0.5f)
-	{
-		float InterpSpeed = 5.0f; 
-		NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation,
-			GetWorld()->GetDeltaSeconds(), InterpSpeed);
-	}
-	else
-	{
-		NewLocation = TargetLocation;
-	}
-
-	SetActorLocation(NewLocation, true);
-
-	FRotator NewRotation = PusherForward.Rotation();
-	NewRotation.Pitch = 0.0f;
-	SetActorRotation(NewRotation);
-}
-
-void ALSPlayer::CheckCombineDistance()
-{
-	if (!bIsBeingPushed || !PusherCharacter)
-		return;
-
-	FVector MyLocation = GetActorLocation();
-	FVector PusherLocation = PusherCharacter->GetActorLocation();
-	float CurrentDistance = FVector::Dist(MyLocation, PusherLocation);
-
-	if (CurrentDistance > MaxCombineDistance)
-	{
-		if (HasAuthority())
-		{
-			AutoSeparateFromWheelchair();
-		}
-		else
-		{
-			ServerRequestAutoSeparation();
-		}
-	}
-	else if (CurrentDistance > NormalCombineDistance * 1.2f) // 20% 여유분
-	{
-	}
-}
-
-void ALSPlayer::AutoSeparateFromWheelchair()
-{
-	if (!HasAuthority())
-		return;
-
-	// 합체 상태 해제
-	bIsBeingPushed = false;
-	ACharacter* FormerPusher = PusherCharacter;
-	PusherCharacter = nullptr;
-
-	// 모든 클라이언트에 상태 변경 알림
-	MulticastWheelchairStateChanged(false, nullptr);
-}
-
-bool ALSPlayer::ServerRequestAutoSeparation_Validate()
-{
-	return true;
-}
-
-void ALSPlayer::ServerRequestAutoSeparation_Implementation()
-{
-	// 서버에서 거리 재확인 후 분리
-	if (bIsBeingPushed && PusherCharacter)
-	{
-		FVector MyLocation = GetActorLocation();
-		FVector PusherLocation = PusherCharacter->GetActorLocation();
-		float CurrentDistance = FVector::Dist(MyLocation, PusherLocation);
-
-		if (CurrentDistance > MaxCombineDistance)
-		{
-			AutoSeparateFromWheelchair();
 		}
 	}
 }
@@ -2322,93 +1838,6 @@ void ALSPlayer::ClientSpawnThrowableItem_Implementation(int32 SlotIndex)
 {
 }
 
-// 스태미너
-
-void ALSPlayer::DecreaseStamina()
-{
-	if (!HasAuthority()) return;
-
-	CurrentStamina = FMath::Max(0.0f, CurrentStamina - StaminaDecreaseRate * 0.1f);
-
-	if (IsLocallyControlled())
-	{
-		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		{
-			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-			{
-				HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
-				HUD->ShowStaminaBar(true);
-			}
-		}
-	}
-
-	if (CurrentStamina <= 0.0f && bIsPushing && PushedWheelchairCharacter)
-	{
-		ILSWheelchairInterface::Execute_StopPushingWheelchair(PushedWheelchairCharacter, this);
-		GetWorld()->GetTimerManager().ClearTimer(StaminaDecreaseTimer);
-		GetWorld()->GetTimerManager().SetTimer(StaminaRegenDelayTimer,
-			this, &ALSPlayer::StartStaminaRegeneration, StaminaRegenDelay, false);
-	}
-}
-
-void ALSPlayer::RegenerateStamina()
-{
-	if (!HasAuthority()) return;
-
-	if (CurrentStamina < MaxStamina && !bIsPushing)
-	{
-		CurrentStamina = FMath::Min(MaxStamina, CurrentStamina + StaminaRegenRate * 0.1f);
-
-		if (IsLocallyControlled())
-		{
-			if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-			{
-				if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-				{
-					HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
-					HUD->ShowStaminaBar(true);
-				}
-			}
-		}
-
-		if (CurrentStamina >= MaxStamina)
-		{
-			GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimer);
-		}
-	}
-}
-
-void ALSPlayer::StartStaminaRegeneration()
-{
-	if (!HasAuthority()) return;
-
-	if (!bIsPushing && CurrentStamina < MaxStamina)
-	{
-		GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimer,
-			this, &ALSPlayer::RegenerateStamina, 0.1f, true);
-	}
-}
-
-bool ALSPlayer::HasEnoughStamina() const
-{
-	return CurrentStamina > 0.0f;
-}
-
-void ALSPlayer::OnRep_CurrentStamina()
-{
-	if (auto PC = Cast<ALSPlayerController>(GetWorld()->GetFirstPlayerController()))
-	{
-		if (PC->IsLocalController())
-		{
-			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
-			{
-				HUD->UpdateStaminaBar(CurrentStamina, MaxStamina);
-				HUD->ShowStaminaBar(true);
-			}
-		}
-	}
-}
-
 FVector ALSPlayer::ComputeThrowInitialVelocity() const
 {
 	const FVector Dir = (GetActorForwardVector() + FVector(0, 0, ThrowUpRatio)).GetSafeNormal();
@@ -2519,8 +1948,6 @@ void ALSPlayer::UpdateThrowPreview()
 
 }
 
-
-
 // 종료후 던지기
 void ALSPlayer::EndThrowPreview(bool bDoThrow)
 {
@@ -2589,4 +2016,362 @@ FVector ALSPlayer::ComputeThrowInitialVelocity_ByCamPitch() const
 	const FVector Dir = (CamForward + FVector(0, 0, UpBias)).GetSafeNormal();
 
 	return Dir * Speed; 
+}
+
+
+
+/******************Refactoring WheelChairSystem Test*********************/
+
+//PusherSiJaeCharacter, PushedIJaeCharacter는 게임이 시작될 때부터 변하지 않으므로 StartGame이 호출될 때 처음 초기화하고 Replicated해놨음.
+//CharacterChoice도 마찬가지로 게임이 시작될 때부터 변하지 않으므로 StartGame이 호출될 때 처음 초기화하고 Replicated해놨음.
+
+void ALSPlayer::ChangeCombineState(uint8 InIsCombining)
+{
+	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsPushing);
+
+	//제일 먼저 호출되는 함수.
+	//캐릭터에 상관 없이 서버의 로컬 플레이어 캐릭터에서만 호출되도록 구현해놨음!
+	//아래의 코드들은 서버의 로컬플레이어 캐릭터에서 작동하는 코드라고 생각하고 읽어보세요
+
+	if (HasAuthority())
+	{
+		//서버의 모든 플레이어 캐릭터(자기자신 포함) 순환
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+		for (AActor* Actor : FoundActors)
+		{
+			ALSPlayer* PlayerCharacter = Cast<ALSPlayer>(Actor);
+			if (PlayerCharacter)
+			{
+				PlayerCharacter->SetbIsCombining(InIsCombining);		//bIsCombining는 Replicated가 되어있으므로 서버 플레이어만 호출함.
+				PlayerCharacter->MulticastRPCApplyCombineState();	//클라이언트까지 호출하기위해 멀티캐스트함수 호출
+			}
+		}
+	}
+}
+
+void ALSPlayer::ApplyCombineState()
+{
+	//이녀석은 멀티캐스트를 통해 호출되기 때문에 서버의 시제, 이제 / 클라이언트의 시제, 이제 총 4번 호출됨
+
+	if (HasAuthority())
+	{
+		//스테미너 제어는 무조건 서버 플레이어들만 제어. (시제 이제 같이 진행함)
+
+		//스테미나 타이머 초기화 - 스테미너 타이머는 감소든 증가든 하나만 활성화되기때문에 1개로 합쳤음
+		//타이머 변경을 시작하는 순간에 한번만 초기화하면 됨.
+		if (GetWorldTimerManager().IsTimerActive(CombineStaminaTimer))
+		{
+			GetWorldTimerManager().ClearTimer(CombineStaminaTimer);
+		}
+
+		//스테미나 타이머 활성화, 함수 호출 시작
+		if (bIsCombining)
+		{
+			//Set Decrease Stemina
+			GetWorld()->GetTimerManager().SetTimer(CombineStaminaTimer, this, &ALSPlayer::DecreaseCombineStamina, 0.1f, true);
+		}
+		else
+		{
+			//Set Increase Stamina
+			GetWorld()->GetTimerManager().SetTimer(CombineStaminaTimer, this, &ALSPlayer::IncreaseCombineStamina, 0.1f, true, CombineStaminaIncreaseDelay);
+		}
+	}
+
+
+
+	/***************************************/
+	/****아래는 이제의 카메라 변경 코드****/
+	/***************************************/
+
+
+	if (CharacterChoice == ELSCharacterChoice::SiJae) //시제면 바로 리턴
+		return;
+
+	if (bIsCombining)
+	{
+		/************************************
+		/**휠체어를 밀기 시작할때 상태변경
+		/************************************/
+
+		//움직임 제어 - 내부내용은 이전과 똑같음.
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreMoveInput(true);
+		}
+
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		//LS_LOG(LogLS, Log, TEXT("Movement Set : %d, %d"), bUseControllerRotationYaw, GetCharacterMovement()->bOrientRotationToMovement);
+
+
+		//여기부터는 카메라 제어
+		//따라서 로컬 플레이어인지 확인 - 내부내용은 이전과 똑같음.
+		if (IsLocallyControlled())
+		{
+			//카메라 계산
+			FRotator TargetRot(0.f, 0.f, 0.f);
+			TargetRot.Yaw = GetControlRotation().Yaw; //이제의 현재 시점으로 Yaw회전 지정
+
+			if (APlayerController* PC = Cast<APlayerController>(Controller))
+			{
+				PC->SetIgnoreLookInput(true);
+
+				// 컨트롤러 & 액터 회전 동기화
+				PC->SetControlRotation(TargetRot);
+				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+				// 카메라 전환
+				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
+				FirstPersonCameraComponent->SetActive(false);
+				FollowCamera->SetActive(true);
+
+				// 블렌딩 제거
+				if (PC->PlayerCameraManager)
+					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+				// 입력 해제는 다음 틱
+				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+					{
+						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+							PC2->SetIgnoreLookInput(false);
+					});
+			}
+		}
+	}
+	else
+	{
+		/************************************
+		/**휠체어를 밀기 종료일때 상태변경
+		/************************************/
+
+		//움직임 제어 - 내부내용은 이전과 똑같음.
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->SetIgnoreMoveInput(false);
+		}
+
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		//LS_LOG(LogLS, Log, TEXT("Movement Set : %d, %d"), bUseControllerRotationYaw, GetCharacterMovement()->bOrientRotationToMovement);
+
+		//여기부터는 카메라 제어
+		//따라서 로컬 플레이어인지 확인 - 내부내용은 이전과 똑같음.
+		if (IsLocallyControlled())
+		{
+			//카메라 계산
+			FRotator TargetRot(0.f, 0.f, 0.f);
+			if (PushedIJaeCharacter)
+			{
+				TargetRot.Yaw = PushedIJaeCharacter->GetControlRotation().Yaw; //시제의 현재 시점으로 Yaw회전 지정
+			}
+			else
+			{
+				LS_LOG(LogLS, Error, TEXT("No PusherCharacter!!"));
+				return;
+			}
+
+			if (APlayerController* PC = Cast<APlayerController>(Controller))
+			{
+				PC->SetIgnoreLookInput(true);
+
+				// 컨트롤러 & 액터 회전 동기화
+				PC->SetControlRotation(TargetRot);
+				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
+
+				// 카메라 전환
+				if (CameraBoom) CameraBoom->bDoCollisionTest = true;
+				FollowCamera->SetActive(false);
+				FirstPersonCameraComponent->SetActive(true);
+
+				// 블렌딩 제거
+				if (PC->PlayerCameraManager)
+					PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+
+				// 입력 해제는 다음 틱
+				GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+					{
+						if (APlayerController* PC2 = Cast<APlayerController>(Controller))
+							PC2->SetIgnoreLookInput(false);
+					});
+			}
+		}
+	}
+}
+
+void ALSPlayer::HandleCombinedIJaeMovement()
+{
+	//이제가 bIsCombining일때 Tick으로 호출되는 함수.
+	//호출되는 변수들의 변경은 있으나 구조는 똑같음.
+
+	if (CharacterChoice == ELSCharacterChoice::SiJae || !bIsCombining)
+		return;
+
+	if (!PusherSiJaeCharacter)
+	{
+		LS_LOG(LogLS, Error, TEXT("No REFEC_PusherCharacter!!!"));
+		return;
+	}
+
+	FVector PusherLocation = PusherSiJaeCharacter->GetActorLocation();
+	FVector PusherForward = PusherSiJaeCharacter->GetActorForwardVector();
+
+	if (!HasAuthority())
+	{
+		//클라이언트 이제인 경우 회전만 적용
+		FRotator NewRotation = PusherForward.Rotation();
+		NewRotation.Pitch = 0.0f;
+		SetActorRotation(NewRotation);
+
+		return;
+	}
+
+	float CD = 80.f;
+	FVector TargetLocation = PusherLocation + (PusherForward * CD);
+	FVector CurrentLocation = GetActorLocation();
+	TargetLocation.Z = CurrentLocation.Z;
+	SetActorLocation(TargetLocation, true);
+
+	FRotator NewRotation = PusherForward.Rotation();
+	NewRotation.Pitch = 0.0f;
+	SetActorRotation(NewRotation);
+}
+
+void ALSPlayer::CheckCombineDistance()
+{
+	//서버의 로컬플레이어가 bIsCombining일때 Tick으로 호출되는 함수.
+	// 즉 얘도 서버의 로컬플레이어 캐릭터에서만 기능하는 코드들인 것을 알아두셈!
+
+	if (HasAuthority())
+	{
+		if (!bIsCombining || !IsLocallyControlled())	//오류방지 확인용 코드
+			return;
+
+		if (!IsPlayerNear())	//시제, 이제 거리 확인 멀면 true 가까우면 false
+		{
+			ChangeCombineState(false);		//멀면 합체 해제함.
+		}
+	}
+}
+
+bool ALSPlayer::IsPlayerNear()
+{
+	if (!PusherSiJaeCharacter || !PushedIJaeCharacter) //오류방지 확인용 코드
+	{
+		if (!PusherSiJaeCharacter)
+		{
+			LS_LOG(LogLS, Error, TEXT("%s"), TEXT("No PusherCharacter!!"));
+		}
+		else if (!PushedIJaeCharacter)
+		{
+			LS_LOG(LogLS, Error, TEXT("%s"), TEXT("No PushedCharacter!!"));
+		}
+		
+		return false;
+	}
+
+	//호출되는 변수들의 변경은 있으나 구조는 똑같음.
+	FVector PushedLocation = PushedIJaeCharacter->GetActorLocation();
+	FVector PusherLocation = PusherSiJaeCharacter->GetActorLocation();
+	float CurrentDistance = FVector::Dist(PushedLocation, PusherLocation);
+	return CurrentDistance <= MaxCombineDistance;
+}
+
+void ALSPlayer::DecreaseCombineStamina()
+{
+	// 이 함수는 서버 플레이어 캐릭터에서만 호출됨!
+	// 아래의 코드들이 서버에서만 기능하고있다는 것을 알고있으셈
+
+	if (!HasAuthority() || !bIsCombining) return;
+
+	//이거는 호출되는 변수들의 변경은 있으나 구조는 똑같음.
+	CurrentCombineStamina = FMath::Max(0.0f, CurrentCombineStamina - CombineStaminaDecreaseRate * 0.1f);
+
+
+	if (IsLocallyControlled())
+	{
+		//스테미나 위젯 업데이트 - 로컬컨트롤러니까 그대로 업데이트함수 호출
+		UpdateCombineStaminaWidget(CurrentCombineStamina);
+
+		//서버의 로컬플레이어 캐릭터에서만 ChangeCombineState를 호출해야됨. 
+		if (CurrentCombineStamina <= 0.0f)	//0보다 작은거 확인하고 호출
+		{
+			ChangeCombineState(false);
+		}
+	}
+	else
+	{
+		//로컬컨트롤러가 아니라는건 서버의 프록시캐릭터라는 것.
+		//컨트롤러를 가진 클라이언트의 캐릭터를 호출하기위해 클라이언트RPC호출
+		ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
+	}
+}
+
+void ALSPlayer::IncreaseCombineStamina()
+{
+	// 이 함수는 서버 플레이어 캐릭터에서만 호출됨!
+	if (!HasAuthority() || bIsCombining) return;
+
+	//다 충전됐으면 타이머 해제
+	if (CurrentCombineStamina >= MaxCombineStamina)
+	{
+		if (GetWorldTimerManager().IsTimerActive(CombineStaminaTimer))
+		{
+			GetWorldTimerManager().ClearTimer(CombineStaminaTimer);
+		}
+	}
+
+	//그거요 그거
+	CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + CombineStaminaIncreaseRate * 0.1f);
+
+	//위젯업데이트. DecreaseCombineStamina랑 똑같은 과정임
+	if (IsLocallyControlled())
+	{
+		UpdateCombineStaminaWidget(CurrentCombineStamina);
+	}
+	else
+	{
+		ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
+	}
+}
+
+void ALSPlayer::UpdateCombineStaminaWidget(float InCurrentStemina)
+{
+	//위젯 업데이트하는 코드 그대로 가져온거
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+			{
+				HUD->UpdateStaminaBar(InCurrentStemina, MaxCombineStamina);
+				HUD->ShowStaminaBar(true);
+			}
+		}
+	}
+}
+
+//RPC 함수들은 Wrapper용으로만 동작하게 로컬함수 호출하는 코드만 두고 다른 기능은 작성하지 않는 것이 좋음
+//왜냐면...헤더에서 함수 찾아서 F12눌러도 "_Implementation" 문구때문에 cpp의 구현부로 바로 안 넘어가거든...
+
+void ALSPlayer::MulticastRPCStartGame_Implementation()
+{
+	StartGame();
+}
+
+void ALSPlayer::ServerRPCChangeCombineState_Implementation(uint8 InIsCombining)
+{
+	ChangeCombineState(InIsCombining);
+}
+
+void ALSPlayer::MulticastRPCApplyCombineState_Implementation()
+{
+	ApplyCombineState();
+}
+
+void ALSPlayer::ClientRPCUpdateCombineStaminaWidget_Implementation(float InCurrentStemina)
+{
+	UpdateCombineStaminaWidget(InCurrentStemina);
 }

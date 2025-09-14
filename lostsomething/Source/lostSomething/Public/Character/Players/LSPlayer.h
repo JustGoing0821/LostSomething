@@ -15,16 +15,14 @@
 #include "Blueprint/UserWidget.h"
 #include "InputAction.h"
 #include "Character/Item/LSItemStructures.h"
-#include "Interface/LSWheelchairInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
+#include "Character/Players/LSCharacterChoice.h"
 #include "LSPlayer.generated.h"
 
 class UInputAction;
 class UInputMappingContext;
 class UInventoryWidget;
 
-/*************************************Function**************************************/
-/*************************************Property**************************************/
 
 USTRUCT()
 struct FCallElevatorParams
@@ -44,7 +42,7 @@ struct FCallElevatorParams
 
 
 UCLASS()
-class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSWheelchairInterface, public ILSCombineTutorialInterface
+class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInterface, public ILSCombineTutorialInterface
 {
 	GENERATED_BODY()
 
@@ -58,12 +56,21 @@ class LOSTSOMETHING_API ALSPlayer : public ACharacter, public ILSTakeDamageInter
 
 
 public:
-	/*************************************Function**************************************/
-
-
 	ALSPlayer();
 
 	virtual void PostInitializeComponents() override;
+
+
+protected:
+	void StartGame();
+
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCStartGame();
+
+
+
+public:
 	
 
 	//outline
@@ -272,13 +279,6 @@ protected:
 	UPROPERTY(Replicated)
 	FCallElevatorParams CallElevatorParams;
 
-	UPROPERTY(Replicated)
-	uint8 bIsPushing : 1;
-
-
-
-
-
 
 
 	//void OnMouseWheelUp(const FInputActionValue& Value);
@@ -411,108 +411,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemDetails> ItemInfoArray;
 
-	// 휠체어 관련 프로퍼티
-	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float NormalCombineDistance = 150.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float MaxCombineDistance = 250.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Wheelchair")
-	float DistanceCheckInterval = 0.1f;
-
-	float LastDistanceCheckTime = 0.0f;
-
-	// 합체 스태미너
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-	float MaxStamina = 100.0f;
-
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentStamina, BlueprintReadOnly, Category = "Stamina")
-	float CurrentStamina;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-	float StaminaDecreaseRate = 10.0f; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-	float StaminaRegenRate = 20.0f; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-	float StaminaRegenDelay = 2.0f; 
-
-	// 스태미너 타이머
-	FTimerHandle StaminaDecreaseTimer;
-	FTimerHandle StaminaRegenTimer;
-	FTimerHandle StaminaRegenDelayTimer;
-
-	// 스태미너 함수
-	UFUNCTION()
-	void DecreaseStamina();
-
-	UFUNCTION()
-	void RegenerateStamina();
-
-	UFUNCTION()
-	void StartStaminaRegeneration();
-
-	bool HasEnoughStamina() const;
-
-	UFUNCTION()
-	void OnRep_CurrentStamina();
-
-
-//	//이렇게 쓰지 말기
-//	/*ULSInventoryWidget* InventoryWidget;
-//	ULSInventoryEntry* InventoryEntryWidget;
-//*/
-
-
-
-// Wheelchair
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wheelchair")
-	bool bCanPushWheelchair;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRequestWheelchairInteraction(AActor* TargetActor);
-
-	virtual void StartPushingWheelchair_Implementation(ACharacter* Pusher) override;
-	virtual void StopPushingWheelchair_Implementation(ACharacter* Pusher) override;
-	virtual bool IsBeingPushed_Implementation() const override;
-	virtual bool CanPushWheelchair() const;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerStartPushingWheelchair(ACharacter* Pusher);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerStopPushingWheelchair();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastWheelchairStateChanged(bool bPushing, ACharacter* Pusher);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRequestAutoSeparation();
-
-	void HandleWheelchairMovement();
-
-	void CheckCombineDistance();
-	void AutoSeparateFromWheelchair();
-
-public:
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	bool bIsBeingPushed;
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wheelchair")
-	TObjectPtr<ACharacter> PusherCharacter;
-
-	UPROPERTY(Replicated)
-	TObjectPtr<ALSPlayer> PushedWheelchairCharacter;
-
-
 
 	//궤적
-
 	 // 초기 속력 (cm/s)
+public:
 	UPROPERTY(EditAnywhere, Category = "Throw|Preview")
 	float ThrowSpeed = 1200.f;         
 
@@ -589,4 +491,69 @@ public:
 	FVector ComputeThrowInitialVelocity_ByCamPitch() const;
 
 
+
+
+/********************Renew Combine System************************/
+//main
+protected:
+	void ChangeCombineState(uint8 InIsCombining);
+	void ApplyCombineState();
+	void HandleCombinedIJaeMovement();
+
+public:
+	FORCEINLINE void SetbIsCombining(uint8 InIsCombining) { bIsCombining = InIsCombining; }
+	FORCEINLINE ELSCharacterChoice& GetCharacterChoice() { return CharacterChoice; }
+
+protected:
+	UPROPERTY(Replicated)
+	uint8 bIsCombining : 1;
+
+	UPROPERTY(Replicated)
+	ELSCharacterChoice CharacterChoice;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<APawn> PusherSiJaeCharacter;
+
+	UPROPERTY(Replicated)
+	TObjectPtr<APawn> PushedIJaeCharacter;
+
+	float CombineDistance = 50.0f;
+
+
+	//Check Distance
+protected:
+	void CheckCombineDistance();
+	bool IsPlayerNear();
+
+protected:
+	float MaxCombineDistance = 100.0f;
+
+
+	//Stemina
+protected:
+	void DecreaseCombineStamina();
+	void IncreaseCombineStamina();
+	void UpdateCombineStaminaWidget(float InCurrentStemina);
+
+protected:
+	FTimerHandle CombineStaminaTimer;
+
+	float CurrentCombineStamina;
+
+	const float MaxCombineStamina = 100.0f;
+	const float CombineStaminaDecreaseRate = 10.0f;
+	const float CombineStaminaIncreaseRate = 20.0f;
+	const float CombineStaminaIncreaseDelay = 2.0f;
+
+
+//RenewWheelchair System Test - RPC
+public:
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCChangeCombineState(uint8 InIsCombining);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCApplyCombineState();
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCUpdateCombineStaminaWidget(float InCurrentStemina);
 };
