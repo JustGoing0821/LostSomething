@@ -1702,10 +1702,22 @@ void ALSPlayer::MultiEndThrowPreview_Implementation(bool bDoThrow)
 
 void ALSPlayer::Attack()
 {
+	if (bIsDead) return;
+
+	if (bIsCombining)
+	{
+		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(GetController());
+		if (ScriptWidget)
+		{
+			ScriptWidget->UpdateScriptWidget("Decouple to Attack");
+		}
+		return;
+	}
+
 	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
 	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
 	MultiAttack();
-	if (bIsDead) return;
+
 
 	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
 
@@ -1735,6 +1747,8 @@ void ALSPlayer::Attack()
 
 void ALSPlayer::ProcessAttack()
 {
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 	const float AttackRange = 80.0f;
@@ -1749,6 +1763,7 @@ void ALSPlayer::ProcessAttack()
 
 	if (HitDetected)
 	{
+		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
@@ -1760,6 +1775,7 @@ void ALSPlayer::ProcessAttack()
 
 		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
 		{
+			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
 			// NPC만 데미지 적용
 			FDamageEvent DamageEvent;
 			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
@@ -2037,8 +2053,7 @@ void ALSPlayer::HandleCombinedIJaeMovement()
 		return;
 	}
 
-	float CD = 80.f;
-	FVector TargetLocation = PusherLocation + (PusherForward * CD);
+	FVector TargetLocation = PusherLocation + (PusherForward * CombineDistance);
 	FVector CurrentLocation = GetActorLocation();
 	TargetLocation.Z = CurrentLocation.Z;
 	SetActorLocation(TargetLocation, true);
