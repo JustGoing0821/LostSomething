@@ -175,31 +175,76 @@ void ABossNPC::EnterPhase2()
 // 3ÆäÀÌÁî ÁøÀÔ - ÇÃ·§Æû »ý¼º
 void ABossNPC::EnterPhase3()
 {
-    if (HasAuthority() && PlatformGeneratorClass)
+    if (HasAuthority())
     {
-        //CurrentPhase = 3;
-        //UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+        HideGroupActor2();
 
-        FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-        PlatformGenerator = GetWorld()->SpawnActor<APlatformGenerator>(PlatformGeneratorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
-
-        if (PlatformGenerator)
+        if (PlatformGeneratorClass)
         {
-            //UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
-            SpawnPlatform();
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("Failed to spawn PlatformGenerator"));
+            //CurrentPhase = 3;
+            //UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
+
+            FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+            PlatformGenerator = GetWorld()->SpawnActor<APlatformGenerator>(PlatformGeneratorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+
+            if (PlatformGenerator)
+            {
+                //UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
+                SpawnPlatform();
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("Failed to spawn PlatformGenerator"));
+            }
         }
     }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("EnterPhase3 skipped - No Authority or GeneratorClass is null"));
+    }
+}
+
+void ABossNPC::HideGroupActor2()
+{
+    ServerHideGroupActor2();
+}
+
+void ABossNPC::ServerHideGroupActor2_Implementation()
+{
+    MultiHideGroupActor2();
+}
+
+void ABossNPC::MultiHideGroupActor2_Implementation()
+{
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
+
+    for (AActor* Actor : FoundActors)
+    {
+        if (Actor && Actor->GetName().Contains(TEXT("GroupActor2")))
+        {
+            Actor->SetActorHiddenInGame(true);
+
+            Actor->SetActorEnableCollision(false);
+
+            TArray<UPrimitiveComponent*> PrimitiveComponents;
+            Actor->GetComponents<UPrimitiveComponent>(PrimitiveComponents);
+
+            for (UPrimitiveComponent* PrimComp : PrimitiveComponents)
+            {
+                if (PrimComp)
+                {
+                    PrimComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                    PrimComp->SetVisibility(false);
+                }
+            }
+
+            UE_LOG(LogTemp, Warning, TEXT("GroupActor2 hidden and collision disabled: %s"), *Actor->GetName());
+        }
     }
 }
 
