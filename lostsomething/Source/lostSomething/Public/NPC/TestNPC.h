@@ -21,56 +21,32 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-    // AI 관련 함수
-    void AttackByAI(); // ITestNPCInterface
+
+    //////////////////////////////////Attack Start
+    void AttackStart(); // ITestNPCInterface
+
+    // AI 공격 완료 델리게이트
+    FAICharacterAttackFinished OnAttackFinished;
+
     void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished);
 
-    void Damage();
-    UFUNCTION(Server, Reliable)
-    void ServerDamage();
-
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiDamage();
-
-    void SetDespawn();
-
-    UFUNCTION(Server, Reliable)
-    void ServerDespawn();
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiDespawn();
-
-    // 공격 관련 함수
     void ComboActionBegin();
     void ComboActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded);
     void NotifyComboActionEnd();
     void NextComboCheck();
 
     UFUNCTION(Server, Reliable)
-    void ServerAttack();
+    void ServerAttackStart();
     UFUNCTION(NetMulticast, Reliable)
-    void MultiAttack();
+    void MultiAttackStart();
 
-    // 몽타주 멈춤 함수
-
-    void CheckShouldStopMontage();
-
-    UFUNCTION(Server, Reliable)
-    void ServerStopAttackMontage();
-
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiStopAttackMontage();
-
-
-    // 공격 콜리전 생성
     virtual void AttackHitCheck() override;       //ITestNPCAttackInterface
 
     UFUNCTION(Server, Reliable)
     void ServerAttackHitCheck();
 
-    // 공격 관련 변수
     UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
     bool bIsAttacking;
 
@@ -83,6 +59,40 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MaxComboDistance = 300.0f;
 
+    UPROPERTY()
+    AActor* TargetActor;
+
+    const float AttackRange = 40.0f;
+    const float AttackRadius = 50.0f;
+    const float AttackDamage = 30.0f;
+
+
+    ////////////////////////////////////Damage
+    void Damage();
+    UFUNCTION(Server, Reliable)
+    void ServerDamage();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDamage();
+
+
+    ////////////////////////////////////Die
+    void SetDespawn();
+    UFUNCTION(Server, Reliable)
+    void ServerDespawn();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDespawn();
+
+
+    ////////////////////////////////////Montage
+    void CheckShouldStopMontage();
+    UFUNCTION(Server, Reliable)
+    void ServerStopAttackMontage();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiStopAttackMontage();
+
+
+    ////////////////////////////////////////////Chase
     UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
     bool bShouldChase = false;
 
@@ -114,19 +124,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void SetMaxWalkSpeed(float NewSpeed);
 
-    UPROPERTY()
-    AActor* TargetActor;
-
-    // AI 공격 완료 델리게이트
-    FAICharacterAttackFinished OnAttackFinished;
-
     // Replicated 변수 할당
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+ 
 
-    const float AttackRange = 40.0f;
-    const float AttackRadius = 50.0f;
-    const float AttackDamage = 30.0f;
-
+    ////////////////////////////////////// Sound
     UPROPERTY(EditAnywhere)
     USoundWave* IdleSound;
 

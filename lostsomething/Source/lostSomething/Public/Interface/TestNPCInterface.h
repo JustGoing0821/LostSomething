@@ -25,7 +25,7 @@ class LOSTSOMETHING_API ITestNPCInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void AttackByAI() = 0;
+	virtual void AttackStart() = 0;
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) = 0;
 
 };

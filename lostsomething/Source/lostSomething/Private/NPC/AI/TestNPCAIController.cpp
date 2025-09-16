@@ -60,4 +60,5 @@ void ATestNPCAIController::StopAI()
 
 	BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
 }
+
  
