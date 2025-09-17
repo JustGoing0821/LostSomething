@@ -210,9 +210,9 @@ private:
     UFUNCTION(NetMulticast, Reliable)
     void MultiSpawnAOEAttack();
 
-    void HideGroupActor2();
+    void HideGroupActor();
     UFUNCTION(Server, Reliable)
-    void ServerHideGroupActor2();
+    void ServerHideGroupActor();
     UFUNCTION(NetMulticast, Reliable)
-    void MultiHideGroupActor2();
+    void MultiHideGroupActor();
 };

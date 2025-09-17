@@ -139,11 +139,11 @@ void ABossNPC::SetHP(float NewHP)
     {
         DestroyObstacles();
         NewHP = 40.0f;
-        CurrentPhase = 3;
+        CurrentPhase = 3; 
         bIsPhaseChanging = true;
         DamageMontagePlay();
+        HideGroupActor();
     }
-
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
 }
 
@@ -177,13 +177,8 @@ void ABossNPC::EnterPhase3()
 {
     if (HasAuthority())
     {
-        HideGroupActor2();
-
         if (PlatformGeneratorClass)
         {
-            //CurrentPhase = 3;
-            //UE_LOG(LogTemp, Warning, TEXT("Entering Phase 3 - Spawning Platform Generator"));
-
             FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
             FActorSpawnParameters SpawnParams;
             SpawnParams.Owner = this;
@@ -193,7 +188,6 @@ void ABossNPC::EnterPhase3()
 
             if (PlatformGenerator)
             {
-                //UE_LOG(LogTemp, Warning, TEXT("PlatformGenerator spawned successfully"));
                 SpawnPlatform();
             }
             else
@@ -208,42 +202,30 @@ void ABossNPC::EnterPhase3()
     }
 }
 
-void ABossNPC::HideGroupActor2()
+void ABossNPC::HideGroupActor()
 {
-    ServerHideGroupActor2();
+    if (HasAuthority())
+    {
+        ServerHideGroupActor();
+    }
 }
 
-void ABossNPC::ServerHideGroupActor2_Implementation()
+void ABossNPC::ServerHideGroupActor_Implementation()
 {
-    MultiHideGroupActor2();
+    MultiHideGroupActor();
 }
 
-void ABossNPC::MultiHideGroupActor2_Implementation()
+void ABossNPC::MultiHideGroupActor_Implementation()
 {
     TArray<AActor*> FoundActors;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
+    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("GroupActor")), FoundActors);
 
     for (AActor* Actor : FoundActors)
     {
-        if (Actor && Actor->GetName().Contains(TEXT("GroupActor2")))
+        if (Actor)
         {
             Actor->SetActorHiddenInGame(true);
-
             Actor->SetActorEnableCollision(false);
-
-            TArray<UPrimitiveComponent*> PrimitiveComponents;
-            Actor->GetComponents<UPrimitiveComponent>(PrimitiveComponents);
-
-            for (UPrimitiveComponent* PrimComp : PrimitiveComponents)
-            {
-                if (PrimComp)
-                {
-                    PrimComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-                    PrimComp->SetVisibility(false);
-                }
-            }
-
-            UE_LOG(LogTemp, Warning, TEXT("GroupActor2 hidden and collision disabled: %s"), *Actor->GetName());
         }
     }
 }
