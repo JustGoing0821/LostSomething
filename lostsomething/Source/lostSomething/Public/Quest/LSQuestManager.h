@@ -32,6 +32,7 @@ public:
 	FOnQuestCompleteDelegate OnQuestComplete;
 	FOnInteractionChangeDelegate OnInteractionChange;
 
+	UFUNCTION(BlueprintCallable, Category = "Quest")
 	FORCEINLINE FLSQuestData GetCurrentQuest() const { return CurrentQuestData; }
 	FORCEINLINE void SetCurrentQuest(const FLSQuestData& InCurrentQuest) { CurrentQuestData = InCurrentQuest; }
 
