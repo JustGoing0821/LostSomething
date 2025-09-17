@@ -62,6 +62,7 @@ void ALSQuestClearHack::BeginPlay()
 
 void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController)
 {
+#if WITH_EDITOR
 	if (HasAuthority())
 	{
 		QuestClear();
@@ -71,6 +72,7 @@ void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController
 		ServerRPCQuestClear();
 		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	}
+#endif
 }
 
 void ALSQuestClearHack::QuestClear()
