@@ -4,16 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Interface/LSTakeDamageInterface.h"
 #include "VRPawn.generated.h"
 
 UCLASS()
-class LOSTSOMETHING_API AVRPawn : public APawn
+class LOSTSOMETHING_API AVRPawn : public APawn, public ILSTakeDamageInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
 	AVRPawn();
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	// Called when the game starts or when spawned

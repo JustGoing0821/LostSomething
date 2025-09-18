@@ -41,6 +41,8 @@ void ULobbyWidget::SwitchPanel(int32 index)
 
 void ULobbyWidget::OnMyClicked_doCreateRoom()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ULobbyWidget::OnMyClicked_doCreateRoom()"));
+
 	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
 
 	FString roomName = edit_RoomName->GetText().ToString();
@@ -103,6 +105,8 @@ void ULobbyWidget::OnMyGoCreateRoom()
 
 void ULobbyWidget::OnMyGoFindRoom()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ULobbyWidget::OnMyGoFindRoom()"));
+
 	// 게임인스턴스가 있다면
 	if (GI)
 	{
