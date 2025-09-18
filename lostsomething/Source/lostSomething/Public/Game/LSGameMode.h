@@ -56,6 +56,7 @@ public:
 	void QuestStart() override;
 	void QuestComplete() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Quest")
 	FORCEINLINE class ALSQuestManager* GetQuestManager() { return QuestManager; }
 
 protected:
