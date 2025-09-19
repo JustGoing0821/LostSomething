@@ -26,6 +26,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	UWorld* World = ControllingPawn->GetWorld();
 	if (nullptr == World) return;
 
+	ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
+
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
 
@@ -53,21 +55,23 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
 				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
-				if (TargetPlayer)
+				if (TargetPlayer&& !TM->GetIsDead())
 				{
-					ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
 					TM->SetShouldChase(true);
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), true);
 				}
-				
-				
+				else 
+				{
+					TM->SetShouldChase(false);
+					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);
+				}
 				return;
 			}
 		}
 	}
 
-	ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
 	TM->SetShouldChase(false);
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);

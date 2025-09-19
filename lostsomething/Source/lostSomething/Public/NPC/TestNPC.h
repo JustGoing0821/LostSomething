@@ -68,6 +68,23 @@ public:
 
 
     ////////////////////////////////////Damage
+    UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
+    bool bIsDead = false;
+
+    // Getter
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    FORCEINLINE bool GetIsDead()
+    {
+        return bIsDead;
+    }
+
+    // Setter (¿Œ∂Û¿Œ)
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    void SetIsDead(bool NewDeadStatus)
+    {
+        bIsDead = NewDeadStatus;
+    }
+
     void Damage();
     UFUNCTION(Server, Reliable)
     void ServerDamage();
@@ -90,6 +107,12 @@ public:
     void ServerStopAttackMontage();
     UFUNCTION(NetMulticast, Reliable)
     void MultiStopAttackMontage();
+
+    void DespawnMontage();
+    UFUNCTION(Server, Reliable)
+    void ServerDespawnMontage();
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiDespawnMontage();
 
 
     ////////////////////////////////////////////Chase
@@ -119,8 +142,6 @@ public:
         bShouldChase = bNewShouldChase;
     }
 
-    bool bSoundPlay = false;
-
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void SetMaxWalkSpeed(float NewSpeed);
 
@@ -129,6 +150,9 @@ public:
  
 
     ////////////////////////////////////// Sound
+
+    bool bSoundPlay = false;
+
     UPROPERTY(EditAnywhere)
     USoundWave* IdleSound;
 

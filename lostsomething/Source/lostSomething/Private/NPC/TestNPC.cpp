@@ -71,8 +71,9 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
 	Damage();
+	SetIsDead(true);
 	return 0.0f;
 }
 
@@ -173,6 +174,27 @@ void ATestNPC::CheckShouldStopMontage()
 	ServerStopAttackMontage();
 }
 
+void ATestNPC::DespawnMontage()
+{
+	ServerDespawnMontage();
+}
+
+void ATestNPC::ServerDespawnMontage_Implementation()
+{
+	MultiDespawnMontage();
+}
+
+void ATestNPC::MultiDespawnMontage_Implementation()
+{
+	if (UTestNPCAnimIns* AnimIns = Cast<UTestNPCAnimIns>(GetMesh()->GetAnimInstance()))
+	{
+		if (AnimIns)
+		{
+			AnimIns->DespawnMontagePlay();
+		}
+	}
+}
+
 void ATestNPC::ServerStopAttackMontage_Implementation()
 {
 	MultiStopAttackMontage();
@@ -239,7 +261,7 @@ void ATestNPC::ServerDespawn_Implementation()
 
 void ATestNPC::MultiDespawn_Implementation()
 {
-	SetLifeSpan(4.0f);
+	//SetLifeSpan(4.0f);
 	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 
 	if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
@@ -247,11 +269,10 @@ void ATestNPC::MultiDespawn_Implementation()
 		if (UBlackboardComponent* BB = AICon->GetBlackboardComponent())
 		{
 			AActor* Target = Cast<AActor>(BB->GetValueAsObject(TEXT("Target"))); // 또는 "PlayerActor" 같은 키
-			bool IsEscaping = BB->GetValueAsBool(TEXT("bIsEscaping"));
-
+			
 			FVector OppositeDirection;
 
-			if (Target && IsEscaping)
+			if (Target)
 			{
 				// 1. 내 위치에서 Target 방향 벡터 구하고 반대 방향으로 회전
 				FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
@@ -310,6 +331,14 @@ void ATestNPC::MultiDespawn_Implementation()
 			FPathFollowingRequestResult Result = AICon->MoveTo(MoveRequest, &NavPath);
 		}
 	}
+	FTimerHandle DelayTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		DelayTimerHandle,           // 타이머 핸들
+		this,                       // 대상 객체
+		&ATestNPC::DespawnMontage,  // 실행할 함수
+		4.0f,                      // 4초
+		false                      // 반복하지 않음 (한 번만 실행)
+	);
 }
 
 void ATestNPC::Damage()
