@@ -92,6 +92,9 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
     USoundWave* DamageSound;
 
     UPROPERTY(EditAnywhere)
+    USoundWave* HPChangeSound;
+
+    UPROPERTY(EditAnywhere)
     USoundWave* Phase1Sound;
 
     UPROPERTY(EditAnywhere)
