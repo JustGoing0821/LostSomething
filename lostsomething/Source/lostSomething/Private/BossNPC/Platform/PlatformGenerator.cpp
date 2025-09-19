@@ -38,7 +38,7 @@ void APlatformGenerator::Tick(float DeltaTime)
 void APlatformGenerator::GenerateMaze()
 {
 	SpecialMap = GenerateConnectedSpecialPath();
-	//SpawnTiles(SpecialMap);
+    SpawnedColumns.Init(false, NumCols);
     SpawnTilesColumn(NumCols - 1);
 }
 
@@ -96,7 +96,18 @@ void APlatformGenerator::OnSpecialTileStepped(int32 CurrentCol)
         return;
     }
 
+    if (SpawnedColumns.IsValidIndex(CurrentCol) && SpawnedColumns[CurrentCol])
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Column %d already stepped, skipping"), CurrentCol);
+        return;
+    }
+
     SpawnTilesColumn(NextCol);
+
+    if (SpawnedColumns.IsValidIndex(CurrentCol))
+    {
+        SpawnedColumns[CurrentCol] = true;
+    }
 }
 
 void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
@@ -105,7 +116,6 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
     if (!BossNPC) return;
 
     BossNPC->BMSoundPlay("Phase3");
-
     int32 Rows = SpecialMap.Num();
 
     FVector Forward = BossNPC->GetActorForwardVector();
@@ -144,6 +154,7 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
 
 void APlatformGenerator::SpawnTiles(const TArray<TArray<bool>>& specialMap)
 {
+
     if (specialMap.Num() == 0) return;
 
     int32 Rows = specialMap.Num();
