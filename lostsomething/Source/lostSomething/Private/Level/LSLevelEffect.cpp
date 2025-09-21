@@ -16,6 +16,9 @@
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Quest/LSQuestManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/Material.h"
 
 // Sets default values
 ALSLevelEffect::ALSLevelEffect()
@@ -28,6 +31,17 @@ ALSLevelEffect::ALSLevelEffect()
     TriggerBox->SetBoxExtent(FVector(100, 100, 100));
     TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ALSLevelEffect::OnTriggerBeginOverlap);
+    RootComponent = TriggerBox;
+
+    //Mesh
+    ArrowMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArrowMesh"));
+    ArrowMesh->SetupAttachment(RootComponent);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Level/Display/Arrow/City-Icons-Pack-Arrows_City-Icons_014.City-Icons-Pack-Arrows_City-Icons_014"));
+    if (ItemMeshRef.Object)
+    {
+        ArrowMesh->SetStaticMesh(ItemMeshRef.Object);
+    }
+    ArrowMesh->SetCollisionProfileName(TEXT("NoColision"));
 }
 
 // Called when the game starts or when spawned
@@ -43,6 +57,26 @@ void ALSLevelEffect::BeginPlay()
         {
             GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSLevelEffect::OnQuestChange);
         }
+    }
+
+    ArrowMesh->SetVisibility(false);
+
+    UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Level/Display/Arrow/M_LSArrow.M_LSArrow"));
+
+    if (BaseMaterial && ArrowMesh)
+    {
+        // 동적 머티리얼 인스턴스 생성
+        ArrowMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+
+        // 메시에 적용 (슬롯 0번)
+        ArrowMesh->SetMaterial(0, ArrowMaterial);
+
+        // 파라미터 설정 예시
+        ArrowMaterial->SetVectorParameterValue(TEXT("BaseColor"), CustomColor);
+    }
+    else
+    {
+        LS_LOG(LogLSls, Error, TEXT("No BaseMaterial or ArrowMesh!!"));
     }
 }
 
@@ -117,8 +151,6 @@ void ALSLevelEffect::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum 
 
 void ALSLevelEffect::PuzzleActivate()
 {
-    TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
     ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
     ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
     if (LSCharacterChoice)
@@ -132,6 +164,9 @@ void ALSLevelEffect::PuzzleActivate()
         LS_LOG(LogLS, Error, TEXT("No Character Choice"));
         return;
     }
+
+    TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    ArrowMesh->SetVisibility(bArrowVisible);
 
     // SpawnSystem 커스텀 이벤트 호출
     SpawnSystem();
@@ -141,20 +176,21 @@ void ALSLevelEffect::PuzzleActivate()
 void ALSLevelEffect::PuzzleDeactivate()
 {
     TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    ArrowMesh->SetVisibility(false);
 
-    ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-    ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
-    if (LSCharacterChoice)
-    {
-        FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
-        //LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
-        if (LSCharacterChoice->GetCharacterChoice() != CharacterChoice && CharacterChoice != ELSCharacterChoice::None) return;
-    }
-    else
-    {
-        LS_LOG(LogLS, Error, TEXT("No Character Choice"));
-        return;
-    }
+    //ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+    //ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LocalPlayer->GetPlayerController(GetWorld()));
+    //if (LSCharacterChoice)
+    //{
+    //    FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSCharacterChoice->GetCharacterChoice())).ToString();
+    //    //LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
+    //    if (LSCharacterChoice->GetCharacterChoice() != CharacterChoice && CharacterChoice != ELSCharacterChoice::None) return;
+    //}
+    //else
+    //{
+    //    LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+    //    return;
+    //}
 
     if (GetWorld()->GetTimerManager().IsTimerActive(SpawnTimerHandle))
     {
