@@ -41,7 +41,7 @@ protected:
     bool bChangeColor = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-    FLinearColor CustomColor = FLinearColor::Red;
+    FLinearColor CustomColor = FLinearColor::White;
 
     // 타이머 핸들
     FTimerHandle SpawnTimerHandle;
@@ -63,6 +63,17 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
     ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
+
+    //ArrowEffect
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    TObjectPtr<class UStaticMeshComponent> ArrowMesh;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    TObjectPtr<class UMaterialInstanceDynamic> ArrowMaterial;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    bool bArrowVisible = false;
 
 //RPC Section
 public:
