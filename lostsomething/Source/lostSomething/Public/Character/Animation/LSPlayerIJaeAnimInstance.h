@@ -20,6 +20,7 @@ public:
 	void ThrowingAnim();
 	void StartThrowingAnim();
 	void EndThrowingAnim();
+	void HitAnim();
 
 protected:
 	//딱 한번 호출. 초기화.
@@ -46,6 +47,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* HitMontage;
 
 
 	//Movement

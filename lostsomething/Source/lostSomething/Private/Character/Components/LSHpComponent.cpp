@@ -3,6 +3,7 @@
 
 #include "Character/Components/LSHpComponent.h"
 #include "Character/Animation/LSPlayerSiJaeAnimInstance.h"
+#include "Character/Animation/LSPlayerIJaeAnimInstance.h"
 #include "Components/SkeletalMeshComponent.h" 
 #include "GameFramework/Character.h"  
 
@@ -58,6 +59,10 @@ void ULSHpComponent::SetHp(float NewHp)
                         Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
                     {
                         AnimInstance->HitAnim();
+                    }
+                    else if (ULSPlayerIJaeAnimInstance* IJaeAnim = Cast<ULSPlayerIJaeAnimInstance>(AnyAnim))
+                    {
+                        IJaeAnim->HitAnim();
                     }
                 }
             }
