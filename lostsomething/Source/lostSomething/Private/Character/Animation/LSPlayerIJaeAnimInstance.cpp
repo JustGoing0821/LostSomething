@@ -80,6 +80,24 @@ void ULSPlayerIJaeAnimInstance::EndThrowingAnim()
 	}
 }
 
+void ULSPlayerIJaeAnimInstance::HitAnim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HitMontage called"));
+
+	if (!HitMontage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("HitMontage is NULL!"));
+		return;
+	}
+
+	if (!Montage_IsPlaying(HitMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HitMontage Playing Now"));
+		Montage_Play(HitMontage);
+	}
+}
+
+
 void ULSPlayerIJaeAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
