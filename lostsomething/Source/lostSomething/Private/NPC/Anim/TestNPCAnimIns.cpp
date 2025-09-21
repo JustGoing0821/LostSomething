@@ -17,7 +17,7 @@ void UTestNPCAnimIns::NativeUpdateAnimation(float DeltaSeconds)
 	if (::IsValid(Pawn))
 	{
 		CurrentPawnSpeed = Pawn->GetVelocity().Size();// 이동속도 받기
-        ATestNPC* NPCCharacter = Cast<ATestNPC>(Pawn);
+        NPCCharacter = Cast<ATestNPC>(Pawn);
         if (CurrentPawnSpeed > 10.f && NPCCharacter->bIsAttacking) // 걷기 이상이면 공격 멈춤
         {
             if (Montage_IsPlaying(AttackMontage))
@@ -61,6 +61,14 @@ void UTestNPCAnimIns::DamageMontagePlay()
     }
 }
 
+void UTestNPCAnimIns::DespawnMontagePlay()
+{
+    if (DespawnMontage && !Montage_IsPlaying(DespawnMontage))
+    {
+        Montage_Play(DespawnMontage);
+    }
+}
+
 void UTestNPCAnimIns::JumpToAttackMontageSection(int32 NewSection)
 {
     Montage_JumpToSection(GetAttackMontageSectionName(NewSection), AttackMontage);
@@ -68,75 +76,85 @@ void UTestNPCAnimIns::JumpToAttackMontageSection(int32 NewSection)
 
 void UTestNPCAnimIns::AnimNotify_NextAttackCheck()
 {
-    UE_LOG(LogTemp, Warning, TEXT("AnimNotify_NextAttackCheck()"));
-    auto Pawn = TryGetPawnOwner();
-    ATestNPC* NPCCharacter = Cast<ATestNPC>(Pawn);
-    if (NPCCharacter)
+    if (!NPCCharacter)
     {
-        NPCCharacter->bIsComboCheckWindowOpen = true;
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_NextAttackCheck : nullptr"));
+        return;
     }
+    NPCCharacter->bIsComboCheckWindowOpen = true;
 }
 
 void UTestNPCAnimIns::AnimNotify_EndDamage()
 {
-    auto Pawn = TryGetPawnOwner();
-    ATestNPC* NPCCharacter = Cast<ATestNPC>(Pawn);
+    if (!NPCCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_EndDamage : nullptr"));
+        return;
+    }
     NPCCharacter->SetDespawn();
+}
+
+void UTestNPCAnimIns::AnimNotify_Despawn()
+{
+    if (!NPCCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Despawn : nullptr"));
+        return;
+    }
+    NPCCharacter->Destroy();
 }
 
 void UTestNPCAnimIns::AnimNotify_IdleSound()
 {
-    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
-    if (!NPC)
+    if (!NPCCharacter)
     {
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_IdleSound: NPC is nullptr"));
         return;
     }
 
-    NPC->TMSoundPlay(TEXT("Idle"));
+    NPCCharacter->TMSoundPlay(TEXT("Idle"));
 }
 
 void UTestNPCAnimIns::AnimNotify_DamageSound()
 {
-    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
-    if (!NPC)
+    if (!NPCCharacter)
     {
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_DamageSound: NPC is nullptr"));
         return;
     }
 
-    NPC->TMSoundPlay(TEXT("Damage"));
+    NPCCharacter->TMSoundPlay(TEXT("Damage"));
 }
 
 void UTestNPCAnimIns::AnimNotify_WalkSound()
 {
-    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
-    if (!NPC)
+    if (!NPCCharacter)
     {
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_WalkSound: NPC is nullptr"));
         return;
     }
 
-    NPC->TMSoundPlay(TEXT("Walk"));
+    NPCCharacter->TMSoundPlay(TEXT("Walk"));
 }
 
 void UTestNPCAnimIns::AnimNotify_RunSound()
 {
-    ATestNPC* NPC = Cast<ATestNPC>(TryGetPawnOwner());
-    if (!NPC)
+    if (!NPCCharacter)
     {
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_RunSound: NPC is nullptr"));
         return;
     }
 
-    NPC->TMSoundPlay(TEXT("Run"));
+    NPCCharacter->TMSoundPlay(TEXT("Run"));
 }
 
 void UTestNPCAnimIns::AnimNotify_EndAttack()
 {
-    UE_LOG(LogTemp, Warning, TEXT("UTestNPCAnimIns::AnimNotify_EndAttack()"));
-    auto Pawn = TryGetPawnOwner();
-    ATestNPC* NPCCharacter = Cast<ATestNPC>(Pawn);
+    if (!NPCCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_EndAttack:nullptr"));
+        return;
+    }
     NPCCharacter->NotifyComboActionEnd();
 
 }

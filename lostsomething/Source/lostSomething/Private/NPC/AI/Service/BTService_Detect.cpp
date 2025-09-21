@@ -7,6 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/OverlapResult.h"
+#include <Character/Players/LSPlayer.h>
 //#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 UBTService_Detect::UBTService_Detect()
@@ -24,6 +25,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	UWorld* World = ControllingPawn->GetWorld();
 	if (nullptr == World) return;
+
+	ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
 
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
@@ -51,17 +54,24 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			APawn* Pawn = Cast<APawn>(OverlapResult.GetActor());
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
-				ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
-				TM->SetShouldChase(true);
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
-				OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), true);
-				
+				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
+				if (TargetPlayer&& !TM->GetIsDead())
+				{
+					TM->SetShouldChase(true);
+					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), true);
+				}
+				else 
+				{
+					TM->SetShouldChase(false);
+					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);
+				}
 				return;
 			}
 		}
 	}
 
-	ATestNPC* TM = Cast<ATestNPC>(ControllingPawn);
 	TM->SetShouldChase(false);
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);
