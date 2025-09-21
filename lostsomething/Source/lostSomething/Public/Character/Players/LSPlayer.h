@@ -226,10 +226,13 @@ protected:
  Damage Section
 
 ********************/
+public:
+	// 죽음 상태 변수
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Death")
+	bool bIsDead = false;
+
 protected:
-		// 죽음 상태 변수
-		UPROPERTY(Replicated, BlueprintReadOnly, Category = "Death")
-		bool bIsDead = false;
+		
 
 		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class ULSHpComponent> HpComponent;
@@ -264,6 +267,8 @@ protected:
 	UFUNCTION()
 	void Respawn();
 
+	
+
 	// HP가 0이 될 때 호출함수
 	UFUNCTION()
 	FORCEINLINE void OnHpReachedZero(float ZeroHp) { Die(); }
@@ -272,6 +277,9 @@ protected:
 public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiDie();
+
+	UFUNCTION(Server, Reliable)
+	void ServerDie();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiRespawn();

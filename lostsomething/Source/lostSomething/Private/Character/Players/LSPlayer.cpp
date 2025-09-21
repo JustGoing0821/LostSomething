@@ -833,6 +833,13 @@ void ALSPlayer::Die()
 		// 5초 후 부활 타이머 시작
 		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ALSPlayer::Respawn, 5.0f, false);
 	}
+
+
+	if (!HasAuthority())
+	{
+		ServerDie();
+
+	}
 }
 
 void ALSPlayer::Respawn()
@@ -856,6 +863,13 @@ void ALSPlayer::Respawn()
 	}
 }
 
+void ALSPlayer::ServerDie_Implementation()
+{
+	MultiDie();
+
+}
+
+
 void ALSPlayer::MultiDie_Implementation()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("MulticastPlayerDied called"));
@@ -870,14 +884,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
 	}
 
 	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstanceIJae)
 	{
 		AnimInstanceIJae->SetDeadAnim();
-		//E_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
+		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
