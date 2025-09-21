@@ -22,7 +22,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
     if (!NPC || NPC->bIsAttacking) return EBTNodeResult::Failed;
 
     // 콤보 0 시작
-    NPC->AttackByAI();
+    NPC->AttackStart();
 
     // Blackboard에 공격 중임을 표시 (필수 아님, 조건에 따라)
     OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bIsAttacking"), true);

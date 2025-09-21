@@ -64,6 +64,7 @@ void ABossNPC::MultiBMSoundPlay_Implementation(const FString& SoundType)
     else if (SoundType == "Phase3") SelectedSound = Phase3Sound;
     else if (SoundType == "Damage") SelectedSound = DamageSound;
     else if (SoundType == "Die") SelectedSound = DieSound;
+    else if (SoundType == "HP") SelectedSound = HPChangeSound;
     if (!SelectedSound)
     {
         UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
@@ -103,7 +104,7 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
     Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     SetHP(GetHP() - DamageAmount);
-    //LS_LOG(LogLS, Log, TEXT("CurrentHP : %f"), CurrentHP)
+    BMSoundPlay("HP");
 
     ABossNPCAIController* PC = Cast<ABossNPCAIController>(GetController());
     if (PC)
@@ -113,7 +114,6 @@ float ABossNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
     if (GetHP() <= 0.0f)
     {
-        //LS_LOG(LogLS, Log, TEXT("DieMontagePlay"))
         DieMontagePlay();
     }
 
@@ -150,11 +150,8 @@ void ABossNPC::SetHP(float NewHP)
 // 1페이즈 진입 - AOE 패턴
 void ABossNPC::EnterPhase1()
 {
-    //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::EnterPhase1()"));
     if (HasAuthority())
     {
-        //CurrentPhase = 1;
-        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 1 - AOE Pattern"));
         StartAOEAttackPattern();
     }
 }
@@ -164,9 +161,6 @@ void ABossNPC::EnterPhase2()
 {
     if (HasAuthority())
     {
-        //CurrentPhase = 2;
-        //UE_LOG(LogTemp, Warning, TEXT("Boss entered Phase 2 - Obstacle Pattern"));
-
         // 장애물 스폰 패턴 시작
         SpawnObstacles();
     }
@@ -246,13 +240,10 @@ void ABossNPC::MultiAOEMontagePlay_Implementation()
     UBossNPCAnimIns* NPCAnimInstance = Cast<UBossNPCAnimIns>(AnimInstance);
     if (!NPCAnimInstance || !NPCAnimInstance->AOEMontage) return;
 
-    //UE_LOG(LogTemp, Warning, TEXT("Bpss AnimInstace exist!"));
-
     // 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
     if (NPCAnimInstance->AOEMontage)
     {
         NPCAnimInstance->MontagePlay(NPCAnimInstance->AOEMontage);
-        //UE_LOG(LogTemp, Warning, TEXT("ABossNPC::AOEMontagePlay()-> MontagePlay"));
     }
 }
 
@@ -385,8 +376,6 @@ void ABossNPC::StartAOEAttackPattern()
             true  // 반복
         );*/
         // 이후 주기적으로 AOE 스폰
-
-        UE_LOG(LogTemp, Warning, TEXT("AOE Attack Pattern Started"));
     }
 }
 
@@ -426,7 +415,6 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         if (HighChance <= 60)
         {
             bShouldSpawnLargeAOE = true;
-            UE_LOG(LogTemp, Warning, TEXT("%d players in danger zone - HIGH chance Large AOE triggered"), PlayersInDangerZone);
         }
         else
         {
@@ -439,7 +427,6 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         if (LowChance <= 10)
         {
             bShouldSpawnLargeAOE = true;
-            UE_LOG(LogTemp, Warning, TEXT("No players in danger zone - LOW chance Large AOE triggered"));
         }
         else
         {
@@ -453,8 +440,8 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
 
         SpawnSingleLargeCircleAOE(FixedLargeAOELocation, FString::Printf(TEXT("Fixed Position Large Circle AOE")));
 
-        UE_LOG(LogTemp, Warning, TEXT("Spawned LARGE Circle AOE at FIXED position: %s"), *FixedLargeAOELocation.ToString());
-        UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: LARGE AOE ONLY - No other AOEs spawned"));
+        //UE_LOG(LogTemp, Warning, TEXT("Spawned LARGE Circle AOE at FIXED position: %s"), *FixedLargeAOELocation.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: LARGE AOE ONLY - No other AOEs spawned"));
         return; 
     }
 
@@ -500,12 +487,12 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
     }
 
     int32 ExtraRandomAOEs = MaxAOECount;
-    UE_LOG(LogTemp, Warning, TEXT("Generating %d extra random AOEs"), ExtraRandomAOEs);
+    //UE_LOG(LogTemp, Warning, TEXT("Generating %d extra random AOEs"), ExtraRandomAOEs);
 
     for (int32 i = 0; i < ExtraRandomAOEs; ++i)
     {
         FVector RandomLocation = GetSafeRandomLocationAroundBoss();
-        UE_LOG(LogTemp, Warning, TEXT("Random AOE %d location: %s"), i + 1, *RandomLocation.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("Random AOE %d location: %s"), i + 1, *RandomLocation.ToString());
 
         int32 RandomChance = FMath::RandRange(1, 100);
 
@@ -524,8 +511,8 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         }
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: %d Player-Target AOEs, %d Random AOEs, Share AOE: %s"),
-        PlayerAOECount, ExtraRandomAOEs, bHasSpawnedShareAOE ? TEXT("YES") : TEXT("NO"));
+    //UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: %d Player-Target AOEs, %d Random AOEs, Share AOE: %s"),
+        //PlayerAOECount, ExtraRandomAOEs, bHasSpawnedShareAOE ? TEXT("YES") : TEXT("NO"));
 }
 
 FVector ABossNPC::GetSafeRandomLocationAroundBoss()
@@ -571,8 +558,8 @@ FVector ABossNPC::GetSafeRandomLocationAroundBoss()
     int32 RandomIndex = FMath::RandRange(0, SafePositions.Num() - 1);
     FVector SelectedPosition = SafePositions[RandomIndex];
 
-    UE_LOG(LogTemp, Warning, TEXT("Selected safe random position: %s (Index: %d)"),
-        *SelectedPosition.ToString(), RandomIndex);
+    //UE_LOG(LogTemp, Warning, TEXT("Selected safe random position: %s (Index: %d)"),
+        //*SelectedPosition.ToString(), RandomIndex);
 
     return SelectedPosition;
 }
@@ -604,8 +591,8 @@ void ABossNPC::MultiSpawnSingleLargeCircleAOE_Implementation(FVector SpawnLocati
     {
         SpawnedAOE->SetupAsLargeCircleAOE(800.0f);
         SpawnedAOE->StartAOE();
-        UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - LARGE CIRCLE AOE (Radius: 800)"),
-            *AOEType, *SpawnLocation.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - LARGE CIRCLE AOE (Radius: 800)"),
+            //*AOEType, *SpawnLocation.ToString());
     }
 }
 
@@ -641,8 +628,8 @@ void ABossNPC::MultiSpawnSingleCircleAOE_Implementation(FVector SpawnLocation, c
     {
         SpawnedAOE->SetupAsCircleAOE(250.0f); // 기본 원형 AOE
         SpawnedAOE->StartAOE();
-        UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s"),
-            *AOEType, *SpawnLocation.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s"),
+            //*AOEType, *SpawnLocation.ToString());
     }
 }
 
@@ -673,8 +660,8 @@ void ABossNPC::MultiSpawnSingleShareAOE_Implementation(FVector SpawnLocation, co
     {
         SpawnedAOE->SetupAsShareAOE(300.0f, 2);
         SpawnedAOE->StartAOE();
-        UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - SHARE MECHANICS! (Need 2+ players)"),
-            *AOEType, *SpawnLocation.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("%s spawned at location: %s - SHARE MECHANICS! (Need 2+ players)"),
+            //*AOEType, *SpawnLocation.ToString());
     }
 }
 
@@ -693,7 +680,7 @@ TArray<AActor*> ABossNPC::GetNearbyPlayers(float MaxDistance)
         if (Distance <= MaxDistance)
         {
             NearbyPlayers.Add(Player);
-            UE_LOG(LogTemp, Log, TEXT("Player %s is nearby (Distance: %f)"), *Player->GetName(), Distance);
+           // UE_LOG(LogTemp, Log, TEXT("Player %s is nearby (Distance: %f)"), *Player->GetName(), Distance);
         }
     }
 
@@ -841,7 +828,7 @@ void ABossNPC::StopAOEPattern()
     if (HasAuthority())
     {
         GetWorld()->GetTimerManager().ClearTimer(AOEPatternTimerHandle);
-        UE_LOG(LogTemp, Warning, TEXT("AOE Pattern Stopped"));
+        //UE_LOG(LogTemp, Warning, TEXT("AOE Pattern Stopped"));
     }
 }
 
@@ -851,7 +838,7 @@ void ABossNPC::StopObstaclePattern()
     if (HasAuthority())
     {
         GetWorld()->GetTimerManager().ClearTimer(ObstaclePatternTimerHandle);
-        UE_LOG(LogTemp, Warning, TEXT("Obstacle Pattern Stopped"));
+        //UE_LOG(LogTemp, Warning, TEXT("Obstacle Pattern Stopped"));
     }
 }
 

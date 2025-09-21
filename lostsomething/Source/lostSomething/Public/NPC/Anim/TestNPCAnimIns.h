@@ -7,6 +7,7 @@
 #include "TestNPCAnimIns.generated.h"
 
 
+class ATestNPC;
 UCLASS()
 class LOSTSOMETHING_API UTestNPCAnimIns : public UAnimInstance
 {
@@ -23,15 +24,22 @@ public:
 	UFUNCTION()
 	void DamageMontagePlay();
 
+	UFUNCTION()
+	void DespawnMontagePlay();
+
 	void JumpToAttackMontageSection(int32 NewSection);
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ATestNPC* NPCCharacter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* AttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DamageMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* DespawnMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bShouldChase = false;
@@ -51,8 +59,10 @@ private:
 	void AnimNotify_EndDamage();
 
 	UFUNCTION()
-	void AnimNotify_IdleSound();
+	void AnimNotify_Despawn();
 
+	UFUNCTION()
+	void AnimNotify_IdleSound();
 	UFUNCTION()
 	void AnimNotify_DamageSound();
 	UFUNCTION()

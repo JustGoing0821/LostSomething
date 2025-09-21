@@ -53,7 +53,10 @@ protected:
 	TArray<FVector> StepTriggerLocations;
 
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UStaticMeshComponent> PannelMesh;
+	TObjectPtr<class UStaticMeshComponent> PannelMesh1;
+
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> PannelMesh2;
 
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TArray<class UMaterialInterface*> PannelMaterials;

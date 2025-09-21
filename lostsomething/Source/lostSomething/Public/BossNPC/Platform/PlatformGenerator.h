@@ -43,6 +43,9 @@ public:
     UPROPERTY(EditAnywhere)
     int32 NumCols = 18;
 
+    UPROPERTY()
+    TArray<bool> SpawnedColumns;
+
     TArray<TArray<bool>> SpecialMap;
     void SpawnTilesColumn(int32 ColIndex);
 

@@ -76,14 +76,23 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	}
 
 	// Pannel Section
-	PannelMesh = CreateDefaultSubobject<UStaticMeshComponent>("PannelMesh");
-	PannelMesh->SetupAttachment(RootComponent);
-	PannelMesh->SetRelativeLocationAndRotation(FVector(300, -415, 50), FRotator(0, 90, 0));
-	PannelMesh->SetRelativeScale3D(FVector(2,2,2));
+	PannelMesh1 = CreateDefaultSubobject<UStaticMeshComponent>("PannelMesh1");
+	PannelMesh1->SetupAttachment(RootComponent);
+	PannelMesh1->SetCollisionProfileName(TEXT("NoCollision"));
+	PannelMesh1->SetRelativeLocationAndRotation(FVector(-576, -1084, 83), FRotator(0, 0, 0));
+	PannelMesh1->SetRelativeScale3D(FVector(1.5f,1.5f,1.5f));
+
+	PannelMesh2 = CreateDefaultSubobject<UStaticMeshComponent>("PannelMesh2");
+	PannelMesh2->SetupAttachment(RootComponent);
+	PannelMesh2->SetCollisionProfileName(TEXT("NoCollision"));
+	PannelMesh2->SetRelativeLocationAndRotation(FVector(-576, 850, 83), FRotator(0, 0, 0));
+	PannelMesh2->SetRelativeScale3D(FVector(1.5f, 1.5f, 1.5f));
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PannelMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/MetroPanel/SM_MetroPanel.SM_MetroPanel"));
 	if (PannelMeshRef.Object)
 	{
-		PannelMesh->SetStaticMesh(PannelMeshRef.Object);
+		PannelMesh1->SetStaticMesh(PannelMeshRef.Object);
+		PannelMesh2->SetStaticMesh(PannelMeshRef.Object);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> PannelMaterialRef0(TEXT("/Game/Level/Puzzle/Train/Materials/MetroPanelMaterial/Instances/M_MetroPanel_0.M_MetroPanel_0"));
@@ -103,7 +112,8 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	if (PannelMeshRef.Object)
 	{
-		PannelMesh->SetMaterial(0, PannelMaterials[0]);
+		PannelMesh1->SetMaterial(0, PannelMaterials[0]);
+		PannelMesh2->SetMaterial(0, PannelMaterials[0]);
 	}
 
 	//Puzzle
@@ -278,7 +288,8 @@ void ALSTrainSpawnGimmick::SetPannelMonitor()
 		//LS_LOG(LogLS, Log, TEXT("Character Choice : %s"), *EnumString);
 		if (LSCharacterChoice->GetCharacterChoice() == ELSCharacterChoice::IJae)
 		{
-			PannelMesh->SetMaterial(0, PannelMaterials[CorrectGate]);
+			PannelMesh1->SetMaterial(0, PannelMaterials[CorrectGate]);
+			PannelMesh2->SetMaterial(0, PannelMaterials[CorrectGate]);
 		}
 	}
 	else
