@@ -39,6 +39,31 @@ void UTestNPCAnimIns::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
+float UTestNPCAnimIns::MontagePlay(UAnimMontage* Montage)
+{
+    //CurrentMontage = Montage;
+
+    if (Montage && !Montage_IsPlaying(Montage))
+    {
+        FOnMontageEnded EndDelegate;
+        EndDelegate.BindUObject(this, &UTestNPCAnimIns::MontageStop);
+        Montage_SetEndDelegate(EndDelegate, Montage);
+
+        return Montage_Play(Montage);
+
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Montage is nullptr or already playing in UBossNPCAnimIns"));
+        return 0.f;
+    }
+}
+
+void UTestNPCAnimIns::MontageStop(UAnimMontage* Montage, bool bInterrupted)
+{
+    Montage_Stop(0.25f, Montage);
+}
+
 void UTestNPCAnimIns::AttackMontagePlay()
 {
     
@@ -84,16 +109,6 @@ void UTestNPCAnimIns::AnimNotify_NextAttackCheck()
     NPCCharacter->bIsComboCheckWindowOpen = true;
 }
 
-void UTestNPCAnimIns::AnimNotify_EndDamage()
-{
-    if (!NPCCharacter)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_EndDamage : nullptr"));
-        return;
-    }
-    NPCCharacter->SetDespawn();
-}
-
 void UTestNPCAnimIns::AnimNotify_Despawn()
 {
     if (!NPCCharacter)
@@ -102,6 +117,16 @@ void UTestNPCAnimIns::AnimNotify_Despawn()
         return;
     }
     NPCCharacter->Destroy();
+}
+
+void UTestNPCAnimIns::AnimNotify_DamageEnd()
+{
+    if (!NPCCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Despawn : nullptr"));
+        return;
+    }
+    NPCCharacter->bIsAttacking=false;
 }
 
 void UTestNPCAnimIns::AnimNotify_IdleSound()
