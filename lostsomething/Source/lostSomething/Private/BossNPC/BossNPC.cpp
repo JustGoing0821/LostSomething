@@ -10,6 +10,8 @@
 #include "lostSomething.h"
 #include <BossNPC/Anim/BossNPCAnimIns.h>
 #include <UObject/FastReferenceCollector.h>
+#include "GameFramework/GameModeBase.h"
+#include "Interface/LSQuestInterface.h"
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -347,11 +349,19 @@ void ABossNPC::MultiDieMontagePlay_Implementation()
 
 void ABossNPC::Despawn()
 {
+    ILSQuestInterface* GM = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+    if (GM)
+    {
+        GM->QuestComplete();
+    }
+
     ServerDespawn();
 }
 
 void ABossNPC::ServerDespawn_Implementation()
 {
+
+
     MultiDespawn();
 }
 
