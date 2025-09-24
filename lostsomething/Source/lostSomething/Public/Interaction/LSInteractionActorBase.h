@@ -50,7 +50,7 @@ protected:
 
 //Visible Section
 protected:
-	void ChangeVisible();
+	virtual void ChangeVisible();
 	virtual void SetVisibleSiJae() {};
 	virtual void SetVisibleIJae() {};
 

@@ -266,7 +266,11 @@ void ALSVendingMachine::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEn
 void ALSVendingMachine::PuzzleActivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	ChangeVisible();
+
+	if (PuzzleActivateEnum == ELSInteractionEnum::Quest2)
+	{
+		ChangeVisible();
+	}
 }
 
 void ALSVendingMachine::PuzzleDeactivate()
