@@ -29,33 +29,38 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	StartButton->SetupAttachment(RootComponent);
 
 	//Mesh
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PannelMeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionProfileName(TEXT("NoColision"));
+	PanelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PanelMeshComponent"));
+	PanelMesh->SetupAttachment(RootComponent);
+	PanelMesh->SetCollisionProfileName(TEXT("NoColision"));
 	//MeshComponent->SetRelativeLocation(FVector(-50.0f, -50.0f, -50.0f));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ItemMeshRef(TEXT("/Game/Asset/Map/MetroPack/Objects/Cartels/SM_Cartel_02.SM_Cartel_02"));
 	if (ItemMeshRef.Object)
 	{
-		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
+		PanelMesh->SetStaticMesh(ItemMeshRef.Object);
 	}
 
 	//Material
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RedMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelR.M_CartelR"));
-	if (RedMaterialRef.Object)
-	{
-		MeshMaterials.Add(EVendingMachineColor::Red, RedMaterialRef.Object);
-	}
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> GreenMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelG.M_CartelG"));
-	if (GreenMaterialRef.Object)
-	{
-		MeshMaterials.Add(EVendingMachineColor::Green, GreenMaterialRef.Object);
-	}
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BlueMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelB.M_CartelB"));
-	if (BlueMaterialRef.Object)
-	{
-		MeshMaterials.Add(EVendingMachineColor::Blue, BlueMaterialRef.Object);
-	}
-	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
+	PanelColors.Add(EVendingMachineColor::Red, FColor::FromHex(TEXT("DE4D44")));
+	PanelColors.Add(EVendingMachineColor::Blue, FColor::FromHex(TEXT("004DD2")));
+	PanelColors.Add(EVendingMachineColor::Green, FColor::FromHex(TEXT("007628")));
+	Gray = FColor::FromHex(TEXT("9C9C9C"));
+
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> RedMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelR.M_CartelR"));
+	//if (RedMaterialRef.Object)
+	//{
+	//	MeshMaterials.Add(EVendingMachineColor::Red, RedMaterialRef.Object);
+	//}
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> GreenMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelG.M_CartelG"));
+	//if (GreenMaterialRef.Object)
+	//{
+	//	MeshMaterials.Add(EVendingMachineColor::Green, GreenMaterialRef.Object);
+	//}
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> BlueMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelB.M_CartelB"));
+	//if (BlueMaterialRef.Object)
+	//{
+	//	MeshMaterials.Add(EVendingMachineColor::Blue, BlueMaterialRef.Object);
+	//}
+	//MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
 
 	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
 }
@@ -63,6 +68,20 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 void ALSVendingMachineManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Level/Puzzle/VendingMachine/Materials/M_VendingMachinePanel.M_VendingMachinePanel"));
+
+	if (BaseMaterial && PanelMesh)
+	{
+		PanelMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+		PanelMesh->SetMaterial(1, PanelMaterial);
+
+		//PanelMaterial->SetVectorParameterValue(TEXT("BaseColor"), Gray);
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("No BaseMaterial or BaseMaterial!!"));
+	}
 
 	AActor* TargetActor = nullptr;
 	TArray<AActor*> FoundActors;
@@ -100,13 +119,60 @@ void ALSVendingMachineManager::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	DOREPLIFETIME(ALSVendingMachineManager, CurrentPhase);
 	DOREPLIFETIME(ALSVendingMachineManager, CurrentAnswerColor);
+	DOREPLIFETIME(ALSVendingMachineManager, PhaseAnswerColors);
+}
+
+void ALSVendingMachineManager::ChangeVisible()
+{
+	if (!PanelMaterial)
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No PanelMaterial!!!"));
+		return;
+	}
+
+	if (CurrentPhase == ECurrentPhase::Phase1 || CurrentPhase == ECurrentPhase::NotStarted)
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase1"), Gray);
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase2"), Gray);
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase3"), Gray);
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase4"), Gray);
+	}
+	else if (CurrentPhase == ECurrentPhase::Phase2)
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase1"), PhaseAnswerColors[0]);
+	}
+	else if (CurrentPhase == ECurrentPhase::Phase3)
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase2"), PhaseAnswerColors[1]);
+	}
+	else if (CurrentPhase == ECurrentPhase::Phase4)
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase3"), PhaseAnswerColors[2]);
+	}
+	else if (CurrentPhase == ECurrentPhase::Completed)
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Pase4"), PhaseAnswerColors[3]);
+	}
+
+	Super::ChangeVisible();
 }
 
 void ALSVendingMachineManager::SetVisibleIJae()
 {
-	if (CurrentPhase != ECurrentPhase::NotStarted)
+	if (!PanelMaterial)
 	{
-		MeshComponent->SetMaterial(1, MeshMaterials[CurrentAnswerColor]);
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No PanelMaterial!!!"));
+		return;
+	}
+
+	if (CurrentPhase != ECurrentPhase::NotStarted && CurrentPhase != ECurrentPhase::Completed)
+	{
+		//MeshComponent->SetMaterial(1, PanelColors[CurrentAnswerColor]);
+		PanelMaterial->SetVectorParameterValue(TEXT("Answer"), PanelColors[CurrentAnswerColor]);
+	}
+	else
+	{
+		PanelMaterial->SetVectorParameterValue(TEXT("Answer"), Gray);
 	}
 }
 
@@ -151,6 +217,7 @@ void ALSVendingMachineManager::StartPhase()
 			NewColor = FMath::RandRange(0, 2);
 		}
 		AnswerColors.Add(static_cast<ECurrentPhase>(Num+1), static_cast<EVendingMachineColor>(NewColor));
+		PhaseAnswerColors.Add(PanelColors[static_cast<EVendingMachineColor>(NewColor)]);
 		AddCurrentColor = NewColor;
 	}
 
@@ -244,7 +311,8 @@ void ALSVendingMachineManager::QuestClear()
 		OnVMPuzzleEnd.Clear();
 	}
 
-	MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
+	CurrentPhase = ECurrentPhase::Completed;
+	MulticastRPCChangeVisible();
 	StartButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 

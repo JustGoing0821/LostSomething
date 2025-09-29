@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interaction/LSInteractionActorBase.h"
 #include "Puzzle/VendingMachine/VendingMachineColor.h"
+#include "Math/Color.h"
 #include "Interaction/LSInteractionEnum.h"
 #include "LSVendingMachineManager.generated.h"
 
@@ -15,7 +16,8 @@ enum class ECurrentPhase : uint8
 	Phase1,
 	Phase2,
 	Phase3,
-	Phase4
+	Phase4,
+	Completed
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnVMPhaseChangedDelegate, EVendingMachineColor /*AnswerColor*/, int32 /*CurrentColorSet*/);
@@ -43,14 +45,20 @@ protected:
 	TObjectPtr<class USceneComponent> Root;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UStaticMeshComponent> MeshComponent;
+	TObjectPtr<class UStaticMeshComponent> PanelMesh;
 
 	UPROPERTY(VisibleAnywhere)
-	TMap<EVendingMachineColor, class UMaterialInterface*> MeshMaterials;
+	TObjectPtr<class UMaterialInstanceDynamic> PanelMaterial;
+
+	UPROPERTY(VisibleAnywhere)
+	TMap<EVendingMachineColor, FColor> PanelColors;
+
+	FColor Gray;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> StartButton;
 
+	virtual void ChangeVisible() override;
 	virtual void SetVisibleIJae() override;
 
 
@@ -75,6 +83,9 @@ protected:
 	int32 CurrentColorSet;
 	TMap<ECurrentPhase, EVendingMachineColor> AnswerColors;
 
+	UPROPERTY(Replicated)
+	TArray<FColor> PhaseAnswerColors;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
@@ -86,8 +97,7 @@ protected:
 	UFUNCTION()
 	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
 	void PuzzleActivate();
-	void PuzzleDeactivate();
-	
+	void PuzzleDeactivate();	
 
 //RPC Section
 public:
