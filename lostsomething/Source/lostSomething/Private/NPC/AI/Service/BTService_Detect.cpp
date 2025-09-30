@@ -31,10 +31,6 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
 
-	// 블랙보드에서 현재 저장된 타겟 가져오기
-	//UObject* CurrentTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(ATestNPCAIController::Key_Target);
-	//ATP_ThirdPersonCharacter* ExistingTarget = Cast<ATP_ThirdPersonCharacter>(CurrentTarget);
-
 	// 감지된 오브젝트 목록
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(NAME_None, false, ControllingPawn);
@@ -55,7 +51,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
 				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
-				if (TargetPlayer&& !TM->GetIsDead())
+				if (TargetPlayer&& !TM->GetIsDead() && TargetPlayer->bIsDead == false)
 				{
 					TM->SetShouldChase(true);
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
