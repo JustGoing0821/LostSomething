@@ -258,6 +258,26 @@ void ATestNPC::Damage()
 }
 void ATestNPC::ServerDamage_Implementation()
 {
+	ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController());
+	if (!AICon) return;
+
+	UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+	if (!Blackboard) return;
+
+	// 변경 전 값 확인
+	bool bBeforeValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
+	UE_LOG(LogTemp, Warning, TEXT("IsHit Before: %s"), bBeforeValue ? TEXT("true") : TEXT("false")); // ?
+
+	// IsHit 설정
+	Blackboard->SetValueAsBool(TEXT("bIsHit"), true);
+
+	// 변경 후 값 확인
+	bool bAfterValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
+	UE_LOG(LogTemp, Warning, TEXT("IsHit After: %s"), bAfterValue ? TEXT("true") : TEXT("false")); // ?
+
+	// IsHit를 true로 설정 → Move To 즉시 중단!
+	Blackboard->SetValueAsBool("IsHit", true);
+
 	MultiDamage();
 }
 
@@ -272,6 +292,22 @@ void ATestNPC::MultiDamage_Implementation()
 	{
 		NPCAnimInstance->MontagePlay(NPCAnimInstance->DamageMontage);
 	}
+}
+
+void ATestNPC::SetbIsHit()
+{
+	ServerSetbIsHit();
+}
+
+void ATestNPC::ServerSetbIsHit_Implementation()
+{
+	ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController());
+	if (!AICon) return;
+
+	UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+	if (!Blackboard) return;
+
+	Blackboard->SetValueAsBool(TEXT("bIsHit"), false);
 }
 
 void ATestNPC::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)

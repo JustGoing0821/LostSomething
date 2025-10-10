@@ -127,6 +127,7 @@ void UTestNPCAnimIns::AnimNotify_DamageEnd()
         return;
     }
     NPCCharacter->bIsAttacking=false;
+    NPCCharacter->SetbIsHit();
 }
 
 void UTestNPCAnimIns::AnimNotify_IdleSound()

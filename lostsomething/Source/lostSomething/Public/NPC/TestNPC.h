@@ -102,6 +102,10 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void MultiDamage();
 
+    void SetbIsHit();
+    UFUNCTION(Server, Reliable)
+    void ServerSetbIsHit();
+
 
     ////////////////////////////////////Die
     void SetDespawn();
