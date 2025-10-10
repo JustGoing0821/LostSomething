@@ -60,8 +60,8 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	//Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	//Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	Setting.Set(TEXT("GAME_ID"), FString("LOSTSOMETHING"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("room_name"), MyRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	Setting.Set(TEXT("host_name"), NickName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("room_name"), EncodedRoomName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	Setting.Set(TEXT("host_name"), EncodedHostName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 
 	Setting.Set(TEXT("player_count"), FString::FromInt(1), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -237,11 +237,11 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			{
 				FRoomInfo roomInfo;
 				roomInfo.Index = i;
-				//roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
-				//roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
+				roomInfo.RoomName = DecodedRoomName;  // Base64 디코딩된 값 사용
+				roomInfo.HostName = DecodedHostName;  // Base64 디코딩된 값 사용
 
-				roomInfo.RoomName = roomName;   // 직접 표시
-				roomInfo.HostName = hostName;   // 직접 표시
+				//roomInfo.RoomName = roomName;   // 직접 표시
+				//roomInfo.HostName = hostName;   // 직접 표시
 
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
