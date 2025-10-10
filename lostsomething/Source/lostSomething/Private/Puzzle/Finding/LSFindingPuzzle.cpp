@@ -4,6 +4,7 @@
 #include "Puzzle/Finding/LSFindingPuzzle.h"
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
+#include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
@@ -36,20 +37,7 @@ ALSFindingPuzzle::ALSFindingPuzzle()
 		MeshComponent->SetStaticMesh(ItemMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> TrueMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelB.M_CartelB"));
-	if (TrueMaterialRef.Object)
-	{
-		CorrectMaterial = TrueMaterialRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> WrongMaterialRef(TEXT("/Game/Level/Puzzle/VendingMachine/MaterialInstance/M_CartelR.M_CartelR"));
-	if (WrongMaterialRef.Object)
-	{
-		IncorrectMaterial = WrongMaterialRef.Object;
-	}
-
 	bIsCorrectPuzzle = false;
-	MeshComponent->SetMaterial(1, IncorrectMaterial);
 	PuzzleActivateEnum = ELSInteractionEnum::Quest11;
 }
 
@@ -62,9 +50,119 @@ void ALSFindingPuzzle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void ALSFindingPuzzle::BeginPlay()
 {
+	Super::BeginPlay();
+
+	//LS_LOG(LogLSls, Log, TEXT("Begin"));
+
 	if (HasAuthority())
 	{
 		BindQuestChange();
+	}
+
+	UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Level/Display/Signage/Materials/M_LSCartel.M_LSCartel"));
+
+	if (BaseMaterial && MeshComponent)
+	{
+		Material = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+		MeshComponent->SetMaterial(1, Material);
+
+		//PanelMaterial->SetVectorParameterValue(TEXT("BaseColor"), Gray);
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("No BaseMaterial or Material!!"));
+	}
+}
+
+void ALSFindingPuzzle::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	UAssetManager& Manager = UAssetManager::Get();
+
+	//FPAnswer
+	TArray<FPrimaryAssetId> FPAnswerAssets;
+	Manager.GetPrimaryAssetIdList(TEXT("FPAnswer"), FPAnswerAssets);
+	ensure(0 < FPAnswerAssets.Num());
+
+	for (const FPrimaryAssetId& AssetId : FPAnswerAssets)
+	{
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+
+		UTexture2D* Texture  = Cast<UTexture2D>(AssetPtr.Get());
+		if (Texture)
+		{
+			AnswerTextures.Add(Texture);
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("No AnswerTexture!!"));
+		}
+	}
+
+
+
+	//FPWrong
+	TArray<FPrimaryAssetId> FPWrongAssets;
+	Manager.GetPrimaryAssetIdList(TEXT("FPWrong"), FPWrongAssets);
+	ensure(0 < FPWrongAssets.Num());
+
+	for (const FPrimaryAssetId& AssetId : FPWrongAssets)
+	{
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+
+		UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
+		if (Texture)
+		{
+			WrongTextures.Add(Texture);
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("No WrongTexture!!"));
+		}
+
+	}
+
+
+
+	//FPSiJae
+	TArray<FPrimaryAssetId> FPSiJaeAssets;
+	Manager.GetPrimaryAssetIdList(TEXT("FPSiJae"), FPSiJaeAssets);
+	ensure(0 < FPSiJaeAssets.Num());
+
+	for (const FPrimaryAssetId& AssetId : FPSiJaeAssets)
+	{
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+
+		UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
+		if (Texture)
+		{
+			SijaeTextures.Add(Texture);
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("No SijaeTexture!!"));
+		}
 	}
 }
 
@@ -79,17 +177,37 @@ void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerControl
 
 void ALSFindingPuzzle::SetVisibleSiJae()
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (!Material)
+	{
+		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
+		return;
+	}
+
+	int32 MaxCount = SijaeTextures.Num();
+	Material->SetTextureParameterValue(TEXT("CartelImage"), SijaeTextures[FMath::RandRange(0, MaxCount - 1)]);
 }
 
 void ALSFindingPuzzle::SetVisibleIJae()
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (!Material)
+	{
+		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
+		return;
+	}
+
 	if (bIsCorrectPuzzle)
 	{
-		MeshComponent->SetMaterial(1, CorrectMaterial);
+		int32 MaxCount = AnswerTextures.Num();
+		Material->SetTextureParameterValue(TEXT("CartelImage"), AnswerTextures[FMath::RandRange(0, MaxCount-1)]);
 	}
 	else
 	{
-		MeshComponent->SetMaterial(1, IncorrectMaterial);
+		int32 MaxCount = WrongTextures.Num();
+		Material->SetTextureParameterValue(TEXT("CartelImage"), WrongTextures[FMath::RandRange(0, MaxCount - 1)]);
 	}
 }
 
@@ -104,7 +222,7 @@ void ALSFindingPuzzle::SetPuzzleAnswer(uint8 bInCorrectPuzzle)
 		bIsCorrectPuzzle = false;
 	}
 
-	ChangeVisible();
+	MulticastRPCChangeVisible();
 }
 
 void ALSFindingPuzzle::PuzzleCheck(APlayerController* InPlayerController)
@@ -151,13 +269,23 @@ void ALSFindingPuzzle::PuzzleActivate()
 void ALSFindingPuzzle::PuzzleDeactivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetMaterial(1, IncorrectMaterial);
-}
 
-void ALSFindingPuzzle::OnRep_bIsCorrectPuzzle()
-{
-	//LS_LOG(LogLS, Log, TEXT("Begin. bIsCorrectPuzzle = %d"), bIsCorrectPuzzle);
-	ChangeVisible();
+	if (!Material)
+	{
+		LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
+		return;
+	}
+
+	if (SijaeTextures.Num() > 0)
+	{
+		int32 MaxCount = SijaeTextures.Num();
+		Material->SetTextureParameterValue(TEXT("CartelImage"), SijaeTextures[FMath::RandRange(0, MaxCount - 1)]);
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("No SijaeTextures!"));
+	}
+
 }
 
 void ALSFindingPuzzle::MulticastRPCPuzzleActivate_Implementation()
@@ -169,5 +297,6 @@ void ALSFindingPuzzle::MulticastRPCPuzzleDeactivate_Implementation()
 {
 	PuzzleDeactivate();
 }
+
 
 

@@ -24,6 +24,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -49,16 +50,20 @@ public:
 protected:
 	void PuzzleCheck(APlayerController* InPlayerController);
 
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_bIsCorrectPuzzle)
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsCorrectPuzzle:1;
 
 	float DamageAmount;
 
-	UPROPERTY()
-	class UMaterialInstance* CorrectMaterial;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UMaterialInstanceDynamic> Material;
 
-	UPROPERTY()
-	class UMaterialInstance* IncorrectMaterial;
+	TArray<class UTexture2D*> AnswerTextures;
+
+	TArray<class UTexture2D*> WrongTextures;
+
+	TArray<class UTexture2D*> SijaeTextures;
+
 
 
 // Quest Section
@@ -75,9 +80,6 @@ protected:
 
 //RPC Section
 public:
-	UFUNCTION()
-	void OnRep_bIsCorrectPuzzle();
-
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCPuzzleActivate();
 
