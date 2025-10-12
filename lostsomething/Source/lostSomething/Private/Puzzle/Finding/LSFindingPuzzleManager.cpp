@@ -30,7 +30,7 @@ void ALSFindingPuzzleManager::BeginPlay()
 
 void ALSFindingPuzzleManager::PuzzleStart()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSFindingPuzzle::StaticClass(), FoundActors);
