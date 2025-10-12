@@ -42,6 +42,8 @@ ATestNPC::ATestNPC()
 	// 초기 공격 상태 설정
 	bIsAttacking = false;
 	bCanNextCombo = false;
+
+	CurrentHP = MaxHP;
 }
 
 
@@ -71,9 +73,14 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::TakeDamage"));
+	SetHP(GetHP() - DamageAmount);
 	Damage();
-	SetIsDead(true);
+	if (GetHP() <= 0)
+	{
+		SetIsDead(true);
+		SetDespawn();
+	}
+		
 	return 0.0f;
 }
 
@@ -98,14 +105,12 @@ void ATestNPC::MultiAttackStart_Implementation()
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
 	if (NPCAnimInstance && NPCAnimInstance->AttackMontage)
 	{
-		NPCAnimInstance->AttackMontagePlay();
+		NPCAnimInstance->MontagePlay(NPCAnimInstance->AttackMontage);
 		NPCAnimInstance->Montage_JumpToSection(FName("Attack1"), NPCAnimInstance->AttackMontage);
 		bIsAttacking = true;
 		bCanNextCombo = false;
 	}
 }
-
-
 
 void ATestNPC::ComboActionBegin()
 {
@@ -121,7 +126,7 @@ void ATestNPC::ComboActionBegin()
 	}
 	else
 	{
-		NPCAnimInstance->AttackMontagePlay();
+		NPCAnimInstance->MontagePlay(NPCAnimInstance->AttackMontage);
 	}
 
 	// Delegate 연결
@@ -174,27 +179,6 @@ void ATestNPC::CheckShouldStopMontage()
 	ServerStopAttackMontage();
 }
 
-void ATestNPC::DespawnMontage()
-{
-	ServerDespawnMontage();
-}
-
-void ATestNPC::ServerDespawnMontage_Implementation()
-{
-	MultiDespawnMontage();
-}
-
-void ATestNPC::MultiDespawnMontage_Implementation()
-{
-	if (UTestNPCAnimIns* AnimIns = Cast<UTestNPCAnimIns>(GetMesh()->GetAnimInstance()))
-	{
-		if (AnimIns)
-		{
-			AnimIns->DespawnMontagePlay();
-		}
-	}
-}
-
 void ATestNPC::ServerStopAttackMontage_Implementation()
 {
 	MultiStopAttackMontage();
@@ -204,6 +188,7 @@ void ATestNPC::MultiStopAttackMontage_Implementation()
 {
 	if (UTestNPCAnimIns* AnimIns = Cast<UTestNPCAnimIns>(GetMesh()->GetAnimInstance()))
 	{
+
 		if (AnimIns->Montage_IsPlaying(AnimIns->AttackMontage))
 		{
 			AnimIns->Montage_Stop(0.2f);
@@ -220,9 +205,6 @@ void ATestNPC::AttackHitCheck()
 
 void ATestNPC::ServerAttackHitCheck_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("ServerAttackHitCheck"));
-
-	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::ServerAttackHitCheck()"));
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
@@ -233,8 +215,6 @@ void ATestNPC::ServerAttackHitCheck_Implementation()
 
 	if (HitDetected)
 	{
-		//LS_LOG(LogLS, Log, TEXT("HitDetected"));
-		//UE_LOG(LogTemp, Warning, TEXT("Multi : HitDetected == true"));
 		FDamageEvent DamageEvent;
 		ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor());
 		if (HitResult)
@@ -261,84 +241,15 @@ void ATestNPC::ServerDespawn_Implementation()
 
 void ATestNPC::MultiDespawn_Implementation()
 {
-	//SetLifeSpan(4.0f);
-	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
+	if (!NPCAnimInstance || !NPCAnimInstance->DespawnMontage) return;
 
-	if (ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController()))
+	// 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+	if (NPCAnimInstance->DespawnMontage)
 	{
-		if (UBlackboardComponent* BB = AICon->GetBlackboardComponent())
-		{
-			AActor* Target = Cast<AActor>(BB->GetValueAsObject(TEXT("Target"))); // 또는 "PlayerActor" 같은 키
-			
-			FVector OppositeDirection;
-
-			if (Target)
-			{
-				// 1. 내 위치에서 Target 방향 벡터 구하고 반대 방향으로 회전
-				FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
-				ToTarget.Z = 0.0f;
-				ToTarget.Normalize();
-				OppositeDirection = -ToTarget;
-			}
-			else
-			{
-				// 타겟이 없을 경우: 현재 바라보는 방향의 반대 방향으로
-				FVector CurrentForward = GetActorForwardVector();
-				CurrentForward.Z = 0.0f;  // Z축 제거 (수평 이동만)
-				CurrentForward.Normalize();
-				OppositeDirection = -CurrentForward;
-			}
-
-			// 공통 처리: 방향 설정 및 이동
-			FRotator NewRot = OppositeDirection.Rotation();
-			SetActorRotation(NewRot); // 뒤돌기
-
-			// 1400유닛 떨어진 위치 계산
-			FVector EscapeDestination = GetActorLocation() + OppositeDirection * 1400.0f;
-
-			// AI 이동 실행
-			FAIMoveRequest MoveRequest;
-			MoveRequest.SetGoalLocation(EscapeDestination);
-			MoveRequest.SetAcceptanceRadius(50.0f); // 5.0f에서 50.0f로 증가
-
-			FNavPathSharedPtr NavPath;
-			FPathFollowingRequestResult Result = AICon->MoveTo(MoveRequest, &NavPath);
-
-			// 이동 결과 확인 (디버깅용)
-			if (Result.Code != EPathFollowingRequestResult::RequestSuccessful)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("MoveTo failed: %d"), (int32)Result.Code);
-			}
-		}
-		else
-		{
-			// BlackboardComponent가 없는 경우에도 기본 동작 수행
-			FVector CurrentForward = GetActorForwardVector();
-			CurrentForward.Z = 0.0f;
-			CurrentForward.Normalize();
-			FVector OppositeDirection = -CurrentForward;
-
-			FRotator NewRot = OppositeDirection.Rotation();
-			SetActorRotation(NewRot);
-
-			FVector EscapeDestination = GetActorLocation() + OppositeDirection * 1400.0f;
-
-			FAIMoveRequest MoveRequest;
-			MoveRequest.SetGoalLocation(EscapeDestination);
-			MoveRequest.SetAcceptanceRadius(50.0f);
-
-			FNavPathSharedPtr NavPath;
-			FPathFollowingRequestResult Result = AICon->MoveTo(MoveRequest, &NavPath);
-		}
+		NPCAnimInstance->MontagePlay(NPCAnimInstance->DespawnMontage);
 	}
-	FTimerHandle DelayTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		DelayTimerHandle,           // 타이머 핸들
-		this,                       // 대상 객체
-		&ATestNPC::DespawnMontage,  // 실행할 함수
-		4.0f,                      // 4초
-		false                      // 반복하지 않음 (한 번만 실행)
-	);
 }
 
 void ATestNPC::Damage()
@@ -347,19 +258,56 @@ void ATestNPC::Damage()
 }
 void ATestNPC::ServerDamage_Implementation()
 {
+	ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController());
+	if (!AICon) return;
+
+	UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+	if (!Blackboard) return;
+
+	// 변경 전 값 확인
+	bool bBeforeValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
+	UE_LOG(LogTemp, Warning, TEXT("IsHit Before: %s"), bBeforeValue ? TEXT("true") : TEXT("false")); // ?
+
+	// IsHit 설정
+	Blackboard->SetValueAsBool(TEXT("bIsHit"), true);
+
+	// 변경 후 값 확인
+	bool bAfterValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
+	UE_LOG(LogTemp, Warning, TEXT("IsHit After: %s"), bAfterValue ? TEXT("true") : TEXT("false")); // ?
+
+	// IsHit를 true로 설정 → Move To 즉시 중단!
+	Blackboard->SetValueAsBool("IsHit", true);
+
 	MultiDamage();
 }
 
 void ATestNPC::MultiDamage_Implementation()
 {
-	if (UTestNPCAnimIns* AnimIns = Cast<UTestNPCAnimIns>(GetMesh()->GetAnimInstance()))
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
+	if (!NPCAnimInstance || !NPCAnimInstance->DamageMontage) return;
+
+	// 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
+	if (NPCAnimInstance->DamageMontage)
 	{
-		if (AnimIns)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiDamage_Implementation()"));
-			AnimIns->DamageMontagePlay();
-		}
+		NPCAnimInstance->MontagePlay(NPCAnimInstance->DamageMontage);
 	}
+}
+
+void ATestNPC::SetbIsHit()
+{
+	ServerSetbIsHit();
+}
+
+void ATestNPC::ServerSetbIsHit_Implementation()
+{
+	ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController());
+	if (!AICon) return;
+
+	UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+	if (!Blackboard) return;
+
+	Blackboard->SetValueAsBool(TEXT("bIsHit"), false);
 }
 
 void ATestNPC::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)

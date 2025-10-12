@@ -16,7 +16,8 @@ OwnerComp->GetBlackboardComponent()->GetValueAsVector(ATestNPCAIController::Key_
 const FName ATestNPCAIController::Key_HomePos = FName("HomePos");
 const FName ATestNPCAIController::Key_PatrolPos = FName("PatrolPos");
 const FName ATestNPCAIController::Key_Target = FName("Target");
-const FName ATestNPCAIController::Key_bShouldChase = FName("bShouldChase");
+const FName ATestNPCAIController::Key_bShouldChase = FName("bShouldChase"); 
+const FName ATestNPCAIController::Key_bIsHit = FName("bIsHit");
 
 ATestNPCAIController::ATestNPCAIController()
 {

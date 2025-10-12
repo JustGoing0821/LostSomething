@@ -16,6 +16,9 @@ class LOSTSOMETHING_API UTestNPCAnimIns : public UAnimInstance
 public:
 	UTestNPCAnimIns();
 
+	float MontagePlay(UAnimMontage* Montage);
+	void MontageStop(UAnimMontage* Montage, bool bInterrupted);
+
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
@@ -55,11 +58,12 @@ private:
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
 
-	UFUNCTION()
-	void AnimNotify_EndDamage();
 
 	UFUNCTION()
 	void AnimNotify_Despawn();
+
+	UFUNCTION()
+	void AnimNotify_DamageEnd();
 
 	UFUNCTION()
 	void AnimNotify_IdleSound();

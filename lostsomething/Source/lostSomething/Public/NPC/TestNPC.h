@@ -21,6 +21,7 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 
@@ -66,7 +67,16 @@ public:
     const float AttackRadius = 50.0f;
     const float AttackDamage = 30.0f;
 
+    float MaxHP = 50.0f;
+    float CurrentHP;
 
+    FORCEINLINE void SetHP(float NewHP)
+    {
+        CurrentHP = NewHP;
+    }
+    FORCEINLINE float GetHP() const { return CurrentHP; }
+
+public:
     ////////////////////////////////////Damage
     UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
     bool bIsDead = false;
@@ -92,6 +102,10 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void MultiDamage();
 
+    void SetbIsHit();
+    UFUNCTION(Server, Reliable)
+    void ServerSetbIsHit();
+
 
     ////////////////////////////////////Die
     void SetDespawn();
@@ -107,12 +121,6 @@ public:
     void ServerStopAttackMontage();
     UFUNCTION(NetMulticast, Reliable)
     void MultiStopAttackMontage();
-
-    void DespawnMontage();
-    UFUNCTION(Server, Reliable)
-    void ServerDespawnMontage();
-    UFUNCTION(NetMulticast, Reliable)
-    void MultiDespawnMontage();
 
 
     ////////////////////////////////////////////Chase

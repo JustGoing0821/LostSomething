@@ -32,11 +32,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
 
-	// ºí·¢º¸µå¿¡¼­ ÇöÀç ÀúÀåµÈ Å¸°Ù °¡Á®¿À±â
-	//UObject* CurrentTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(ATestNPCAIController::Key_Target);
-	//ATP_ThirdPersonCharacter* ExistingTarget = Cast<ATP_ThirdPersonCharacter>(CurrentTarget);
-
-	// °¨ÁöµÈ ¿ÀºêÁ§Æ® ¸ñ·Ï
+	// ê°ì§€ëœ ì˜¤ë¸Œì íŠ¸ ëª©ë¡
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(NAME_None, false, ControllingPawn);
 	bool bResult = World->OverlapMultiByChannel(
@@ -56,8 +52,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
 				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
-				AVRPawn* TargetVRPlayer = Cast<AVRPawn>(Pawn);
-				if (TargetPlayer&& !TM->GetIsDead() || TargetVRPlayer)
+        AVRPawn* TargetVRPlayer = Cast<AVRPawn>(Pawn);
+				if (TargetPlayer&& !TM->GetIsDead() && TargetPlayer->bIsDead == false || TargetVRPlayer)
 				{
 					TM->SetShouldChase(true);
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
