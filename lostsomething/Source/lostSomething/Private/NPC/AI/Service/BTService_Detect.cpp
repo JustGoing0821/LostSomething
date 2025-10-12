@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/OverlapResult.h"
 #include <Character/Players/LSPlayer.h>
+#include <Character/VR/VRPawn.h>
 //#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 UBTService_Detect::UBTService_Detect()
@@ -55,7 +56,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
 				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
-				if (TargetPlayer&& !TM->GetIsDead())
+				AVRPawn* TargetVRPlayer = Cast<AVRPawn>(Pawn);
+				if (TargetPlayer&& !TM->GetIsDead() || TargetVRPlayer)
 				{
 					TM->SetShouldChase(true);
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, Pawn);
@@ -67,6 +69,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestNPCAIController::Key_Target, nullptr);
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldChase"), false);
 				}
+\
 				return;
 			}
 		}
