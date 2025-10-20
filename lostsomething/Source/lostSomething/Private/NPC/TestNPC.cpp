@@ -55,6 +55,13 @@ void ATestNPC::BeginPlay()
 	{
 		SetOwner(PC);
 	}
+
+	// Dynamic Material Instance 생성
+	if (GetMesh() && GetMesh()->GetMaterial(0))
+	{
+		DynamicMaterial = UMaterialInstanceDynamic::Create(GetMesh()->GetMaterial(0), this);
+		GetMesh()->SetMaterial(0, DynamicMaterial);
+	}
 }
 
 // Called every frame
@@ -255,6 +262,7 @@ void ATestNPC::MultiDespawn_Implementation()
 void ATestNPC::Damage()
 {
 	ServerDamage();
+	MulticastFlashDamageColor();
 }
 void ATestNPC::ServerDamage_Implementation()
 {
@@ -318,6 +326,33 @@ void ATestNPC::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackF
 void ATestNPC::SetMaxWalkSpeed(float NewSpeed)
 {
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+}
+
+void ATestNPC::MulticastFlashDamageColor_Implementation()
+{
+	if (DynamicMaterial)
+	{
+		// 빨간색으로 변경
+		DynamicMaterial->SetVectorParameterValue(FName("DamageColor"), FLinearColor::Red);
+
+		// 타이머로 원래 색상으로 복구
+		GetWorld()->GetTimerManager().SetTimer(
+			DamageFlashTimerHandle,
+			this,
+			&ATestNPC::MulticastResetMaterialColor,
+			DamageFlashDuration,
+			false
+		);
+	}
+}
+
+void ATestNPC::MulticastResetMaterialColor_Implementation()
+{
+	if (DynamicMaterial)
+	{
+		// 원래 색상으로 복구
+		DynamicMaterial->SetVectorParameterValue(FName("DamageColor"), FLinearColor::White);
+	}
 }
 
 //////////////////// Replicated 변수 할당
