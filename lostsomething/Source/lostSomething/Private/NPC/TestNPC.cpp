@@ -236,6 +236,27 @@ void ATestNPC::ServerAttackHitCheck_Implementation()
 
 }
 
+void ATestNPC::UpdateFlashEffect_Timer()
+{
+	if (DynamicMaterial)
+	{
+		const float ElapsedTime = GetWorld()->GetRealTimeSeconds() - FlashStartTime;
+
+		if (ElapsedTime < DamageFlashDuration)
+		{
+			// 경과 시간에 따라 Alpha 값을 1.0에서 0.0으로 부드럽게 보간
+			const float CurrentAlpha = FMath::Lerp(0.2f, 0.0f, ElapsedTime / DamageFlashDuration);
+			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), CurrentAlpha);
+		}
+		else
+		{
+			// 시간이 다 되면 효과를 확실하게 끝내고 타이머를 정지
+			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), 0.0f);
+			GetWorld()->GetTimerManager().ClearTimer(FlashUpdateTimerHandle);
+		}
+	}
+}
+
 void ATestNPC::SetDespawn()
 {
 	ServerDespawn();
@@ -330,18 +351,23 @@ void ATestNPC::SetMaxWalkSpeed(float NewSpeed)
 
 void ATestNPC::MulticastFlashDamageColor_Implementation()
 {
+
 	if (DynamicMaterial)
 	{
-		// 빨간색으로 변경
-		DynamicMaterial->SetVectorParameterValue(FName("DamageColor"), FLinearColor::Red);
+		// 효과 시작 시간 기록
+		FlashStartTime = GetWorld()->GetRealTimeSeconds();
 
-		// 타이머로 원래 색상으로 복구
+		// 기존에 실행 중인 타이머가 있다면 중복 실행을 막기 위해 초기화
+		GetWorld()->GetTimerManager().ClearTimer(FlashUpdateTimerHandle);
+
+		// 타이머 설정: 0.016초마다 UpdateFlashEffect_Timer 함수를 반복 호출
 		GetWorld()->GetTimerManager().SetTimer(
-			DamageFlashTimerHandle,
-			this,
-			&ATestNPC::MulticastResetMaterialColor,
-			DamageFlashDuration,
-			false
+			FlashUpdateTimerHandle,      // 타이머 핸들
+			this,                        // 함수를 호출할 오브젝트
+			&ATestNPC::UpdateFlashEffect_Timer, // 호출할 함수
+			0.016f,                      // 호출 간격 (초)
+			true,                        // 반복 여부
+			0.0f                         // 즉시 시작
 		);
 	}
 }
@@ -351,7 +377,7 @@ void ATestNPC::MulticastResetMaterialColor_Implementation()
 	if (DynamicMaterial)
 	{
 		// 원래 색상으로 복구
-		DynamicMaterial->SetVectorParameterValue(FName("DamageColor"), FLinearColor::White);
+		DynamicMaterial->SetScalarParameterValue(FName("Alpha"), 0.0f);
 	}
 }
 

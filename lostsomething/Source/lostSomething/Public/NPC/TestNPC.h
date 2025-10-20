@@ -86,6 +86,8 @@ private:
 
     // 타이머 핸들
     FTimerHandle DamageFlashTimerHandle;
+    FTimerHandle FlashUpdateTimerHandle;
+    float FlashStartTime = 0.0f;
 
     // 데미지 플래시 지속 시간
     UPROPERTY(EditAnywhere, Category = "Damage")
@@ -127,6 +129,9 @@ public:
     // 원래 색상으로 복구 (모든 클라이언트)
     UFUNCTION(NetMulticast, Reliable)
     void MulticastResetMaterialColor();
+
+    UFUNCTION()
+    void UpdateFlashEffect_Timer();
 
 
     ////////////////////////////////////Die
