@@ -45,11 +45,15 @@ protected:
 protected:
 	TSubclassOf<APawn> IJaePawnClass;
 	TSubclassOf<APawn> SiJaePawnClass;
+	TSubclassOf<APawn> VRPawnClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	bool bIsSiJaeServer;
 
 	int32 CurrentPlayerCount;
+
+private:
+	bool IsVRPlayer(APlayerController* Controller) const;
 
 // Quest Section
 public:
