@@ -32,7 +32,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
 
-	// 감지된 오브젝트 목록
+	// 감�????�브?�트 목록
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(NAME_None, false, ControllingPawn);
 	bool bResult = World->OverlapMultiByChannel(
@@ -52,7 +52,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
 				ALSPlayer* TargetPlayer = Cast<ALSPlayer>(Pawn);
-        AVRPawn* TargetVRPlayer = Cast<AVRPawn>(Pawn);
+				AVRPawn* TargetVRPlayer = Cast<AVRPawn>(Pawn);
 				if (TargetPlayer&& !TM->GetIsDead() && TargetPlayer->bIsDead == false || TargetVRPlayer)
 				{
 					TM->SetShouldChase(true);

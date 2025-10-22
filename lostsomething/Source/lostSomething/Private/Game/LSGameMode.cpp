@@ -12,6 +12,9 @@
 #include "UserInterface/LSQuestWidget.h"
 #include "Game/LSGameInstance.h"
 #include "Level/LSMapVersionControll.h"
+#include "IXRTrackingSystem.h"
+#include "Engine/Engine.h"
+
 
 ALSGameMode::ALSGameMode()
 {
@@ -32,6 +35,12 @@ ALSGameMode::ALSGameMode()
 	if (SiJaePawnClassRef.Class != NULL)
 	{
 		SiJaePawnClass = SiJaePawnClassRef.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<APawn> VRPawnClassRef(TEXT("/Game/VR/VRTemplate/Blueprints/VRPawn.VRPawn_C"));
+	if (VRPawnClassRef.Class != NULL)
+	{
+		VRPawnClass = VRPawnClassRef.Class;
 	}
 
 	//Quest System
@@ -57,6 +66,7 @@ ALSGameMode::ALSGameMode()
 
 	//2D Section
 	bIsSiJaeDragging = false;
+
 }
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -162,6 +172,19 @@ void ALSGameMode::BeginPlay()
 
 }
 
+bool ALSGameMode::IsVRPlayer(APlayerController* Controller) const
+{
+	// GEngine이 유효하고, XRSystem(즉, VR/AR 추적 시스템)이 존재하는지 확인
+	if (GEngine && GEngine->XRSystem.IsValid())
+	{
+		// 현재 헤드 트래킹이 허용되어 있다면 VR 장치가 연결된 상태임
+		return GEngine->XRSystem->IsHeadTrackingAllowed();
+	}
+
+	// XR 시스템이 없으면 VR 아님
+	return false;
+}
+
 void ALSGameMode::QuestStart()
 {
 	QuestManager->QuestStart();
@@ -211,51 +234,56 @@ void ALSGameMode::TransferPlayerLocation(FVector InSijaeLocation, FVector InIjae
 void ALSGameMode::TestLoginProcess(APlayerController* ResultController)
 {
 	ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(ResultController);
-	if (LSPlayerController)
+	if (!LSPlayerController) return;
+
+	// 1. VR 기기를 사용 중인 플레이어인 경우
+	if (IsVRPlayer(LSPlayerController))
 	{
-		if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
+		ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+		if (LSCharacterChoice)
+		{
+			// VR 전용 캐릭터로 설정
+			LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+			DefaultPawnClass = VRPawnClass;
+			CurrentPlayerCount++;
+		}
+	}
+	else
+	{
+		// 2. 일반 PC 플레이어의 경우 (기존 로직 그대로)
+		const bool bIsFirstPlayer = (LSPlayerController->GetName() == TEXT("LSPlayerController_0"));
+
+		if (bIsFirstPlayer)
 		{
 			if (bIsSiJaeServer)
 			{
-				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+				Cast<ILSCharacterChoiceInterface>(LSPlayerController)->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
 			else
 			{
-				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+				Cast<ILSCharacterChoiceInterface>(LSPlayerController)->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
-			CurrentPlayerCount++;
-
-			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
-			//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
 		else
 		{
 			if (bIsSiJaeServer)
 			{
-				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+				Cast<ILSCharacterChoiceInterface>(LSPlayerController)->SetCharacterChoice(ELSCharacterChoice::IJae);
 				DefaultPawnClass = IJaePawnClass;
 			}
 			else
 			{
-				ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-				LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+				Cast<ILSCharacterChoiceInterface>(LSPlayerController)->SetCharacterChoice(ELSCharacterChoice::SiJae);
 				DefaultPawnClass = SiJaePawnClass;
 			}
-			CurrentPlayerCount++;
-
-			FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
-			//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 		}
-
-		//Quest Widget Update Bind
-		QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
-		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
+		CurrentPlayerCount++;
 	}
+
+	// 3. 퀘스트 위젯 업데이트 함수 바인딩
+	QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
 }
 
 void ALSGameMode::BroadcastScript(const FString& InScript)

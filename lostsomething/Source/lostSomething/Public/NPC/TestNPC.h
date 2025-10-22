@@ -22,6 +22,7 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
+    UFUNCTION(BlueprintCallable)
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 
@@ -76,8 +77,21 @@ public:
     }
     FORCEINLINE float GetHP() const { return CurrentHP; }
 
-public:
+
     ////////////////////////////////////Damage
+private:
+    // Dynamic Material Instance
+    UPROPERTY()
+    UMaterialInstanceDynamic* DynamicMaterial;
+
+    // 타이머 핸들
+    FTimerHandle DamageFlashTimerHandle;
+
+    // 데미지 플래시 지속 시간
+    UPROPERTY(EditAnywhere, Category = "Damage")
+    float DamageFlashDuration = 1.0f;
+
+public:
     UPROPERTY(Replicated, Meta = (AllowPrivateAccess = true))
     bool bIsDead = false;
 
@@ -105,6 +119,14 @@ public:
     void SetbIsHit();
     UFUNCTION(Server, Reliable)
     void ServerSetbIsHit();
+
+    // 빨간색으로 변경 (모든 클라이언트)
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastFlashDamageColor();
+
+    // 원래 색상으로 복구 (모든 클라이언트)
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastResetMaterialColor();
 
 
     ////////////////////////////////////Die
