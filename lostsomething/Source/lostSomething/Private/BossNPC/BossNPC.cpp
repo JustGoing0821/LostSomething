@@ -27,12 +27,12 @@ ABossNPC::ABossNPC()
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // 예시: SceneComponent 생성
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < 9; ++i)
     {
         FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
-        float YOffset = (i - 3) * 41.0f;
+        float YOffset = (i - 3) * 56.0f;
         SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -45.f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
@@ -743,7 +743,7 @@ void ABossNPC::ServerSpawnObstacles_Implementation()
 
     // 3 또는 4개 스폰하려 했지만, 그 수보다 SpawnPoint가 적으면 문제 발생
     // 따라서 Clamp 필요
-    int32 NumToSpawn = FMath::Clamp(FMath::RandBool() ? 3 : 4, 1, SpawnPointCount);
+    int32 NumToSpawn = FMath::Clamp(FMath::RandBool() ? 4 : 5, 1, SpawnPointCount);
 
     for (int32 i = 0; i < NumToSpawn; ++i)
     {

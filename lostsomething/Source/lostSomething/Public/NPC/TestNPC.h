@@ -86,6 +86,8 @@ private:
 
     // 타이머 핸들
     FTimerHandle DamageFlashTimerHandle;
+    FTimerHandle FlashUpdateTimerHandle;
+    float FlashStartTime = 0.0f;
 
     // 데미지 플래시 지속 시간
     UPROPERTY(EditAnywhere, Category = "Damage")
@@ -121,12 +123,20 @@ public:
     void ServerSetbIsHit();
 
     // 빨간색으로 변경 (모든 클라이언트)
+    UFUNCTION(Server, Reliable)
+    void ServerFlashDamageColor();
+
     UFUNCTION(NetMulticast, Reliable)
     void MulticastFlashDamageColor();
 
-    // 원래 색상으로 복구 (모든 클라이언트)
+    UFUNCTION()
+    void UpdateFlashEffect_Timer();
+
+    UFUNCTION(Server, Reliable)
+    void ServerUpdateFlashEffect_Timer();
+
     UFUNCTION(NetMulticast, Reliable)
-    void MulticastResetMaterialColor();
+    void MultiUpdateFlashEffect_Timer();
 
 
     ////////////////////////////////////Die
