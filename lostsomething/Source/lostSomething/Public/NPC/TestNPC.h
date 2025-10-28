@@ -123,15 +123,20 @@ public:
     void ServerSetbIsHit();
 
     // 빨간색으로 변경 (모든 클라이언트)
+    UFUNCTION(Server, Reliable)
+    void ServerFlashDamageColor();
+
     UFUNCTION(NetMulticast, Reliable)
     void MulticastFlashDamageColor();
 
-    // 원래 색상으로 복구 (모든 클라이언트)
-    UFUNCTION(NetMulticast, Reliable)
-    void MulticastResetMaterialColor();
-
     UFUNCTION()
     void UpdateFlashEffect_Timer();
+
+    UFUNCTION(Server, Reliable)
+    void ServerUpdateFlashEffect_Timer();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiUpdateFlashEffect_Timer();
 
 
     ////////////////////////////////////Die

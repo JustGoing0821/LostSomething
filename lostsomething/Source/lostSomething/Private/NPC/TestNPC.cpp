@@ -236,27 +236,6 @@ void ATestNPC::ServerAttackHitCheck_Implementation()
 
 }
 
-void ATestNPC::UpdateFlashEffect_Timer()
-{
-	if (DynamicMaterial)
-	{
-		const float ElapsedTime = GetWorld()->GetRealTimeSeconds() - FlashStartTime;
-
-		if (ElapsedTime < DamageFlashDuration)
-		{
-			// 경과 시간에 따라 Alpha 값을 1.0에서 0.0으로 부드럽게 보간
-			const float CurrentAlpha = FMath::Lerp(0.2f, 0.0f, ElapsedTime / DamageFlashDuration);
-			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), CurrentAlpha);
-		}
-		else
-		{
-			// 시간이 다 되면 효과를 확실하게 끝내고 타이머를 정지
-			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), 0.0f);
-			GetWorld()->GetTimerManager().ClearTimer(FlashUpdateTimerHandle);
-		}
-	}
-}
-
 void ATestNPC::SetDespawn()
 {
 	ServerDespawn();
@@ -283,8 +262,9 @@ void ATestNPC::MultiDespawn_Implementation()
 void ATestNPC::Damage()
 {
 	ServerDamage();
-	MulticastFlashDamageColor();
+	ServerFlashDamageColor();
 }
+
 void ATestNPC::ServerDamage_Implementation()
 {
 	ATestNPCAIController* AICon = Cast<ATestNPCAIController>(GetController());
@@ -349,6 +329,12 @@ void ATestNPC::SetMaxWalkSpeed(float NewSpeed)
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
 
+
+void ATestNPC::ServerFlashDamageColor_Implementation()
+{
+	MulticastFlashDamageColor();
+}
+
 void ATestNPC::MulticastFlashDamageColor_Implementation()
 {
 
@@ -372,12 +358,34 @@ void ATestNPC::MulticastFlashDamageColor_Implementation()
 	}
 }
 
-void ATestNPC::MulticastResetMaterialColor_Implementation()
+void ATestNPC::UpdateFlashEffect_Timer()
+{
+	ServerUpdateFlashEffect_Timer();
+}
+
+void ATestNPC::ServerUpdateFlashEffect_Timer_Implementation()
+{
+	MultiUpdateFlashEffect_Timer();
+}
+
+void ATestNPC::MultiUpdateFlashEffect_Timer_Implementation()
 {
 	if (DynamicMaterial)
 	{
-		// 원래 색상으로 복구
-		DynamicMaterial->SetScalarParameterValue(FName("Alpha"), 0.0f);
+		const float ElapsedTime = GetWorld()->GetRealTimeSeconds() - FlashStartTime;
+
+		if (ElapsedTime < DamageFlashDuration)
+		{
+			// 경과 시간에 따라 Alpha 값을 1.0에서 0.0으로 부드럽게 보간
+			const float CurrentAlpha = FMath::Lerp(0.2f, 0.0f, ElapsedTime / DamageFlashDuration);
+			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), CurrentAlpha);
+		}
+		else
+		{
+			// 시간이 다 되면 효과를 확실하게 끝내고 타이머를 정지
+			DynamicMaterial->SetScalarParameterValue(FName("Alpha"), 0.0f);
+			GetWorld()->GetTimerManager().ClearTimer(FlashUpdateTimerHandle);
+		}
 	}
 }
 
