@@ -92,48 +92,75 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 		ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(ResultController);
 		if (LSPlayerController)
 		{
-			if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
+			if (GameInstance->isVR != true)
 			{
-				if (GameInstance->GetServerCharacterChoice() == ELSCharacterChoice::SiJae)
+				//VR ¾Æ´Ò¶§
+				if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
 				{
-					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
-					DefaultPawnClass = SiJaePawnClass;
+					if (GameInstance->GetServerCharacterChoice() == ELSCharacterChoice::SiJae)
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+						DefaultPawnClass = SiJaePawnClass;
+					}
+					else
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+						DefaultPawnClass = IJaePawnClass;
+					}
+					CurrentPlayerCount++;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+					//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
 				}
 				else
 				{
-					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
-					DefaultPawnClass = IJaePawnClass;
-				}
-				CurrentPlayerCount++;
+					if (GameInstance->GetClientCharacterChoice() == ELSCharacterChoice::IJae)
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+						DefaultPawnClass = IJaePawnClass;
+					}
+					else
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+						DefaultPawnClass = SiJaePawnClass;
+					}
+					CurrentPlayerCount++;
 
-				FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
-				//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+					//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+				}
 			}
 			else
 			{
-				if (GameInstance->GetClientCharacterChoice() == ELSCharacterChoice::IJae)
-				{
-					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
-					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
-					DefaultPawnClass = IJaePawnClass;
-				}
-				else
+				//VR ÀÏ¶§
+				if (LSPlayerController->GetName() == TEXT("LSPlayerController_0"))
 				{
 					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
 					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
 					DefaultPawnClass = SiJaePawnClass;
-				}
-				CurrentPlayerCount++;
 
-				FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
-				//LS_LOG(LogLS, Log, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+					CurrentPlayerCount++;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				}
+				else
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+					DefaultPawnClass = VRPawnClass;
+
+					CurrentPlayerCount++;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				}
 			}
 
 			//Quest Widget Update Bind
 			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
-			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("UpdateQuestWidget Binded"));
 		}
 	}
 
