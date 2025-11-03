@@ -13,17 +13,41 @@ void UVRReadyWidget::NativeConstruct()
 	if (txt_ReadyPC)
 	{
 		txt_ReadyPC->SetText(FText::FromString(TEXT("Not Ready")));
+		isReadyPC = false;
 	}
 	if (txt_ReadyVR)
 	{
 		txt_ReadyVR->SetText(FText::FromString(TEXT("Not Ready")));
+		isReadyVR = false;
 	}
 }
 
 void UVRReadyWidget::ReadyPC()
 {
+
+	if (txt_ReadyPC && !isReadyPC)
+	{
+		txt_ReadyPC->SetText(FText::FromString(TEXT("Ready")));
+		isReadyPC = true;
+	}
+	else {
+		txt_ReadyPC->SetText(FText::FromString(TEXT("Not Ready")));
+		isReadyPC = false;
+	}
+
 }
 
 void UVRReadyWidget::ReadyVR()
 {
+
+	if (txt_ReadyVR && !isReadyVR)
+	{
+		txt_ReadyVR->SetText(FText::FromString(TEXT("Ready")));
+		isReadyVR = true;
+	}
+	else {
+		txt_ReadyVR->SetText(FText::FromString(TEXT("Not Ready")));
+		isReadyVR = false;
+	}
+
 }

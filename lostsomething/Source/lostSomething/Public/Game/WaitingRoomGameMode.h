@@ -22,7 +22,10 @@ protected:
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<class UChooseCharacterEndWidget> GameStartWidgetClass;
+	TSubclassOf<class UVRReadyWidget> VRReadyWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UVRReadyWidget> VRReadyWidget;
 
 	UPROPERTY()
 	TObjectPtr<class UChooseCharacterEndWidget> GameStartWidget;

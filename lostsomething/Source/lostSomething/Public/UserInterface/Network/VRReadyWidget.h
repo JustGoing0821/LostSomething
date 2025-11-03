@@ -28,13 +28,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* txt_ReadyVR;
 
+	bool isReadyPC;
+	bool isReadyVR;
+
 	//=============================================
 	//     FUCTIONS
 	//=============================================
 	virtual void NativeConstruct() override;
-
+	UFUNCTION()
 	void ReadyPC();
-
+	UFUNCTION()
 	void ReadyVR();
 	
 };
