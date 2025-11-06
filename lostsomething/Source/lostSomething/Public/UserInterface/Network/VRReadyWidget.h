@@ -6,9 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "VRReadyWidget.generated.h"
 
-/**
- * 
- */
+//DECLARE_DELEGATE_OneParam(FOnVRReadyDelegate, ELSCharacterChoice InCharacterChoice);
+
+
 UCLASS()
 class LOSTSOMETHING_API UVRReadyWidget : public UUserWidget
 {
@@ -39,5 +39,7 @@ public:
 	void ReadyPC();
 	UFUNCTION()
 	void ReadyVR();
+
+	//FOnVRReadyDelegate OnVRReady;
 	
 };

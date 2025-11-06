@@ -4,6 +4,7 @@
 #include "UserInterface/Network/VRReadyWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include <Character/Players/LSCharacterChoice.h>
 
 void UVRReadyWidget::NativeConstruct()
 {
@@ -27,6 +28,7 @@ void UVRReadyWidget::ReadyPC()
 
 	if (txt_ReadyPC && !isReadyPC)
 	{
+		//OnVRReady.ExecuteIfBound(ELSCharacterChoice::SiJae);
 		txt_ReadyPC->SetText(FText::FromString(TEXT("Ready")));
 		isReadyPC = true;
 	}

@@ -135,27 +135,14 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 			return;
 		}
 
-		if (isVR)
-		{
-			FTimerHandle TimerHandle;
-			World->GetTimerManager().SetTimer(TimerHandle,
-				[World]() {
-					UE_LOG(LogTemp, Warning, TEXT("ServerTravel VR start"));
-					World->ServerTravel(TEXT("/Game/Map/WaitingMap?listen"));
-				},
-				3.0f,
-				false);
-		}
-		else {
-			FTimerHandle TimerHandle;
-			World->GetTimerManager().SetTimer(TimerHandle,
-				[World]() {
-					UE_LOG(LogTemp, Warning, TEXT("ServerTravel PC start"));
-					World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
-				},
-				3.0f,
-				false);
-		}
+		FTimerHandle TimerHandle;
+		World->GetTimerManager().SetTimer(TimerHandle,
+			[World]() {
+				UE_LOG(LogTemp, Warning, TEXT("ServerTravel PC start"));
+				World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
+			},
+			3.0f,
+			false);
 
 
 		UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete: timer success"));
