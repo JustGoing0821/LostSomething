@@ -28,11 +28,12 @@ void UVRReadyWidget::ReadyPC()
 
 	if (txt_ReadyPC && !isReadyPC)
 	{
-		//OnVRReady.ExecuteIfBound(ELSCharacterChoice::SiJae);
+		OnVRReady.ExecuteIfBound(ELSCharacterChoice::SiJae);
 		txt_ReadyPC->SetText(FText::FromString(TEXT("Ready")));
 		isReadyPC = true;
 	}
 	else {
+		OnVRReady.ExecuteIfBound(ELSCharacterChoice::None);
 		txt_ReadyPC->SetText(FText::FromString(TEXT("Not Ready")));
 		isReadyPC = false;
 	}
@@ -44,10 +45,12 @@ void UVRReadyWidget::ReadyVR()
 
 	if (txt_ReadyVR && !isReadyVR)
 	{
+		OnVRReady.ExecuteIfBound(ELSCharacterChoice::IJae);
 		txt_ReadyVR->SetText(FText::FromString(TEXT("Ready")));
 		isReadyVR = true;
 	}
 	else {
+		OnVRReady.ExecuteIfBound(ELSCharacterChoice::None);
 		txt_ReadyVR->SetText(FText::FromString(TEXT("Not Ready")));
 		isReadyVR = false;
 	}

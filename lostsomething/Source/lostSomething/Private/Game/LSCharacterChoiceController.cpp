@@ -45,8 +45,8 @@ void ALSCharacterChoiceController::BeginPlay()
 				VRReadyWidget->AddToViewport(1);
 			}
 
-			//VRReadyWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
-			//VRReadyWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+			VRReadyWidget->OnVRReady.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+			VRReadyWidget->OnVRReady.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
 		}
 
 		ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));

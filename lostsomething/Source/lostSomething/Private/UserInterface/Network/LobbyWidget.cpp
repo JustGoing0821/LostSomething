@@ -82,8 +82,6 @@ void ULobbyWidget::OnMyClicked_doCreateVRRoom()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ULobbyWidget::OnMyClicked_doCreateVRRoom()"));
 
-	// 만약 방이름이 비어있으면 함수를 종료하고싶다.
-
 	FString roomName = (TEXT("VR Room"));
 
 	/**/

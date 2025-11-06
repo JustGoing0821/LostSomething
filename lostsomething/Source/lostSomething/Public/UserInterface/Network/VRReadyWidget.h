@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/Players/LSCharacterChoice.h"
 #include "VRReadyWidget.generated.h"
 
-//DECLARE_DELEGATE_OneParam(FOnVRReadyDelegate, ELSCharacterChoice InCharacterChoice);
+DECLARE_DELEGATE_OneParam(FOnVRReadyDelegate, ELSCharacterChoice InCharacterChoice);
 
 
 UCLASS()
@@ -40,6 +41,6 @@ public:
 	UFUNCTION()
 	void ReadyVR();
 
-	//FOnVRReadyDelegate OnVRReady;
+	FOnVRReadyDelegate OnVRReady;
 	
 };
