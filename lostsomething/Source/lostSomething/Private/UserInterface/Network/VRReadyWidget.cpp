@@ -5,10 +5,10 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include <Character/Players/LSCharacterChoice.h>
+#include <Game/LSCharacterChoiceController.h>
 
 void UVRReadyWidget::NativeConstruct()
 {
-	btn_ReadyPC->OnClicked.AddDynamic(this, &UVRReadyWidget::ReadyPC);
 	btn_ReadyVR->OnClicked.AddDynamic(this, &UVRReadyWidget::ReadyVR);
 
 	if (txt_ReadyPC)
@@ -23,36 +23,54 @@ void UVRReadyWidget::NativeConstruct()
 	}
 }
 
-void UVRReadyWidget::ReadyPC()
-{
-
-	if (txt_ReadyPC && !isReadyPC)
-	{
-		OnVRReady.ExecuteIfBound(ELSCharacterChoice::SiJae);
-		txt_ReadyPC->SetText(FText::FromString(TEXT("Ready")));
-		isReadyPC = true;
-	}
-	else {
-		OnVRReady.ExecuteIfBound(ELSCharacterChoice::None);
-		txt_ReadyPC->SetText(FText::FromString(TEXT("Not Ready")));
-		isReadyPC = false;
-	}
-
-}
-
 void UVRReadyWidget::ReadyVR()
 {
-
-	if (txt_ReadyVR && !isReadyVR)
+	if (!isReadyVR)
 	{
-		OnVRReady.ExecuteIfBound(ELSCharacterChoice::IJae);
-		txt_ReadyVR->SetText(FText::FromString(TEXT("Ready")));
-		isReadyVR = true;
+		OnVRReady.ExecuteIfBound(ELSCharacterChoice::SiJae);
+		ChangeReady();
 	}
-	else {
+	else
+	{
 		OnVRReady.ExecuteIfBound(ELSCharacterChoice::None);
-		txt_ReadyVR->SetText(FText::FromString(TEXT("Not Ready")));
-		isReadyVR = false;
+		ChangeReady();
 	}
+}
 
+void UVRReadyWidget::ChangeReady()
+{
+	APawn* OwningPawn = GetOwningPlayerPawn();
+	if (OwningPawn)
+	{
+		AController* Controller = OwningPawn->GetController();
+		// 또는 PlayerController로 캐스팅
+		ALSCharacterChoiceController* PC = Cast<ALSCharacterChoiceController>(Controller);
+
+		if (PC->GetName() == TEXT("LSCharacterChoiceController_0"))
+		{
+			if (txt_ReadyPC && !isReadyVR)
+			{
+				txt_ReadyPC->SetText(FText::FromString(TEXT("Ready")));
+				isReadyVR = true;
+			}
+			else
+			{
+				txt_ReadyPC->SetText(FText::FromString(TEXT("Not Ready")));
+				isReadyVR = false;
+			}
+		}
+		else 
+		{
+			if (txt_ReadyVR && !isReadyVR)
+			{
+				txt_ReadyVR->SetText(FText::FromString(TEXT("Ready")));
+				isReadyVR = true;
+			}
+			else
+			{
+				txt_ReadyVR->SetText(FText::FromString(TEXT("Not Ready")));
+				isReadyVR = false;
+			}
+		}			
+	}
 }

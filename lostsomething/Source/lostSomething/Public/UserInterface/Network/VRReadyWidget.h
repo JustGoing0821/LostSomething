@@ -19,8 +19,7 @@ public:
 	//=============================================
 	//     PROPERTIES & VARIABLES
 	//=============================================
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	class UButton* btn_ReadyPC;
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_ReadyVR;
 
@@ -36,10 +35,12 @@ public:
 	//     FUCTIONS
 	//=============================================
 	virtual void NativeConstruct() override;
-	UFUNCTION()
-	void ReadyPC();
+
 	UFUNCTION()
 	void ReadyVR();
+
+	UFUNCTION()
+	void ChangeReady();
 
 	FOnVRReadyDelegate OnVRReady;
 	

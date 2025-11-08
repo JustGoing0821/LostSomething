@@ -78,6 +78,29 @@ void ALSCharacterChoiceController::BeginPlay()
 
 void ALSCharacterChoiceController::OnCharacterChoose(ELSCharacterChoice InCharacterChoice)
 {
+	ULSGameInstance* GI = Cast<ULSGameInstance>(GetWorld()->GetGameInstance());
+	if (GI->isVR == true && InCharacterChoice != ELSCharacterChoice::None)
+	{
+		if (HasAuthority())
+		{
+			SetCharacterChoice(true, ELSCharacterChoice::SiJae);
+		}
+		else
+		{
+			ServerRPCSetCharacterChoice(ELSCharacterChoice::IJae);
+		}
+	}
+	else {
+		if (HasAuthority())
+		{
+			SetCharacterChoice(true, ELSCharacterChoice::None);
+		}
+		else
+		{
+			ServerRPCSetCharacterChoice(ELSCharacterChoice::None);
+		}
+	}
+
 	if (HasAuthority())
 	{
 		SetCharacterChoice(true, InCharacterChoice);
