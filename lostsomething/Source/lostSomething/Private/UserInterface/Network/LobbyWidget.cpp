@@ -28,6 +28,7 @@ void ULobbyWidget::NativeConstruct()
 	btn_DoFindRoomList->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyDoFindRoomList);
 
 	btn_GoCreateRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoCreateRoom);
+	btn_DoVRCreateRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyClicked_doCreateVRRoom);
 	btn_GoFindRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoFindRoom);
 	btn_GoMenuFromCreateRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
 	btn_GoMenuFromFindRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
@@ -75,6 +76,30 @@ void ULobbyWidget::OnMyClicked_doCreateRoom()
 	GI->MyRoomName = roomName;
 	GI->CreateRoom(roomName);
 	
+}
+
+void ULobbyWidget::OnMyClicked_doCreateVRRoom()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ULobbyWidget::OnMyClicked_doCreateVRRoom()"));
+
+	FString roomName = (TEXT("VR Room"));
+
+	/**/
+	if (roomName.TrimStartAndEnd().IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("방 이름을 안 적었어요!!"));
+		return;
+	}
+
+	if (!GI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameInstance is null! Cannot create room"));
+		return;
+	}
+	// UNetGameInstance::CreateRoom 를 호출하고싶다.
+	GI->isVR = true;
+	GI->MyRoomName = roomName;
+	GI->CreateRoom(roomName);
 }
 
 void ULobbyWidget::OnMyGoMenu()
