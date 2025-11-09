@@ -25,6 +25,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UCharacterChooseWidget> CharacterChooseWidget;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UVRReadyWidget> VRReadyWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UVRReadyWidget> VRReadyWidget;
+
 protected:
 	virtual void BeginPlay() override;
 	

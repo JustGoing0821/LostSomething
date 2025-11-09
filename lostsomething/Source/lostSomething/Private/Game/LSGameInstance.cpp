@@ -138,11 +138,12 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 		FTimerHandle TimerHandle;
 		World->GetTimerManager().SetTimer(TimerHandle,
 			[World]() {
-				UE_LOG(LogTemp, Warning, TEXT("ServerTravel start"));
+				UE_LOG(LogTemp, Warning, TEXT("ServerTravel PC start"));
 				World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
 			},
 			3.0f,
 			false);
+
 
 		UE_LOG(LogTemp, Warning, TEXT("OnMyCreateRoomComplete: timer success"));
 	}
@@ -265,19 +266,6 @@ void ULSGameInstance::JoinRoom(int32 index)
 	FString sessionName;
 	r.Session.SessionSettings.Get(TEXT("room_name"), sessionName);
 	SessionInterface->JoinSession(0, FName(*sessionName), r);
-	
-	/*if (index >= 0 && index < RoomSearch->SearchResults.Num())
-	{
-		auto& SearchResult = RoomSearch->SearchResults[index];
-
-		FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
-
-		if (NetID.IsValid())
-		{
-			// 그냥 고정된 세션 이름 사용
-			SessionInterface->JoinSession(*NetID, FName("GameSession"), SearchResult);
-		}
-	}*/
 	
 }
 

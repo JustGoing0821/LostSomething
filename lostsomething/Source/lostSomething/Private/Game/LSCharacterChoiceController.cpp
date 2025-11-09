@@ -8,6 +8,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Game/LSCharacterChooseGameMode.h"
 #include "UserInterface/Network/CharacterChooseWidget.h"
+#include "UserInterface/Network/VRReadyWidget.h"
+#include <Game/LSGameInstance.h>
 
 ALSCharacterChoiceController::ALSCharacterChoiceController()
 {
@@ -15,6 +17,12 @@ ALSCharacterChoiceController::ALSCharacterChoiceController()
 	if (CharacterChooseWidgetRef.Class)
 	{
 		CharacterChooseWidgetClass = CharacterChooseWidgetRef.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UVRReadyWidget> VRReadyWidgetRef(TEXT("/Game/UI/Network/WBP_VRReadyWidget.WBP_VRReadyWidget_C"));
+	if (VRReadyWidgetRef.Class)
+	{
+		VRReadyWidgetClass = VRReadyWidgetRef.Class;
 	}
 
 	SetShowMouseCursor(true);
@@ -25,27 +33,74 @@ void ALSCharacterChoiceController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsLocalController() && CharacterChooseWidgetClass)
+	ULSGameInstance* GI = Cast<ULSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (GI->isVR == true)
 	{
-		CharacterChooseWidget = CreateWidget<UCharacterChooseWidget>(this, CharacterChooseWidgetClass);
-		if (CharacterChooseWidget)
+		if (IsLocalController() && VRReadyWidgetClass)
 		{
-			CharacterChooseWidget->AddToViewport(1);
+			VRReadyWidget = CreateWidget<UVRReadyWidget>(this, VRReadyWidgetClass);
+			if (VRReadyWidget)
+			{
+				VRReadyWidget->AddToViewport(1);
+			}
+
+			VRReadyWidget->OnVRReady.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+			VRReadyWidget->OnVRReady.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
 		}
 
-		CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
-		CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+		ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->CharacterChoiceChanged.AddUObject(this, &ALSCharacterChoiceController::UpdateCharacterChooseWidget);
+		}
 	}
+	else {
+		if (IsLocalController() && CharacterChooseWidgetClass)
+		{
+			CharacterChooseWidget = CreateWidget<UCharacterChooseWidget>(this, CharacterChooseWidgetClass);
+			if (CharacterChooseWidget)
+			{
+				CharacterChooseWidget->AddToViewport(1);
+			}
 
-	ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode)
-	{
-		GameMode->CharacterChoiceChanged.AddUObject(this, &ALSCharacterChoiceController::UpdateCharacterChooseWidget);
+			CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+			CharacterChooseWidget->OnCharacterChoose.BindUObject(this, &ALSCharacterChoiceController::OnCharacterChoose);
+		}
+
+		ALSCharacterChooseGameMode* GameMode = Cast<ALSCharacterChooseGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->CharacterChoiceChanged.AddUObject(this, &ALSCharacterChoiceController::UpdateCharacterChooseWidget);
+		}
 	}
 }
 
 void ALSCharacterChoiceController::OnCharacterChoose(ELSCharacterChoice InCharacterChoice)
 {
+	ULSGameInstance* GI = Cast<ULSGameInstance>(GetWorld()->GetGameInstance());
+	if (GI->isVR == true && InCharacterChoice != ELSCharacterChoice::None)
+	{
+		if (HasAuthority())
+		{
+			SetCharacterChoice(true, ELSCharacterChoice::SiJae);
+		}
+		else
+		{
+			ServerRPCSetCharacterChoice(ELSCharacterChoice::IJae);
+		}
+	}
+	else {
+		if (HasAuthority())
+		{
+			SetCharacterChoice(true, ELSCharacterChoice::None);
+		}
+		else
+		{
+			ServerRPCSetCharacterChoice(ELSCharacterChoice::None);
+		}
+	}
+
 	if (HasAuthority())
 	{
 		SetCharacterChoice(true, InCharacterChoice);

@@ -44,6 +44,9 @@ public:
 	class UButton* btn_DoCreateRoom;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	class UButton* btn_DoVRCreateRoom;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_GoMenuFromCreateRoom;
 
 	//---------------------------------------------Find Room
@@ -72,6 +75,9 @@ public:
 	// 버튼을 누르면 UNetGameInstance::CreateRoom 를 호출하고싶다.
 	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_doCreateRoom();
+
+	UFUNCTION(BlueprintCallable)
+	void OnMyClicked_doCreateVRRoom();
 
 	UFUNCTION(BlueprintCallable)
 	void OnMyGoMenu();

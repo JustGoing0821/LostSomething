@@ -51,6 +51,7 @@ public:
 
 	FString NickName = TEXT("MJMC");
 	FString MyRoomName;
+	bool isVR = false;
 
 	//방 검색 구조체
 	TSharedPtr<FOnlineSessionSearch> RoomSearch;
