@@ -973,7 +973,7 @@ void ALSPlayer::PickUpCore()
 {
 	if (ALSPlayerSiJae* SiJae = Cast<ALSPlayerSiJae>(this))
 	{
-		SiJae->WeaponPickUp();
+		//SiJae->WeaponPickUp();
 		//LS_LOG(LogLS, Warning, TEXT("ALSPlayer::weaponpickup() called"));
 
 	}
@@ -1170,6 +1170,7 @@ void ALSPlayer::DropItemFromSlot()
 							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
 							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
 
+							RefreshWeaponEquipFromCurrentSlot();
 							// 서버 : 클라이언트 것도 삭제
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
 						}
@@ -1225,6 +1226,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
 					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
+					RefreshWeaponEquipFromCurrentSlot();
 					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
 				}
 				else  // 이미 차있는 슬롯인 경우
@@ -1299,6 +1301,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 			}
 		}
 
+
 		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		//{
 		//	if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
@@ -1307,6 +1310,9 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 		//	}
 		//}
 	}
+
+	//무기인지 아닌지 체크용
+	RefreshWeaponEquipFromCurrentSlot();
 }
 
 void ALSPlayer::OnSelectSlot1()
@@ -2238,4 +2244,129 @@ bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 
 
 
+/*******************
 
+ Weapon Section
+
+********************/
+
+
+void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
+{
+	if (CharacterChoice != ELSCharacterChoice::SiJae)
+	{
+		// 혹시 손에 들고 있던 무기가 있다면 내려놓기
+		if (HasAuthority())
+		{
+			UnequipWeapon_Internal();
+		}
+		else
+		{
+			ServerUnequipWeapon();
+		}
+		return;
+	}
+
+	const int32 SlotIndex = SelectedSlot;
+
+	if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;
+
+	const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+	//슬롯이 비었거나 무기가 아님
+	if (Info.IsEmpty || !Info.IsWeapon)
+	{
+		if (HasAuthority())
+		{
+			UnequipWeapon_Internal();
+		}
+		else
+		{
+			ServerUnequipWeapon();
+		}
+		return;
+	}
+
+	// 무기면 손에 붙임
+	if (HasAuthority())
+	{
+		EquipWeaponFromSlot_Internal(SlotIndex);
+	}
+	else
+	{
+		ServerEquipWeaponFromSlot(SlotIndex);
+	}
+}
+
+void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attach Weapon to Socket: %s"), *WeaponSocketName.ToString());
+
+
+	if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;
+
+	const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+	if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
+		return;
+
+	// 이미 무기가 장착돼 있다면 먼저 제거
+	UnequipWeapon_Internal();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	// 서버에서 무기 액터 스폰
+	AMasterItem* NewWeapon = GetWorld()->SpawnActor<AMasterItem>(
+		Info.Item_Class,
+		FVector::ZeroVector,
+		FRotator::ZeroRotator,
+		SpawnParams
+	);
+
+	if (!NewWeapon)
+		return;
+
+	//물리, 충돌 끄기
+	if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(NewWeapon->GetRootComponent()))
+	{
+		Prim->SetSimulatePhysics(false);
+		Prim->SetEnableGravity(false);
+	}
+	NewWeapon->SetActorEnableCollision(false);
+
+	// 손 소켓에 부착
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		NewWeapon->AttachToComponent(
+			MeshComp,
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			WeaponSocketName
+		);
+	}
+
+	//NewWeapon->SetEquipped(true);
+	EquippedWeapon = NewWeapon;
+}
+
+void ALSPlayer::UnequipWeapon_Internal()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+	}
+}
+
+void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
+{
+	EquipWeaponFromSlot_Internal(SlotIndex);
+}
+
+void ALSPlayer::ServerUnequipWeapon_Implementation()
+{
+	UnequipWeapon_Internal();
+}

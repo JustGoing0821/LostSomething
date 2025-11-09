@@ -19,6 +19,15 @@ public:
 	// Sets default values for this actor's properties
 	AMasterItem();
 
+
+	//무기 장착, 해제
+//	void SetEquipped(bool bNewEquipped);
+//
+//protected:
+//	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+//	bool bEquipped = false;
+
+
 	// 던져진 아이템인지 확인하는 플래그
 	UPROPERTY(BlueprintReadWrite, Category = "Throwable")
 	bool bIsThrown = false;

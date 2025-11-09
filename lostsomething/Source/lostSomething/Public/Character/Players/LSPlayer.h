@@ -388,6 +388,34 @@ public:
 	//void ClientPickUp(FItemDetails ItemData);
 
 
+/*******************
+
+ Weapon Section
+
+********************/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	FName WeaponSocketName = TEXT("WeaponSocket"); 
+
+	// 손에 무기 액터
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AMasterItem* EquippedWeapon = nullptr;
+
+	// 장착,해제
+	void RefreshWeaponEquipFromCurrentSlot();
+
+	// rpc안에 쓸것들
+	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
+	void UnequipWeapon_Internal();
+
+	//PC
+	UFUNCTION(Server, Reliable)
+	void ServerEquipWeaponFromSlot(int32 SlotIndex);
+
+	UFUNCTION(Server, Reliable)
+	void ServerUnequipWeapon();
+
+
+
 
 /*******************
 

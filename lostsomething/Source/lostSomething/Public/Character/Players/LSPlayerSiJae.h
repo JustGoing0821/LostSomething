@@ -30,10 +30,10 @@ class LOSTSOMETHING_API ALSPlayerSiJae : public ALSPlayer
 	ULSDarkWidget* DarkWidgetInstance;
 	
 public: 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	UStaticMeshComponent* Weapon;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	//UStaticMeshComponent* Weapon;
 
-	void WeaponPickUp();
+	//void WeaponPickUp();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheelchair Settings")
 	float WheelchairTurnRate = 90.0f;

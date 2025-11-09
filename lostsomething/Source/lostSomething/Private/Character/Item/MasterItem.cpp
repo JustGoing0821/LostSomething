@@ -35,6 +35,27 @@ AMasterItem::AMasterItem()
 
 }
 
+//무기 떨림 보정
+//void AMasterItem::SetEquipped(bool bNewEquipped)
+//{
+//	bEquipped = bNewEquipped;
+//
+//	if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(GetRootComponent()))
+//	{
+//		// 손에 들고 있을 때 물리관련 비활성화
+//		const bool bEnablePhysics = !bEquipped;
+//
+//		Prim->SetSimulatePhysics(bEnablePhysics);
+//		Prim->SetEnableGravity(bEnablePhysics);
+//		Prim->SetCollisionEnabled(
+//			bEnablePhysics ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision
+//		);
+//	}
+//
+//
+//	SetReplicateMovement(!bEquipped);
+//}
+
 // Called when the game starts or when spawned
 void AMasterItem::BeginPlay()
 {
