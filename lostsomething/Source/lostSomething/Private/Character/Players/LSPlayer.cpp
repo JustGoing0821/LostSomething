@@ -1364,7 +1364,7 @@ void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 {
 	FItemDetails ItemData = TargetItem->GetItemInfo();
 	TargetItem->Destroy();
-	MultiPickUpCore(TargetItem);
+	//MultiPickUpCore(TargetItem);
 	ClientPickUpCore(ItemData);
 }
 
@@ -1373,7 +1373,7 @@ void ALSPlayer::MultiPickUpCore_Implementation(AActor* TargetItem)
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->SetPickUpAnim();
+		//AnimInstance->SetPickUpAnim();
 		//UE_LOG(LogTemp, Warning, TEXT("Player Picking ANIMATION SIJAE"));
 	}
 }
@@ -1417,12 +1417,21 @@ void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> I
 	SpawnParams.Instigator = this;
 
 	//서버에서 아이템 스폰
-	AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
-		ItemClass,
-		SpawnLocation,
-		SpawnRotation,
-		SpawnParams
-	);
+	//AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+	AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(ItemClass,DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f),DropItemLoc->GetComponentRotation());
+
+	if (SpawnedItem)
+	{
+		if (UStaticMeshComponent* ItemMesh = SpawnedItem->FindComponentByClass<UStaticMeshComponent>())
+		{
+			ItemMesh->SetSimulatePhysics(true);      // 물리 활성화
+			ItemMesh->SetEnableGravity(true);        // 중력 적용
+			ItemMesh->AddImpulse(FVector(0, 0, 100.f)); // 위로 살짝 힘
+		}
+	}
+
+
 
 	//클라이언트 인벤토리 수정요청
 	ClientDropItemFromSlot(SlotIndex);
