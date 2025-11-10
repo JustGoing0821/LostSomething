@@ -16,7 +16,7 @@ enum class EItemNature : uint8
 {
     IsConsumable    UMETA(DisplayName = "IsConsumable"),
     IsEquipment     UMETA(DisplayName = "IsEquipment"),
-    IsMaterial      UMETA(DisplayName = "IsMaterial"),
+    IsWeapon        UMETA(DisplayName = "IsWeapon"),
     IsKeyItem       UMETA(DisplayName = "IsKeyItem")
 };
 
@@ -39,9 +39,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
     EItemNature Item_Nature = EItemNature::IsConsumable;
 
+    // weapon
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
+    bool IsWeapon = false;
+
     // 빈 슬롯 여부 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
     bool IsEmpty = true;
+
+   
 
     // 아이템 클래스 레퍼런스
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
@@ -55,5 +61,6 @@ public:
         Item_Nature = EItemNature::IsConsumable;
         IsEmpty = true;
         Item_Class = nullptr;
+        IsWeapon = false;
     }
 };

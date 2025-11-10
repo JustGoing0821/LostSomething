@@ -11,8 +11,9 @@
 #include "Character/Players/LSCharacterChoice.h"
 #include "Character/Item/LSItemStructures.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include "Game/LSNetworkPosition.h"
 #include "Interface/LSCombineTutorialInterface.h"
-
+#include "Sound/SoundBase.h"
 #include "LSPlayer.generated.h"
 
 USTRUCT()
@@ -64,6 +65,7 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; 
 
 /*******************
 
@@ -303,6 +305,8 @@ Item	Section
 
 ********************/
 protected:
+		ELSNetworkPosition GetNetworkPositionForInventory() const;
+
 		// Drop Item 위치를 나타내는 Arrow 컴포넌트
 		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class UArrowComponent> DropItemLoc;
@@ -337,6 +341,10 @@ protected:
 	// 인벤토리 초기화 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void InitializeInventory();
+
+	//inventory instance
+	void SaveInventoryToGameInstance();
+	void LoadInventoryFromGameInstance();
 
 	//숫자키로 슬롯선택
 	UFUNCTION(BlueprintCallable, Category = "HUD")
@@ -386,6 +394,34 @@ public:
 
 	//UFUNCTION(Client, Reliable)
 	//void ClientPickUp(FItemDetails ItemData);
+
+
+/*******************
+
+ Weapon Section
+
+********************/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	FName WeaponSocketName = TEXT("WeaponSocket"); 
+
+	// 손에 무기 액터
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AMasterItem* EquippedWeapon = nullptr;
+
+	// 장착,해제
+	void RefreshWeaponEquipFromCurrentSlot();
+
+	// rpc안에 쓸것들
+	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
+	void UnequipWeapon_Internal();
+
+	//PC
+	UFUNCTION(Server, Reliable)
+	void ServerEquipWeaponFromSlot(int32 SlotIndex);
+
+	UFUNCTION(Server, Reliable)
+	void ServerUnequipWeapon();
+
 
 
 
@@ -487,6 +523,9 @@ public:
 public:
 	virtual void Attack();
 	void ProcessAttack();
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* HitSound;
 
 	//RPC
 public:
