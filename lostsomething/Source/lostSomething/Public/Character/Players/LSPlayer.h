@@ -12,7 +12,7 @@
 #include "Character/Item/LSItemStructures.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include "Interface/LSCombineTutorialInterface.h"
-
+#include "Sound/SoundBase.h"
 #include "LSPlayer.generated.h"
 
 USTRUCT()
@@ -515,6 +515,9 @@ public:
 public:
 	virtual void Attack();
 	void ProcessAttack();
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* HitSound;
 
 	//RPC
 public:

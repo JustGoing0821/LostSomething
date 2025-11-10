@@ -1805,6 +1805,15 @@ void ALSPlayer::ProcessAttack()
 		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
 		{
 			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
+			
+			
+			//사운드
+			const FVector HitLocation = OutHitResult.ImpactPoint;
+			if (HitSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, HitSound, HitLocation);
+			}
+
 			// NPC만 데미지 적용
 			FDamageEvent DamageEvent;
 			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
