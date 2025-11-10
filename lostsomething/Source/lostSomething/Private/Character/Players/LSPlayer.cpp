@@ -28,6 +28,8 @@
 #include "Character/Item/MasterItem.h"
 #include "Interface/LSInteractionInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "Game/LSGameInstance.h"
+#include "Game/LSNetworkPosition.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
 
@@ -220,6 +222,16 @@ void ALSPlayer::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
+
+void ALSPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// 맵을 떠나기 전에 인벤토리 저장
+	SaveInventoryToGameInstance();
+
+	Super::EndPlay(EndPlayReason);
+}
+
+
 // Called when the game starts or when spawned
 void ALSPlayer::BeginPlay()
 {
@@ -362,7 +374,9 @@ void ALSPlayer::StartGame()
 		}
 	}
 
-	InitializeInventory();
+	LoadInventoryFromGameInstance();
+
+	//InitializeInventory();
 
 	if (HasAuthority())
 	{
@@ -1228,6 +1242,8 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 					RefreshWeaponEquipFromCurrentSlot();
 					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+					SaveInventoryToGameInstance();
+				
 				}
 				else  // 이미 차있는 슬롯인 경우
 				{
@@ -1272,6 +1288,92 @@ void ALSPlayer::InitializeInventory()
 			{
 				HUD->SetIcon(i, nullptr); // null을 전달하면 기본 아이콘 표시
 			}
+		}
+	}
+}
+
+void ALSPlayer::SaveInventoryToGameInstance()
+{
+	// 서버도 아니고, 로컬도 아니면 패스
+	if (!HasAuthority() && !IsLocallyControlled())
+	{
+		return;
+	}
+
+	if (ULSGameInstance* LSGameInstance = GetWorld()->GetGameInstance<ULSGameInstance>())
+	{
+		const ELSNetworkPosition Position = GetNetworkPositionForInventory();
+
+		LSGameInstance->SaveInventory(Position, ItemInfoArray, SelectedSlot);
+
+		UE_LOG(LogTemp, Log, TEXT("ALSPlayer::SaveInventoryToGameInstance - Pos:%d, Slots:%d, Selected:%d"),
+			static_cast<int32>(Position),
+			ItemInfoArray.Num(),
+			SelectedSlot);
+	}
+}
+
+void ALSPlayer::LoadInventoryFromGameInstance()
+{
+	
+	InitializeInventory();
+
+
+	if (!HasAuthority() && !IsLocallyControlled())
+	{
+		return;
+	}
+
+	if (ULSGameInstance* LSGameInstance = GetWorld()->GetGameInstance<ULSGameInstance>())
+	{
+		const ELSNetworkPosition Position = GetNetworkPositionForInventory();
+
+		TArray<FItemDetails> LoadedItems;
+		int32 LoadedSelectedSlot = 0;
+
+		if (LSGameInstance->LoadInventory(Position, LoadedItems, LoadedSelectedSlot))
+		{
+			// 슬롯 배열 / 선택 슬롯 덮어쓰기
+			ItemInfoArray = LoadedItems;
+			MaxSlots = ItemInfoArray.Num();
+			SelectedSlot = LoadedSelectedSlot;
+
+			// HUD 아이콘 갱신
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+			{
+				if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+				{
+					for (int32 i = 0; i < ItemInfoArray.Num(); ++i)
+					{
+						const FItemDetails& SlotItem = ItemInfoArray[i];
+						UTexture2D* Icon = nullptr;
+
+						if (!SlotItem.IsEmpty)
+						{
+							Icon = SlotItem.Item_Icon.LoadSynchronous();
+						}
+
+						HUD->SetIcon(i, Icon);
+					}
+
+					// 선택 슬롯 테두리 갱신
+					HUD->UpdateSlotBorderColors(SelectedSlot);
+				}
+			}
+
+		
+			RefreshWeaponEquipFromCurrentSlot();
+
+			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - Pos:%d, LoadedSlots:%d, Selected:%d"),
+				static_cast<int32>(Position),
+				ItemInfoArray.Num(),
+				SelectedSlot);
+		}
+		else
+		{
+			// 저장된 게 없으면 그냥 초기화된 빈 인벤토리 유지
+			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - No saved data (Pos:%d)"),
+				static_cast<int32>(Position));
 		}
 	}
 }
@@ -2378,4 +2480,19 @@ void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
 	UnequipWeapon_Internal();
+}
+
+
+
+//item instance
+ELSNetworkPosition ALSPlayer::GetNetworkPositionForInventory() const
+{
+	//if (HasAuthority())
+	//{
+	//	// 서버 프로세스: 호스트 자신의 폰 vs 다른 플레이어 폰 구분
+	//	return IsLocallyControlled() ? ELSNetworkPosition::Server : ELSNetworkPosition::Client;
+	//}
+
+	// 클라이언트 프로세스는 그냥 Client로 취급
+	return ELSNetworkPosition::Client;
 }

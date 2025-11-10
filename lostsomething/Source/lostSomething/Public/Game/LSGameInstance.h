@@ -7,6 +7,7 @@
 #include <Interfaces/OnlineSessionInterface.h>
 #include "Game/LSNetworkPosition.h"
 #include "Character/Players/LSCharacterChoice.h"
+#include "Character/Item/LSItemStructures.h"
 #include "LSGameInstance.generated.h"
 
 
@@ -31,6 +32,29 @@ struct FRoomInfo
 		UE_LOG(LogTemp, Warning, TEXT("RoomName : %s, HostName:%s, PlayerCount : %s, Ping : %s"), *RoomName, *HostName, *PlayerCount, *PingMS);
 	}
 };
+
+
+
+//=============================================
+//     아이템
+//=============================================
+USTRUCT(BlueprintType)
+struct FLSInventorySnapshot
+{
+	GENERATED_BODY()
+
+public:
+	// 슬롯 (어떤 아이템 들어있는지)
+	UPROPERTY()
+	TArray<FItemDetails> ItemInfos;
+
+	// 현재 선택된 슬롯
+	UPROPERTY()
+	int32 SelectedSlot = 0;
+};
+
+
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAddRoomInfoDelegate, const FRoomInfo&, RoomInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindingRoomsDelegate, bool, bActive);
@@ -125,4 +149,23 @@ public:
 
 protected:
 	TMap<ELSNetworkPosition, ELSCharacterChoice> CharacterChoices;
+
+
+
+	//items
+public:
+	//인벤토리 저장
+	void SaveInventory(ELSNetworkPosition Position,const TArray<FItemDetails>& Items, int32 InSelectedSlot);
+
+	// 인벤토리 불러오는 함수
+	bool LoadInventory(ELSNetworkPosition Position, TArray<FItemDetails>& OutItems, int32& OutSelectedSlot ) const;
+
+
+protected:
+	//플레이어별 인벤토리 (서버,클라)
+	UPROPERTY()
+	TMap<ELSNetworkPosition, FLSInventorySnapshot> SavedInventories;
+
 };
+
+

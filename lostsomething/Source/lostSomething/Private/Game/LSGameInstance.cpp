@@ -328,3 +328,44 @@ void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCh
 		CharacterChoices[ELSNetworkPosition::Client] = ClientChoice;
 	}
 }
+
+
+
+
+void ULSGameInstance::SaveInventory(ELSNetworkPosition Position,const TArray<FItemDetails>& Items,int32 InSelectedSlot)
+{
+	//배열 복사
+	FLSInventorySnapshot Snapshot;
+	Snapshot.ItemInfos = Items;       
+	Snapshot.SelectedSlot = InSelectedSlot;
+
+	SavedInventories.Add(Position, Snapshot);
+
+	//로그
+	UE_LOG(LogTemp, Log, TEXT("SaveInventory: Position=%d, Items=%d, SelectedSlot=%d"),
+		static_cast<int32>(Position),
+		Snapshot.ItemInfos.Num(),
+		Snapshot.SelectedSlot);
+}
+
+bool ULSGameInstance::LoadInventory(ELSNetworkPosition Position,TArray<FItemDetails>& OutItems,int32& OutSelectedSlot) const
+{
+	if (const FLSInventorySnapshot* Found = SavedInventories.Find(Position))
+	{
+		//배열복사
+		OutItems = Found->ItemInfos;     
+		OutSelectedSlot = Found->SelectedSlot;
+
+		UE_LOG(LogTemp, Log, TEXT("LoadInventory: Position=%d, Items=%d, SelectedSlot=%d"),
+			static_cast<int32>(Position),
+			OutItems.Num(),
+			OutSelectedSlot);
+
+		return true;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("LoadInventory: No snapshot for Position=%d"),
+		static_cast<int32>(Position));
+
+	return false;
+}
