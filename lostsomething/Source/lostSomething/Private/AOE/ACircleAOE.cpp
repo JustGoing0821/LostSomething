@@ -11,52 +11,35 @@
 #include "Components/SphereComponent.h"   
 #include "Engine/DamageEvents.h"  
 #include "GameFramework/DamageType.h"
-#include "Materials/MaterialInstanceDynamic.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
-// Sets default values
 ACircleAOE::ACircleAOE()
 {
     bReplicates = true;
     PrimaryActorTick.bCanEverTick = true;
 
-    // 루트 컴포넌트 생성
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
-    // 충돌 스피어 생성
     CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
     CollisionSphere->SetupAttachment(RootComponent);
     CollisionSphere->SetSphereRadius(Radius);
     CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    // 경고 메시 생성
-    WarningMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WarningMesh"));
-    WarningMesh->SetupAttachment(RootComponent);
-    WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WarningEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("WarningEffect"));
+    WarningEffect->SetupAttachment(RootComponent);
+    WarningEffect->SetAutoActivate(false);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("/Engine/BasicShapes/Sphere"));
-    if (SphereMesh.Succeeded())
-    {
-        WarningMesh->SetStaticMesh(SphereMesh.Object);
-        UE_LOG(LogTemp, Warning, TEXT("Sphere mesh loaded successfully"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to load Sphere mesh"));
-    }
+    ExplosionEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ExplosionEffect"));
+    ExplosionEffect->SetupAttachment(RootComponent);
+    ExplosionEffect->SetAutoActivate(false);
 
-    WarningMesh->SetRelativeLocation(FVector(0, 0, -45.0f)); // 바닥에 붙이기
-    WarningMesh->SetRelativeRotation(FRotator(0, 0, 0));
-
-    float ScaleXY = Radius / 50.0f;
-    float ScaleZ = 0.05f;
-    WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
-
-    // Share AOE 기본 설정
     bShouldTrackPlayer = true;
     TrackingSpeed = 500.0f;
     bIsLargeCircle = false;
+    ExplosionEffectDuration = 0.5f;
 }
 
 void ACircleAOE::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -69,7 +52,6 @@ void ACircleAOE::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
     DOREPLIFETIME(ACircleAOE, bIsLargeCircle);
 }
 
-// Called when the game starts or when spawned
 void ACircleAOE::BeginPlay()
 {
     Super::BeginPlay();
@@ -78,11 +60,12 @@ void ACircleAOE::BeginPlay()
     {
         CollisionSphere->SetSphereRadius(Radius);
     }
-    SetupWarningVisual();
 }
 
 void ACircleAOE::SetupAsCircleAOE(float InRadius)
 {
+    UE_LOG(LogTemp, Warning, TEXT("SetupAsCircleAOE called! Radius: %f"), InRadius);
+    
     AOEType = EAOEType::Circle;
     Radius = InRadius;
     bIsLargeCircle = false;
@@ -90,7 +73,10 @@ void ACircleAOE::SetupAsCircleAOE(float InRadius)
     {
         CollisionSphere->SetSphereRadius(Radius);
     }
+    
+    UE_LOG(LogTemp, Warning, TEXT("About to call SetupWarningVisual()"));
     SetupWarningVisual();
+    UE_LOG(LogTemp, Warning, TEXT("SetupWarningVisual() completed"));
 }
 
 void ACircleAOE::SetupAsShareAOE(float InRadius, int32 InMinPlayers)
@@ -98,7 +84,7 @@ void ACircleAOE::SetupAsShareAOE(float InRadius, int32 InMinPlayers)
     AOEType = EAOEType::Share;
     Radius = InRadius;
     MinSharePlayers = InMinPlayers;
-    bShouldTrackPlayer = true; // 기본값으로 추적 활성화
+    bShouldTrackPlayer = true;
     bIsLargeCircle = false;
 
     if (CollisionSphere)
@@ -106,7 +92,6 @@ void ACircleAOE::SetupAsShareAOE(float InRadius, int32 InMinPlayers)
         CollisionSphere->SetSphereRadius(Radius);
     }
 
-    // 가장 가까운 플레이어를 추적 대상으로 설정
     if (HasAuthority())
     {
         TArray<AActor*> AllPlayers;
@@ -114,7 +99,6 @@ void ACircleAOE::SetupAsShareAOE(float InRadius, int32 InMinPlayers)
 
         if (AllPlayers.Num() > 0)
         {
-            // 가장 가까운 플레이어 찾기
             AActor* ClosestPlayer = nullptr;
             float ClosestDistance = FLT_MAX;
 
@@ -168,16 +152,15 @@ void ACircleAOE::StartPlayerTracking()
 {
     if (!HasAuthority() || !TrackedPlayer) return;
 
-    // 0.1초마다 위치 업데이트만 (페널티 데미지 타이머 제거)
     GetWorld()->GetTimerManager().SetTimer(
         TrackingTimerHandle,
         this,
         &ACircleAOE::UpdateTrackingPosition,
-        0.1f, // 0.1초마다
-        true  // 반복
+        0.1f,
+        true
     );
 
-    UE_LOG(LogTemp, Warning, TEXT("Share AOE: Started tracking player %s (NO PENALTY DAMAGE)"), *TrackedPlayer->GetName());
+    UE_LOG(LogTemp, Warning, TEXT("Share AOE: Started tracking player %s"), *TrackedPlayer->GetName());
 }
 
 void ACircleAOE::ApplyOutOfRangePenalty()
@@ -185,14 +168,12 @@ void ACircleAOE::ApplyOutOfRangePenalty()
     return;
 }
 
-// 추적 위치 업데이트
 void ACircleAOE::UpdateTrackingPosition()
 {
     if (!HasAuthority() || !TrackedPlayer || !bShouldTrackPlayer) return;
 
-    // 플레이어 위치로 부드럽게 이동
     FVector TargetLocation = TrackedPlayer->GetActorLocation();
-    TargetLocation.Z = 9.5f; // 바닥 높이 유지
+    TargetLocation.Z = 9.5f;
 
     FVector CurrentLocation = GetActorLocation();
     FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, 0.1f, TrackingSpeed);
@@ -202,7 +183,6 @@ void ACircleAOE::UpdateTrackingPosition()
     UE_LOG(LogTemp, Log, TEXT("Share AOE: Tracking player - moved to %s"), *NewLocation.ToString());
 }
 
-// 추적 중지
 void ACircleAOE::StopPlayerTracking()
 {
     if (HasAuthority())
@@ -234,91 +214,60 @@ void ACircleAOE::SetupWarningVisual()
 
 void ACircleAOE::SetupCircleVisual()
 {
-    if (WarningMesh)
+    if (CircleWarningEffect && WarningEffect)
     {
-        float ScaleXY = Radius / 50.0f;
-        float ScaleZ = 0.1f;
-        WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+        WarningEffect->SetAsset(CircleWarningEffect);
 
-        WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-        WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        WarningMesh->SetCanEverAffectNavigation(false);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CircleWarningColor);
 
-        UE_LOG(LogTemp, Warning, TEXT("Circle WarningMesh configured: Scale(%f, %f, %f)"),
-            ScaleXY, ScaleXY, ScaleZ);
+        UE_LOG(LogTemp, Warning, TEXT("Circle Warning Effect configured: Scale 1.0"));
     }
 
-    if (WarningMaterial && WarningMesh)
+    if (CircleExplosionEffect && ExplosionEffect)
     {
-        DynamicMaterial = WarningMesh->CreateDynamicMaterialInstance(0, WarningMaterial);
-        if (DynamicMaterial)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Circle DynamicMaterial created successfully!"));
-            DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(1.0f, 0.5f, 0.0f, 0.8f));
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("WarningMaterial or WarningMesh is null!"));
+        ExplosionEffect->SetAsset(CircleExplosionEffect);
+
+        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CircleExplosionColor);
     }
 }
 
 void ACircleAOE::SetupShareVisual()
 {
-    if (WarningMesh)
+    if (ShareWarningEffect && WarningEffect)
     {
-        float ScaleXY = Radius / 50.0f;
-        float ScaleZ = 0.1f;
-        WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+        WarningEffect->SetAsset(ShareWarningEffect);
 
-        WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-        WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        WarningMesh->SetCanEverAffectNavigation(false);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), ShareWarningColor);
+    }
 
-        UE_LOG(LogTemp, Warning, TEXT("Share WarningMesh configured: Scale(%f, %f, %f)"),
-            ScaleXY, ScaleXY, ScaleZ);
+    if (ShareExplosionEffect && ExplosionEffect)
+    {
+        ExplosionEffect->SetAsset(ShareExplosionEffect);
 
-        UMaterialInterface* MaterialToUse = ShareWarningMaterial ? ShareWarningMaterial : WarningMaterial;
-        if (MaterialToUse)
-        {
-            DynamicMaterial = WarningMesh->CreateDynamicMaterialInstance(0, MaterialToUse);
-            if (DynamicMaterial)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("Share DynamicMaterial created successfully!"));
-                DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(0.0f, 1.0f, 1.0f, 0.8f)); // 청록색 계열
-            }
-        }
+        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), ShareExplosionColor);
     }
 }
 
 void ACircleAOE::SetupLargeCircleVisual()
 {
-    if (WarningMesh)
+    if (LargeCircleWarningEffect && WarningEffect)
     {
-        float ScaleXY = Radius / 50.0f;
-        float ScaleZ = 0.1f;
-        WarningMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+        WarningEffect->SetAsset(LargeCircleWarningEffect);
 
-        WarningMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        WarningMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-        WarningMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        WarningMesh->SetCanEverAffectNavigation(false);
-
-        UE_LOG(LogTemp, Warning, TEXT("Large Circle WarningMesh configured: Scale(%f, %f, %f)"),
-            ScaleXY, ScaleXY, ScaleZ);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), LargeCircleWarningColor);
     }
 
-    if (WarningMaterial && WarningMesh)
+    if (LargeCircleExplosionEffect && ExplosionEffect)
     {
-        DynamicMaterial = WarningMesh->CreateDynamicMaterialInstance(0, WarningMaterial);
-        if (DynamicMaterial)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Large Circle DynamicMaterial created successfully!"));
-            // 초기 마젠타 색상 설정
-            DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FLinearColor(1.0f, 0.0f, 1.0f, 0.8f));
-        }
+        ExplosionEffect->SetAsset(LargeCircleExplosionEffect);
+
+        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), LargeCircleExplosionColor);
     }
 }
 
@@ -326,16 +275,16 @@ void ACircleAOE::OnRep_IsWarningPhase()
 {
     if (bIsWarningPhase)
     {
-        if (WarningMesh)
+        if (WarningEffect)
         {
-            WarningMesh->SetVisibility(true);
+            WarningEffect->Activate(true);
         }
     }
     else
     {
-        if (WarningMesh)
+        if (WarningEffect)
         {
-            WarningMesh->SetVisibility(false);
+            WarningEffect->Deactivate();
         }
     }
 }
@@ -371,21 +320,23 @@ void ACircleAOE::StartAOE()
 
     MulticastStartWarning();
 
+    float Duration = (AOEType == EAOEType::Share) ? ShareWarningDuration : WarningDuration;
+
     GetWorld()->GetTimerManager().SetTimer(
         WarningTimerHandle,
         this,
         &ACircleAOE::Explode,
-        WarningDuration,
+        Duration,
         false
     );
 }
 
 void ACircleAOE::MulticastStartWarning_Implementation()
 {
-    if (WarningMesh)
+    if (WarningEffect)
     {
-        WarningMesh->SetVisibility(true);
-        WarningMesh->SetHiddenInGame(false);
+        WarningEffect->Activate(true);
+        UE_LOG(LogTemp, Warning, TEXT("Warning Effect (Holy Light) Activated!"));
     }
 }
 
@@ -410,15 +361,45 @@ void ACircleAOE::Explode()
 
     DealDamageToPlayersInRange();
 
-    Destroy();
+    GetWorld()->GetTimerManager().SetTimer(
+        DestroyTimerHandle,
+        this,
+        &ACircleAOE::DestroyAOE,
+        ExplosionEffectDuration + 0.1f,
+        false
+    );
 }
 
 void ACircleAOE::MulticastExplode_Implementation()
 {
-    if (WarningMesh)
+    if (WarningEffect)
     {
-        WarningMesh->SetVisibility(false);
+        WarningEffect->Deactivate();
     }
+
+    if (ExplosionEffect)
+    {
+        ExplosionEffect->Activate(true);
+        UE_LOG(LogTemp, Warning, TEXT("Explosion Effect (Light Beam) Activated!"));
+        
+        GetWorld()->GetTimerManager().SetTimer(
+            ExplosionEffectTimerHandle,
+            [this]()
+            {
+                if (ExplosionEffect)
+                {
+                    ExplosionEffect->Deactivate();
+                }
+            },
+            ExplosionEffectDuration,
+            false
+        );
+    }
+}
+
+void ACircleAOE::DestroyAOE()
+{
+    Destroy();
 }
 
 void ACircleAOE::UpdateColorAnimation(float Alpha)
@@ -443,63 +424,46 @@ void ACircleAOE::UpdateColorAnimation(float Alpha)
 
 void ACircleAOE::UpdateCircleAnimation(float Alpha)
 {
-    if (DynamicMaterial)
+    if (WarningEffect)
     {
-        FLinearColor BaseColor = FMath::Lerp(
-            FLinearColor(1.0f, 0.6f, 0.0f, 0.8f),
-            FLinearColor(1.0f, 0.0f, 0.0f, 0.9f),
+        FLinearColor CurrentColor = FMath::Lerp(
+            CircleWarningColor,
+            CircleExplosionColor,
             Alpha
         );
 
-        float BlinkSpeed = FMath::Lerp(5.0f, 15.0f, Alpha);
-        float BlinkValue = (FMath::Sin(ElapsedTime * BlinkSpeed) + 1.0f) * 0.5f;
-
-        FLinearColor FinalColor = BaseColor;
-        FinalColor.A *= (0.5f + BlinkValue * 0.5f);
-
-        DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FinalColor);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
     }
 }
 
 void ACircleAOE::UpdateShareAnimation(float Alpha)
 {
-    if (DynamicMaterial)
+    if (WarningEffect)
     {
-        FLinearColor BaseColor = FMath::Lerp(
-            FLinearColor(0.0f, 1.0f, 1.0f, 0.8f),
-            FLinearColor(0.0f, 0.5f, 1.0f, 0.9f),
+        FLinearColor CurrentColor = FMath::Lerp(
+            ShareWarningColor,
+            ShareExplosionColor,
             Alpha
         );
 
-        float BlinkSpeed = FMath::Lerp(2.0f, 8.0f, Alpha);
-        float BlinkValue = (FMath::Sin(ElapsedTime * BlinkSpeed) + 1.0f) * 0.5f;
-
-        FLinearColor FinalColor = BaseColor;
-        FinalColor.A *= (0.7f + BlinkValue * 0.3f);
-
-        DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FinalColor);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
     }
 }
 
 void ACircleAOE::UpdateLargeCircleAnimation(float Alpha)
 {
-    if (DynamicMaterial)
+    if (WarningEffect)
     {
-        // 마젠타 → 진한 보라색으로 변화
-        FLinearColor BaseColor = FMath::Lerp(
-            FLinearColor(1.0f, 0.0f, 1.0f, 0.8f),    // 마젠타
-            FLinearColor(0.5f, 0.0f, 1.0f, 0.9f),    // 진한 보라색
+        FLinearColor CurrentColor = FMath::Lerp(
+            LargeCircleWarningColor,
+            LargeCircleExplosionColor,
             Alpha
         );
 
-        // 더 빠른 깜빡임 (위험함을 강조)
-        float BlinkSpeed = FMath::Lerp(8.0f, 20.0f, Alpha);
-        float BlinkValue = (FMath::Sin(ElapsedTime * BlinkSpeed) + 1.0f) * 0.5f;
-
-        FLinearColor FinalColor = BaseColor;
-        FinalColor.A *= (0.6f + BlinkValue * 0.4f);
-
-        DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), FinalColor);
+        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
     }
 }
 
