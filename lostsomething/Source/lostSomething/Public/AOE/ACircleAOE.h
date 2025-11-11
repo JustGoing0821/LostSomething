@@ -3,11 +3,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-#include "Components/StaticMeshComponent.h"
 #include "Engine/TimerHandle.h"
-#include "Materials/MaterialInstanceDynamic.h"
 #include "Net/UnrealNetwork.h"
 #include "ACircleAOE.generated.h"
+
+// Forward declarations for Niagara
+class UNiagaraComponent;
+class UNiagaraSystem;
 
 UENUM(BlueprintType)
 enum class EAOEType : uint8
@@ -32,8 +34,50 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Components")
     USphereComponent* CollisionSphere;
 
-    UPROPERTY(VisibleAnywhere, Category = "Components")
-    UStaticMeshComponent* WarningMesh;
+    // 나이아가라 이펙트 컴포넌트들
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
+    UNiagaraComponent* WarningEffect;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
+    UNiagaraComponent* ExplosionEffect;
+
+    // 나이아가라 시스템 에셋들
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* CircleWarningEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* CircleExplosionEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* ShareWarningEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* ShareExplosionEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* LargeCircleWarningEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+    UNiagaraSystem* LargeCircleExplosionEffect;
+
+    // 각 AOE 타입별 색상 설정
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor CircleWarningColor = FLinearColor(1.0f, 0.5f, 0.0f, 1.0f); // 주황색
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor CircleExplosionColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f); // 빨간색
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor ShareWarningColor = FLinearColor(0.0f, 1.0f, 1.0f, 1.0f); // 청록색
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor ShareExplosionColor = FLinearColor(0.0f, 0.5f, 1.0f, 1.0f); // 파란색
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor LargeCircleWarningColor = FLinearColor(1.0f, 0.0f, 1.0f, 1.0f); // 마젠타
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX|Colors")
+    FLinearColor LargeCircleExplosionColor = FLinearColor(0.5f, 0.0f, 1.0f, 1.0f); // 보라색
 
     // AOE type
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AOE Type")
@@ -53,7 +97,14 @@ protected:
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
     float Damage = 20.0f;
 
+    // Explosion effect duration
+    UPROPERTY(EditAnywhere, Category = "AOE Settings")
+    float ExplosionEffectDuration = 0.5f;
+
     // Share settings
+    UPROPERTY(EditAnywhere, Category = "Share Settings")
+    float ShareWarningDuration = 3.0f;
+
     UPROPERTY(EditAnywhere, Category = "Share Settings", meta = (EditCondition = "AOEType == EAOEType::Share"))
     int32 MinSharePlayers = 2;
 
@@ -72,14 +123,6 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Share Settings")
     float TrackingSpeed = 500.0f;
 
-    // Visuals
-    UPROPERTY(EditAnywhere, Category = "Visual")
-    class UMaterialInterface* WarningMaterial;
-
-    UPROPERTY(EditAnywhere, Category = "Visual")
-    class UMaterialInterface* ShareWarningMaterial;
-
-
     // Replicated anim vars
     UPROPERTY(Replicated)
     float ElapsedTime = 0.0f;
@@ -87,11 +130,11 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_IsWarningPhase)
     bool bIsWarningPhase = false;
 
-    UMaterialInstanceDynamic* DynamicMaterial = nullptr;
-
     // Timers
     FTimerHandle WarningTimerHandle;
     FTimerHandle TrackingTimerHandle;
+    FTimerHandle ExplosionEffectTimerHandle;
+    FTimerHandle DestroyTimerHandle;
 
     UFUNCTION()
     void OnRep_IsWarningPhase();
@@ -105,6 +148,9 @@ public:
     UFUNCTION()
     void Explode();
 
+    UFUNCTION()
+    void DestroyAOE();
+
     // Setup helpers
     UFUNCTION(BlueprintCallable, Category = "AOE Setup")
     void SetupAsCircleAOE(float InRadius);
@@ -112,7 +158,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AOE Setup")
     void SetupAsShareAOE(float InRadius, int32 InMinPlayers = 2);
 
-    // Large Circle AOE Setup (public으로 변경)
     UFUNCTION(BlueprintCallable, Category = "AOE Setup")
     void SetupAsLargeCircleAOE(float InRadius);
 
