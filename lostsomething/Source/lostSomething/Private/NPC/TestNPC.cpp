@@ -337,7 +337,6 @@ void ATestNPC::ServerFlashDamageColor_Implementation()
 
 void ATestNPC::MulticastFlashDamageColor_Implementation()
 {
-
 	if (DynamicMaterial)
 	{
 		// 효과 시작 시간 기록
