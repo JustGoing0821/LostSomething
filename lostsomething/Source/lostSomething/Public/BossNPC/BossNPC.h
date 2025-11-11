@@ -218,4 +218,34 @@ private:
     void ServerHideGroupActor();
     UFUNCTION(NetMulticast, Reliable)
     void MultiHideGroupActor();
+
+    /////////////////// Dynamic Material Instance
+    UPROPERTY()
+    UMaterialInstanceDynamic* DynamicMaterial;
+
+    // 타이머 핸들
+    FTimerHandle BMDamageFlashTimerHandle;
+    FTimerHandle BMFlashUpdateTimerHandle;
+    float BMFlashStartTime = 0.0f;
+
+    // 데미지 플래시 지속 시간
+    UPROPERTY(EditAnywhere, Category = "Damage")
+    float BMDamageFlashDuration = 1.0f;
+
+    // 빨간색으로 변경 (모든 클라이언트)
+    UFUNCTION(Server, Reliable)
+    void ServerBMFlashDamageColor();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiBMFlashDamageColor();
+
+    UFUNCTION()
+    void BMUpdateFlashEffect_Timer();
+
+    UFUNCTION(Server, Reliable)
+    void ServerBMUpdateFlashEffect_Timer();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MultiBMUpdateFlashEffect_Timer();
+
 };
