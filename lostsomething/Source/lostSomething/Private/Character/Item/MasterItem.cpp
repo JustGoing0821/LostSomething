@@ -62,13 +62,13 @@ void AMasterItem::BeginPlay()
 	Super::BeginPlay();
 	
 	// 오버랩 이벤트 바인딩
-	if (CollisionComponent)
+	/*if (CollisionComponent)
 	{
 		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMasterItem::OnBeginOverlap);
 		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AMasterItem::OnEndOverlap);
 
 		UE_LOG(LogTemp, Warning, TEXT("MasterItem overlap events bound: %s"), *GetName());
-	}
+	}*/
 
 	//// 던진 아이템의 Hit 이벤트 바인딩
 	//if (ItemMesh && bIsThrown)
