@@ -32,8 +32,6 @@ public:
 protected:
 	UPROPERTY(Replicated)
 	ELSInteractionEnum CurrentQuest;
-	uint8 bSiJaeCanInteraction : 1;
-	uint8 bIJaeCanInteraction : 1;
 
 	void SetCurrentQuest(ELSInteractionEnum InCurrentQuest);
 
@@ -41,6 +39,8 @@ protected:
 protected:
 	FName ScriptAssetNameSiJae;
 	FName ScriptAssetNameIJae;
+	uint8 bSiJaeCanInteraction : 1;
+	uint8 bIJaeCanInteraction : 1;
 
 	UPROPERTY(EditAnywhere, Category = ScriptData)
 	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataSiJae;
