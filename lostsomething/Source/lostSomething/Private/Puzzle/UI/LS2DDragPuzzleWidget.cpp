@@ -13,6 +13,7 @@
 
 ULS2DDragPuzzleWidget::ULS2DDragPuzzleWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	GoalPos = FVector2D(0, 0);
 }
 
 void ULS2DDragPuzzleWidget::NativeConstruct()
@@ -21,10 +22,7 @@ void ULS2DDragPuzzleWidget::NativeConstruct()
 
 	ImgGoal1 = Cast<UImage>(GetWidgetFromName(TEXT("img_goal1")));
 	ensure(ImgGoal1);
-	if (Cast<ILSCharacterChoiceInterface>(GetOwningPlayer())->GetCharacterChoice() == ELSCharacterChoice::SiJae)
-	{
-		ImgGoal1->SetOpacity(0.0f);
-	}
+	ImgGoal1->SetOpacity(0.0f);
 
 	ImgPiece1 = Cast<UImage>(GetWidgetFromName(TEXT("img_piece1")));
 	ensure(ImgPiece1);
@@ -35,17 +33,17 @@ void ULS2DDragPuzzleWidget::NativeConstruct()
 			if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgGoal1->Slot))
 			{
 				FVector2D CanvasSize = ImgGoal1->GetParent()->GetCachedGeometry().GetLocalSize();
-				CanvasSlot->SetSize(CanvasSize * 0.2f);
-				CanvasSlot->SetPosition(CanvasSize*0.5f);
+				CanvasSlot->SetSize(CanvasSize * 0.1f);
+				//CanvasSlot->SetPosition(CanvasSize*0.1f);
 			}
 			if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgPiece1->Slot))
 			{
 				FVector2D CanvasSize = ImgPiece1->GetParent()->GetCachedGeometry().GetLocalSize();
 				CanvasSlot->SetSize(CanvasSize * 0.1f);
-				CanvasSlot->SetPosition(CanvasSize * 0.2f);
+				CanvasSlot->SetPosition(CanvasSize * 0.5f);
 			}
 		}
-	), 1.f, false);
+	), 0.1f, false);
 }
 
 void ULS2DDragPuzzleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -112,6 +110,37 @@ void ULS2DDragPuzzleWidget::SetPieceLocation(FVector2D InCursorPos)
 		//LS_WDGLOG(LogLS, Log, TEXT("Begin. SiJaeCursorPos : %f, %f"), InCursorPos.X, InCursorPos.Y);
 		//LS_WDGLOG(LogLS, Log, TEXT("Begin. PixelPosition : %f, %f"), PixelPosition.X, PixelPosition.Y);
 	}
+}
+
+void ULS2DDragPuzzleWidget::OnStartDragPuzzle(const FVector2D& InGoalPos)
+{
+	//LS_WDGLOG(LogLSls, Log, TEXT("InGoalPos : %f, %f"), InGoalPos.X, InGoalPos.Y);
+	GoalPos = InGoalPos;
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ImgGoal1->Slot))
+			{
+				FVector2D CanvasSize = ImgGoal1->GetParent()->GetCachedGeometry().GetLocalSize();
+				GoalPos.X = CanvasSize.X * GoalPos.X;
+				GoalPos.Y = CanvasSize.Y * GoalPos.Y;
+				CanvasSlot->SetPosition(GoalPos);
+				//LS_WDGLOG(LogLSls, Log, TEXT("CanvasSize : %f, %f"), CanvasSize.X, CanvasSize.Y);
+				//LS_WDGLOG(LogLSls, Log, TEXT("InGoalPos : %f, %f"), GoalPos.X, GoalPos.Y);
+				//LS_WDGLOG(LogLSls, Log, TEXT("GoalPos : %f, %f"), GoalPos.X, GoalPos.Y);
+			}
+			else
+			{
+				LS_WDGLOG(LogLSls, Error, TEXT("%s"), TEXT("No ImgGoal1!!"));
+			}
+
+			if (Cast<ILSCharacterChoiceInterface>(GetOwningPlayer())->GetCharacterChoice() == ELSCharacterChoice::IJae)
+			{
+				ImgGoal1->SetOpacity(1.0f);
+			}
+		}
+	), 1.f, false);
 }
 
 bool ULS2DDragPuzzleWidget::IsMouseOverImage(UImage* TargetImage, const FPointerEvent& MouseEvent)

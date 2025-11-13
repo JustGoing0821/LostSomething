@@ -61,5 +61,5 @@ public:
 public:
 	ELS2DWidgetProperty CurrentActivateWidget;
 
-	void OnStartWidget(const FName& InDataName);
+	void OnStartWidget(const FName& InDataName, const FVector2D& InGoalPos);
 };

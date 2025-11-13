@@ -12,7 +12,7 @@ struct FScriptArrayWrapper
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MultiLine = true))
 	TArray<FString> Scripts;
 };
 

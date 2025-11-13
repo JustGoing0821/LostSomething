@@ -25,22 +25,22 @@ protected:
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<class UBoxComponent> TriggerBox;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
 	TObjectPtr<class UNiagaraSystem> Effect;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     float LoopDuration = 1.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     bool bIsLooping = true;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     float Scale = 1.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     bool bChangeColor = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     FLinearColor CustomColor = FLinearColor::White;
 
     // 타이머 핸들
@@ -58,21 +58,21 @@ protected:
     void PuzzleActivate();
     void PuzzleDeactivate();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     ELSInteractionEnum PuzzleActivateEnum = ELSInteractionEnum::Quest0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;
 
     //ArrowEffect
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     TObjectPtr<class UStaticMeshComponent> ArrowMesh;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     TObjectPtr<class UMaterialInstanceDynamic> ArrowMaterial;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom")
     bool bArrowVisible = false;
 
 //RPC Section

@@ -382,13 +382,13 @@ void ALSGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALSGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName)
+void ALSGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName, const FVector2D& InGoalPos)
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
 		{
-			PC->MulticastRPCStart2DPuzzle(InWidgetName);
+			PC->MulticastRPCStart2DPuzzle(InWidgetName, InGoalPos);
 		}
 	}
 

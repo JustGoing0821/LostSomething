@@ -229,7 +229,7 @@ void ALTGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALTGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName)
+void ALTGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName, const FVector2D& InGoalPos)
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{

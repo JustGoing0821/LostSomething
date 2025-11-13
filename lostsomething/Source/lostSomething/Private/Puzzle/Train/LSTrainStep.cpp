@@ -46,7 +46,7 @@ ALSTrainStep::ALSTrainStep()
 	//Step Install Initialize
 	bReplicates = true;
 	bIsStepInstalled = false;
-	PuzzleTimer = 5.f;
+	PuzzleTimer = 20.f;
 }
 
 void ALSTrainStep::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -166,12 +166,29 @@ void ALSTrainStep::PuzzleDeactivate()
 
 void ALSTrainStep::StartInstallPuzzle()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode)
+	if (HasAuthority())
 	{
-		GameMode->Start2DPuzzle(PuzzleTimer, TEXT("Step"));
+		int32 GoalPosXRate = 5;
+		int32 GoalPosYRate = 5;
+
+		while ((GoalPosXRate == 5) && (GoalPosYRate == 5))
+		{
+			GoalPosXRate = FMath::RandRange(1, 9);
+			GoalPosYRate = FMath::RandRange(1, 9);
+		}
+		FVector2D GoalPosRate = FVector2D(GoalPosXRate / 10.f, GoalPosYRate / 10.f);
+
+		//LS_LOG(LogLSls, Log, TEXT("GoalPosXRate, GoalPosYRate = %d, %d"), GoalPosXRate, GoalPosYRate);
+		//LS_LOG(LogLSls, Log, TEXT("GoalPosRate : %f, %f"), GoalPosRate.X, GoalPosRate.Y);
+
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->Start2DPuzzle(PuzzleTimer, TEXT("Step"), GoalPosRate);
+		}
 	}
+
 }
 
 //void ALSTrainStep::ClearInstallPuzzle()

@@ -244,7 +244,7 @@ void ALSVendingMachineManager::ProceedPhase()
 	//Set Answer
 	CurrentPhase = static_cast<ECurrentPhase>(static_cast<uint8>(CurrentPhase)+1);
 	FString EnumString = StaticEnum<ECurrentPhase>()->GetNameByValue(static_cast<int64>(CurrentPhase)).ToString();
-	LS_LOG(LogLS, Log, TEXT("CurrentPhase : %s"), *EnumString);
+	//LS_LOG(LogLS, Log, TEXT("CurrentPhase : %s"), *EnumString);
 
 	//Set Start Material
 	CurrentAnswerColor = AnswerColors[CurrentPhase];
@@ -256,7 +256,7 @@ void ALSVendingMachineManager::ProceedPhase()
 
 void ALSVendingMachineManager::PuzzleCheck(bool bisPuzzleCorrect)
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (HasAuthority())
 	{
@@ -298,7 +298,7 @@ void ALSVendingMachineManager::PuzzleCheck(bool bisPuzzleCorrect)
 
 void ALSVendingMachineManager::QuestClear()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
