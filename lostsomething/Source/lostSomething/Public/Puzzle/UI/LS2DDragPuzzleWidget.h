@@ -25,6 +25,7 @@ protected:
 
 public:
 	void SetPieceLocation(FVector2D InCursorPos);
+	void OnStartDragPuzzle(const FVector2D& InGoalPos);
 
 protected:
 	UPROPERTY()
@@ -32,6 +33,8 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UImage> ImgPiece1;
+
+	FVector2D GoalPos;
 
 	bool bIsDragging;
 

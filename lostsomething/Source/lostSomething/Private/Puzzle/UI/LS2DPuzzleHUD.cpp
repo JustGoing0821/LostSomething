@@ -118,14 +118,20 @@ void ULS2DPuzzleHUD::UpdateTimer(float Timer)
 	}
 }
 
-void ULS2DPuzzleHUD::OnStartWidget(const FName& InDataName)
+void ULS2DPuzzleHUD::OnStartWidget(const FName& InDataName, const FVector2D& InGoalPos)
 {
 	//LS_WDGLOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_WDGLOG(LogLSls, Log, TEXT("InGoalPos : %f, %f"), InGoalPos.X, InGoalPos.Y);
 
 	if (InDataName == TEXT("Step"))
 	{
 		CurrentActivateWidget = ELS2DWidgetProperty::Drag;
-		if (DragPuzzleWidget) DragPuzzleWidget->SetVisibility(ESlateVisibility::Visible);
+		if (DragPuzzleWidget)
+		{
+			DragPuzzleWidget->SetVisibility(ESlateVisibility::Visible);
+			DragPuzzleWidget->OnStartDragPuzzle(InGoalPos);
+		}
+
 		if (PuzzleTimerWidget) PuzzleTimerWidget->SetVisibility(ESlateVisibility::Visible);
 		if (InformationWidget) InformationWidget->SetVisibility(ESlateVisibility::Hidden);
 

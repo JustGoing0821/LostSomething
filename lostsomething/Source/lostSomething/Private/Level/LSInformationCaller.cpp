@@ -80,7 +80,7 @@ void ALSInformationCaller::InformationActivate()
 	ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->Start2DPuzzle(-1.f, DataAssetName);
+		GameMode->Start2DPuzzle(-1.f, DataAssetName, FVector2D(0,0));
 	}
 }
 

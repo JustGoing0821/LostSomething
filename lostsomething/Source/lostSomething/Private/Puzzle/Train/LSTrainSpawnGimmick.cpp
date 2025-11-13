@@ -118,7 +118,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	//Puzzle
 	CorrectGate = -1;
-	CorrectPeopleCount = 2;
+	CorrectPeopleCount = 1;// 2;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest7;
 	DamageAmount = 10.f;
 }
@@ -195,7 +195,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	{
 		CurrentState = ETrainSpawnState::Spawned;
 
-		CorrectGate = FMath::RandRange(1, 6);
+		CorrectGate = 6;//FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
 		float DelayTime = FMath::FRandRange(3.f, 6.f);
