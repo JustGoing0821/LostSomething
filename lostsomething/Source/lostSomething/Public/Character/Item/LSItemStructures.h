@@ -15,9 +15,9 @@ UENUM(BlueprintType)
 enum class EItemNature : uint8
 {
     IsConsumable    UMETA(DisplayName = "IsConsumable"),
-    IsEquipment     UMETA(DisplayName = "IsEquipment"),
+   // IsEquipment     UMETA(DisplayName = "IsEquipment"),
     IsWeapon        UMETA(DisplayName = "IsWeapon"),
-    IsKeyItem       UMETA(DisplayName = "IsKeyItem")
+    //IsKeyItem       UMETA(DisplayName = "IsKeyItem")
 };
 
 
@@ -26,7 +26,7 @@ struct LOSTSOMETHING_API FItemDetails : public FTableRowBase
 {
     GENERATED_BODY()
 
-public:
+public: 
     // 아이템 이름 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
     FName Item_Name = NAME_None;

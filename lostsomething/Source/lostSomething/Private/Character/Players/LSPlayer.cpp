@@ -2489,10 +2489,10 @@ ELSNetworkPosition ALSPlayer::GetNetworkPositionForInventory() const
 {
 	//if (HasAuthority())
 	//{
-	//	// 서버 프로세스: 호스트 자신의 폰 vs 다른 플레이어 폰 구분
+	//	
 	//	return IsLocallyControlled() ? ELSNetworkPosition::Server : ELSNetworkPosition::Client;
 	//}
 
-	// 클라이언트 프로세스는 그냥 Client로 취급
+	// 클라이언트
 	return ELSNetworkPosition::Client;
 }
