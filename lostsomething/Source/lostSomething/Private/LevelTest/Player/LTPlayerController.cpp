@@ -179,7 +179,7 @@ void ALTPlayerController::Start2DPuzzle(const FName& InWidgetName)
 		if (LS2DPuzzleHUDWidget)
 		{
 			LS2DPuzzleHUDWidget->AddToViewport(0);
-			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
+			//LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
 		}
 	}
 }
@@ -196,7 +196,7 @@ void ALTPlayerController::End2DPuzzle()
 
 		if (LS2DPuzzleHUDWidget)
 		{
-			LS2DPuzzleHUDWidget->RemoveFromViewport();
+			//LS2DPuzzleHUDWidget->RemoveFromViewport();
 		}
 	}
 }

@@ -70,14 +70,14 @@ void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController
 	else
 	{
 		ServerRPCQuestClear();
-		LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
+		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	}
 #endif
 }
 
 void ALSQuestClearHack::QuestClear()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -90,7 +90,7 @@ void ALSQuestClearHack::QuestClear()
 
 void ALSQuestClearHack::ServerRPCQuestClear_Implementation()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 	QuestClear();
 }
 

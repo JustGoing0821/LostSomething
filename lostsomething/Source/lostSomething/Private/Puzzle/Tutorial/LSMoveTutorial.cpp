@@ -116,7 +116,7 @@ void ALSMoveTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Overlap
 			if (CharacterChoice)
 			{
 				CurrentTriggerPlayers++;
-				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 				if (CurrentTriggerPlayers == 2)
 				{
 					QuestClear();
@@ -151,7 +151,7 @@ void ALSMoveTutorial::OnTutorialTriggerEndOverlap(UPrimitiveComponent* Overlappe
 			if (LSCharacter)
 			{
 				CurrentTriggerPlayers--;
-				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 			}
 		}
 	}

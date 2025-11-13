@@ -103,7 +103,7 @@ void ALSLevelTransferVolume::OnTransferTriggerEndOverlap(UPrimitiveComponent* Ov
 			if (LSCharacter)
 			{
 				CurrentTriggerPlayers--;
-				LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
+				//LS_LOG(LogLS, Log, TEXT("CurrentTriggerPlayers = %d"), CurrentTriggerPlayers);
 			}
 		}
 	}

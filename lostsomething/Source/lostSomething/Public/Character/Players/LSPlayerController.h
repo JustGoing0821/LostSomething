@@ -203,7 +203,7 @@ protected:
 
 // 2DPuzzle Widget
 public:
-	void Start2DPuzzle(const FName& InWidgetName);
+	void Start2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos);
 	void End2DPuzzle();
 	void Update2DPuzzleTimer(float Timer);
 	virtual void OnExit2DPuzzle(uint8 InIsExitTogether) override;
@@ -246,7 +246,7 @@ public:
 	void ClientRPCCalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging);
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastRPCStart2DPuzzle(const FName& InWidgetName);
+	void MulticastRPCStart2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCEnd2DPuzzle();

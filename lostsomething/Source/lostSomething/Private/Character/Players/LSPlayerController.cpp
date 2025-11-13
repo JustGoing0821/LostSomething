@@ -344,9 +344,11 @@ void ALSPlayerController::StopTalking()
 	UE_LOG(LogTemp, Log, TEXT("Voice stopped"));
 }
 
-void ALSPlayerController::Start2DPuzzle(const FName& InWidgetName)
+void ALSPlayerController::Start2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos)
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("InGoalPos : %f, %f"), InGoalPos.X, InGoalPos.Y);
+
 	bIs2DPuzzleActive = true;
 
 	if (IsLocalController() && LS2DPuzzleHUDClass)
@@ -360,7 +362,7 @@ void ALSPlayerController::Start2DPuzzle(const FName& InWidgetName)
 		{
 			LS2DPuzzleHUDWidget->AddToViewport(0);
 
-			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName);
+			LS2DPuzzleHUDWidget->OnStartWidget(InWidgetName, InGoalPos);
 		}
 	}
 }
@@ -569,9 +571,9 @@ void ALSPlayerController::ClientRPCCalledOnChangeSiJaeDragState_Implementation(u
 	CalledOnChangeSiJaeDragState(InIsSiJaeDragging);
 }
 
-void ALSPlayerController::MulticastRPCStart2DPuzzle_Implementation(const FName& InWidgetName)
+void ALSPlayerController::MulticastRPCStart2DPuzzle_Implementation(const FName& InWidgetName, const FVector2D& InGoalPos)
 {
-	Start2DPuzzle(InWidgetName);
+	Start2DPuzzle(InWidgetName, InGoalPos);
 }
 
 void ALSPlayerController::MulticastRPCEnd2DPuzzle_Implementation()
