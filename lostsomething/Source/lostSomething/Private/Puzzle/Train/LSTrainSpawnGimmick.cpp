@@ -199,7 +199,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
 		float DelayTime = FMath::FRandRange(3.f, 6.f);
-		LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
+		//LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
 
 		MulticastRPCSetPannelMonitor();
 

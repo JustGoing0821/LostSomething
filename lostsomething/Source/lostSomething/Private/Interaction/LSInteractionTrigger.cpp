@@ -132,7 +132,7 @@ void ALSInteractionTrigger::BeginPlay()
 					if (PlayerController && !PlayerController->IsLocalController())
 					{
 						SetOwner(PlayerController);
-						LS_LOG(LogLS, Log, TEXT("Owner Setted."));
+						//LS_LOG(LogLS, Log, TEXT("Owner Setted."));
 						break;
 					}
 				}
