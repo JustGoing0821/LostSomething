@@ -43,10 +43,10 @@ protected:
 	uint8 bSiJaeCanInteraction : 1;
 	uint8 bIJaeCanInteraction : 1;
 
-	UPROPERTY(EditAnywhere, Category = ScriptData)
+	UPROPERTY(EditAnywhere, Category = LSCustom)
 	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataSiJae;
 
-	UPROPERTY(EditAnywhere, Category = ScriptData)
+	UPROPERTY(EditAnywhere, Category = LSCustom)
 	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataIJae;
 
 
@@ -56,5 +56,32 @@ protected:
 	ELSInteractionEnum CurrentQuest;
 
 	void SetCurrentQuest(ELSInteractionEnum InCurrentQuest);
+
+	void BindQuestChange();
+	UFUNCTION()
+	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	void PuzzleActivate();
+	void PuzzleDeactivate();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LSCustom, Meta = (AllowPrivateAccess = "true"))
+	ELSInteractionEnum BlockDeactivateEnum;
+
+
+//Block Section
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UBoxComponent> BlockBox;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UStaticMeshComponent> ViewMesh;
+
+
+//RPC Section
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPuzzleDeactivate();
 
 };

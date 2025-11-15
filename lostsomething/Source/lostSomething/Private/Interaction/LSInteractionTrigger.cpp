@@ -32,6 +32,18 @@ ALSInteractionTrigger::ALSInteractionTrigger()
 	//Script Asset
 	ScriptAssetNameSiJae = FName(TEXT("LSInteractionBase"));
 	ScriptAssetNameIJae = FName(TEXT("LSInteractionBase"));
+
+	//Block
+	BlockDeactivateEnum = ELSInteractionEnum::Quest0;
+
+	BlockBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BlockBox"));
+	BlockBox->SetupAttachment(RootComponent);
+	BlockBox->SetBoxExtent(FVector(50, 100, 100));
+	BlockBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	ViewMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ViewMesh"));
+	ViewMesh->SetupAttachment(RootComponent);
+	ViewMesh->SetCollisionProfileName(TEXT("NoColision"));
 }
 
 void ALSInteractionTrigger::PostInitializeComponents()
@@ -139,6 +151,11 @@ void ALSInteractionTrigger::BeginPlay()
 			}
 		), 1.0f, false, 2.0f);
 	}
+
+	if (HasAuthority())
+	{
+		BindQuestChange();
+	}
 }
 
 void ALSInteractionTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -173,4 +190,56 @@ void ALSInteractionTrigger::SetCurrentQuest(ELSInteractionEnum InCurrentQuest)
 {
 	CurrentQuest = InCurrentQuest;
 }
+
+void ALSInteractionTrigger::BindQuestChange()
+{
+	if (HasAuthority())
+	{
+		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeQuest)
+		{
+			GameModeQuest->GetQuestManager()->OnQuestStart.AddUObject(this, &ALSInteractionTrigger::OnQuestChange);
+		}
+	}
+}
+
+void ALSInteractionTrigger::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
+{
+	if (BlockDeactivateEnum == ELSInteractionEnum::Quest0) return;
+
+	if (InQuestEnum < BlockDeactivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+	}
+}
+
+void ALSInteractionTrigger::PuzzleActivate()
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	BlockBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	ViewMesh->SetVisibility(true);
+}
+
+void ALSInteractionTrigger::PuzzleDeactivate()
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	BlockBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ViewMesh->SetVisibility(false);
+}
+
+void ALSInteractionTrigger::MulticastRPCPuzzleActivate_Implementation()
+{
+	PuzzleActivate();
+}
+
+void ALSInteractionTrigger::MulticastRPCPuzzleDeactivate_Implementation()
+{
+	PuzzleDeactivate();
+}
+
+
 
