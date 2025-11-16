@@ -43,10 +43,10 @@ protected:
 	uint8 bSiJaeCanInteraction : 1;
 	uint8 bIJaeCanInteraction : 1;
 
-	UPROPERTY(EditAnywhere, Category = LSCustom)
+	UPROPERTY(EditAnywhere, Category = "LSCustom")
 	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataSiJae;
 
-	UPROPERTY(EditAnywhere, Category = LSCustom)
+	UPROPERTY(EditAnywhere, Category = "LSCustom")
 	TObjectPtr<class ULSInteractionScriptData> InteractionScriptDataIJae;
 
 
@@ -58,8 +58,9 @@ protected:
 	void SetCurrentQuest(ELSInteractionEnum InCurrentQuest);
 
 	void BindQuestChange();
+
 	UFUNCTION()
-	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
+	virtual void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
 	void PuzzleActivate();
 	void PuzzleDeactivate();
 
