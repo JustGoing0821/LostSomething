@@ -1892,6 +1892,8 @@ void ALSPlayer::ProcessAttack()
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
 	//MultiProcessAttack();
 
+
+
 	if (HitDetected)
 	{
 		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
@@ -1948,6 +1950,12 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
+	if (!EquippedWeapon)
+	{
+		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
+		return;
+	}
+
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
@@ -2249,6 +2257,28 @@ void ALSPlayer::DecreaseCombineStamina()
 	// 아래의 코드들이 서버에서만 기능하고있다는 것을 알고있으셈
 
 	if (!HasAuthority() || !bIsCombining) return;
+
+	// 시제 캐릭터의 속도를 체크하여 decrease 할 수 있도록 추가
+	if (CharacterChoice == ELSCharacterChoice::SiJae)
+	{
+		float CurrentSpeed = GetVelocity().Size();
+
+		// 만일 합체 이후에 움직인 후 가만히 있을 경우 스태미나는 다시 채워짐.
+		// 대신 이때는 스태미나가 채워지는 속도를 느리게 뒀음.
+		if (CurrentSpeed < 10.0f)
+		{
+			CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + (CombineStaminaIncreaseRate * 0.5f) * 0.1f);
+			if (IsLocallyControlled())
+			{
+				UpdateCombineStaminaWidget(CurrentCombineStamina);
+			}
+			else
+			{
+				ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
+			}
+			return;
+		}
+	}
 
 	//이거는 호출되는 변수들의 변경은 있으나 구조는 똑같음.
 	CurrentCombineStamina = FMath::Max(0.0f, CurrentCombineStamina - CombineStaminaDecreaseRate * 0.1f);
