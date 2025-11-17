@@ -1892,6 +1892,8 @@ void ALSPlayer::ProcessAttack()
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
 	//MultiProcessAttack();
 
+
+
 	if (HitDetected)
 	{
 		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
@@ -1948,6 +1950,12 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
+	if (!EquippedWeapon)
+	{
+		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
+		return;
+	}
+
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
