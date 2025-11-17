@@ -4,15 +4,20 @@
 #include "Puzzle/Finding/LSFindingPuzzle.h"
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
+#include "EngineUtils.h"
 #include "Engine/AssetManager.h"
+#include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
-#include "Interface/LSQuestInterface.h"
-#include "Interface/LSScriptWidgetInterface.h"
 #include "Quest/LSQuestManager.h"
 #include "Physics/LSCollisionProfile.h"
+#include "Interaction/LSInteractionScriptData.h"
+#include "Interface/LSQuestInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
+#include "Interface/LSTakeDamageInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 
 
 ALSFindingPuzzle::ALSFindingPuzzle()
@@ -39,6 +44,11 @@ ALSFindingPuzzle::ALSFindingPuzzle()
 
 	bIsCorrectPuzzle = false;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest11;
+	DamageAmount = 10.f;
+
+	//Script Asset
+	ScriptAssetNameSiJae = FName(TEXT("LSFindingPuzzleSiJae"));
+	ScriptAssetNameIJae = FName(TEXT("LSFindingPuzzleIJae"));
 }
 
 void ALSFindingPuzzle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -46,6 +56,7 @@ void ALSFindingPuzzle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALSFindingPuzzle, bIsCorrectPuzzle);
+	DOREPLIFETIME(ALSFindingPuzzle, CurrentInteractController);
 }
 
 void ALSFindingPuzzle::BeginPlay()
@@ -53,6 +64,24 @@ void ALSFindingPuzzle::BeginPlay()
 	Super::BeginPlay();
 
 	//LS_LOG(LogLSls, Log, TEXT("Begin"));
+
+	if (HasAuthority())
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+				{
+					if (PlayerController && !PlayerController->IsLocalController())
+					{
+						SetOwner(PlayerController);
+						//LS_LOG(LogLSls, Log, TEXT("Owner Setted."));
+						break;
+					}
+				}
+			}
+		), 2.0f, false);
+	}
 
 	if (HasAuthority())
 	{
@@ -166,13 +195,63 @@ void ALSFindingPuzzle::PostInitializeComponents()
 	}
 }
 
+void ALSFindingPuzzle::InteractionProcess(APlayerController* InPlayerController)
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		SetCurrentInteractController(InPlayerController);
+	}
+	else
+	{
+		ServerRPCSetCurrentInteractController(InPlayerController);
+	}
+
+	Super::InteractionProcess(InPlayerController);
+}
+
 void ALSFindingPuzzle::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
-	PuzzleCheck(InPlayerController);
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	if (HasAuthority())
+	{
+		PuzzleCheck();
+	}
+	else
+	{
+		ServerRPCPuzzleCheck();
+	}
+
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+
+	if (bIsCorrectPuzzle)
+	{
+		Script = InteractionScriptDataSiJae->GetInteractionScripts(PuzzleActivateEnum)[0];
+	}
+	else
+	{
+		Script = InteractionScriptDataSiJae->GetInteractionScripts(PuzzleActivateEnum)[1];
+	}
+
+	ScriptController->UpdateScriptWidget(Script);
 }
 
 void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerController)
 {
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+
+	if (bIsCorrectPuzzle)
+	{
+		Script = InteractionScriptDataIJae->GetInteractionScripts(PuzzleActivateEnum)[0];
+	}
+	else
+	{
+		Script = InteractionScriptDataIJae->GetInteractionScripts(PuzzleActivateEnum)[1];
+	}
+
+	ScriptController->UpdateScriptWidget(Script);
 }
 
 void ALSFindingPuzzle::SetVisibleSiJae()
@@ -225,8 +304,9 @@ void ALSFindingPuzzle::SetPuzzleAnswer(uint8 bInCorrectPuzzle)
 	MulticastRPCChangeVisible();
 }
 
-void ALSFindingPuzzle::PuzzleCheck(APlayerController* InPlayerController)
+void ALSFindingPuzzle::PuzzleCheck()
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (bIsCorrectPuzzle)
 	{
 		OnPuzzleCheck.ExecuteIfBound(true);
@@ -234,6 +314,7 @@ void ALSFindingPuzzle::PuzzleCheck(APlayerController* InPlayerController)
 	else
 	{
 		OnPuzzleCheck.ExecuteIfBound(false);
+		ApplyDamage();
 	}
 }
 
@@ -288,6 +369,24 @@ void ALSFindingPuzzle::PuzzleDeactivate()
 
 }
 
+void ALSFindingPuzzle::ApplyDamage()
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (CurrentInteractController == nullptr)
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("CurrentInteractController is null!!"));
+		return;
+	}
+
+	ILSTakeDamageInterface* LSPlayer = Cast<ILSTakeDamageInterface>(CurrentInteractController->GetPawn());
+	if (LSPlayer)
+	{
+		FDamageEvent DamageEvent;
+		LSPlayer->TakeDamage(DamageAmount, DamageEvent, nullptr, this);
+	}
+}
+
 void ALSFindingPuzzle::MulticastRPCPuzzleActivate_Implementation()
 {
 	PuzzleActivate();
@@ -296,6 +395,17 @@ void ALSFindingPuzzle::MulticastRPCPuzzleActivate_Implementation()
 void ALSFindingPuzzle::MulticastRPCPuzzleDeactivate_Implementation()
 {
 	PuzzleDeactivate();
+}
+
+void ALSFindingPuzzle::ServerRPCSetCurrentInteractController_Implementation(APlayerController* InPlayerController)
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	SetCurrentInteractController(InPlayerController);
+}
+
+void ALSFindingPuzzle::ServerRPCPuzzleCheck_Implementation()
+{
+	PuzzleCheck();
 }
 
 

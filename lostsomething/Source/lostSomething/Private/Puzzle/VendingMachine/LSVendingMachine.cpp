@@ -341,7 +341,7 @@ void ALSVendingMachine::SpawnSystem()
 	}
 
 	// Get Actor Location & Rotation
-	FVector ActorLocation = GetActorLocation() - CollisionBox->GetScaledBoxExtent() * FVector(0, 0, 1);
+	FVector ActorLocation = GetActorLocation();// -CollisionBox->GetScaledBoxExtent() * FVector(0, 0, 1);
 	FRotator ActorRotation = GetActorRotation();
 
 	// Spawn System at Location

@@ -35,6 +35,7 @@ protected:
 
 // Interaction Section
 protected:
+	virtual void InteractionProcess(APlayerController* InPlayerController) override;
 	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) override;
 	virtual void InteractionProcessIJae(APlayerController* InPlayerController) override;
 
@@ -48,12 +49,10 @@ public:
 	FOnPuzzleCheckDelegate OnPuzzleCheck;
 
 protected:
-	void PuzzleCheck(APlayerController* InPlayerController);
+	void PuzzleCheck();
 
 	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsCorrectPuzzle:1;
-
-	float DamageAmount;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UMaterialInstanceDynamic> Material;
@@ -78,6 +77,20 @@ protected:
 	ELSInteractionEnum PuzzleActivateEnum;
 
 
+// Damage Section
+public:
+	FORCEINLINE void SetCurrentInteractController(APlayerController* InPlayerController) { CurrentInteractController = InPlayerController; }
+
+protected:
+	UPROPERTY(Replicated)
+	TObjectPtr<class APlayerController> CurrentInteractController;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom", Meta = (AllowPrivateAccess = "true"))
+	float DamageAmount;
+	
+	void ApplyDamage();
+
+
 //RPC Section
 public:
 	UFUNCTION(NetMulticast, Unreliable)
@@ -85,4 +98,10 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCPuzzleDeactivate();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCSetCurrentInteractController(APlayerController* InPlayerController);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCPuzzleCheck();
 };

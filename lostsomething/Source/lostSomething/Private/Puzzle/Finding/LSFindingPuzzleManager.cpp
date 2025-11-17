@@ -30,14 +30,14 @@ void ALSFindingPuzzleManager::BeginPlay()
 
 void ALSFindingPuzzleManager::PuzzleStart()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSFindingPuzzle::StaticClass(), FoundActors);
 
 
 	int32 CorrectIndex = FMath::RandRange(0, FoundActors.Num() - 1);
-	LS_LOG(LogLS, Log, TEXT("CorrectIndex : %d"), CorrectIndex);
+	//LS_LOG(LogLSls, Log, TEXT("CorrectIndex : %d"), CorrectIndex);
 
 
 	for (int32 Index = 0 ; Index < FoundActors.Num() ; Index++)
@@ -62,6 +62,7 @@ void ALSFindingPuzzleManager::PuzzleStart()
 
 void ALSFindingPuzzleManager::PuzzleCheck(uint8 inIsPuzzleCorrect)
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (inIsPuzzleCorrect)
 	{
 		QuestClear();
@@ -95,7 +96,7 @@ void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInterac
 
 void ALSFindingPuzzleManager::QuestClear()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
