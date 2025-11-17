@@ -12,6 +12,7 @@
 #include <UObject/FastReferenceCollector.h>
 #include "GameFramework/GameModeBase.h"
 #include "Interface/LSQuestInterface.h"
+#include <BossNPC/Obstacle/SpecialObstacle.h>
 
 // Sets default values
 ABossNPC::ABossNPC()
@@ -32,7 +33,7 @@ ABossNPC::ABossNPC()
         FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
-        float YOffset = (i - 3) * 56.0f;
+        float YOffset = (i - 3) * 76.0f;
         SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -45.f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
@@ -784,50 +785,67 @@ void ABossNPC::SpawnObstacles()
 void ABossNPC::ServerSpawnObstacles_Implementation()
 {
     int32 SpawnPointCount = ObstacleSpawnPoints.Num();
-
     if (SpawnPointCount == 0)
     {
         UE_LOG(LogTemp, Error, TEXT("ObstacleSpawnPoints is empty!"));
         return;
     }
 
-    // 동적으로 인덱스 리스트 생성
-    TArray<int32> Indexes;
+    // 특수 장애물을 스폰할 인덱스 선택
+    TArray<int32> SpecialIndexes;
     for (int32 i = 0; i < SpawnPointCount; ++i)
     {
-        Indexes.Add(i);
+        SpecialIndexes.Add(i);
     }
 
     // 랜덤 셔플
-    for (int32 i = 0; i < Indexes.Num(); ++i)
+    for (int32 i = 0; i < SpecialIndexes.Num(); ++i)
     {
-        int32 RandIdx = FMath::RandRange(i, Indexes.Num() - 1);
-        Indexes.Swap(i, RandIdx);
+        int32 RandIdx = FMath::RandRange(i, SpecialIndexes.Num() - 1);
+        SpecialIndexes.Swap(i, RandIdx);
     }
 
-    // 3 또는 4개 스폰하려 했지만, 그 수보다 SpawnPoint가 적으면 문제 발생
-    // 따라서 Clamp 필요
-    int32 NumToSpawn = FMath::Clamp(FMath::RandBool() ? 4 : 5, 1, SpawnPointCount);
-
-    for (int32 i = 0; i < NumToSpawn; ++i)
+    // 3~4개를 특수 장애물로 지정
+    int32 NumSpecial = FMath::RandRange(2, 3);
+    TSet<int32> SpecialSet;
+    for (int32 i = 0; i < NumSpecial; ++i)
     {
-        USceneComponent* SpawnPoint = ObstacleSpawnPoints[Indexes[i]];
+        SpecialSet.Add(SpecialIndexes[i]);
+    }
+
+    // 모든 스폰 포인트에 장애물 생성
+    for (int32 i = 0; i < SpawnPointCount; ++i)
+    {
+        USceneComponent* SpawnPoint = ObstacleSpawnPoints[i];
         if (!SpawnPoint) continue;
 
         FVector SpawnLocation = SpawnPoint->GetComponentLocation();
         FRotator SpawnRotation = GetActorRotation();
-
         FActorSpawnParameters Params;
         Params.Owner = this;
 
-        ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
-            ABossObstacle::StaticClass(),
-            SpawnLocation,
-            SpawnRotation,
-            Params
-        );
+        // 특수 인덱스면 특수 장애물, 아니면 일반 장애물
+        if (SpecialSet.Contains(i))
+        {
+            // 특수 장애물 스폰
+            ASpecialObstacle* NewObstacle = GetWorld()->SpawnActor<ASpecialObstacle>(
+               ASpecialObstacle::StaticClass(),
+                SpawnLocation,
+                SpawnRotation,
+                Params
+            );
+        }
+        else
+        {
+            // 일반 장애물 스폰
+            ABossObstacle* NewObstacle = GetWorld()->SpawnActor<ABossObstacle>(
+                ABossObstacle::StaticClass(),
+                SpawnLocation,
+                SpawnRotation,
+                Params
+            );
+        }
     }
-
     BMSoundPlay("Phase2");
 }
 
