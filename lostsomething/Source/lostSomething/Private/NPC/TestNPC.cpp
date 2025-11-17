@@ -15,6 +15,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "lostSomething.h"
 #include <Kismet/GameplayStatics.h>
+#include "Puzzle/MobThreashold/LSMobDeadThreashold.h"
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -248,6 +249,21 @@ void ATestNPC::ServerDespawn_Implementation()
 
 void ATestNPC::MultiDespawn_Implementation()
 {
+	if (HasAuthority())
+	{
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSMobDeadThreashold::StaticClass(), FoundActors);
+
+		for (AActor* Actor : FoundActors)
+		{
+			ALSMobDeadThreashold* MobDeadThreashold = Cast<ALSMobDeadThreashold>(Actor);
+			if (MobDeadThreashold)
+			{
+				MobDeadThreashold->CountDeadMobs();
+			}
+		}
+	}
+
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
 	if (!NPCAnimInstance || !NPCAnimInstance->DespawnMontage) return;
