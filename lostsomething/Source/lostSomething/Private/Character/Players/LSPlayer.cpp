@@ -32,6 +32,7 @@
 #include "Game/LSNetworkPosition.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include <Game/LSGameMode.h>
 
 /*******************
 
@@ -862,6 +863,16 @@ void ALSPlayer::Respawn()
 
 	bIsDead = false;
 	//UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
+
+	ALSGameMode* GameMode = Cast<ALSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
+		if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BossMap")
+		{
+			GameMode->TransferPlayerLocation(FVector(-145.421501, 487.230132, 114.334673), FVector(84.450062, 487.230132, 114.334674));
+		}
+	}
 
 	if (HasAuthority())
 	{
@@ -1950,11 +1961,11 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
-	if (!EquippedWeapon)
+	/*if (!EquippedWeapon)
 	{
 		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
 		return;
-	}
+	}*/
 
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
