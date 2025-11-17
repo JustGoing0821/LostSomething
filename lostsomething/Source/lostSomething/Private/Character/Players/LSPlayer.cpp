@@ -2445,13 +2445,13 @@ void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
 	UE_LOG(LogTemp, Warning, TEXT("Attach Weapon to Socket: %s"), *WeaponSocketName.ToString());
 
 
-	if (!ItemInfoArray.IsValidIndex(SlotIndex))
-		return;
+	/*if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;*/
 
 	const FItemDetails& Info = ItemInfoArray[SlotIndex];
 
-	if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
-		return;
+	/*if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
+		return;*/
 
 	// 이미 무기가 장착돼 있다면 먼저 제거
 	UnequipWeapon_Internal();
@@ -2482,11 +2482,7 @@ void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
 	// 손 소켓에 부착
 	if (USkeletalMeshComponent* MeshComp = GetMesh())
 	{
-		NewWeapon->AttachToComponent(
-			MeshComp,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			WeaponSocketName
-		);
+		NewWeapon->AttachToComponent(MeshComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale,WeaponSocketName);
 	}
 
 	//NewWeapon->SetEquipped(true);
@@ -2502,7 +2498,13 @@ void ALSPlayer::UnequipWeapon_Internal()
 	}
 }
 
+
 void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
+{
+	MultiEquipWeaponFromSlot(SlotIndex);
+}
+
+void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 {
 	EquipWeaponFromSlot_Internal(SlotIndex);
 }
@@ -2510,6 +2512,10 @@ void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
 	UnequipWeapon_Internal();
+}
+
+void ALSPlayer::MultiUnequipWeapon_Implementation()
+{
 }
 
 
