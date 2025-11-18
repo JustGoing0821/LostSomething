@@ -21,6 +21,7 @@
 
 
 class ULSChatWidget;
+class UMiniMapWidget;
 
 UCLASS()
 class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface, public ILSStopKeyInputInterface
@@ -138,8 +139,18 @@ public:
 
 
 
-//Chat section
+// MiniMap Section
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UMiniMapWidget> MiniMapWidgetClass;
+	
+	UPROPERTY()
+	TObjectPtr<class UMiniMapWidget> MiniMapWidget;
 
+
+
+//Chat section
+public:
 	virtual void SetupInputComponent() override;
 
 	

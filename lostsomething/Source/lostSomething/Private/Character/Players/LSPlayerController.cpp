@@ -23,7 +23,7 @@
 #include "BossNPC/BMSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
-
+#include "UserInterface/MiniMap/MiniMapWidget.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -83,6 +83,13 @@ ALSPlayerController::ALSPlayerController()
 	bReplicates = true;
 	NetUpdateFrequency = 60.0f;
 
+	//MiniMap Section
+	static ConstructorHelpers::FClassFinder<UMiniMapWidget> MiniMapWidgetRef(TEXT("/Game/UI/MiniMap/WBP_MiniMapWidget.WBP_MiniMapWidget_C"));
+	if (MiniMapWidgetRef.Class)
+	{
+		MiniMapWidgetClass = MiniMapWidgetRef.Class;
+	}
+
 	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/Blueprints/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
 	if (LS2DPuzzleHUDRef.Class)
 	{
@@ -118,6 +125,16 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
+	//¹Ì´Ï¸Ê À§Á¬ »ý¼º
+
+	if (IsLocalController() && MiniMapWidgetClass)
+	{
+		MiniMapWidget = CreateWidget<UMiniMapWidget>(this, MiniMapWidgetClass);
+		if (MiniMapWidget)
+		{
+			MiniMapWidget->AddToViewport();
+		}
+	}
 
 
 	//chat
