@@ -75,7 +75,7 @@ void ABossNPC::MultiBMSoundPlay_Implementation(const FString& SoundType)
     }
 
     // 핵심: GetWorld() 기반으로 2D 사운드 재생
-    UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
+    UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.5f);
 }
 
 // Called when the game starts or when spawned

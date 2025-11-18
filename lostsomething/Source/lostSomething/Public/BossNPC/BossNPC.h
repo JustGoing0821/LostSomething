@@ -79,6 +79,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
             : FVector::ZeroVector;
     }
 
+    // Sound
     void BMSoundPlay(const FString& SoundType);
     UFUNCTION(Server, Reliable)
     void ServerBSoundPlay(const FString& SoundType);
