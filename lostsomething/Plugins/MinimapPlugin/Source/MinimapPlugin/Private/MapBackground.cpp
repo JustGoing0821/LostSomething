@@ -13,6 +13,7 @@
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
+#include <ImageUtils.h>
 
 TArray<FString> AMapBackground::HiddenShowFlagNames = { "LocalExposure", "Lighting", "PostProcessing"};
 
@@ -67,10 +68,11 @@ AMapBackground::AMapBackground()
 
 	// Prepares rendering navigation mesh to generated background
 	CaptureComponent2D->ShowFlags.SetNavigation(true);
-	CaptureComponent2D->ShowFlags.SetDirectionalLights(false);
+	CaptureComponent2D->ShowFlags.SetDirectionalLights(true);
 
 	// Capture scene color in RGB
-	CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_SceneColorSceneDepth;
+	//CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_SceneColorSceneDepth;
+	CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 	
 	NavMeshRenderingComponent = CreateDefaultSubobject<UNavMeshRenderingComponent>(TEXT("NavMeshRenderer"));
 	NavMeshRenderingComponent->SetupAttachment(GetRootComponent());
@@ -461,6 +463,7 @@ void AMapBackground::ApplyBackgroundTexture(bool bForceRerender)
 			
 			// Take a snapshot of the current level
 			GenerateSnapshot(BackgroundLevel.RenderTarget, RelativeHeight);
+			SaveRenderTargetToDisk(BackgroundLevel.RenderTarget, i);
 
 			// Fire event for external actors that may want to draw over the render target after a render
 			OnMapBackgroundRendered.Broadcast(this, i, BackgroundLevel.RenderTarget);
@@ -544,5 +547,28 @@ void AMapBackground::GenerateSnapshot(UTextureRenderTarget2D* RenderTarget, floa
 	{
 		// Render the scene to the render target
 		CaptureComponent2D->CaptureScene();
+	}
+}
+
+void AMapBackground::SaveRenderTargetToDisk(UTextureRenderTarget2D* RenderTarget, int32 LevelIndex)
+{
+	if (!RenderTarget) return;
+
+	FString FileName = FString::Printf(TEXT("MapBackground_Level%d_%s.png"),
+		LevelIndex,
+		*FDateTime::Now().ToString());
+	FString SavePath = FPaths::ProjectSavedDir() + TEXT("Screenshots/") + FileName;
+
+	FTextureRenderTargetResource* RTResource = RenderTarget->GameThread_GetRenderTargetResource();
+	if (RTResource)
+	{
+		TArray<FColor> Bitmap;
+		RTResource->ReadPixels(Bitmap);
+
+		FImageView ImageView(Bitmap.GetData(), RenderTarget->SizeX, RenderTarget->SizeY, ERawImageFormat::BGRA8);
+
+		FImageUtils::SaveImageAutoFormat(*SavePath, ImageView, 100);
+
+		UE_LOG(LogTemp, Log, TEXT("Map background saved: %s"), *SavePath);
 	}
 }
