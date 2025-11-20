@@ -1217,44 +1217,51 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
 
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	int32 CurrentSelectedSlot = SelectedSlot;
+
+
+	//슬롯 번호 유효한지 체크
+	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+
+		//슬롯 배열에서 아이템 정ㅇ보 복사해오기
+		FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+		bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+		if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
 		{
-			int32 CurrentSelectedSlot = SelectedSlot;
+			// 새 아이템 저장
+			ItemInfoArray[CurrentSelectedSlot] = PickedItem;
 
-			//슬롯 번호 유효한지 체크
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+
+
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 			{
-
-				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
-				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
-
-				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+				if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 				{
-					// 새 아이템 저장
-					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
-
 					// 아이콘 업데이트
 					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
 					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
-					RefreshWeaponEquipFromCurrentSlot();
-					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
-					SaveInventoryToGameInstance();
-				
-				}
-				else  // 이미 차있는 슬롯인 경우
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
-
-					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
-					DropItemFromSlot();
 				}
 			}
+
+
+			RefreshWeaponEquipFromCurrentSlot();
+			//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+			SaveInventoryToGameInstance();
+
+		}
+		else  // 이미 차있는 슬롯인 경우
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+
+			// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
+			DropItemFromSlot();
 		}
 	}
+
+
 }
 
 void ALSPlayer::InitializeInventory()
@@ -1473,6 +1480,7 @@ void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 	FItemDetails ItemData = TargetItem->GetItemInfo();
 	TargetItem->Destroy();
 	//MultiPickUpCore(TargetItem);
+	PickItemInSlot(ItemData);
 	ClientPickUpCore(ItemData);
 }
 
