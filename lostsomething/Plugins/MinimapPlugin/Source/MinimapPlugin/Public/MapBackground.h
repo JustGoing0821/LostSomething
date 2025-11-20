@@ -235,5 +235,8 @@ private:
 	// Used to include the navigation mesh in the generated background
 	UPROPERTY(VisibleAnywhere, Category = "Minimap Background Generation")
 	UNavMeshRenderingComponent* NavMeshRenderingComponent;
+
+	/// 캡처에 필요한 함수 추가
+	void SaveRenderTargetToDisk(UTextureRenderTarget2D* RenderTarget, int32 LevelIndex);
 	
 };
