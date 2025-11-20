@@ -1981,12 +1981,12 @@ void ALSPlayer::MultiProcessAttack_Implementation()
 {
 	//UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
 
-	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetAttackAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
-	}*/
+	}
 }
 
 
@@ -2520,6 +2520,12 @@ void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
 	UnequipWeapon_Internal();
+
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+	}
 }
 
 void ALSPlayer::MultiUnequipWeapon_Implementation()
