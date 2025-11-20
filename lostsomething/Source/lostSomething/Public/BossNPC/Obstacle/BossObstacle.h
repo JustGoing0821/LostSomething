@@ -36,7 +36,7 @@ protected:
 
 	FVector MoveDirection;
 
-	const float AttackDamage = 30.0f;
+	const float AttackDamage = 50.0f;
 
 	UFUNCTION()
 	void OnOverlapBegin(
