@@ -1203,6 +1203,7 @@ void ALSPlayer::DropItemFromSlot()
 						{
 							// 클라이언트  : 서버야 삭제 해줘
 							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
+							RefreshWeaponEquipFromCurrentSlot();
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1269,6 +1270,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 			// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
 			DropItemFromSlot();
+			RefreshWeaponEquipFromCurrentSlot();
 		}
 	}
 
@@ -1418,9 +1420,11 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 				{
 					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
 				}
+
+				RefreshWeaponEquipFromCurrentSlot();
 			}
 		}
-
+	
 
 		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		//{
@@ -1432,7 +1436,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 	}
 
 	//무기인지 아닌지 체크용
-	RefreshWeaponEquipFromCurrentSlot();
+	//RefreshWeaponEquipFromCurrentSlot();
 }
 
 void ALSPlayer::OnSelectSlot1()
@@ -1585,6 +1589,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 			UTexture2D* EmptyIcon = nullptr;
 			HUD->SetIcon(SlotIndex, EmptyIcon);
 		}
+		RefreshWeaponEquipFromCurrentSlot();
 	}
 }
 
@@ -2518,6 +2523,8 @@ void ALSPlayer::UnequipWeapon_Internal()
 }
 
 
+//장착
+
 void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 {
 	MultiEquipWeaponFromSlot(SlotIndex);
@@ -2528,9 +2535,12 @@ void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 	EquipWeaponFromSlot_Internal(SlotIndex);
 }
 
+
+
+//장착 해제
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
-	//UnequipWeapon_Internal();
+	MultiUnequipWeapon();
 
 	if (EquippedWeapon)
 	{
@@ -2541,6 +2551,11 @@ void ALSPlayer::ServerUnequipWeapon_Implementation()
 
 void ALSPlayer::MultiUnequipWeapon_Implementation()
 {
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+	}
 }
 
 
