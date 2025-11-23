@@ -1855,7 +1855,7 @@ void ALSPlayer::Attack()
 
 	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
 	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
-	MultiAttack();
+	//MultiAttack();
 
 
 	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
@@ -1958,11 +1958,11 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
-	if (!EquippedWeapon)
+	/*if (!EquippedWeapon)
 	{
 		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
 		return;
-	}
+	}*/
 
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -2519,7 +2519,7 @@ void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
-	UnequipWeapon_Internal();
+	//UnequipWeapon_Internal();
 
 	if (EquippedWeapon)
 	{
