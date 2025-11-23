@@ -14,6 +14,7 @@ AMasterItem::AMasterItem()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	RootComponent = ItemMesh;
@@ -22,6 +23,9 @@ AMasterItem::AMasterItem()
 	CollisionComponent->SetSphereRadius(50.0f);
 	CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	CollisionComponent->SetGenerateOverlapEvents(true);
+
+
+	bReplicates = true;
 
 	//ºÎÂø
 	CollisionComponent->SetupAttachment(ItemMesh);

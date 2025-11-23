@@ -415,12 +415,18 @@ public:
 	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
 	void UnequipWeapon_Internal();
 
-	//PC
+	//RPC
 	UFUNCTION(Server, Reliable)
 	void ServerEquipWeaponFromSlot(int32 SlotIndex);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiEquipWeaponFromSlot(int32 SlotIndex);
+
 	UFUNCTION(Server, Reliable)
 	void ServerUnequipWeapon();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiUnequipWeapon();
 
 
 
