@@ -1203,6 +1203,7 @@ void ALSPlayer::DropItemFromSlot()
 						{
 							// 클라이언트  : 서버야 삭제 해줘
 							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
+							RefreshWeaponEquipFromCurrentSlot();
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1228,44 +1229,52 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ALSPlayer::PickItemInSlot() called"));
 
-	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+	int32 CurrentSelectedSlot = SelectedSlot;
+
+
+	//슬롯 번호 유효한지 체크
+	if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
 	{
-		if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
+
+		//슬롯 배열에서 아이템 정ㅇ보 복사해오기
+		FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
+		bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
+
+		if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
 		{
-			int32 CurrentSelectedSlot = SelectedSlot;
+			// 새 아이템 저장
+			ItemInfoArray[CurrentSelectedSlot] = PickedItem;
 
-			//슬롯 번호 유효한지 체크
-			if (CurrentSelectedSlot >= 0 && CurrentSelectedSlot < ItemInfoArray.Num())
+
+
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 			{
-
-				//슬롯 배열에서 아이템 정ㅇ보 복사해오기
-				FItemDetails CurrentSlotItem = ItemInfoArray[CurrentSelectedSlot];
-				bool bCurrentSlotIsEmpty = CurrentSlotItem.IsEmpty;
-
-				if (bCurrentSlotIsEmpty)  // 빈 슬롯인 경우에만 픽업
+				if (ULSHUDWidget* HUD = PC->GetLSHUDWidget())
 				{
-					// 새 아이템 저장
-					ItemInfoArray[CurrentSelectedSlot] = PickedItem;
-
 					// 아이콘 업데이트
 					UTexture2D* ItemIcon = PickedItem.Item_Icon.LoadSynchronous();
 					HUD->SetIcon(CurrentSelectedSlot, ItemIcon);
 
-					RefreshWeaponEquipFromCurrentSlot();
-					//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
-					SaveInventoryToGameInstance();
-				
-				}
-				else  // 이미 차있는 슬롯인 경우
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
-
-					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
-					DropItemFromSlot();
 				}
 			}
+
+
+			RefreshWeaponEquipFromCurrentSlot();
+			//UE_LOG(LogTemp, Warning, TEXT("Item stored in slot %d"), CurrentSelectedSlot);
+			SaveInventoryToGameInstance();
+
+		}
+		else  // 이미 차있는 슬롯인 경우
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Slot %d is occupied - dropping existing item. Try picking up again."), CurrentSelectedSlot);
+
+			// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
+			DropItemFromSlot();
+			RefreshWeaponEquipFromCurrentSlot();
 		}
 	}
+
+
 }
 
 void ALSPlayer::InitializeInventory()
@@ -1411,9 +1420,11 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 				{
 					LSController->GetLSHUDWidget()->UpdateSlotBorderColors(SelectedSlot);
 				}
+
+				RefreshWeaponEquipFromCurrentSlot();
 			}
 		}
-
+	
 
 		//if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
 		//{
@@ -1425,7 +1436,7 @@ void ALSPlayer::SelectSlot(int32 SlotIndex)
 	}
 
 	//무기인지 아닌지 체크용
-	RefreshWeaponEquipFromCurrentSlot();
+	//RefreshWeaponEquipFromCurrentSlot();
 }
 
 void ALSPlayer::OnSelectSlot1()
@@ -1484,6 +1495,7 @@ void ALSPlayer::ServerPickUpCore_Implementation(AMasterItem* TargetItem)
 	FItemDetails ItemData = TargetItem->GetItemInfo();
 	TargetItem->Destroy();
 	//MultiPickUpCore(TargetItem);
+	PickItemInSlot(ItemData);
 	ClientPickUpCore(ItemData);
 }
 
@@ -1577,6 +1589,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 			UTexture2D* EmptyIcon = nullptr;
 			HUD->SetIcon(SlotIndex, EmptyIcon);
 		}
+		RefreshWeaponEquipFromCurrentSlot();
 	}
 }
 
@@ -1858,7 +1871,7 @@ void ALSPlayer::Attack()
 
 	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
 	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
-	MultiAttack();
+	//MultiAttack();
 
 
 	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
@@ -1984,12 +1997,12 @@ void ALSPlayer::MultiProcessAttack_Implementation()
 {
 	//UE_LOG(LogTemp, Error, TEXT("=== MultiAttack_Implementation() CALLED ==="));
 
-	/*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->SetAttackAnim();
 		UE_LOG(LogTemp, Warning, TEXT("Player Attack ANIMATION SIJAE"));
-	}*/
+	}
 }
 
 
@@ -2456,13 +2469,13 @@ void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
 	UE_LOG(LogTemp, Warning, TEXT("Attach Weapon to Socket: %s"), *WeaponSocketName.ToString());
 
 
-	if (!ItemInfoArray.IsValidIndex(SlotIndex))
-		return;
+	/*if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;*/
 
 	const FItemDetails& Info = ItemInfoArray[SlotIndex];
 
-	if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
-		return;
+	/*if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
+		return;*/
 
 	// 이미 무기가 장착돼 있다면 먼저 제거
 	UnequipWeapon_Internal();
@@ -2493,11 +2506,7 @@ void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
 	// 손 소켓에 부착
 	if (USkeletalMeshComponent* MeshComp = GetMesh())
 	{
-		NewWeapon->AttachToComponent(
-			MeshComp,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			WeaponSocketName
-		);
+		NewWeapon->AttachToComponent(MeshComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale,WeaponSocketName);
 	}
 
 	//NewWeapon->SetEquipped(true);
@@ -2513,14 +2522,40 @@ void ALSPlayer::UnequipWeapon_Internal()
 	}
 }
 
+
+//장착
+
 void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
+{
+	MultiEquipWeaponFromSlot(SlotIndex);
+}
+
+void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 {
 	EquipWeaponFromSlot_Internal(SlotIndex);
 }
 
+
+
+//장착 해제
 void ALSPlayer::ServerUnequipWeapon_Implementation()
 {
-	UnequipWeapon_Internal();
+	MultiUnequipWeapon();
+
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+	}
+}
+
+void ALSPlayer::MultiUnequipWeapon_Implementation()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+	}
 }
 
 
