@@ -316,7 +316,7 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
 	//LS_LOG(LogLS, Log, TEXT("%s Begin"), *EnumString);
-
+	//¿©±â¼­ Äù½ºÆ® È®ÀÎÇØ¼­ ¹Ì´Ï¸Ê À§Á¬ ²ô°í Å°¸é µÊ. <251123>
 	if (IsLocalController())
 	{
 		QuestWidget->UpdateQuestWidget(InQuestData);
