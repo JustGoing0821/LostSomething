@@ -404,6 +404,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	FName WeaponSocketName = TEXT("WeaponSocket"); 
 
+	//액터 말고 컴포너늩로
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UStaticMeshComponent* EquippedWeaponMesh;
+
 	// 손에 무기 액터
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	AMasterItem* EquippedWeapon = nullptr;
