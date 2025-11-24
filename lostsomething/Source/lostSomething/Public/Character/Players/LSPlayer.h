@@ -307,6 +307,8 @@ Item	Section
 protected:
 		ELSNetworkPosition GetNetworkPositionForInventory() const;
 
+		
+
 		// Drop Item 위치를 나타내는 Arrow 컴포넌트
 		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class UArrowComponent> DropItemLoc;
@@ -426,8 +428,16 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerUnequipWeapon();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiEquipWeaponFromSlot(const FItemDetails& Info);
 
+	void ApplyWeaponVisualFromItem(const FItemDetails& Info);
 
+	UFUNCTION(Server, Reliable)
+	void ServerApplyWeaponVisualFromItem(const FItemDetails& Info);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiApplyWeaponVisualFromItem(const FItemDetails& Info);
 
 /*******************
 

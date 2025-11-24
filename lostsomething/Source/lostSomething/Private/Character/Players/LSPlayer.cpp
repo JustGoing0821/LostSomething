@@ -1185,6 +1185,8 @@ void ALSPlayer::DropItemFromSlot()
 								DropItemLoc->GetComponentRotation()
 							);
 
+							RefreshWeaponEquipFromCurrentSlot();
+
 							if (SpawnedItem)
 							{
 								if (UStaticMeshComponent* ItemMesh = SpawnedItem->FindComponentByClass<UStaticMeshComponent>())
@@ -1209,7 +1211,7 @@ void ALSPlayer::DropItemFromSlot()
 							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
 							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
 
-							RefreshWeaponEquipFromCurrentSlot();
+							//RefreshWeaponEquipFromCurrentSlot();
 							// 서버 : 클라이언트 것도 삭제
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
 						}
@@ -1217,6 +1219,7 @@ void ALSPlayer::DropItemFromSlot()
 						{
 							// 클라이언트  : 서버야 삭제 해줘
 							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
+							RefreshWeaponEquipFromCurrentSlot();
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1276,6 +1279,7 @@ void ALSPlayer::PickItemInSlot(const FItemDetails& PickedItem)
 
 					// 기존 아이템만 드롭하고 끝 (새 아이템은 픽업하지 않음)
 					DropItemFromSlot();
+					RefreshWeaponEquipFromCurrentSlot();
 				}
 			}
 		}
@@ -1568,6 +1572,7 @@ void ALSPlayer::ServerDropItemFromSlot_Implementation(TSubclassOf<AMasterItem> I
 
 	//클라이언트 인벤토리 수정요청
 	ClientDropItemFromSlot(SlotIndex);
+	RefreshWeaponEquipFromCurrentSlot();
 }
 
 void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
@@ -1591,6 +1596,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 			UTexture2D* EmptyIcon = nullptr;
 			HUD->SetIcon(SlotIndex, EmptyIcon);
 		}
+		RefreshWeaponEquipFromCurrentSlot();
 	}
 }
 
@@ -2419,19 +2425,24 @@ bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 
 void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 {
-	if (CharacterChoice != ELSCharacterChoice::SiJae)
+
+	//if (HasAuthority())
+	//{
+	//	UnequipWeapon_Internal();
+	//	// 시제가 아니면 무기 안 들게
+	//	ApplyWeaponVisualFromItem(FItemDetails()); 
+	//	//MultiEquipWeaponFromSlot(FItemDetails());
+	//}
+	//else
+	//{
+	//	ServerUnequipWeapon();
+	//	ServerApplyWeaponVisualFromItem(FItemDetails());
+	//}
+
+	/*if (CharacterChoice != ELSCharacterChoice::SiJae)
 	{
-		// 혹시 손에 들고 있던 무기가 있다면 내려놓기
-		if (HasAuthority())
-		{
-			UnequipWeapon_Internal();
-		}
-		else
-		{
-			ServerUnequipWeapon();
-		}
 		return;
-	}
+	}*/
 
 	const int32 SlotIndex = SelectedSlot;
 
@@ -2440,31 +2451,85 @@ void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 
 	const FItemDetails& Info = ItemInfoArray[SlotIndex];
 
-	//슬롯이 비었거나 무기가 아님
+	// 슬롯이 비었거나 무기가 아니면 해제
 	if (Info.IsEmpty || !Info.IsWeapon)
 	{
 		if (HasAuthority())
 		{
-			UnequipWeapon_Internal();
+			//UnequipWeapon_Internal();
+			MultiApplyWeaponVisualFromItem(Info); 
+			//MultiEquipWeaponFromSlot(Info);
 		}
 		else
 		{
-			ServerUnequipWeapon();
+			//ServerUnequipWeapon();
+			ServerApplyWeaponVisualFromItem(Info);
 		}
 		return;
 	}
 
-	// 무기면 손에 붙임
 	if (HasAuthority())
 	{
-		EquipWeaponFromSlot_Internal(SlotIndex);
-
-
+		
+		//EquipWeaponFromSlot_Internal(SlotIndex);  
+		MultiApplyWeaponVisualFromItem(Info);          
+		//MultiEquipWeaponFromSlot(Info);           
 	}
 	else
 	{
-		ServerEquipWeaponFromSlot(SlotIndex);
+		//ServerEquipWeaponFromSlot(SlotIndex);
+		ServerApplyWeaponVisualFromItem(Info);
 	}
+
+
+	//if (CharacterChoice != ELSCharacterChoice::SiJae)
+	//{
+	//	// 혹시 손에 들고 있던 무기가 있다면 내려놓기
+	//	if (HasAuthority())
+	//	{
+	//		UnequipWeapon_Internal();
+	//	}
+	//	else
+	//	{
+	//		ServerUnequipWeapon();
+	//	}
+	//	return;
+	//}
+
+	//const int32 SlotIndex = SelectedSlot;
+
+	//if (!ItemInfoArray.IsValidIndex(SlotIndex))
+	//	return;
+
+	//const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+	////슬롯이 비었거나 무기가 아님
+	//if (Info.IsEmpty || !Info.IsWeapon)
+	//{
+	//	if (HasAuthority())
+	//	{
+	//		UnequipWeapon_Internal();
+	//	}
+	//	else
+	//	{
+	//		ServerUnequipWeapon();
+	//	}
+	//	return;
+	//}
+
+	//// 무기면 손에 붙임
+	//if (HasAuthority())
+	//{
+	//	EquipWeaponFromSlot_Internal(SlotIndex);
+
+
+	//}
+	//else
+	//{
+	//	ServerEquipWeaponFromSlot(SlotIndex);
+	//}
+
+	
 }
 
 void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
@@ -2558,35 +2623,35 @@ void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
 
 	//EquippedWeapon = NewWeapon;
 
+	//
+	//if (!ItemInfoArray.IsValidIndex(SlotIndex))
+	//	return;
 
-	if (!ItemInfoArray.IsValidIndex(SlotIndex))
-		return;
+	//const FItemDetails& Info = ItemInfoArray[SlotIndex];
 
-	const FItemDetails& Info = ItemInfoArray[SlotIndex];
+	//// 슬롯이 비었거나 무기가 아니라면 해제
+	//if (Info.IsEmpty || !Info.IsWeapon)
+	//{
+	//	UnequipWeapon_Internal();
+	//	return;
+	//}
 
-	// 슬롯이 비었거나 무기가 아니라면 해제
-	if (Info.IsEmpty || !Info.IsWeapon)
-	{
-		UnequipWeapon_Internal();
-		return;
-	}
+	//// 장착용 StaticMesh 가져오기
+	//UStaticMesh* NewMesh = Info.EquippedMesh.LoadSynchronous();
+	//if (!NewMesh || !EquippedWeaponMesh)
+	//{
+	//	UnequipWeapon_Internal();
+	//	return;
+	//}
 
-	// 장착용 StaticMesh 가져오기
-	UStaticMesh* NewMesh = Info.EquippedMesh.LoadSynchronous();
-	if (!NewMesh || !EquippedWeaponMesh)
-	{
-		UnequipWeapon_Internal();
-		return;
-	}
+	//// 기존 장착 클리어
+	//UnequipWeapon_Internal();
 
-	// 기존 장착 클리어
-	UnequipWeapon_Internal();
+	//EquippedWeaponMesh->SetStaticMesh(NewMesh);
+	//EquippedWeaponMesh->SetVisibility(true);
 
-	EquippedWeaponMesh->SetStaticMesh(NewMesh);
-	EquippedWeaponMesh->SetVisibility(true);
-
-	
-	EquippedWeapon = nullptr;
+	//
+	//EquippedWeapon = nullptr;
 }
 
 void ALSPlayer::UnequipWeapon_Internal()
@@ -2598,17 +2663,34 @@ void ALSPlayer::UnequipWeapon_Internal()
 	}
 
 
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->Destroy();
-		EquippedWeapon = nullptr;
-	}
+	//if (EquippedWeapon)
+	//{
+	//	EquippedWeapon->Destroy();
+	//	EquippedWeapon = nullptr;
+	//}
 
 }
 
+
+
 void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
 {
-	EquipWeaponFromSlot_Internal(SlotIndex);
+	if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;
+
+	const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+	EquipWeaponFromSlot_Internal(SlotIndex); 
+
+	// 모든 클라에 비주얼 정보 전달
+	MultiEquipWeaponFromSlot(Info);
+	ApplyWeaponVisualFromItem(FItemDetails());
+	//EquipWeaponFromSlot_Internal(SlotIndex);
+}
+
+void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(const FItemDetails& Info)
+{
+	ApplyWeaponVisualFromItem(Info);
 }
 
 void ALSPlayer::ServerUnequipWeapon_Implementation()
@@ -2629,4 +2711,42 @@ ELSNetworkPosition ALSPlayer::GetNetworkPositionForInventory() const
 
 	// 클라이언트
 	return ELSNetworkPosition::Client;
+}
+
+
+
+//무기 mesh용 함수
+void ALSPlayer::ApplyWeaponVisualFromItem(const FItemDetails& Info)
+{
+
+}
+
+void ALSPlayer::MultiApplyWeaponVisualFromItem_Implementation(const FItemDetails& Info)
+{
+	if (!EquippedWeaponMesh)
+		return;
+
+	// 비었거나 무기가 아니면 메쉬 숨기기
+	if (Info.IsEmpty || !Info.IsWeapon)
+	{
+		EquippedWeaponMesh->SetStaticMesh(nullptr);
+		EquippedWeaponMesh->SetVisibility(false);
+		return;
+	}
+
+	UStaticMesh* NewMesh = Info.EquippedMesh.LoadSynchronous();
+	if (!NewMesh)
+	{
+		EquippedWeaponMesh->SetStaticMesh(nullptr);
+		EquippedWeaponMesh->SetVisibility(false);
+		return;
+	}
+
+	EquippedWeaponMesh->SetStaticMesh(NewMesh);
+	EquippedWeaponMesh->SetVisibility(true);
+}
+
+void ALSPlayer::ServerApplyWeaponVisualFromItem_Implementation(const FItemDetails& Info)
+{
+	MultiApplyWeaponVisualFromItem(Info);
 }
