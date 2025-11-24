@@ -47,7 +47,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")
     bool IsEmpty = true;
 
-   
+    //장착 컴포넌트
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSoftObjectPtr<UStaticMesh> EquippedMesh;
 
     // 아이템 클래스 레퍼런스
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Slot")

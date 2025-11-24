@@ -307,6 +307,8 @@ Item	Section
 protected:
 		ELSNetworkPosition GetNetworkPositionForInventory() const;
 
+		
+
 		// Drop Item 위치를 나타내는 Arrow 컴포넌트
 		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class UArrowComponent> DropItemLoc;
@@ -404,6 +406,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	FName WeaponSocketName = TEXT("WeaponSocket"); 
 
+	//액터 말고 컴포너늩로
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UStaticMeshComponent* EquippedWeaponMesh;
+
 	// 손에 무기 액터
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	AMasterItem* EquippedWeapon = nullptr;
@@ -415,21 +421,23 @@ public:
 	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
 	void UnequipWeapon_Internal();
 
-	//RPC
+	//PC
 	UFUNCTION(Server, Reliable)
 	void ServerEquipWeaponFromSlot(int32 SlotIndex);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiEquipWeaponFromSlot(int32 SlotIndex);
 
 	UFUNCTION(Server, Reliable)
 	void ServerUnequipWeapon();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiUnequipWeapon();
+	void MultiEquipWeaponFromSlot(const FItemDetails& Info);
 
+	void ApplyWeaponVisualFromItem(const FItemDetails& Info);
 
+	UFUNCTION(Server, Reliable)
+	void ServerApplyWeaponVisualFromItem(const FItemDetails& Info);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiApplyWeaponVisualFromItem(const FItemDetails& Info);
 
 /*******************
 
