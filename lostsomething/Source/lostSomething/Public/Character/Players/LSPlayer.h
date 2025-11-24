@@ -417,19 +417,7 @@ public:
 	// 장착,해제
 	void RefreshWeaponEquipFromCurrentSlot();
 
-	// rpc안에 쓸것들
-	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
-	void UnequipWeapon_Internal();
-
-	//PC
-	UFUNCTION(Server, Reliable)
-	void ServerEquipWeaponFromSlot(int32 SlotIndex);
-
-	UFUNCTION(Server, Reliable)
-	void ServerUnequipWeapon();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiEquipWeaponFromSlot(const FItemDetails& Info);
+	
 
 	void ApplyWeaponVisualFromItem(const FItemDetails& Info);
 
