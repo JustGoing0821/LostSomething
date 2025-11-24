@@ -57,55 +57,45 @@
 //	float CapsuleHalfHeight = PickupRange * 0.5f;
 //	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 //}
-//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectNextSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-//	}
-//}
-//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectPreviousSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-//	}
-//}
-//void ALSPlayer::ChangeSlot(int32 NewSlot)
-//{
-//	//SelectedSlot = NewSlot;
-//
-//	//// 슬롯 범위 검증 및 순환 처리
-//	//if (NewSlot < 0)
-//	//{
-//	//	SelectedSlot = MaxSlots;
-//	//}
-//	//else if (NewSlot > MaxSlots)
-//	//{
-//	//	SelectedSlot = 0;
-//	//}
-//	//else
-//	//{
-//	//	
-//	//}
-//	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
-//	// 슬롯 색상 업데이트
-//	//UpdateSlotBorderColors();
-//}
+
+
+
+void ALSPlayer::ChangeSlot(int32 NewSlot)
+{
+
+
+	if (MaxSlots <= 0 || ItemInfoArray.Num() == 0)
+	{
+		return;
+	}
+
+	// 범위를 벗어나면
+	if (NewSlot < 0)
+	{
+		NewSlot = 4;
+		//NewSlot = MaxSlots - 1; 
+	}
+	else if (NewSlot >= MaxSlots)
+	{
+		NewSlot = 0; 
+	}
+
+	SelectSlot(NewSlot);
+
+}
+
+void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+{
+	int32 NewSlot = SelectedSlot + 1;
+	ChangeSlot(NewSlot);
+}
+void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+{
+	int32 NewSlot = SelectedSlot - 1;
+	ChangeSlot(NewSlot);
+}
+
+
 //void ALSPlayer::VoiceStart(const FInputActionValue& Value)
 //{
 //	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
@@ -351,8 +341,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
-		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
-		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
+		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALSPlayer::Move);
