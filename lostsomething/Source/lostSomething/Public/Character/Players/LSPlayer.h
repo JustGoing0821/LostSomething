@@ -564,10 +564,10 @@ protected:
 	ELSCharacterChoice CharacterChoice;
 
 	UPROPERTY(Replicated)
-	TObjectPtr<APawn> PusherSiJaeCharacter;
+	ALSPlayer* PusherSiJaeCharacter;
 
 	UPROPERTY(Replicated)
-	TObjectPtr<APawn> PushedIJaeCharacter;
+	ALSPlayer* PushedIJaeCharacter;
 
 	const float CombineDistance = 80.0f;
 
