@@ -89,6 +89,7 @@ ALSPlayerController::ALSPlayerController()
 	{
 		MiniMapWidgetClass = MiniMapWidgetRef.Class;
 	}
+	bIsMinimap = false;
 
 	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/Blueprints/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
 	if (LS2DPuzzleHUDRef.Class)
@@ -125,18 +126,6 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
-	//固聪甘 困连 积己
-
-	if (IsLocalController() && MiniMapWidgetClass)
-	{
-		MiniMapWidget = CreateWidget<UMiniMapWidget>(this, MiniMapWidgetClass);
-		if (MiniMapWidget)
-		{
-			MiniMapWidget->AddToViewport();
-		}
-	}
-
-
 	//chat
 	if (IsLocalController() && ChatWidgetClass)
 	{
@@ -158,6 +147,8 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
+	//minimap
+	CreateMinimapWidget();
 
 	if (IsLocalController() && BloodWidgetClass)
 	{
@@ -168,7 +159,6 @@ void ALSPlayerController::BeginPlay()
 			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("BloodhWidget Created."));
 		}
 	}
-
 
 	if (IsLocalController() && DeathWidgetClass)
 	{
@@ -326,6 +316,21 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 	{
 		ClientRPCUpdateQuestWidget(InQuestData);
 		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
+	}
+
+	if (InQuestData.CurrentQuestEnum == ELSInteractionEnum::Quest7)
+	{
+		if (IsLocalController())
+			RemoveMinimapWidget();
+		else
+			ClientMinimapWidget();
+	}
+	else if (InQuestData.CurrentQuestEnum == ELSInteractionEnum::Quest9)
+	{
+		if (IsLocalController())
+			CreateMinimapWidget();
+		else
+			ClientMinimapWidget();
 	}
 }
 
@@ -656,7 +661,45 @@ void ALSPlayerController::ClientRPCStopKeyInput_Implementation()
 	if (PlayerInput) PlayerInput->FlushPressedKeys();
 }
 
+//Minimap
 
+void ALSPlayerController::CreateMinimapWidget()
+{
+	//固聪甘 困连 积己
+
+	if (IsLocalController() && MiniMapWidgetClass)
+	{
+		MiniMapWidget = CreateWidget<UMiniMapWidget>(this, MiniMapWidgetClass);
+		if (MiniMapWidget && !bIsMinimap)
+		{
+			MiniMapWidget->AddToViewport();
+			bIsMinimap = true;
+		}
+	}
+}
+
+void ALSPlayerController::RemoveMinimapWidget()
+{
+	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (MiniMapWidget && bIsMinimap)
+	{
+		MiniMapWidget->RemoveFromParent();
+		bIsMinimap = false;
+	}		
+}
+
+void ALSPlayerController::ClientMinimapWidget_Implementation()
+{
+
+	if (this->IsLocalController())
+	{	
+		if (bIsMinimap)
+			RemoveMinimapWidget();
+		else
+			CreateMinimapWidget();
+	}
+}
 
 
 //chat
