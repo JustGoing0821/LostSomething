@@ -147,7 +147,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UMiniMapWidget> MiniMapWidget;
 
-
+	void CreateMinimapWidget();
+	void RemoveMinimapWidget();
+	UFUNCTION(Client, Unreliable)
+	void ClientMinimapWidget();
+	bool bIsMinimap;
 
 //Chat section
 public:
