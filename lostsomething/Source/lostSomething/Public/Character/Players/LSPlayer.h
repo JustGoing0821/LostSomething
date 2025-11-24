@@ -361,12 +361,14 @@ protected:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//void PickItem(const FItemDetails& PickedItemInfo);
 
-	//void OnMouseWheelUp(const FInputActionValue& Value);
-	//void OnMouseWheelDown(const FInputActionValue& Value);
+	void OnMouseWheelUp(const FInputActionValue& Value);
+	void OnMouseWheelDown(const FInputActionValue& Value);
+	void ChangeSlot(int32 Offset);
+
 
 	// 슬롯 선택 시스템 함수들
-	/*UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ChangeSlot(int32 NewSlot);*/
+	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	//void ChangeSlot(int32 NewSlot);
 
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//int32 GetSelectedSlot() const { return SelectedSlot; }
@@ -417,19 +419,7 @@ public:
 	// 장착,해제
 	void RefreshWeaponEquipFromCurrentSlot();
 
-	// rpc안에 쓸것들
-	void EquipWeaponFromSlot_Internal(int32 SlotIndex);
-	void UnequipWeapon_Internal();
-
-	//PC
-	UFUNCTION(Server, Reliable)
-	void ServerEquipWeaponFromSlot(int32 SlotIndex);
-
-	UFUNCTION(Server, Reliable)
-	void ServerUnequipWeapon();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiEquipWeaponFromSlot(const FItemDetails& Info);
+	
 
 	void ApplyWeaponVisualFromItem(const FItemDetails& Info);
 
@@ -574,10 +564,10 @@ protected:
 	ELSCharacterChoice CharacterChoice;
 
 	UPROPERTY(Replicated)
-	TObjectPtr<APawn> PusherSiJaeCharacter;
+	ALSPlayer* PusherSiJaeCharacter;
 
 	UPROPERTY(Replicated)
-	TObjectPtr<APawn> PushedIJaeCharacter;
+	ALSPlayer* PushedIJaeCharacter;
 
 	const float CombineDistance = 80.0f;
 

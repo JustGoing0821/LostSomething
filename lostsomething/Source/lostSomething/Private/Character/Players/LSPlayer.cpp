@@ -57,55 +57,45 @@
 //	float CapsuleHalfHeight = PickupRange * 0.5f;
 //	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, PickupRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 //}
-//void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel up detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectNextSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelUp"));
-//	}
-//}
-//void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Player: Mouse wheel down detected"));
-//
-//	// PlayerController를 통해 HUD에 접근
-//	if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-//	{
-//		PC->SelectPreviousSlot();
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("PlayerController cast failed in OnMouseWheelDown"));
-//	}
-//}
-//void ALSPlayer::ChangeSlot(int32 NewSlot)
-//{
-//	//SelectedSlot = NewSlot;
-//
-//	//// 슬롯 범위 검증 및 순환 처리
-//	//if (NewSlot < 0)
-//	//{
-//	//	SelectedSlot = MaxSlots;
-//	//}
-//	//else if (NewSlot > MaxSlots)
-//	//{
-//	//	SelectedSlot = 0;
-//	//}
-//	//else
-//	//{
-//	//	
-//	//}
-//	//UE_LOG(LogTemp, Warning, TEXT("Slot changed to: %d"), SelectedSlot);
-//	// 슬롯 색상 업데이트
-//	//UpdateSlotBorderColors();
-//}
+
+
+
+void ALSPlayer::ChangeSlot(int32 NewSlot)
+{
+
+
+	if (MaxSlots <= 0 || ItemInfoArray.Num() == 0)
+	{
+		return;
+	}
+
+	// 범위를 벗어나면
+	if (NewSlot < 0)
+	{
+		NewSlot = 4;
+		//NewSlot = MaxSlots - 1; 
+	}
+	else if (NewSlot >= MaxSlots)
+	{
+		NewSlot = 0; 
+	}
+
+	SelectSlot(NewSlot);
+
+}
+
+void ALSPlayer::OnMouseWheelUp(const FInputActionValue& Value)
+{
+	int32 NewSlot = SelectedSlot + 1;
+	ChangeSlot(NewSlot);
+}
+void ALSPlayer::OnMouseWheelDown(const FInputActionValue& Value)
+{
+	int32 NewSlot = SelectedSlot - 1;
+	ChangeSlot(NewSlot);
+}
+
+
 //void ALSPlayer::VoiceStart(const FInputActionValue& Value)
 //{
 //	auto pc:ANetPlayerController* = GetController<ANetPlayerController>();
@@ -351,8 +341,8 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ALSPlayer::Attack);
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ALSPlayer::StartThrowPreview);
 		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ALSPlayer::EndThrowPreview,true);
-		//EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
-		//EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
+		EnhancedInputComponent->BindAction(MouseWheelUpAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelUp);
+		EnhancedInputComponent->BindAction(MouseWheelDownAction, ETriggerEvent::Triggered, this, &ALSPlayer::OnMouseWheelDown);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALSPlayer::Move);
@@ -2289,31 +2279,34 @@ void ALSPlayer::DecreaseCombineStamina()
 
 	if (!HasAuthority() || !bIsCombining) return;
 
-	// 시제 캐릭터의 속도를 체크하여 decrease 할 수 있도록 추가
+	float CheckSpeed = 0.0f;
+
 	if (CharacterChoice == ELSCharacterChoice::SiJae)
 	{
-		float CurrentSpeed = GetVelocity().Size();
+		CheckSpeed = GetVelocity().Size();
+	}
+	else if (PusherSiJaeCharacter)
+	{
+		CheckSpeed = PusherSiJaeCharacter->GetVelocity().Size();
+	}
 
-		// 만일 합체 이후에 움직인 후 가만히 있을 경우 스태미나는 다시 채워짐.
-		// 대신 이때는 스태미나가 채워지는 속도를 느리게 뒀음.
-		if (CurrentSpeed < 10.0f)
+	if (CheckSpeed < 10.0f)
+	{
+		CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + (CombineStaminaIncreaseRate * 0.5f) * 0.1f);
+
+		if (IsLocallyControlled())
 		{
-			CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + (CombineStaminaIncreaseRate * 0.5f) * 0.1f);
-			if (IsLocallyControlled())
-			{
-				UpdateCombineStaminaWidget(CurrentCombineStamina);
-			}
-			else
-			{
-				ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
-			}
-			return;
+			UpdateCombineStaminaWidget(CurrentCombineStamina);
 		}
+		else
+		{
+			ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
+		}
+		return;
 	}
 
 	//이거는 호출되는 변수들의 변경은 있으나 구조는 똑같음.
 	CurrentCombineStamina = FMath::Max(0.0f, CurrentCombineStamina - CombineStaminaDecreaseRate * 0.1f);
-
 
 	if (IsLocallyControlled())
 	{
@@ -2426,24 +2419,6 @@ bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 {
 
-	//if (HasAuthority())
-	//{
-	//	UnequipWeapon_Internal();
-	//	// 시제가 아니면 무기 안 들게
-	//	ApplyWeaponVisualFromItem(FItemDetails()); 
-	//	//MultiEquipWeaponFromSlot(FItemDetails());
-	//}
-	//else
-	//{
-	//	ServerUnequipWeapon();
-	//	ServerApplyWeaponVisualFromItem(FItemDetails());
-	//}
-
-	/*if (CharacterChoice != ELSCharacterChoice::SiJae)
-	{
-		return;
-	}*/
-
 	const int32 SlotIndex = SelectedSlot;
 
 	if (!ItemInfoArray.IsValidIndex(SlotIndex))
@@ -2456,13 +2431,11 @@ void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 	{
 		if (HasAuthority())
 		{
-			//UnequipWeapon_Internal();
 			MultiApplyWeaponVisualFromItem(Info); 
-			//MultiEquipWeaponFromSlot(Info);
+			
 		}
 		else
 		{
-			//ServerUnequipWeapon();
 			ServerApplyWeaponVisualFromItem(Info);
 		}
 		return;
@@ -2470,233 +2443,20 @@ void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 
 	if (HasAuthority())
 	{
-		
-		//EquipWeaponFromSlot_Internal(SlotIndex);  
+		 
 		MultiApplyWeaponVisualFromItem(Info);          
-		//MultiEquipWeaponFromSlot(Info);           
+		     
 	}
 	else
 	{
-		//ServerEquipWeaponFromSlot(SlotIndex);
 		ServerApplyWeaponVisualFromItem(Info);
 	}
-
-
-	//if (CharacterChoice != ELSCharacterChoice::SiJae)
-	//{
-	//	// 혹시 손에 들고 있던 무기가 있다면 내려놓기
-	//	if (HasAuthority())
-	//	{
-	//		UnequipWeapon_Internal();
-	//	}
-	//	else
-	//	{
-	//		ServerUnequipWeapon();
-	//	}
-	//	return;
-	//}
-
-	//const int32 SlotIndex = SelectedSlot;
-
-	//if (!ItemInfoArray.IsValidIndex(SlotIndex))
-	//	return;
-
-	//const FItemDetails& Info = ItemInfoArray[SlotIndex];
-
-	////슬롯이 비었거나 무기가 아님
-	//if (Info.IsEmpty || !Info.IsWeapon)
-	//{
-	//	if (HasAuthority())
-	//	{
-	//		UnequipWeapon_Internal();
-	//	}
-	//	else
-	//	{
-	//		ServerUnequipWeapon();
-	//	}
-	//	return;
-	//}
-
-	//// 무기면 손에 붙임
-	//if (HasAuthority())
-	//{
-	//	EquipWeaponFromSlot_Internal(SlotIndex);
-
-
-	//}
-	//else
-	//{
-	//	ServerEquipWeaponFromSlot(SlotIndex);
-	//}
-
 	
 }
 
-void ALSPlayer::EquipWeaponFromSlot_Internal(int32 SlotIndex)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("Attach Weapon to Socket: %s"), *WeaponSocketName.ToString());
-
-	//if (!HasAuthority())
-	//{
-	//	return;
-	//}
-
-	//if (!ItemInfoArray.IsValidIndex(SlotIndex))
-	//	return;
-
-	//const FItemDetails& Info = ItemInfoArray[SlotIndex];
-
-	//if (Info.IsEmpty || !Info.IsWeapon || !Info.Item_Class)
-	//	return;
-
-	//// 이미 무기가 장착돼 있다면 먼저 제거
-	//UnequipWeapon_Internal();
-
-	//FActorSpawnParameters SpawnParams;
-	//SpawnParams.Owner = this;
-	//SpawnParams.Instigator = this;
-
-	//// 서버에서 무기 액터 스폰
-	//AMasterItem* NewWeapon = GetWorld()->SpawnActor<AMasterItem>(
-	//	Info.Item_Class,
-	//	FVector::ZeroVector,
-	//	FRotator::ZeroRotator,
-	//	SpawnParams
-	//);
-
-	//if (!NewWeapon)
-	//	return;
-	//----
-	////물리, 충돌 끄기
-	//if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(NewWeapon->GetRootComponent()))
-	//{
-	//	Prim->SetSimulatePhysics(false);
-	//	Prim->SetEnableGravity(false);
-	//}
-	//NewWeapon->SetActorEnableCollision(false);
-
-	//// 손 소켓에 부착
-	//if (USkeletalMeshComponent* MeshComp = GetMesh())
-	//{
-	//	NewWeapon->AttachToComponent(
-	//		MeshComp,
-	//		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-	//		WeaponSocketName
-	//	);
-	//}
-
-
-	//NewWeapon->SetReplicates(true);           
-	//NewWeapon->SetReplicateMovement(false);   
 
 
 
-	// ★ 모든 PrimitiveComponent에 대해 물리 / 콜리전 완전 OFF
-	//TArray<UPrimitiveComponent*> PrimComponents;
-	//NewWeapon->GetComponents<UPrimitiveComponent>(PrimComponents);
-
-	//for (UPrimitiveComponent* Prim : PrimComponents)
-	//{
-	//	if (!Prim) continue;
-
-	//	Prim->SetSimulatePhysics(false);
-	//	Prim->SetEnableGravity(false);
-	//	Prim->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//}
-
-	//NewWeapon->SetActorEnableCollision(false);
-
-	//// 레플리케이션도 장착용은 최대한 단순하게
-	//NewWeapon->SetReplicates(true);
-	//NewWeapon->SetReplicateMovement(false); // 캐릭터에 붙어서만 움직이므로 굳이 필요 없음
-
-	//if (USkeletalMeshComponent* MeshComp = GetMesh())
-	//{
-	//	NewWeapon->AttachToComponent(
-	//		MeshComp,
-	//		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-	//		WeaponSocketName
-	//	);
-	//}
-
-
-
-	//EquippedWeapon = NewWeapon;
-
-	//
-	//if (!ItemInfoArray.IsValidIndex(SlotIndex))
-	//	return;
-
-	//const FItemDetails& Info = ItemInfoArray[SlotIndex];
-
-	//// 슬롯이 비었거나 무기가 아니라면 해제
-	//if (Info.IsEmpty || !Info.IsWeapon)
-	//{
-	//	UnequipWeapon_Internal();
-	//	return;
-	//}
-
-	//// 장착용 StaticMesh 가져오기
-	//UStaticMesh* NewMesh = Info.EquippedMesh.LoadSynchronous();
-	//if (!NewMesh || !EquippedWeaponMesh)
-	//{
-	//	UnequipWeapon_Internal();
-	//	return;
-	//}
-
-	//// 기존 장착 클리어
-	//UnequipWeapon_Internal();
-
-	//EquippedWeaponMesh->SetStaticMesh(NewMesh);
-	//EquippedWeaponMesh->SetVisibility(true);
-
-	//
-	//EquippedWeapon = nullptr;
-}
-
-void ALSPlayer::UnequipWeapon_Internal()
-{
-	if (EquippedWeaponMesh)
-	{
-		EquippedWeaponMesh->SetStaticMesh(nullptr);
-		EquippedWeaponMesh->SetVisibility(false);
-	}
-
-
-	//if (EquippedWeapon)
-	//{
-	//	EquippedWeapon->Destroy();
-	//	EquippedWeapon = nullptr;
-	//}
-
-}
-
-
-
-void ALSPlayer::ServerEquipWeaponFromSlot_Implementation(int32 SlotIndex)
-{
-	if (!ItemInfoArray.IsValidIndex(SlotIndex))
-		return;
-
-	const FItemDetails& Info = ItemInfoArray[SlotIndex];
-
-	EquipWeaponFromSlot_Internal(SlotIndex); 
-
-	// 모든 클라에 비주얼 정보 전달
-	MultiEquipWeaponFromSlot(Info);
-	ApplyWeaponVisualFromItem(FItemDetails());
-	//EquipWeaponFromSlot_Internal(SlotIndex);
-}
-
-void ALSPlayer::MultiEquipWeaponFromSlot_Implementation(const FItemDetails& Info)
-{
-	ApplyWeaponVisualFromItem(Info);
-}
-
-void ALSPlayer::ServerUnequipWeapon_Implementation()
-{
-	UnequipWeapon_Internal();
-}
 
 
 
