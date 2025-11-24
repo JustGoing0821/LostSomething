@@ -2279,31 +2279,34 @@ void ALSPlayer::DecreaseCombineStamina()
 
 	if (!HasAuthority() || !bIsCombining) return;
 
-	// 시제 캐릭터의 속도를 체크하여 decrease 할 수 있도록 추가
+	float CheckSpeed = 0.0f;
+
 	if (CharacterChoice == ELSCharacterChoice::SiJae)
 	{
-		float CurrentSpeed = GetVelocity().Size();
+		CheckSpeed = GetVelocity().Size();
+	}
+	else if (PusherSiJaeCharacter)
+	{
+		CheckSpeed = PusherSiJaeCharacter->GetVelocity().Size();
+	}
 
-		// 만일 합체 이후에 움직인 후 가만히 있을 경우 스태미나는 다시 채워짐.
-		// 대신 이때는 스태미나가 채워지는 속도를 느리게 뒀음.
-		if (CurrentSpeed < 10.0f)
+	if (CheckSpeed < 10.0f)
+	{
+		CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + (CombineStaminaIncreaseRate * 0.5f) * 0.1f);
+
+		if (IsLocallyControlled())
 		{
-			CurrentCombineStamina = FMath::Min(MaxCombineStamina, CurrentCombineStamina + (CombineStaminaIncreaseRate * 0.5f) * 0.1f);
-			if (IsLocallyControlled())
-			{
-				UpdateCombineStaminaWidget(CurrentCombineStamina);
-			}
-			else
-			{
-				ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
-			}
-			return;
+			UpdateCombineStaminaWidget(CurrentCombineStamina);
 		}
+		else
+		{
+			ClientRPCUpdateCombineStaminaWidget(CurrentCombineStamina);
+		}
+		return;
 	}
 
 	//이거는 호출되는 변수들의 변경은 있으나 구조는 똑같음.
 	CurrentCombineStamina = FMath::Max(0.0f, CurrentCombineStamina - CombineStaminaDecreaseRate * 0.1f);
-
 
 	if (IsLocallyControlled())
 	{
