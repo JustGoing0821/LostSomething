@@ -8,8 +8,8 @@
 #include "Game/LSNetworkPosition.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Character/Item/LSItemStructures.h"
+#include "Game/LevelType.h"
 #include "LSGameInstance.generated.h"
-
 
 USTRUCT(BlueprintType)
 struct FRoomInfo
@@ -53,9 +53,6 @@ public:
 	int32 SelectedSlot = 0;
 };
 
-
-
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAddRoomInfoDelegate, const FRoomInfo&, RoomInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindingRoomsDelegate, bool, bActive);
 
@@ -79,6 +76,10 @@ public:
 
 	//방 검색 구조체
 	TSharedPtr<FOnlineSessionSearch> RoomSearch;
+
+	ELevelType ChooseLevelName;
+
+	TMap<ELevelType, FString> LevelUrlMap;
 
 	//=============================================
 	//     FUCTIONS
@@ -150,7 +151,13 @@ public:
 protected:
 	TMap<ELSNetworkPosition, ELSCharacterChoice> CharacterChoices;
 
+	//LevelChoose
+public:
+	FORCEINLINE ELevelType GetChooseLevel() { return ChooseLevelName; }
+	FORCEINLINE void SetChooseLevel(ELevelType ChoiceLevel) { ChooseLevelName = ChoiceLevel; }
 
+	UFUNCTION(BlueprintCallable, Category = "Level Config")
+	FString GetUrlByLevelType(ELevelType InLevelType);
 
 	//items
 public:
