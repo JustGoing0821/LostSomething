@@ -2418,6 +2418,10 @@ bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 
 void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 {
+	if (CharacterChoice != ELSCharacterChoice::SiJae)
+	{
+		return;
+	}
 
 	const int32 SlotIndex = SelectedSlot;
 
