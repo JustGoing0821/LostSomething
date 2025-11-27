@@ -13,6 +13,11 @@ ULSGameInstance::ULSGameInstance()
 {
 	CharacterChoices.Add(ELSNetworkPosition::Server, ELSCharacterChoice::None);
 	CharacterChoices.Add(ELSNetworkPosition::Client, ELSCharacterChoice::None);
+
+	LevelUrlMap.Add(ELevelType::NewStart, TEXT("/Game/Stage/LSStageMap1?listen"));
+	LevelUrlMap.Add(ELevelType::Stage1, TEXT("/Game/Stage/LSStageMap2?listen"));
+	LevelUrlMap.Add(ELevelType::Stage2, TEXT("/Game/Map/BossMap?listen"));
+	LevelUrlMap.Add(ELevelType::Stage3, TEXT("/Game/Stage/LSStageMap3?listen"));
 }
 
 void ULSGameInstance::Init()
@@ -139,7 +144,7 @@ void ULSGameInstance::OnMyCreateRoomComplete(FName SessionName, bool bWasSuccess
 		World->GetTimerManager().SetTimer(TimerHandle,
 			[World]() {
 				UE_LOG(LogTemp, Warning, TEXT("ServerTravel PC start"));
-				World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"));
+				World->ServerTravel(TEXT("/Game/Map/WaitingMap?listen"));
 			},
 			3.0f,
 			false);
@@ -328,9 +333,6 @@ void ULSGameInstance::SetCharacterChoices(ELSCharacterChoice ServerChoice, ELSCh
 		CharacterChoices[ELSNetworkPosition::Client] = ClientChoice;
 	}
 }
-
-
-
 
 void ULSGameInstance::SaveInventory(ELSNetworkPosition Position,const TArray<FItemDetails>& Items,int32 InSelectedSlot)
 {
