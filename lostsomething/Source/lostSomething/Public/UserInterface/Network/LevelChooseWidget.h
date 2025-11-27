@@ -21,8 +21,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_ChooseNewStart;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	class UButton* btn_ChooseTutorial;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_ChooseStage1;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_ChooseStage2;
@@ -36,9 +34,6 @@ protected:
 	void OnMyClicked_ChooseNewStart();
 
 	UFUNCTION(BlueprintCallable)
-	void OnMyClicked_ChooseTutorial();
-
-	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_ChooseStage1();
 
 	UFUNCTION(BlueprintCallable)
@@ -46,4 +41,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_ChooseStage3();
+
+	UFUNCTION()
+	void MoveToCharacterChooseMap(ELevelType LevelType);
 };

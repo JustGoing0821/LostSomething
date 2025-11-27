@@ -14,6 +14,11 @@ ALevelChooseMapGameMode::ALevelChooseMapGameMode()
 	}
 }
 
+void ALevelChooseMapGameMode::MoveToCharacterSelect()
+{
+	GetWorld()->ServerTravel("/Game/Maps/CharacterChooseMap?listen");
+}
+
 void ALevelChooseMapGameMode::BeginPlay()
 {
 	if (LevelChooseWidgetClass)

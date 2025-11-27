@@ -13,8 +13,13 @@ UCLASS()
 class LOSTSOMETHING_API ALevelChooseMapGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
+	
 	ALevelChooseMapGameMode();
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void MoveToCharacterSelect();
 
 protected:
 	virtual void BeginPlay() override;

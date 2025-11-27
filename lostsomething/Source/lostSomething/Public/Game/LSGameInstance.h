@@ -153,11 +153,18 @@ protected:
 
 	//LevelChoose
 public:
-	FORCEINLINE ELevelType GetChooseLevel() { return ChooseLevelName; }
-	FORCEINLINE void SetChooseLevel(ELevelType ChoiceLevel) { ChooseLevelName = ChoiceLevel; }
+	FString GetChooseLevelUrl() const
+	{
+		const FString* FoundUrl = LevelUrlMap.Find(ChooseLevelName);
+		if (FoundUrl)
+		{
+			return *FoundUrl;
+		}
 
-	UFUNCTION(BlueprintCallable, Category = "Level Config")
-	FString GetUrlByLevelType(ELevelType InLevelType);
+		UE_LOG(LogTemp, Warning, TEXT("LevelType not found in LevelUrlMap!"));
+		return TEXT("/Game/Maps/DefaultMap?listen"); // ±âº» ¸Ê
+	}
+	FORCEINLINE void SetChooseLevel(ELevelType ChoiceLevel) { ChooseLevelName = ChoiceLevel; }
 
 	//items
 public:

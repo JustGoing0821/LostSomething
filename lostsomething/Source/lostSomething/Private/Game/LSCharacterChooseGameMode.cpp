@@ -90,9 +90,12 @@ void ALSCharacterChooseGameMode::GameStart()
 		if (GameInstance)
 		{
 			GameInstance->SetCharacterChoices(ServerChoice, ClientChoice);
+			FString MapUrl = GameInstance->GetChooseLevelUrl();
+			if (!MapUrl.IsEmpty())
+			{
+				GetWorld()->ServerTravel(MapUrl);
+			}
 		}
-
-		GetWorld()->ServerTravel(TEXT("/Game/Stage/LSStage1Map1"));
 	}
 	else
 	{
