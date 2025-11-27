@@ -24,9 +24,4 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<class ULevelChooseWidget> LevelChooseWidgetClass;
-
-	UPROPERTY()
-	TObjectPtr<class ULevelChooseWidget> LevelChooseWidget;
 };

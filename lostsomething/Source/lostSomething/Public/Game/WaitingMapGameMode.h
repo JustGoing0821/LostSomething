@@ -14,7 +14,10 @@ class LOSTSOMETHING_API AWaitingMapGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+	AWaitingMapGameMode();
+
 public:
+
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 

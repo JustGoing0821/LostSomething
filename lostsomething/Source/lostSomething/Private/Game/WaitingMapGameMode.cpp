@@ -3,6 +3,11 @@
 
 #include "Game/WaitingMapGameMode.h"
 
+AWaitingMapGameMode::AWaitingMapGameMode()
+{
+    bUseSeamlessTravel = false;
+}
+
 void AWaitingMapGameMode::PostLogin(APlayerController* NewPlayer)
 {
 
@@ -39,8 +44,13 @@ void AWaitingMapGameMode::CheckAllPlayersReady()
                 {
                     // 절대 경로 사용 및 에러 로그 방지
                     // bAbsolute = false (상대 경로), bShouldSkipGameNotify = false
-                    World->ServerTravel(TEXT("/Game/Maps/LevelChooseMap?listen"), true, false);
+                    bool bResult = World->ServerTravel(TEXT("/Game/Map/LevelChooseMap?listen"), true, false);
+
+                    if (!bResult)
+                    {
+                        UE_LOG(LogTemp, Error, TEXT("ServerTravel Failed!"));
+                    }
                 }
-            }, 2.0f, false);
+            }, 1.0f, false);
     }
 }
