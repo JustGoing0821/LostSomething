@@ -256,10 +256,12 @@ void ALSVendingMachine::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEn
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
+		MulticastRPCLSSetMapIcon(true);
 	}
 	else
 	{
 		MulticastRPCPuzzleDeactivate();
+		MulticastRPCLSSetMapIcon(false);
 	}
 }
 

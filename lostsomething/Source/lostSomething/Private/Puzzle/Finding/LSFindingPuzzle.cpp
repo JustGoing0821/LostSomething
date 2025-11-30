@@ -335,10 +335,12 @@ void ALSFindingPuzzle::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnu
 	if (InQuestEnum== PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
+		MulticastRPCLSSetMapIcon(true);
 	}
 	else
 	{
 		MulticastRPCPuzzleDeactivate();
+		MulticastRPCLSSetMapIcon(false);
 	}
 }
 

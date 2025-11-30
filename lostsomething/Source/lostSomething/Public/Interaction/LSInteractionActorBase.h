@@ -54,8 +54,17 @@ protected:
 	virtual void SetVisibleSiJae() {};
 	virtual void SetVisibleIJae() {};
 
+
+//Map Section
+	UFUNCTION(BlueprintImplementableEvent, Category = "LSMap")
+	void LSSetMapIcon(bool bIsMapIconView);
+
+
 //RPC Section
 public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCChangeVisible();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCLSSetMapIcon(bool bIsMapIconView);
 };

@@ -224,3 +224,8 @@ void ALSInteractionActorBase::MulticastRPCChangeVisible_Implementation()
 	ChangeVisible();
 }
 
+void ALSInteractionActorBase::MulticastRPCLSSetMapIcon_Implementation(bool bIsMapIconView)
+{
+	LSSetMapIcon(bIsMapIconView);
+}
+
