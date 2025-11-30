@@ -557,7 +557,7 @@ public:
 
 protected:
 	//Main
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	uint8 bIsCombining : 1;
 
 	UPROPERTY(Replicated)
