@@ -562,7 +562,7 @@ void ALSPlayer::PerformLineTrace()
 			{
 				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 				TickDectectResultColor = FColor::Black;
-				AimScript = "+";
+				AimScript = "";
 				CurrentDectectActor = nullptr;
 			}
 		}
@@ -570,7 +570,7 @@ void ALSPlayer::PerformLineTrace()
 		{
 			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 			TickDectectResultColor = FColor::Red;
-			AimScript = "+";
+			AimScript = "";
 			CurrentDectectActor = nullptr;
 
 		}
