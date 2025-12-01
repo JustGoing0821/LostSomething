@@ -15,6 +15,15 @@ enum class ETrainState : uint8
 	Leaving
 };
 
+UENUM(BlueprintType)
+enum class ETrainSoundState : uint8
+{
+	Arrive = 0,
+	GetOff,
+	StopGetOff,
+	Leave
+};
+
 DECLARE_MULTICAST_DELEGATE(FOnTrainArrivedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnTrainClosedDelegate);
 
@@ -137,7 +146,7 @@ protected:
 	void GetOnPassengers();
 
 
-	//Timer
+//Timer
 	FTimerHandle TrainTimerHandle;
 
 	UPROPERTY(EditAnywhere, Category="Puzzle")
@@ -148,6 +157,20 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Puzzle")
 	float TimeBeforeTrainLeave;
+
+
+//Sound Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> TrainArriveAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> GetOffAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> TrainLeaveAudioComponent;
+
+	void PlayTrainAudioComponent(ETrainSoundState InTrainSoundState);
 
 
 //Replicate
@@ -164,4 +187,6 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCLeaveTrain();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCPlayTrainAudioComponent(ETrainSoundState InTrainSoundState);
 };

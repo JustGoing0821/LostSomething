@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -133,6 +134,7 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 
 void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
+	//Script
 	TArray<FString> ScriptArray;
 	FString Script = "";
 	ScriptArray = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
@@ -165,6 +167,38 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 		ScriptController->UpdateScriptWidget(Script);
 	}
 
+
+	//Audio
+	if (bisCorrectMachine)
+	{
+		if (CorrectAudioComponent)
+		{
+			CorrectAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
+	else
+	{
+		if (WrongAudioComponent)
+		{
+			WrongAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
+
+
+	//Puzzle
+	if ((CurrentQuest == ELSInteractionEnum::Quest6)&&!bisPhaseStart)
+	{
+		return;
+	}
+
 	if (HasAuthority())
 	{
 		PuzzleCheck();
@@ -177,9 +211,10 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 
 void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerController)
 {
+	//Script
 	TArray<FString> ScriptArray;
 	FString Script = "";
-	ScriptArray = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest);
+	ScriptArray = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest);
 	if (ScriptArray.Num() == 0)
 	{
 		Script = "Failed to load Script";
@@ -215,6 +250,31 @@ void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerContro
 	if (ScriptController)
 	{
 		ScriptController->UpdateScriptWidget(Script);
+	}
+
+
+	//Audio
+	if (bisCorrectMachine)
+	{
+		if (BaseAudioComponent)
+		{
+			BaseAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
+	else
+	{
+		if (BaseAudioComponent)
+		{
+			BaseAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
 	}
 }
 
@@ -256,10 +316,12 @@ void ALSVendingMachine::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEn
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
+		MulticastRPCLSSetMapIcon(true);
 	}
 	else
 	{
 		MulticastRPCPuzzleDeactivate();
+		MulticastRPCLSSetMapIcon(false);
 	}
 }
 

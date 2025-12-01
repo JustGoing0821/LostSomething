@@ -11,6 +11,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "Components/AudioComponent.h"
 #include "Quest/LSQuestManager.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Interaction/LSInteractionScriptData.h"
@@ -222,6 +223,8 @@ void ALSFindingPuzzle::InteractionProcessSiJae(APlayerController* InPlayerContro
 		ServerRPCPuzzleCheck();
 	}
 
+
+	//Script
 	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
 	FString Script = "";
 
@@ -235,6 +238,31 @@ void ALSFindingPuzzle::InteractionProcessSiJae(APlayerController* InPlayerContro
 	}
 
 	ScriptController->UpdateScriptWidget(Script);
+
+
+	//Audio
+	if (bIsCorrectPuzzle)
+	{
+		if (CorrectAudioComponent)
+		{
+			CorrectAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
+	else
+	{
+		if (WrongAudioComponent)
+		{
+			WrongAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
 }
 
 void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerController)
@@ -252,6 +280,31 @@ void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerControl
 	}
 
 	ScriptController->UpdateScriptWidget(Script);
+
+
+	//Audio
+	if (bIsCorrectPuzzle)
+	{
+		if (BaseAudioComponent)
+		{
+			BaseAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
+	else
+	{
+		if (BaseAudioComponent)
+		{
+			BaseAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No Audio Component!!"));
+		}
+	}
 }
 
 void ALSFindingPuzzle::SetVisibleSiJae()
@@ -335,10 +388,12 @@ void ALSFindingPuzzle::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnu
 	if (InQuestEnum== PuzzleActivateEnum)
 	{
 		MulticastRPCPuzzleActivate();
+		MulticastRPCLSSetMapIcon(true);
 	}
 	else
 	{
 		MulticastRPCPuzzleDeactivate();
+		MulticastRPCLSSetMapIcon(false);
 	}
 }
 

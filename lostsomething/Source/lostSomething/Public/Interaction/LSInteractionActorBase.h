@@ -54,8 +54,31 @@ protected:
 	virtual void SetVisibleSiJae() {};
 	virtual void SetVisibleIJae() {};
 
+
+//Map Section
+protected:
+	UFUNCTION(BlueprintImplementableEvent, Category = "LSMap")
+	void LSSetMapIcon(bool bIsMapIconView);
+
+
+//Sound Effect
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> BaseAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> CorrectAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> WrongAudioComponent;
+
+
+
 //RPC Section
 public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCChangeVisible();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCLSSetMapIcon(bool bIsMapIconView);
 };
