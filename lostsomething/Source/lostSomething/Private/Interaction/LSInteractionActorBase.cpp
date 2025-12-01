@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
+#include "Components/AudioComponent.h"
 #include "Interaction/LSInteractionScriptData.h"
 #include "Engine/AssetManager.h"
 #include "Game/LSGameMode.h"
@@ -20,6 +21,14 @@ ALSInteractionActorBase::ALSInteractionActorBase()
 	//Script Asset
 	ScriptAssetNameSiJae = FName(TEXT("LSInteractionBase"));
 	ScriptAssetNameIJae = FName(TEXT("LSInteractionBase"));
+
+
+	BaseAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("BaseAudioComponent"));
+	CorrectAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("CorrectAudioComponent"));
+	WrongAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("WrongAudioComponent"));
+	BaseAudioComponent->SetAutoActivate(false);
+	CorrectAudioComponent->SetAutoActivate(false);
+	WrongAudioComponent->SetAutoActivate(false);
 
 	//Interaction
 	CurrentQuest = ELSInteractionEnum::Quest1;

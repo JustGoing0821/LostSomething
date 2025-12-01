@@ -56,8 +56,22 @@ protected:
 
 
 //Map Section
+protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "LSMap")
 	void LSSetMapIcon(bool bIsMapIconView);
+
+
+//Sound Effect
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> BaseAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> CorrectAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> WrongAudioComponent;
+
 
 
 //RPC Section

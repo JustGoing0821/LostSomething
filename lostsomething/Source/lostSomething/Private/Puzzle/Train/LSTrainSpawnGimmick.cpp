@@ -118,7 +118,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 
 	//Puzzle
 	CorrectGate = -1;
-	CorrectPeopleCount = 1;// 2;
+	CorrectPeopleCount = 2;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest7;
 	DamageAmount = 10.f;
 }
@@ -153,14 +153,25 @@ void ALSTrainSpawnGimmick::BeginPlay()
 
 void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ALSTrain* OverlapEndActor = Cast<ALSTrain>(OtherActor);
-	if (OverlapEndActor)
+	if (HasAuthority())
 	{
-		OverlapEndActor->Destroy();
-		CurrentState = ETrainSpawnState::Despawned;
-		//OnTrainDespawned.ExecuteIfBound();
-		SpawnTrain();
-		//LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
+		ALSTrain* OverlapEndActor = Cast<ALSTrain>(OtherActor);
+		if (OverlapEndActor)
+		{
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+				{
+					if (IsValid(OverlapEndActor))
+					{
+						OverlapEndActor->Destroy();
+					}
+					CurrentState = ETrainSpawnState::Despawned;
+					//OnTrainDespawned.ExecuteIfBound();
+					SpawnTrain();
+					//LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
+				}
+			), 2.0f, false);
+		}
 	}
 }
 
@@ -195,7 +206,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 	{
 		CurrentState = ETrainSpawnState::Spawned;
 
-		CorrectGate = 6;//FMath::RandRange(1, 6);
+		CorrectGate = FMath::RandRange(1, 6);
 		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
 		float DelayTime = FMath::FRandRange(3.f, 6.f);
@@ -206,7 +217,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 			{
-				FVector SpawnLocation = FVector(-1500.0f, -290.0f, -6.2f);
+				FVector SpawnLocation = FVector(1000.0f, -290.0f, -6.2f);
 				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
 				AActor* OpponentTrain = GetWorld()->SpawnActor(TrainClass, &SpawnLocation, &SpawnRotation);
 
@@ -362,3 +373,5 @@ void ALSTrainSpawnGimmick::MulticastRPCPuzzleActivate_Implementation()
 {
 	PuzzleActivate();
 }
+
+

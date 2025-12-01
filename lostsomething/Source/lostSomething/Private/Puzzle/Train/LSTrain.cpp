@@ -4,6 +4,7 @@
 #include "Puzzle/Train/LSTrain.h"
 #include "lostSomething.h"
 #include "Components/BoxComponent.h"
+#include "Components/AudioComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
 
@@ -20,7 +21,7 @@ ALSTrain::ALSTrain()
 
 	// Moving Location
 	WaitLocation = FVector(3586.0f, -290.0f, -6.2f);
-	LeaveLocation = FVector(15000.0f, -290.0f, -6.2f);
+	LeaveLocation = FVector(8000.0f, -290.0f, -6.2f);
 
 	//Root Component
 	SharedRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SharedRoot"));
@@ -138,9 +139,17 @@ ALSTrain::ALSTrain()
 		RightSideCrowdLocation += FVector(0, -400.f, 0);
 	}
 
-	TimeBeforeGateOpen = 3.0f;
+	//Sound
+	TrainArriveAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("TrainArriveAudioComponent"));
+	GetOffAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("GetOffAudioComponent"));
+	TrainLeaveAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("TrainLeaveAudioComponent"));
+	TrainArriveAudioComponent->SetAutoActivate(true);
+	GetOffAudioComponent->SetAutoActivate(false);
+	TrainLeaveAudioComponent->SetAutoActivate(false);
+
+	TimeBeforeGateOpen = 4.0f;
 	TimeTrainWait = 0.0f;
-	TimeBeforeTrainLeave = 1.0f;
+	TimeBeforeTrainLeave = 4.0f;
 	bisPassengersGettingOff = false;
 }
 
@@ -347,6 +356,11 @@ void ALSTrain::PuzzleCheck(bool bCorrect, int32 InCorrectGate)
 
 void ALSTrain::GetOffPassengers()
 {
+	if (HasAuthority())
+	{
+		MulticastRPCPlayTrainAudioComponent(ETrainSoundState::GetOff);
+	}
+
 	if (bisGateLeftSide)
 	{
 		for (int32 Num = 0; Num < LeftSideDoorLs.Num(); Num++)
@@ -432,8 +446,68 @@ void ALSTrain::StopTrain()
 
 void ALSTrain::LeaveTrain()
 {
+	if (HasAuthority())
+	{
+		MulticastRPCPlayTrainAudioComponent(ETrainSoundState::StopGetOff);
+
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				MulticastRPCPlayTrainAudioComponent(ETrainSoundState::Leave);
+			}
+		), TimeBeforeTrainLeave*0.9, false);
+	}
+
 	GetOnPassengers();
 	GateClose();
+}
+
+void ALSTrain::PlayTrainAudioComponent(ETrainSoundState InTrainSoundState)
+{
+	if (InTrainSoundState == ETrainSoundState::Arrive)
+	{
+		if (TrainArriveAudioComponent)
+		{
+			TrainArriveAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No TrainArriveAudioComponent!"));
+		}
+	}
+	else if (InTrainSoundState == ETrainSoundState::GetOff)
+	{
+		if (GetOffAudioComponent)
+		{
+			GetOffAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No GetOffAudioComponent!"));
+		}
+	}
+	else if (InTrainSoundState == ETrainSoundState::StopGetOff)
+	{
+		if (GetOffAudioComponent)
+		{
+			GetOffAudioComponent->FadeOut(1.0f, 0.0f);
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No GetOffAudioComponent!"));
+		}
+	}
+	else
+	{
+		if (TrainLeaveAudioComponent)
+		{
+			TrainLeaveAudioComponent->Play();
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No TrainLeaveAudioComponent!"));
+		}
+	}
 }
 
 void ALSTrain::MulticastRPCGateOpen_Implementation()
@@ -454,4 +528,9 @@ void ALSTrain::MulticastRPCStopTrain_Implementation()
 void ALSTrain::MulticastRPCLeaveTrain_Implementation()
 {
 	LeaveTrain();
+}
+
+void ALSTrain::MulticastRPCPlayTrainAudioComponent_Implementation(ETrainSoundState InTrainSoundState)
+{
+	PlayTrainAudioComponent(InTrainSoundState);
 }
