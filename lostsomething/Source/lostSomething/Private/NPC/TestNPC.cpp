@@ -264,6 +264,7 @@ void ATestNPC::MultiDespawn_Implementation()
 		}
 	}
 
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
 	if (!NPCAnimInstance || !NPCAnimInstance->DespawnMontage) return;
