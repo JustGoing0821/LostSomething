@@ -562,7 +562,7 @@ void ALSPlayer::PerformLineTrace()
 			{
 				RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 				TickDectectResultColor = FColor::Black;
-				AimScript = "+";
+				AimScript = "";
 				CurrentDectectActor = nullptr;
 			}
 		}
@@ -570,7 +570,7 @@ void ALSPlayer::PerformLineTrace()
 		{
 			RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 			TickDectectResultColor = FColor::Red;
-			AimScript = "+";
+			AimScript = "";
 			CurrentDectectActor = nullptr;
 
 		}
@@ -1173,6 +1173,7 @@ void ALSPlayer::DropItemFromSlot()
 								//위로 조금 띄워서 자연스럽게
 								DropItemLoc->GetComponentLocation() + FVector(0, 0, 20.f),
 								DropItemLoc->GetComponentRotation()
+
 							);
 
 							RefreshWeaponEquipFromCurrentSlot();
@@ -1187,6 +1188,8 @@ void ALSPlayer::DropItemFromSlot()
 								}
 							}
 
+							RefreshWeaponEquipFromCurrentSlot();
+
 							// Set Array Element: 해당 슬롯을 빈 상태로 만들기
 							FItemDetails EmptySlot;
 							EmptySlot.IsEmpty = true;
@@ -1200,7 +1203,7 @@ void ALSPlayer::DropItemFromSlot()
 							// Set Icon: HUD의 아이콘도 비우기 (Empty Item의 아이콘 = nullptr)
 							UTexture2D* EmptyIcon = nullptr; // Empty Item의 Item Icon
 							HUD->SetIcon(CurrentSelectedSlot, EmptyIcon);
-
+							RefreshWeaponEquipFromCurrentSlot();
 							//RefreshWeaponEquipFromCurrentSlot();
 							// 서버 : 클라이언트 것도 삭제
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
