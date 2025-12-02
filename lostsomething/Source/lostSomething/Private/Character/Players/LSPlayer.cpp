@@ -2539,6 +2539,9 @@ void ALSPlayer::ApplyCombineVisual(bool bCombined)
 		return;
 	}
 
+	if (PusherSiJaeCharacter && this != PusherSiJaeCharacter)
+		return;
+
 	if (bCombined)
 	{
 		GetMesh()->SetVisibility(false);
