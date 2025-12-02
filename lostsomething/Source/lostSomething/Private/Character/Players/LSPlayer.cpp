@@ -157,6 +157,12 @@ ALSPlayer::ALSPlayer()
 
 	//bUseControllerRotationRoll = false;
 
+	CombinedMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CombinedMeshComp"));
+	CombinedMeshComp->SetupAttachment(RootComponent);
+	CombinedMeshComp->SetVisibility(false);
+	CombinedMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -241,6 +247,7 @@ void ALSPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
 	if (MeshComp)
@@ -2384,6 +2391,7 @@ void ALSPlayer::ServerRPCChangeCombineState_Implementation(uint8 InIsCombining)
 void ALSPlayer::MulticastRPCApplyCombineState_Implementation()
 {
 	ApplyCombineState();
+	ApplyCombineVisual(bIsCombining);
 }
 
 void ALSPlayer::ClientRPCUpdateCombineStaminaWidget_Implementation(float InCurrentStemina)
@@ -2517,3 +2525,32 @@ void ALSPlayer::ServerApplyWeaponVisualFromItem_Implementation(const FItemDetail
 {
 	MultiApplyWeaponVisualFromItem(Info);
 }
+
+
+
+//합체 껐다키기
+void ALSPlayer::ApplyCombineVisual(bool bCombined)
+{
+	if (!GetMesh() || !CombinedMeshComp)
+		return;
+
+	if (CharacterChoice != ELSCharacterChoice::SiJae)
+	{
+		return;
+	}
+
+	if (bCombined)
+	{
+		GetMesh()->SetVisibility(false);
+		CombinedMeshComp->SetVisibility(true);
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		CombinedMeshComp->SetVisibility(false);
+	}
+}
+
+
+
+
