@@ -160,6 +160,8 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 			}
 
 			//Quest Widget Update Bind
+			QuestManager->OnQuestClearWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestClear);
+			QuestManager->OnQuestStartWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestStart);
 			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
 		}
 	}
@@ -310,6 +312,8 @@ void ALSGameMode::TestLoginProcess(APlayerController* ResultController)
 	}
 
 	// 3. 퀘스트 위젯 업데이트 함수 바인딩
+	QuestManager->OnQuestClearWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestClear);
+	QuestManager->OnQuestStartWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestStart);
 	QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
 }
 

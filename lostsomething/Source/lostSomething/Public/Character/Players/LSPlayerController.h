@@ -199,6 +199,8 @@ protected:
 	TObjectPtr<class ULSQuestWidget> QuestWidget;
 
 public:
+	void CallQuestClear();
+	void CallQuestStart(FLSQuestData InQuestData);
 	void UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum);
 
 
@@ -283,4 +285,10 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCStopKeyInput();
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCCallQuestClear();
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCCallQuestStart(FLSQuestData InQuestData);
 };

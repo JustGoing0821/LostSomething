@@ -5,18 +5,22 @@
 #include "Components/ProgressBar.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 
 void ULSHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::NativeConstruct() Called"));
+    //UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::NativeConstruct() Called"));
 
     // 초기 슬롯 색상 설정
     UpdateSlotBorderColors(0);
 
 	TxtAim = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_aim")));
 	ensure(TxtAim);
+
+	ImgAim = Cast<UImage>(GetWidgetFromName(TEXT("img_aim")));
+	ensure(ImgAim);
 
 	if (StaminaBar)
 	{
@@ -30,7 +34,7 @@ void ULSHUDWidget::UpdateHpBar(float NewHp)
     {
         const float Percent = NewHp / 100.0f;
         PbHpBar->SetPercent(Percent);
-        UE_LOG(LogTemp, Warning, TEXT("hud : HpBar updated: %.1f%%"), Percent * 100.0f);
+        //UE_LOG(LogTemp, Warning, TEXT("hud : HpBar updated: %.1f%%"), Percent * 100.0f);
     }
     else
     {
@@ -64,19 +68,14 @@ void ULSHUDWidget::UpdateSlotBorderColors(int32 NewSelectedSlot)
 	SetSlotBorderColor(SlotToSelect, SelectedSlotColor);
 
 
-	UE_LOG(LogTemp, Warning, TEXT("Slot border colors updated. Selected slot: %d"), SelectedSlot);
-
-	
-	
-
-
+	//UE_LOG(LogTemp, Warning, TEXT("Slot border colors updated. Selected slot: %d"), SelectedSlot);
 }
 
 
 
 void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::SetIcon() called - Slot: %d"), CurrentSlot);
+	//UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::SetIcon() called - Slot: %d"), CurrentSlot);
 
 	UImage* TargetSlotIcon = nullptr;
 
@@ -111,7 +110,7 @@ void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 			// 유효한 아이콘이 있을 때 - 아이템 아이콘 표시
 			TargetSlotIcon->SetBrushFromTexture(ItemIcon, true);
 			TargetSlotIcon->SetVisibility(ESlateVisibility::Visible);
-			UE_LOG(LogTemp, Warning, TEXT("Item icon set for slot %d"), CurrentSlot);
+			//UE_LOG(LogTemp, Warning, TEXT("Item icon set for slot %d"), CurrentSlot);
 		}
 		else
 		{
@@ -121,14 +120,14 @@ void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 			{
 				TargetSlotIcon->SetBrushFromTexture(BlankIcon, true);
 				TargetSlotIcon->SetVisibility(ESlateVisibility::Visible);
-				UE_LOG(LogTemp, Warning, TEXT("Default icon set for slot %d"), CurrentSlot);
+				//UE_LOG(LogTemp, Warning, TEXT("Default icon set for slot %d"), CurrentSlot);
 			}
 			else
 			{
 				
 				TargetSlotIcon->SetBrushFromTexture(nullptr, true);
 				TargetSlotIcon->SetVisibility(ESlateVisibility::Hidden);
-				UE_LOG(LogTemp, Warning, TEXT("Slot %d hidden (no default icon)"), CurrentSlot);
+				//UE_LOG(LogTemp, Warning, TEXT("Slot %d hidden (no default icon)"), CurrentSlot);
 			}
 		}
 	}
@@ -161,7 +160,7 @@ void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color
 		TargetBorder = SlotBorder_4;
 		break;
 	default:
-		UE_LOG(LogTemp, Warning, TEXT("Invalid slot index: %d"), SlotIndex);
+		//UE_LOG(LogTemp, Warning, TEXT("Invalid slot index: %d"), SlotIndex);
 		return;
 	}
 
@@ -169,7 +168,7 @@ void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color
 	if (TargetBorder)
 	{
 		TargetBorder->SetBrushColor(Color);
-		UE_LOG(LogTemp, Log, TEXT("Set slot %d border color"), SlotIndex);
+		//UE_LOG(LogTemp, Log, TEXT("Set slot %d border color"), SlotIndex);
 	}
 	else
 	{
@@ -182,6 +181,21 @@ void ULSHUDWidget::UpdateAim(const FString& InString)
 	if (TxtAim)
 	{
 		TxtAim->SetText(FText::FromString(InString));
+	}
+
+	if (InString.Len() > 0)
+	{
+		if (ImgAim)
+		{
+			ImgAim->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	else
+	{
+		if (ImgAim)
+		{
+			ImgAim->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
 }
 
@@ -201,7 +215,7 @@ void ULSHUDWidget::UpdateStaminaBar(float CurrentStamina, float MaxStamina)
 			StaminaBar->SetFillColorAndOpacity(DefaultBarColor);
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("Stamina UI updated: %.1f/%.1f"), CurrentStamina, MaxStamina);
+		//UE_LOG(LogTemp, Log, TEXT("Stamina UI updated: %.1f/%.1f"), CurrentStamina, MaxStamina);
 	}
 }
 
