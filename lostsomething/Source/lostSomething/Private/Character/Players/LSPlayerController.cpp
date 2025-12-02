@@ -302,6 +302,38 @@ void ALSPlayerController::HideDeathWidget()
 	}
 }
 
+void ALSPlayerController::CallQuestClear()
+{
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	
+	if (IsLocalController())
+	{
+		QuestWidget->CallQuestClear();
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+	}
+	else
+	{
+		ClientRPCCallQuestClear();
+		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
+	}
+}
+
+void ALSPlayerController::CallQuestStart(FLSQuestData InQuestData)
+{
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (IsLocalController())
+	{
+		QuestWidget->CallQuestStart(InQuestData);
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+	}
+	else
+	{
+		ClientRPCCallQuestStart(InQuestData);
+		//LS_LOG(LogLS, Log, TEXT("%s ClientRPCUpdateQuestWidget called"), *EnumString);
+	}
+}
+
 void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInteractionEnum InInteractionEnum)
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
@@ -783,5 +815,29 @@ void ALSPlayerController::ClientReceiveChatMessage_Implementation(const FString&
 	if (ChatWidget)
 	{
 		ChatWidget->AddChatLine(Sender, Text);
+	}
+}
+
+void ALSPlayerController::ClientRPCCallQuestClear_Implementation()
+{
+	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (this->IsLocalController())
+	{
+		QuestWidget->CallQuestClear();
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+	}
+}
+
+void ALSPlayerController::ClientRPCCallQuestStart_Implementation(FLSQuestData InQuestData)
+{
+	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	if (this->IsLocalController())
+	{
+		QuestWidget->CallQuestStart(InQuestData);
+		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }
