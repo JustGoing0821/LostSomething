@@ -162,7 +162,7 @@ public:
 		}
 
 		UE_LOG(LogTemp, Warning, TEXT("LevelType not found in LevelUrlMap!"));
-		return TEXT("/Game/Maps/DefaultMap?listen"); // ±âº» ¸Ê
+		return TEXT("/Game/Maps/LobbyMap?listen"); // ±âº» ¸Ê
 	}
 	FORCEINLINE void SetChooseLevel(ELevelType ChoiceLevel) { ChooseLevelName = ChoiceLevel; }
 
