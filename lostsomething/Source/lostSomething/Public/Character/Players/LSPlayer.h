@@ -423,6 +423,9 @@ public:
 
 	void ApplyWeaponVisualFromItem(const FItemDetails& Info);
 
+	//합체메시
+	void ApplyCombineVisual(bool bCombined);
+
 	UFUNCTION(Server, Reliable)
 	void ServerApplyWeaponVisualFromItem(const FItemDetails& Info);
 
@@ -612,6 +615,11 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCUpdateCombineStaminaWidget(float InCurrentStemina);
 
+
+
+	// 합체 메시 갈아끼우기
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* CombinedMeshComp;
 
 
 /*******************
