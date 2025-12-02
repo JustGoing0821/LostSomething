@@ -11,6 +11,8 @@
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnQuestStartDelegate, FLSQuestData /*CurrentQuestData*/, ELSInteractionEnum /*CurrentQuestEnum*/);
 DECLARE_MULTICAST_DELEGATE(FOnQuestCompleteDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionChangeDelegate, ELSInteractionEnum /*CurrentQuestEnum*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnQuestStartWidgetDelegate, FLSQuestData /*CurrentQuestData*/);
+DECLARE_MULTICAST_DELEGATE(FOnQuestClearWidgetDelegate);
 
 
 UCLASS()
@@ -31,6 +33,8 @@ public:
 	FOnQuestStartDelegate OnQuestStart;
 	FOnQuestCompleteDelegate OnQuestComplete;
 	FOnInteractionChangeDelegate OnInteractionChange;
+	FOnQuestStartWidgetDelegate OnQuestStartWidget;
+	FOnQuestClearWidgetDelegate OnQuestClearWidget;
 
 	UFUNCTION(BlueprintCallable, Category = "Quest")
 	FORCEINLINE FLSQuestData GetCurrentQuest() const { return CurrentQuestData; }
@@ -38,6 +42,7 @@ public:
 
 	void QuestStart();
 	void QuestComplete();
+	void CallQuestStartWidget();
 
 protected:
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))

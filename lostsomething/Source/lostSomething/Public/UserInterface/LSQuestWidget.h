@@ -23,6 +23,8 @@ protected:
 
 public:
 	void UpdateQuestWidget(struct FLSQuestData InQuestData);
+	void CallQuestClear();
+	void CallQuestStart(struct FLSQuestData InQuestData);
 
 protected:
 	UPROPERTY()
@@ -30,4 +32,13 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> Description;
+
+	UPROPERTY()
+	TObjectPtr<class UImage> QuestClear;
+
+	UPROPERTY()
+	TObjectPtr<class UCanvasPanel> QuestStart;
+
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> QuestStartDescription;
 };
