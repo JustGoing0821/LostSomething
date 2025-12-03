@@ -19,6 +19,7 @@ void ALSQuestManager::BeginPlay()
 
 void ALSQuestManager::QuestStart()
 {
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	int32 CurrentQuestIndex = 0;
@@ -38,6 +39,8 @@ void ALSQuestManager::QuestStart()
 
 void ALSQuestManager::QuestComplete()
 {
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
 	int32 QuestMaxLevel=0;
 	ULSGameSingleton& GameSingleton = ULSGameSingleton::Get();
 	QuestMaxLevel = GameSingleton.QuestMaxLevelIndex;
@@ -47,17 +50,38 @@ void ALSQuestManager::QuestComplete()
 	if (GameInstance)
 	{
 		CurrentQuestIndex = GameInstance->GetCurrentQuestIndex();
+
+		if (CurrentQuestData.QuestName.Len() >0)
+		{
+			OnQuestClearWidget.Broadcast();
+		}
+
 		if (CurrentQuestIndex < QuestMaxLevel)
 		{
 			OnQuestComplete.Broadcast();
 			CurrentQuestIndex += 1;
 			GameInstance->SetCurrentQuestIndex(CurrentQuestIndex);
-			QuestStart();
+
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+				{
+					QuestStart();
+					CallQuestStartWidget();
+				}
+			), 2.0f, false);
 		}
 		else
 		{
 			LS_LOG(LogLS, Error, TEXT("Quest Max Level : %d"), QuestMaxLevel);
 		}
+	}
+}
+
+void ALSQuestManager::CallQuestStartWidget()
+{
+	if (CurrentQuestData.QuestName.Len() > 0)
+	{
+		OnQuestStartWidget.Broadcast(CurrentQuestData);
 	}
 }
 

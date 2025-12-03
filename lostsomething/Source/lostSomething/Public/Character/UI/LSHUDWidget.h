@@ -116,4 +116,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> TxtAim;
 
+	UPROPERTY()
+	TObjectPtr<class UImage> ImgAim;
+
 };
