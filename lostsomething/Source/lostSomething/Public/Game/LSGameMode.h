@@ -67,6 +67,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Quest, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class ALSQuestManager> QuestManager;
 
+// Menu
+
+public:
+	void MenuOption(FString Option);
+
 
 // Player Transfer
 public:

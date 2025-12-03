@@ -219,6 +219,31 @@ void ALSGameMode::QuestComplete()
 	QuestManager->QuestComplete();
 }
 
+void ALSGameMode::MenuOption(FString Option)
+{
+	UWorld* World = GetWorld();
+	if (!World)
+		return;
+	if (Option == "ChooseMap")
+	{
+		bool bResult = World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"), true, false);
+
+		if (!bResult)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ServerTravel Failed!"));
+		}
+	}
+	else if(Option == "Lobby"){
+		bool bResult = World->ServerTravel(TEXT("/Game/Map/LobbyMap?listen"), true, false);
+
+		if (!bResult)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ServerTravel Failed!"));
+		}
+	}
+	
+}
+
 void ALSGameMode::TransferPlayerLocation(FVector InSijaeLocation, FVector InIjaeLocation)
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)

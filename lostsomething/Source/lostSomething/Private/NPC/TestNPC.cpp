@@ -420,20 +420,8 @@ void ATestNPC::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATestNPC, bShouldChase);
 }
 
-void ATestNPC::TMSoundPlay(const FString& SoundType)
+void ATestNPC::PlaySoundLocalLogic(const FString& SoundType)
 {
-	ServerTMSoundPlay(SoundType);
-}
-
-void ATestNPC::ServerTMSoundPlay_Implementation(const FString& SoundType)
-{
-	MultiTMSoundPlay(SoundType);
-}
-
-void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
-{
-	//LS_LOG(LogLS, Log, TEXT("SoundType : %s"), *SoundType);
-
 	USoundBase* SelectedSound = nullptr;
 
 	if (SoundType == "Idle") SelectedSound = IdleSound;
@@ -443,12 +431,34 @@ void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
 	else if (SoundType == "Walk") SelectedSound = WalkSound;
 	else if (SoundType == "Run") SelectedSound = RunSound;
 
-	if (!SelectedSound)
+	if (SelectedSound)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Sound is nullptr for type %s"), *SoundType);
-		return;
+		UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
+		// 참고: NPC 소리는 보통 PlaySoundAtLocation을 써야 3D 공간감이 생깁니다.
+		// UGameplayStatics::PlaySoundAtLocation(this, SelectedSound, GetActorLocation());
 	}
+}
 
-	// 핵심: GetWorld() 기반으로 2D 사운드 재생
-	UGameplayStatics::PlaySound2D(GetWorld(), SelectedSound, 0.1f);
+void ATestNPC::TMSoundPlay(const FString& SoundType)
+{
+	if (HasAuthority())
+	{
+		// 모든 클라이언트에게 소리 재생 명령
+		MultiTMSoundPlay(SoundType);
+	}
+	// 2. 클라이언트(애니메이션 노티파이 등)에서 호출된 경우
+	else
+	{
+		PlaySoundLocalLogic(SoundType);
+	}
+}
+
+void ATestNPC::ServerTMSoundPlay_Implementation(const FString& SoundType)
+{
+	MultiTMSoundPlay(SoundType);	
+}
+
+void ATestNPC::MultiTMSoundPlay_Implementation(const FString& SoundType)
+{
+	PlaySoundLocalLogic(SoundType);
 }

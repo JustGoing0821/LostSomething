@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_Quit;
 
+	UPROPERTY()
+	class ALSGameMode* GM;
+
 	//=============================================
 	//     FUCTIONS
 	//=============================================
