@@ -19,8 +19,7 @@ void ALSQuestManager::BeginPlay()
 
 void ALSQuestManager::QuestStart()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	int32 CurrentQuestIndex = 0;
 	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(GetGameInstance());
@@ -39,7 +38,7 @@ void ALSQuestManager::QuestStart()
 
 void ALSQuestManager::QuestComplete()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	int32 QuestMaxLevel=0;
 	ULSGameSingleton& GameSingleton = ULSGameSingleton::Get();

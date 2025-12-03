@@ -17,7 +17,7 @@ ALSMobDeadThreashold::ALSMobDeadThreashold()
 
 void ALSMobDeadThreashold::CountDeadMobs()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		CurrentKilledMobCount++;
