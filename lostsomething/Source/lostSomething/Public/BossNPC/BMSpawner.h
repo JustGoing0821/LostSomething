@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	ABMSpawner();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Boss Spawner")
 	void SpawnBoss();
 
 	// Called every frame
