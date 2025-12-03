@@ -28,7 +28,7 @@ public:
 
 	// 이동 관련
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 600.f;
+	float MoveSpeed = 400.f;
 
 protected:
 	// Called when the game starts or when spawned

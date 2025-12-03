@@ -81,12 +81,15 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetHP(GetHP() - DamageAmount);
-	Damage();
-	if (GetHP() <= 0)
+	if (GetIsDead() == false)
 	{
-		SetIsDead(true);
-		SetDespawn();
+		SetHP(GetHP() - DamageAmount);
+		Damage();
+		if (GetHP() <= 0)
+		{
+			SetIsDead(true);
+			SetDespawn();
+		}
 	}
 		
 	return 0.0f;
@@ -264,7 +267,7 @@ void ATestNPC::MultiDespawn_Implementation()
 		}
 	}
 
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
 	if (!NPCAnimInstance || !NPCAnimInstance->DespawnMontage) return;
