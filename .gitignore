@@ -73,5 +73,6 @@ lostsomething/Plugins/**/Intermediate/*
 # Cache files for the editor to use
 lostsomething/DerivedDataCache/*
 lostsomething/Content/Asset/*
-lostsomething/Content/Stage/*
+# lostsomething/Content/Stage/*
+lostsomething/Content/Stage/QuestData/*
 lostsomething/lostSomething.bat
