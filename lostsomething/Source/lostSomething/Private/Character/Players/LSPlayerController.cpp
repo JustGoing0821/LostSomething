@@ -304,7 +304,7 @@ void ALSPlayerController::HideDeathWidget()
 
 void ALSPlayerController::CallQuestClear()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	
 	if (IsLocalController())
 	{
@@ -320,7 +320,7 @@ void ALSPlayerController::CallQuestClear()
 
 void ALSPlayerController::CallQuestStart(FLSQuestData InQuestData)
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (IsLocalController())
 	{
@@ -712,7 +712,7 @@ void ALSPlayerController::CreateMinimapWidget()
 
 void ALSPlayerController::RemoveMinimapWidget()
 {
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (MiniMapWidget && bIsMinimap)
 	{

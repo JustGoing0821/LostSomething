@@ -60,10 +60,6 @@ ALSGameMode::ALSGameMode()
 	bIsSiJaeServer = true;
 	CurrentPlayerCount = 0;
 
-	MapVersions.Add("LSStage1Map1", 0);
-	MapVersions.Add("LSStage1Map2", 0);
-	MapVersions.Add("LSStage1Map3", 0);
-
 	//2D Section
 	bIsSiJaeDragging = false;
 
@@ -186,7 +182,6 @@ void ALSGameMode::StartGame()
 			//Quest Start
 			if (CurrentPlayerCount == 2)
 			{
-				CheckMapVersion();
 				QuestStart();
 			}
 		}
@@ -333,38 +328,6 @@ void ALSGameMode::BroadcastScript(const FString& InScript)
 		}
 	}
 }
-
-void ALSGameMode::CheckMapVersion()
-{
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-
-	FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld());
-	if (MapVersions.Contains(MapName))
-	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSMapVersionControll::StaticClass(), FoundActors);
-
-		if (FoundActors.Num() == 0)
-		{
-			BroadcastScript("No Map Version Controller. Update Map From GoogleDrive.");
-		}
-		else
-		{
-			for (AActor* Actor : FoundActors)
-			{
-				if (ALSMapVersionControll* MapVersion = Cast<ALSMapVersionControll>(Actor))
-				{
-					int32 CurrentMapVersion = MapVersion->GetCurrentMapVersion();
-					if (CurrentMapVersion != MapVersions[MapName])
-					{
-						BroadcastScript("Not Match Map Version. Update Map From GoogleDrive.");
-					}
-				}
-			}
-		}
-	}
-}
-
 
 void ALSGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 {
