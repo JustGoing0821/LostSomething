@@ -30,50 +30,51 @@ void ULSHpComponent::BeginPlay()
 void ULSHpComponent::SetHp(float NewHp)
 {
     // 0과 MaxHp 사이로 값 제한
-    float ClampedHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
+    //float ClampedHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
 
-    // 실제로 값이 변경되었는지 확인
-    if (CurrentHp != ClampedHp)
-    {
-        CurrentHp = ClampedHp;
-        OnHpChanged.Broadcast(CurrentHp);
-        UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+    //// 실제로 값이 변경되었는지 확인
+    //if (CurrentHp != ClampedHp)
+    //{
+    //    CurrentHp = ClampedHp;
+    //    OnHpChanged.Broadcast(CurrentHp);
+    //    UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
 
-        /*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
-        if (AnimInstance)
-        {
-        AnimInstance->HitAnim();
+    //    /*ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
+    //    if (AnimInstance)
+    //    {
+    //    AnimInstance->HitAnim();
 
-        }*/
+    //    }*/
 
-        if (ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
-        {
-            //메쉬 
-            if (USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
-            {
-                // 애님 인스턴스
-                if (UAnimInstance* AnyAnim = MeshComp->GetAnimInstance())
-                {
-                   
-                    if (ULSPlayerSiJaeAnimInstance* AnimInstance =
-                        Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
-                    {
-                        AnimInstance->HitAnim();
-                    }
-                    else if (ULSPlayerIJaeAnimInstance* IJaeAnim = Cast<ULSPlayerIJaeAnimInstance>(AnyAnim))
-                    {
-                        IJaeAnim->HitAnim();
-                    }
-                }
-            }
-        }
+    //    if (ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
+    //    {
+    //        //메쉬 
+    //        if (USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
+    //        {
+    //            // 애님 인스턴스
+    //            if (UAnimInstance* AnyAnim = MeshComp->GetAnimInstance())
+    //            {
+    //               
+    //                if (ULSPlayerSiJaeAnimInstance* AnimInstance =Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
+    //                {
+    //                    AnimInstance->HitAnim();
+    //                }
+    //                else if (ULSPlayerIJaeAnimInstance* IJaeAnim = Cast<ULSPlayerIJaeAnimInstance>(AnyAnim))
+    //                {
+    //                    IJaeAnim->HitAnim();
+    //                }
+    //            }
+    //        }
+    //    }
 
-        // HP가 0이 되면 델리게이트 호출
-        if (CurrentHp <= 0.0f)
-        {
-            OnHpZero.Broadcast(CurrentHp);
-        }
-    }
+    //    // HP가 0이 되면 델리게이트 호출
+    //    if (CurrentHp <= 0.0f)
+    //    {
+    //        OnHpZero.Broadcast(CurrentHp);
+    //    }
+    //}
+
+    //-------------------위에것이 원래 코드
 
  //   // 0과 MaxHp 사이로 값 제한
  //   NewHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
@@ -96,5 +97,50 @@ void ULSHpComponent::SetHp(float NewHp)
  //       }
  //   }
 
+
+
+
+
+    //-----------------------------
+
+    // 0과 MaxHp 사이로 값 제한
+    float ClampedHp = FMath::Clamp(NewHp, 0.0f, MaxHp);
+
+    // 이전 HP 저장
+    float PrevHp = CurrentHp;
+
+    // 실제로 값이 변경되었는지 확인
+    if (PrevHp != ClampedHp)
+    {
+        CurrentHp = ClampedHp;
+        OnHpChanged.Broadcast(CurrentHp);
+        UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+
+        if (ClampedHp < PrevHp && ClampedHp > 0.0f)
+        {
+            if (ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
+            {
+                if (USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
+                {
+                    if (UAnimInstance* AnyAnim = MeshComp->GetAnimInstance())
+                    {
+                        if (ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(AnyAnim))
+                        {
+                            AnimInstance->HitAnim();
+                        }
+                        else if (ULSPlayerIJaeAnimInstance* IJaeAnim = Cast<ULSPlayerIJaeAnimInstance>(AnyAnim))
+                        {
+                            IJaeAnim->HitAnim();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (CurrentHp <= 0.0f)
+        {
+            OnHpZero.Broadcast(CurrentHp);
+        }
+    }
 }
 

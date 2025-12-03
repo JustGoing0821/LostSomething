@@ -33,6 +33,8 @@
 #include "Game/LSNetworkPosition.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
+#include "Engine/AssetManager.h"
+#include "Interaction/LSInteractionScriptData.h"
 #include <Game/LSGameMode.h>
 
 /*******************
@@ -157,6 +159,12 @@ ALSPlayer::ALSPlayer()
 
 	//bUseControllerRotationRoll = false;
 
+	CombinedMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CombinedMeshComp"));
+	CombinedMeshComp->SetupAttachment(RootComponent);
+	CombinedMeshComp->SetVisibility(false);
+	CombinedMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -225,7 +233,38 @@ ALSPlayer::ALSPlayer()
 void ALSPlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	//Script Section
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList(TEXT("LSScriptData"), Assets);
+
+	if (0 < Assets.Num())
+	{
+		for (const FPrimaryAssetId& AssetId : Assets)
+		{
+			if (AssetId.PrimaryAssetName == TEXT("LSAimScript"))
+			{
+				FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+				//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+				if (AssetPtr.IsPending())
+				{
+					AssetPtr.LoadSynchronous();
+				}
+				AimScriptData = Cast<ULSInteractionScriptData>(AssetPtr.Get());
+				ensure(AimScriptData);
+				break;
+			}
+		}
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("AimScriptData Not Found"));
+	}
 }
+
 
 
 void ALSPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -241,6 +280,7 @@ void ALSPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ALSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
 	if (MeshComp)
@@ -489,6 +529,12 @@ void ALSPlayer::PerformLineTrace()
 
 	if (!IsLocallyControlled()) return;
 
+	if (!AimScriptData)
+	{
+		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("No AimScript!!"));
+		return;
+	}
+
 	FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
 	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
 	FVector EndLocation = StartLocation + (ForwardVector * 300.0f);
@@ -517,7 +563,7 @@ void ALSPlayer::PerformLineTrace()
 			{
 				CurrentDectectActor = HitResult.GetActor();
 				TickDectectResultColor = FColor::Green;
-				AimScript = "Interact";
+				AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[0];
 			}
 			else if (ALSPlayer* CharacterActor = Cast<ALSPlayer>(HitResult.GetActor()))
 			{
@@ -525,13 +571,14 @@ void ALSPlayer::PerformLineTrace()
 				{
 					CurrentDectectActor = HitResult.GetActor();
 					TickDectectResultColor = FColor::Green;
-					AimScript = "Combine";
+					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[1];
+				
 				}
 				else
 				{
 					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 					TickDectectResultColor = FColor::Black;
-					AimScript = "Go near to Combine";
+					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[3];
 					CurrentDectectActor = nullptr;
 				}
 			}
@@ -539,7 +586,7 @@ void ALSPlayer::PerformLineTrace()
 			{
 				CurrentDectectActor = HitResult.GetActor();
 				TickDectectResultColor = FColor::Green;
-				AimScript = "Call Elevator";
+				AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[4];
 
 				FCallElevatorParams Params;
 				//Params.Target = HitResult.GetActor();
@@ -553,7 +600,7 @@ void ALSPlayer::PerformLineTrace()
 				CurrentDectectActor = HitResult.GetActor();
 				TickDectectResultColor = FColor::Green;
 
-				AimScript = "Pick Up";
+				AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[5];
 
 				ApplyOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial);
 
@@ -2120,7 +2167,7 @@ void ALSPlayer::ApplyCombineState()
 				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
 
 				// 카메라 전환
-				if (CameraBoom) CameraBoom->bDoCollisionTest = false;
+				//if (CameraBoom) CameraBoom->bDoCollisionTest = false;
 				FirstPersonCameraComponent->SetActive(false);
 				FollowCamera->SetActive(true);
 
@@ -2179,7 +2226,7 @@ void ALSPlayer::ApplyCombineState()
 				SetActorRotation(TargetRot, ETeleportType::TeleportPhysics);
 
 				// 카메라 전환
-				if (CameraBoom) CameraBoom->bDoCollisionTest = true;
+				//if (CameraBoom) CameraBoom->bDoCollisionTest = true;
 				FollowCamera->SetActive(false);
 				FirstPersonCameraComponent->SetActive(true);
 
@@ -2384,6 +2431,7 @@ void ALSPlayer::ServerRPCChangeCombineState_Implementation(uint8 InIsCombining)
 void ALSPlayer::MulticastRPCApplyCombineState_Implementation()
 {
 	ApplyCombineState();
+	ApplyCombineVisual(bIsCombining);
 }
 
 void ALSPlayer::ClientRPCUpdateCombineStaminaWidget_Implementation(float InCurrentStemina)
@@ -2517,3 +2565,35 @@ void ALSPlayer::ServerApplyWeaponVisualFromItem_Implementation(const FItemDetail
 {
 	MultiApplyWeaponVisualFromItem(Info);
 }
+
+
+
+//합체 껐다키기
+void ALSPlayer::ApplyCombineVisual(bool bCombined)
+{
+	if (!GetMesh() || !CombinedMeshComp)
+		return;
+
+	if (CharacterChoice != ELSCharacterChoice::SiJae)
+	{
+		return;
+	}
+
+	if (PusherSiJaeCharacter && this != PusherSiJaeCharacter)
+		return;
+
+	if (bCombined)
+	{
+		GetMesh()->SetVisibility(false);
+		CombinedMeshComp->SetVisibility(true);
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		CombinedMeshComp->SetVisibility(false);
+	}
+}
+
+
+
+
