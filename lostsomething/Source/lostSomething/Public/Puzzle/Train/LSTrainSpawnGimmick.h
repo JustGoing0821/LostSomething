@@ -47,6 +47,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
 	TArray<class UBoxComponent*> WaitTriggers;
 
+	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
+	TArray<class UBoxComponent*> BlockTriggers;
+
 	TMap<int32, int32> CurrentOverlapTrigger;
 
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))
@@ -70,6 +73,9 @@ protected:
 
 	UFUNCTION()
 	void OnGateWaitTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void SetBlockTriggerCollision(uint8 IsTriggerBlock);
 
 
 // Spawn Section
@@ -117,4 +123,7 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCPuzzleActivate();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastRPCSetBlockTriggerCollision(uint8 IsTriggerBlock);
 };

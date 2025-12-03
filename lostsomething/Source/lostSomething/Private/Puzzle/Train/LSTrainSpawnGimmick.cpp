@@ -39,8 +39,10 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> StepMaterialRef(TEXT("/Game/Level/InteractionActor/Materials/M_Blue.M_Blue"));
 	FVector CreateGateLocation = FVector(-300.f, 785.f, -50.f);
 	FVector CreateStepLocation = FVector(3510.f, -124.f, 79.f);
+
 	for (FName GateName : GateNames)
 	{
+		//WaitTrigger
 		FName WaitTriggerName = *GateName.ToString().Append(TEXT("WaitTrigger"));
 		UBoxComponent* WaitTrigger = CreateDefaultSubobject<UBoxComponent>(WaitTriggerName);
 		WaitTrigger->SetupAttachment(StageTrigger);
@@ -52,11 +54,25 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 		WaitTrigger->ComponentTags.Add(GateName);
 		WaitTriggers.Add(WaitTrigger);
 
+		//BlockTrigger
+		FName BlockTriggerName = *GateName.ToString().Append(TEXT("BlockTrigger"));
+		UBoxComponent* BlockTrigger = CreateDefaultSubobject<UBoxComponent>(BlockTriggerName);
+		BlockTrigger->SetupAttachment(StageTrigger);
+		BlockTrigger->SetCollisionProfileName(TEXT("BlockAll"));
+		BlockTrigger->SetBoxExtent(FVector(10, 100, 100));
+		BlockTrigger->SetRelativeLocation(CreateGateLocation + FVector(+110, 0, 0));
+		BlockTrigger->ComponentTags.Add(GateName);
+		BlockTriggers.Add(BlockTrigger);
+
+
+		//CurrentGate
 		float CurrentGate = FCString::Atoi(*GateName.ToString().Right(1));
 		CurrentOverlapTrigger.Add(CurrentGate, 0);
 
+		//StepLocation
 		StepTriggerLocations.Add(CreateStepLocation);
 
+		//Set Next Location
 		CreateGateLocation += FVector(0, -400.f, 0);
 		CreateStepLocation += FVector(-400.f, 0, 0);
 	}
@@ -171,7 +187,9 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* Overlap
 					//LS_LOG(LogLS, Log, TEXT("Train Overlap Ended."));
 				}
 			), 2.0f, false);
-		}
+
+			MulticastRPCSetBlockTriggerCollision(true);
+		}		
 	}
 }
 
@@ -200,6 +218,25 @@ void ALSTrainSpawnGimmick::OnGateWaitTriggerEndOverlap(UPrimitiveComponent* Over
 	}
 }
 
+void ALSTrainSpawnGimmick::SetBlockTriggerCollision(uint8 IsTriggerBlock)
+{
+	//LS_LOG(LogLSls, Log, TEXT("Begin : %d"), IsTriggerBlock);
+	if (IsTriggerBlock)
+	{
+		for (UBoxComponent* BlockTrigger : BlockTriggers)
+		{
+			BlockTrigger->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		}
+	}
+	else
+	{
+		for (UBoxComponent* BlockTrigger : BlockTriggers)
+		{
+			BlockTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+	}
+}
+
 void ALSTrainSpawnGimmick::SpawnTrain()
 {
 	if (HasAuthority() && CurrentState == ETrainSpawnState::Despawned && TrainClass != nullptr)
@@ -207,7 +244,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		CurrentState = ETrainSpawnState::Spawned;
 
 		CorrectGate = FMath::RandRange(1, 6);
-		LS_LOG(LogLS, Log, TEXT("CorrectGate : %d"), CorrectGate);
+		LS_LOG(LogLSls, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
 		float DelayTime = FMath::FRandRange(3.f, 6.f);
 		//LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
@@ -242,6 +279,14 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 
 void ALSTrainSpawnGimmick::SpawnStep()
 {
+	if (!HasAuthority())
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("Here is Not Server!"));
+		return;
+	}
+
+	MulticastRPCSetBlockTriggerCollision(false);
+
 	if (StepTriggerClass)
 	{
 		FVector SpawnLocation = StepTriggerLocations[CorrectGate - 1];
@@ -305,7 +350,7 @@ void ALSTrainSpawnGimmick::SetPannelMonitor()
 	}
 	else
 	{
-		LS_LOG(LogLS, Error, TEXT("No Character Choice"));
+		LS_LOG(LogLSls, Error, TEXT("No Character Choice"));
 	}
 }
 
@@ -372,6 +417,11 @@ void ALSTrainSpawnGimmick::MulticastRPCSetPannelMonitor_Implementation()
 void ALSTrainSpawnGimmick::MulticastRPCPuzzleActivate_Implementation()
 {
 	PuzzleActivate();
+}
+
+void ALSTrainSpawnGimmick::MulticastRPCSetBlockTriggerCollision_Implementation(uint8 IsTriggerBlock)
+{
+	SetBlockTriggerCollision(IsTriggerBlock);
 }
 
 
