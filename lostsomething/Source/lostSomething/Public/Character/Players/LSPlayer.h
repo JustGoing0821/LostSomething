@@ -195,6 +195,12 @@ protected:
 		UPROPERTY(Replicated)
 		FCallElevatorParams CallElevatorParams;
 
+		UPROPERTY(EditAnywhere)
+		TObjectPtr<class ULSInteractionScriptData> AimScriptData;
+
+
+	
+
 protected:
 	void PerformLineTrace();
 	void Interaction();
