@@ -42,6 +42,21 @@ void ULevelChooseWidget::MoveToCharacterChooseMap(ELevelType LevelType)
 	if (!GI) return;
 
 	GI->SetChooseLevel(LevelType);
+
+	if (LevelType == ELevelType::Stage1)
+	{
+		GI->SetCurrentQuestIndex(5);
+	}
+	else if (LevelType == ELevelType::Stage2)
+	{
+
+		GI->SetCurrentQuestIndex(8);
+	}
+	else if (LevelType == ELevelType::Stage3)
+	{
+		GI->SetCurrentQuestIndex(10);
+	}
+
 	// GameMode 통해 이동
 	APlayerController* PC = GetOwningPlayer();
 	if (PC && PC->HasAuthority())
