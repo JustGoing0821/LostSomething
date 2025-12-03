@@ -110,6 +110,7 @@ void ALSCombineTutorial::OnTutorialTriggerBeginOverlap(UPrimitiveComponent* Over
 			if (WheelchairPlayer->isCombining())
 			{
 				QuestClear();
+				TutorialTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			}
 			else
 			{

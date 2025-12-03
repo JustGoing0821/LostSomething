@@ -81,13 +81,6 @@ protected:
 protected:
 	void BroadcastScript(const FString& InScript);
 
-//MapVersionControll
-protected:
-	UPROPERTY(EditAnywhere, Category = "Version")
-	TMap<FString, int32> MapVersions;
-
-	void CheckMapVersion();
-
 
 // 2D Puzzle Section
 public:
