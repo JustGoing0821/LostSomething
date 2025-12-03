@@ -425,6 +425,8 @@ void ALSPlayer::StartGame()
 
 	if (HasAuthority())
 	{
+		if (!GetController()) return;
+
 		CharacterChoice = Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice();
 		if (CharacterChoice == ELSCharacterChoice::SiJae)
 		{
