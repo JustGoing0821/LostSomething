@@ -389,6 +389,7 @@ void ALSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALSPlayer::Look);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ALSPlayer::Interaction);
 		EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &ALSPlayer::Drop);
+		EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this, &ALSPlayer::Menu);
 		EnhancedInputComponent->BindAction(SelectSlot1Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot1);
 		EnhancedInputComponent->BindAction(SelectSlot2Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot2);
 		EnhancedInputComponent->BindAction(SelectSlot3Action, ETriggerEvent::Triggered, this, &ALSPlayer::OnSelectSlot3);
@@ -2461,7 +2462,6 @@ bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 }
 
 
-
 /*******************
 
  Weapon Section
@@ -2511,10 +2511,17 @@ void ALSPlayer::RefreshWeaponEquipFromCurrentSlot()
 	
 }
 
+/*******************
 
+Combine Section
 
+********************/
 
-
+void ALSPlayer::Menu()
+{
+	ALSPlayerController* PC = Cast<ALSPlayerController>(GetController());
+	PC->OpenMenu();
+}
 
 
 //item instance

@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "Game/LSGameMode.h"
+#include "InputCoreTypes.h"
 
 void UMenuWidget::NativeConstruct()
 {
@@ -16,6 +17,12 @@ void UMenuWidget::NativeConstruct()
 	GM = Cast<ALSGameMode>(GetWorld()->GetAuthGameMode());
 }
 
+bool UMenuWidget::Initialize()
+{
+	this->SetVisibility(ESlateVisibility::Hidden);
+	return false;
+}
+
 void UMenuWidget::ContinueGame()
 {
 	// 위젯 안보이게
@@ -24,15 +31,11 @@ void UMenuWidget::ContinueGame()
 
 void UMenuWidget::GoLobby()
 {
-	//둘다 로비 화면으로
-	// LS 게임모드에서 로비로 가게 해야겠는데
 	GM->MenuOption("Lobby");
 }
 
 void UMenuWidget::GoChooseMap()
 {
-	//맵 선택 화면?
-	// LS 게임모드에서 로비로 가게 해야겠는데
 	GM->MenuOption("ChooseMap");
 }
 
@@ -40,4 +43,16 @@ void UMenuWidget::QuitGame()
 {
 	//종료
 	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
+}
+
+void UMenuWidget::MenuVisibility()
+{
+	if (this->GetVisibility() == ESlateVisibility::Visible || this->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		this->SetVisibility(ESlateVisibility::Hidden); // 또는 Hidden
+	}
+	else
+	{
+		this->SetVisibility(ESlateVisibility::Visible);
+	}
 }

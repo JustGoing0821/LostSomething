@@ -24,6 +24,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
 #include "UserInterface/MiniMap/MiniMapWidget.h"
+#include "UserInterface/MenuWidget.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -78,11 +79,6 @@ ALSPlayerController::ALSPlayerController()
 		BloodWidgetClass = BloodWidgetRef.Class;
 	}
 
-	//Puzzle Section
-	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
-	NetUpdateFrequency = 60.0f;
-
 	//MiniMap Section
 	static ConstructorHelpers::FClassFinder<UMiniMapWidget> MiniMapWidgetRef(TEXT("/Game/UI/MiniMap/WBP_MiniMapWidget.WBP_MiniMapWidget_C"));
 	if (MiniMapWidgetRef.Class)
@@ -90,6 +86,18 @@ ALSPlayerController::ALSPlayerController()
 		MiniMapWidgetClass = MiniMapWidgetRef.Class;
 	}
 	bIsMinimap = false;
+
+	//Menu Section
+	static ConstructorHelpers::FClassFinder<UMenuWidget> MenuWidgetRef(TEXT("/Game/UI/Menu/WBP_Menu.WBP_Menu_C"));
+	if (MenuWidgetRef.Class)
+	{
+		MenuWidgetClass = MenuWidgetRef.Class;
+	}
+
+	//Puzzle Section
+	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	NetUpdateFrequency = 60.0f;
 
 	static ConstructorHelpers::FClassFinder<ULS2DPuzzleHUD> LS2DPuzzleHUDRef(TEXT("/Game/Level/Puzzle/UI/Blueprints/WBP_2DPuzzleHUD.WBP_2DPuzzleHUD_C"));
 	if (LS2DPuzzleHUDRef.Class)
@@ -150,6 +158,13 @@ void ALSPlayerController::BeginPlay()
 	//minimap
 	CreateMinimapWidget();
 
+	//Menu
+
+	if (IsLocalController() && MenuWidgetClass)
+	{
+		MenuWidget = CreateWidget<UMenuWidget>(this, MenuWidgetClass);
+	}
+
 	if (IsLocalController() && BloodWidgetClass)
 	{
 		BloodWidget = CreateWidget<UBloodWidget>(this, BloodWidgetClass);
@@ -191,7 +206,7 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
-	SetInputMode(FInputModeGameOnly());
+	SetInputMode(FInputModeGameAndUI());
 
 
 	if (IsLocalController() && !HasAuthority())
@@ -723,7 +738,6 @@ void ALSPlayerController::RemoveMinimapWidget()
 
 void ALSPlayerController::ClientMinimapWidget_Implementation()
 {
-
 	if (this->IsLocalController())
 	{	
 		if (bIsMinimap)
@@ -734,8 +748,15 @@ void ALSPlayerController::ClientMinimapWidget_Implementation()
 }
 
 
-//chat
+// Menu
 
+void ALSPlayerController::OpenMenu()
+{
+	MenuWidget->MenuVisibility();
+}
+
+
+//chat
 void ALSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();

@@ -153,6 +153,18 @@ protected:
 	void ClientMinimapWidget();
 	bool bIsMinimap;
 
+// Menu Section
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UMenuWidget> MenuWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UMenuWidget> MenuWidget;
+
+public:
+	void OpenMenu();
+
+
 //Chat section
 public:
 	virtual void SetupInputComponent() override;
