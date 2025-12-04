@@ -31,10 +31,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_Quit;
 
+	UPROPERTY()
+	class ALSPlayerController* PC;
+
 	//=============================================
 	//     FUCTIONS
 	//=============================================
 	virtual void NativeConstruct() override;
+	virtual bool Initialize() override;
 	
 	UFUNCTION(BlueprintCallable)
 	void ContinueGame();
@@ -47,4 +51,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void QuitGame();
+
+	UFUNCTION(BlueprintCallable)
+	void MenuVisibility();
 };

@@ -14,8 +14,6 @@ void ALevelChooseMapGameMode::MoveToCharacterSelect()
     UWorld* World = GetWorld();
     if (World)
     {
-        // 절대 경로 사용 및 에러 로그 방지
-        // bAbsolute = false (상대 경로), bShouldSkipGameNotify = false
         bool bResult = World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"), true, false);
 
         if (!bResult)
