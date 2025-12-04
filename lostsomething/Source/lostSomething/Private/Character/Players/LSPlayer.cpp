@@ -2519,7 +2519,10 @@ Combine Section
 
 void ALSPlayer::Menu()
 {
+	
 	ALSPlayerController* PC = Cast<ALSPlayerController>(GetController());
+	if (!PC)
+		return;
 	PC->OpenMenu();
 }
 

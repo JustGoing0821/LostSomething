@@ -32,7 +32,7 @@ public:
 	class UButton* btn_Quit;
 
 	UPROPERTY()
-	class ALSGameMode* GM;
+	class ALSPlayerController* PC;
 
 	//=============================================
 	//     FUCTIONS

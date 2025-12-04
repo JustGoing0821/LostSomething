@@ -164,6 +164,13 @@ protected:
 public:
 	void OpenMenu();
 
+	void MenuToLevel(const FString& Option);
+
+	//클라->서버
+	UFUNCTION(Server, Reliable)
+	void ServerMenuToLevel(const FString& Option);
+
+
 
 //Chat section
 public:

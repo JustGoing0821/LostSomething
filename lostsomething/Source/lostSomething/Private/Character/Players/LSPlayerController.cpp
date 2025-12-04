@@ -163,7 +163,12 @@ void ALSPlayerController::BeginPlay()
 	if (IsLocalController() && MenuWidgetClass)
 	{
 		MenuWidget = CreateWidget<UMenuWidget>(this, MenuWidgetClass);
+		if (MenuWidget)
+		{
+			MenuWidget->AddToViewport();
+		}
 	}
+
 
 	if (IsLocalController() && BloodWidgetClass)
 	{
@@ -206,7 +211,7 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
-	SetInputMode(FInputModeGameAndUI());
+	SetInputMode(FInputModeGameOnly());
 
 
 	if (IsLocalController() && !HasAuthority())
@@ -753,6 +758,25 @@ void ALSPlayerController::ClientMinimapWidget_Implementation()
 void ALSPlayerController::OpenMenu()
 {
 	MenuWidget->MenuVisibility();
+}
+
+void ALSPlayerController::MenuToLevel(const FString& Option)
+{
+	ServerMenuToLevel(Option);
+}
+
+void ALSPlayerController::ServerMenuToLevel_Implementation(const FString& Option)
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// GameMode는 서버에서만 유효하므로 여기서 안전하게 접근 가능
+	ALSGameMode* GM = Cast<ALSGameMode>(UGameplayStatics::GetGameMode(World));
+	if (GM)
+	{
+		// 이제 GameMode의 로직을 사용할 수 있습니다.
+		GM->MenuOption(Option);
+	}
 }
 
 

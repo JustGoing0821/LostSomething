@@ -18,6 +18,8 @@
 
 ALSGameMode::ALSGameMode()
 {
+	bUseSeamlessTravel = true;
+
 	// Player Character Class Initialize
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Level/TestPlayer/BP_LTPlayer.BP_LTPlayer_C"));
 	if (PlayerPawnBPClass.Class != NULL)
@@ -226,7 +228,7 @@ void ALSGameMode::MenuOption(FString Option)
 		return;
 	if (Option == "ChooseMap")
 	{
-		bool bResult = World->ServerTravel(TEXT("/Game/Map/ChooseMap?listen"), true, false);
+		bool bResult = World->ServerTravel(TEXT("/Game/Map/LevelChooseMap?listen"), true, false);
 
 		if (!bResult)
 		{
