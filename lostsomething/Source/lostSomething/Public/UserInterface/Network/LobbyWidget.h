@@ -43,8 +43,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_DoCreateRoom;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	class UButton* btn_DoVRCreateRoom;
+	//UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	//class UButton* btn_DoVRCreateRoom;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_GoMenuFromCreateRoom;
@@ -76,8 +76,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_doCreateRoom();
 
-	UFUNCTION(BlueprintCallable)
-	void OnMyClicked_doCreateVRRoom();
+	//UFUNCTION(BlueprintCallable)
+	//void OnMyClicked_doCreateVRRoom();
 
 	UFUNCTION(BlueprintCallable)
 	void OnMyGoMenu();
