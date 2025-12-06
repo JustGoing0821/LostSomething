@@ -13,11 +13,17 @@ void UCharacterChooseWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TxtServerChoice = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ServerChoice")));
-	ensure(TxtServerChoice);
+	TxtServerChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ServerChoiceIJae")));
+	ensure(TxtServerChoiceIJae);
 
-	TxtClientChoice = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ClientChoice")));
-	ensure(TxtClientChoice);
+	TxtClientChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ClientChoiceIJae")));
+	ensure(TxtClientChoiceIJae);
+
+	TxtServerChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ServerChoiceSiJae")));
+	ensure(TxtServerChoiceSiJae);
+
+	TxtClientChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ClientChoiceSiJae")));
+	ensure(TxtClientChoiceSiJae);
 
 	BtnSiJae = Cast<UButton>(GetWidgetFromName(TEXT("btn_SiJae")));
 	ensure(BtnSiJae);
@@ -31,27 +37,33 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
+	FColor sRGBColor = FColor::FromHex("2A2A3A");
+	FLinearColor TargetColor = FLinearColor::FromSRGBColor(sRGBColor);
+
 	if (ServerChoice == ELSCharacterChoice::SiJae)
 	{
-		TxtServerChoice->SetText(FText::FromString(TEXT("SiJae")));
+		TxtServerChoiceSiJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		TxtServerChoiceIJae->SetColorAndOpacity(FSlateColor(TargetColor));
 	}
 	else if (ServerChoice == ELSCharacterChoice::IJae)
 	{
-		TxtServerChoice->SetText(FText::FromString(TEXT("IJae")));
+		TxtServerChoiceIJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		TxtServerChoiceSiJae->SetColorAndOpacity(FSlateColor(TargetColor));
 	}
 
 	if (ClientChoice == ELSCharacterChoice::SiJae)
 	{
-		TxtClientChoice->SetText(FText::FromString(TEXT("SiJae")));
+		TxtClientChoiceSiJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		TxtClientChoiceIJae->SetColorAndOpacity(FSlateColor(TargetColor));
 	}
 	else if (ClientChoice == ELSCharacterChoice::IJae)
 	{
-		TxtClientChoice->SetText(FText::FromString(TEXT("IJae")));
+		TxtClientChoiceIJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		TxtClientChoiceSiJae->SetColorAndOpacity(FSlateColor(TargetColor));
 	}
 	
 }
-
-void UCharacterChooseWidget::OnClickedBthSiJae()
+ void UCharacterChooseWidget::OnClickedBthSiJae()
 {
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::SiJae);
 }

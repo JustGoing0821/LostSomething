@@ -34,7 +34,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UImage> ImgPiece1;
 
+	UPROPERTY()
+	TObjectPtr<class UImage> ImgBackground;
+
 	FVector2D GoalPos;
+
+	FVector2D PieceSize;
 
 	bool bIsDragging;
 

@@ -18,6 +18,8 @@
 
 ALSGameMode::ALSGameMode()
 {
+	bUseSeamlessTravel = true;
+
 	// Player Character Class Initialize
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Level/TestPlayer/BP_LTPlayer.BP_LTPlayer_C"));
 	if (PlayerPawnBPClass.Class != NULL)
@@ -173,19 +175,29 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
 }
 
-void ALSGameMode::StartGame()
+void ALSGameMode::StartGame(bool bisNeedQuestComplete)
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		{
-			//Quest Start
-			if (CurrentPlayerCount == 2)
-			{
-				QuestStart();
-			}
-		}
-	), 2.f, false);
+	//FTimerHandle Handle;
+	//GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	//	{
+	//		//Quest Start
+	//		if (CurrentPlayerCount == 2)
+	//		{
+	//			QuestStart();
+	//		}
+	//	}
+	//), 2.f, false);
+
+	if (bisNeedQuestComplete)
+	{
+		QuestComplete();
+	}
+	else
+	{
+		QuestStart();
+	}
 
 	OnStartGame.Broadcast();
 }
@@ -217,6 +229,31 @@ void ALSGameMode::QuestStart()
 void ALSGameMode::QuestComplete()
 {
 	QuestManager->QuestComplete();
+}
+
+void ALSGameMode::MenuOption(FString Option)
+{
+	UWorld* World = GetWorld();
+	if (!World)
+		return;
+	if (Option == "ChooseMap")
+	{
+		bool bResult = World->ServerTravel(TEXT("/Game/Map/LevelChooseMap?listen"), true, false);
+
+		if (!bResult)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ServerTravel Failed!"));
+		}
+	}
+	else if(Option == "Lobby"){
+		bool bResult = World->ServerTravel(TEXT("/Game/Map/LobbyMap?listen"), true, false);
+
+		if (!bResult)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ServerTravel Failed!"));
+		}
+	}
+	
 }
 
 void ALSGameMode::TransferPlayerLocation(FVector InSijaeLocation, FVector InIjaeLocation)

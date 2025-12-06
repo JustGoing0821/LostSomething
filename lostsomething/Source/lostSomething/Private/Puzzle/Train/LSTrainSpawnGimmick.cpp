@@ -15,6 +15,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
 #include "Quest/LSQuestManager.h"
+#include "Character/Players/LSPlayerController.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSQuestInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
@@ -244,7 +245,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		CurrentState = ETrainSpawnState::Spawned;
 
 		CorrectGate = FMath::RandRange(1, 6);
-		LS_LOG(LogLSls, Log, TEXT("CorrectGate : %d"), CorrectGate);
+		//LS_LOG(LogLSls, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
 		float DelayTime = FMath::FRandRange(3.f, 6.f);
 		//LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
@@ -405,7 +406,18 @@ void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
 {
 	if (InQuestEnum == PuzzleActivateEnum)
 	{
-		MulticastRPCPuzzleActivate();
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
+			{
+				if (PC->IsLocalController())
+				{
+					PC->OnBGMStart.AddDynamic(this, &ALSTrainSpawnGimmick::MulticastRPCPuzzleActivate);
+				}
+			}
+		}
+
+		//MulticastRPCPuzzleActivate();
 	}
 }
 

@@ -211,6 +211,8 @@ public:
     UPROPERTY(EditAnywhere)
     USoundWave* RunSound;
 
+    void PlaySoundLocalLogic(const FString& SoundType);
+
     void TMSoundPlay(const FString& SoundType);
     UFUNCTION(Server, Reliable)
     void ServerTMSoundPlay(const FString& SoundType);

@@ -168,15 +168,12 @@ void ALSTrainStep::StartInstallPuzzle()
 {
 	if (HasAuthority())
 	{
-		int32 GoalPosXRate = 5;
-		int32 GoalPosYRate = 5;
+		float GoalPosXRate = FMath::FRandRange(0.14, 0.6);
+		int32 GoalPosYRate = FMath::RandRange(1, 2);
 
-		while ((GoalPosXRate == 5) && (GoalPosYRate == 5))
-		{
-			GoalPosXRate = FMath::RandRange(1, 9);
-			GoalPosYRate = FMath::RandRange(1, 9);
-		}
-		FVector2D GoalPosRate = FVector2D(GoalPosXRate / 10.f, GoalPosYRate / 10.f);
+		//LS_LOG(LogLSls, Log, TEXT("GoalPosXRate, GoalPosYRate : %f, %d"), GoalPosXRate, GoalPosYRate);
+
+		FVector2D GoalPosRate = FVector2D(GoalPosXRate, GoalPosYRate);
 
 		//LS_LOG(LogLSls, Log, TEXT("GoalPosXRate, GoalPosYRate = %d, %d"), GoalPosXRate, GoalPosYRate);
 		//LS_LOG(LogLSls, Log, TEXT("GoalPosRate : %f, %f"), GoalPosRate.X, GoalPosRate.Y);

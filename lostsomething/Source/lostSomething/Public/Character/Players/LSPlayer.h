@@ -81,7 +81,6 @@ public:
 	void MulticastRPCStartGame();
 
 
-
 /*******************
 
 Mesh Section
@@ -140,6 +139,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> DropAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> MenuAction;
 
 	//ΩΩ∑‘ º±≈√ ≈∞
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
@@ -636,7 +638,12 @@ public:
 protected:
 	bool IsActorName(AActor* InActor, const FString& InString) const;
 
+/*******************
 
+Combine Section
 
+********************/
+
+	void Menu();
 
 };
