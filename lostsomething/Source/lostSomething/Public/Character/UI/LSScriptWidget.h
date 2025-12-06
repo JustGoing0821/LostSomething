@@ -30,5 +30,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> Script;
 
+	UPROPERTY()
+	TObjectPtr<class UOverlay> ScriptGroup;
+
 	FTimerHandle ScriptTimerHandle;
 };
