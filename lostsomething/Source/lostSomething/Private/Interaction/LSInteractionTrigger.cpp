@@ -162,6 +162,10 @@ void ALSInteractionTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 {
 	if (HasAuthority())
 	{
+		//Enum LogÀÛ¾÷
+		FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(CurrentQuest)).ToString();
+		LS_LOG(LogLSls, Log, TEXT("CurrentQuest : %s"), *EnumString);
+
 		ACharacter* OverlapCharacter = Cast<ACharacter>(OtherActor);
 		AController* OverlapController = OverlapCharacter->GetController();
 		if (OverlapCharacter)
@@ -180,7 +184,7 @@ void ALSInteractionTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 					Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[0];
 				}
 				ScriptController->UpdateScriptWidget(Script);
-
+				LS_LOG(LogLSls, Log, TEXT("%s"), *Script);
 			}
 		}
 	}
