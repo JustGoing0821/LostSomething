@@ -13,8 +13,11 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
+#include "Interaction/LSInteractionScriptData.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 #include "Quest/LSQuestManager.h"
 
 ALSAttackTutorial::ALSAttackTutorial()
@@ -41,6 +44,10 @@ ALSAttackTutorial::ALSAttackTutorial()
 	bReplicates = true;
 	CorrectCauserCharacter = ELSCharacterChoice::None;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest3;
+
+	//Script Asset
+	ScriptAssetNameSiJae = FName(TEXT("LSAttackTutorial"));
+	ScriptAssetNameIJae = FName(TEXT("LSAttackTutorial"));
 }
 
 void ALSAttackTutorial::BeginPlay()
@@ -137,6 +144,15 @@ void ALSAttackTutorial::PuzzleDeactivate()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
+}
+
+void ALSAttackTutorial::InteractionProcess(APlayerController* InPlayerController)
+{
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+
+	Script = InteractionScriptDataSiJae->GetInteractionScripts(PuzzleActivateEnum)[0];
+	ScriptController->UpdateScriptWidget(Script);
 }
 
 void ALSAttackTutorial::SpawnSystem()

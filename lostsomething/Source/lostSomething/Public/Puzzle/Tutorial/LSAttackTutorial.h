@@ -23,7 +23,6 @@ public:
 	ALSAttackTutorial();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 protected:
@@ -50,6 +49,8 @@ protected:
 	void OnQuestChange(struct FLSQuestData InQuestData, enum ELSInteractionEnum InQuestEnum);
 	void PuzzleActivate();
 	void PuzzleDeactivate();
+
+	virtual void InteractionProcess(APlayerController* InPlayerController) override;
 
 
 //Effect
