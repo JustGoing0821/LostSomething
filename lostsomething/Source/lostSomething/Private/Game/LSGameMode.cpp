@@ -175,19 +175,29 @@ void ALSGameMode::PostLogin(APlayerController* NewPlayer)
 	//LS_LOG(LogLS, Log, TEXT("Begin"));
 }
 
-void ALSGameMode::StartGame()
+void ALSGameMode::StartGame(bool bisNeedQuestComplete)
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		{
-			//Quest Start
-			if (CurrentPlayerCount == 2)
-			{
-				QuestStart();
-			}
-		}
-	), 2.f, false);
+	//FTimerHandle Handle;
+	//GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	//	{
+	//		//Quest Start
+	//		if (CurrentPlayerCount == 2)
+	//		{
+	//			QuestStart();
+	//		}
+	//	}
+	//), 2.f, false);
+
+	if (bisNeedQuestComplete)
+	{
+		QuestComplete();
+	}
+	else
+	{
+		QuestStart();
+	}
 
 	OnStartGame.Broadcast();
 }
