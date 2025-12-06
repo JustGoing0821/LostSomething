@@ -13,6 +13,12 @@
 #include "GameFramework/PlayerState.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
+#include "Character/UI/LSHUDWidget.h"
+#include "Character/UI/LSHpWidget.h"
+#include "Character/UI/LSChatWidget.h"
+#include "Character/UI/LSScriptWidget.h"
+#include "Character/UI/BloodWidget.h"
+#include "Character/UI/LSDeathWidget.h" 
 #include "UserInterface/LSQuestWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Puzzle/UI/LS2DPuzzleHUD.h"
@@ -25,6 +31,7 @@
 #include "Engine/Engine.h"
 #include "UserInterface/MiniMap/MiniMapWidget.h"
 #include "UserInterface/MenuWidget.h"
+#include "Runtime/MediaAssets/Public/FileMediaSource.h"
 
 
 ALSPlayerController::ALSPlayerController()
@@ -105,7 +112,20 @@ ALSPlayerController::ALSPlayerController()
 		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
 	}
 
+	static ConstructorHelpers::FClassFinder<UUserWidget> MediaPlayerWidgetRef(TEXT("/Game/Sequences/Sequencers/SequencePlayers/WBP_LSMediaPlay.WBP_LSMediaPlay_C"));
+	if (MediaPlayerWidgetRef.Class)
+	{
+		MediaPlayerWidgetClass = MediaPlayerWidgetRef.Class;
+	}
+
 	bIs2DPuzzleActive = false;
+}
+
+void ALSPlayerController::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	
 }
 
 void ALSPlayerController::BeginPlay()
@@ -158,8 +178,8 @@ void ALSPlayerController::BeginPlay()
 	//minimap
 	CreateMinimapWidget();
 
-	//Menu
 
+	//Menu
 	if (IsLocalController() && MenuWidgetClass)
 	{
 		MenuWidget = CreateWidget<UMenuWidget>(this, MenuWidgetClass);
@@ -175,7 +195,7 @@ void ALSPlayerController::BeginPlay()
 		BloodWidget = CreateWidget<UBloodWidget>(this, BloodWidgetClass);
 		if (BloodWidget)
 		{
-		
+
 			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("BloodhWidget Created."));
 		}
 	}
@@ -212,11 +232,17 @@ void ALSPlayerController::BeginPlay()
 	}
 
 	SetInputMode(FInputModeGameOnly());
+	//if (IsLocalController() && !HasAuthority())
+	//{
+	//	ServerRPCStartGame();
+	//}
 
-
-	if (IsLocalController() && !HasAuthority())
+	if (IsLocalController())
 	{
-		ServerRPCStartGame();
+		if (LSHUDWidget)	 LSHUDWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (LSHpWidget) LSHpWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -361,7 +387,7 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 
 	if (IsLocalController())
 	{
-		QuestWidget->UpdateQuestWidget(InQuestData);
+		if(QuestWidget) QuestWidget->UpdateQuestWidget(InQuestData);
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 	else
@@ -499,12 +525,12 @@ void ALSPlayerController::OnClear2DPuzzle()
 
 void ALSPlayerController::UpdateAim(const FString& InString)
 {
-	LSHUDWidget->UpdateAim(InString);
+	if(LSHUDWidget) LSHUDWidget->UpdateAim(InString);
 }
 
 void ALSPlayerController::Update2DPuzzleTimer(float Timer)
 {
-	LS2DPuzzleHUDWidget->UpdateTimer(Timer);
+	if(LS2DPuzzleHUDWidget) LS2DPuzzleHUDWidget->UpdateTimer(Timer);
 }
 
 void ALSPlayerController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
@@ -522,7 +548,7 @@ void ALSPlayerController::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 void ALSPlayerController::CalledOnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 {
 	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsSiJaeDragging);
-	LS2DPuzzleHUDWidget->SetbIsSiJaeDragging(InIsSiJaeDragging);
+	if(LS2DPuzzleHUDWidget) LS2DPuzzleHUDWidget->SetbIsSiJaeDragging(InIsSiJaeDragging);
 }
 
 void ALSPlayerController::GetSiJaeLocalCursor()
@@ -596,6 +622,89 @@ void ALSPlayerController::StopKeyInput()
 	}
 }
 
+void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource)
+{
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	StopKeyInput();
+	SetInputMode(FInputModeUIOnly());
+
+	if (IsLocalController())
+	{
+		if (LSHUDWidget)	 LSHUDWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (LSHpWidget) LSHpWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
+		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+		StopBGM();
+
+		if (!InIsMediaPlay) return;
+
+		if (MediaPlayerWidgetClass)
+		{
+			UUserWidget* MediaPlayerWidget = CreateWidget<UUserWidget>(this, MediaPlayerWidgetClass);
+			if (MediaPlayerWidget)
+			{
+				UFunction* Func = MediaPlayerWidget->FindFunction(FName("SetMediaParams"));
+				if (Func)
+				{
+					struct { 
+						bool bIsMapStart;
+						bool bisNeedQuestComplete;
+						UFileMediaSource* Source;
+					} Params;
+
+					Params.bIsMapStart = InIsMapStart;
+					Params.bisNeedQuestComplete = InNeedQuestComplete;
+					Params.Source = InSource;
+					MediaPlayerWidget->ProcessEvent(Func, &Params);
+				}
+
+				MediaPlayerWidget->AddToViewport();
+			}
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No MediaPlayerWidgetClass!!"));
+		}
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("Is Not Local Controller"));
+	}
+}
+
+void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplete)
+{
+	//LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
+
+	SetInputMode(FInputModeGameOnly());
+
+	if (IsLocalController())
+	{
+		if (LSHUDWidget)	 LSHUDWidget->SetVisibility(ESlateVisibility::Visible);
+		if (LSHpWidget) LSHpWidget->SetVisibility(ESlateVisibility::Visible);
+		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Visible);
+		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Visible);
+
+		StartBGM();
+	}
+
+	if (bIsMapStart && IsLocalController() && !HasAuthority())
+	{
+		ServerRPCStartGame(bisNeedQuestComplete);
+	}
+}
+
+void ALSPlayerController::StartBGM()
+{
+	OnBGMStart.Broadcast();
+}
+
+void ALSPlayerController::StopBGM()
+{
+	OnBGMStop.Broadcast();
+}
+
 void ALSPlayerController::ClientRPCUpdateQuestWidget_Implementation(FLSQuestData InQuestData)
 {
 	FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(CharacterChoice)).ToString();
@@ -603,7 +712,7 @@ void ALSPlayerController::ClientRPCUpdateQuestWidget_Implementation(FLSQuestData
 
 	if (this->IsLocalController())
 	{
-		QuestWidget->UpdateQuestWidget(InQuestData);
+		if(QuestWidget) QuestWidget->UpdateQuestWidget(InQuestData);
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }
@@ -688,12 +797,14 @@ void ALSPlayerController::MulticastRPCUpdate2DPuzzleTimer_Implementation(float T
 	}
 }
 
-void ALSPlayerController::ServerRPCStartGame_Implementation()
+void ALSPlayerController::ServerRPCStartGame_Implementation(bool bisNeedQuestComplete)
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
 	ILSStartGameInterface* GameMode = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->StartGame();
+		GameMode->StartGame(bisNeedQuestComplete);
 	}
 }
 
@@ -757,7 +868,7 @@ void ALSPlayerController::ClientMinimapWidget_Implementation()
 
 void ALSPlayerController::OpenMenu()
 {
-	MenuWidget->MenuVisibility();
+	if(MenuWidget) MenuWidget->MenuVisibility();
 }
 
 void ALSPlayerController::MenuToLevel(const FString& Option)
@@ -870,7 +981,7 @@ void ALSPlayerController::ClientRPCCallQuestClear_Implementation()
 
 	if (this->IsLocalController())
 	{
-		QuestWidget->CallQuestClear();
+		if(QuestWidget) QuestWidget->CallQuestClear();
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }
@@ -882,7 +993,15 @@ void ALSPlayerController::ClientRPCCallQuestStart_Implementation(FLSQuestData In
 
 	if (this->IsLocalController())
 	{
-		QuestWidget->CallQuestStart(InQuestData);
+		if (QuestWidget) QuestWidget->CallQuestStart(InQuestData);
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
+	}
+}
+
+void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource)
+{
+	if (IsLocalController())
+	{
+		StartSequence(InIsMediaPlay, InIsMapStart, InNeedQuestComplete, InSource);
 	}
 }

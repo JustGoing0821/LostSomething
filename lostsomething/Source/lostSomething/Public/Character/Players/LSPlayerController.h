@@ -4,13 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Character/UI/LSHUDWidget.h"
-#include "Character/UI/LSHpWidget.h"
-#include "Character/UI/LSChatWidget.h"
-#include "Character/UI/LSScriptWidget.h"
-#include "Character/UI/BloodWidget.h"
 #include "Character/Players/LSCharacterChoice.h"
-#include "Character/UI/LSDeathWidget.h" 
 #include "Interaction/LSInteractionEnum.h"
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
@@ -19,9 +13,9 @@
 #include "Interface/LSStopKeyInputInterface.h"
 #include "LSPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBGMStartDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBGMStopDelegate);
 
-class ULSChatWidget;
-class UMiniMapWidget;
 
 UCLASS()
 class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface, public ILSStopKeyInputInterface
@@ -31,8 +25,8 @@ class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public I
 public:
 	ALSPlayerController();
 	//수정 게터함수
-	FORCEINLINE ULSHUDWidget* GetLSHUDWidget() const { return LSHUDWidget; }
-	FORCEINLINE ULSHpWidget* GetLSHpWidget() const { return LSHpWidget; }
+	FORCEINLINE TObjectPtr<class ULSHUDWidget> GetLSHUDWidget() const { return LSHUDWidget; }
+	FORCEINLINE TObjectPtr<class ULSHpWidget> GetLSHpWidget() const { return LSHpWidget; }
 
 	//UFUNCTION(BlueprintCallable, Category = "HUD")
 	//void SelectNextSlot();
@@ -42,6 +36,7 @@ public:
 
 
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -60,7 +55,7 @@ protected:
 // HUD Section
 protected:
 	UPROPERTY()
-	ULSHUDWidget* HUDWidget;
+	TObjectPtr<class ULSHUDWidget> HUDWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
 	TSubclassOf<class ULSHUDWidget> LSHUDWidgetClass;
@@ -72,7 +67,7 @@ protected:
 // Hp widghet Section
 protected:
 	UPROPERTY()
-	ULSHpWidget* HpWidget;
+	TObjectPtr<class ULSHpWidget> HpWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HUD)
 	TSubclassOf<class ULSHpWidget> LSHpWidgetClass;
@@ -190,10 +185,10 @@ public:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI|Chat")
-	TSubclassOf<ULSChatWidget> ChatWidgetClass;
+	TSubclassOf<class ULSChatWidget> ChatWidgetClass;
 
 	UPROPERTY()
-	ULSChatWidget* ChatWidget = nullptr;
+	TObjectPtr<class ULSChatWidget> ChatWidget = nullptr;
 
 	float LastChatTimeServer = -1000.f;
 
@@ -264,6 +259,31 @@ public:
 public:
 	virtual void StopKeyInput() override;
 
+
+// Sequence Section
+public:
+	UFUNCTION(BlueprintCallable)
+	void StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource);
+	UFUNCTION(BlueprintCallable)
+	void EndSequence(bool bIsMapStart, bool bisNeedQuestComplete);
+
+protected:
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> MediaPlayerWidgetClass;
+
+//BGM Section
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnBGMStartDelegate OnBGMStart;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnBGMStopDelegate OnBGMStop;
+
+protected:
+	void StartBGM();
+	void StopBGM();
+
+
 //RPC
 public:
 	UFUNCTION(Client, Unreliable)
@@ -297,7 +317,7 @@ public:
 	void MulticastRPCUpdate2DPuzzleTimer(float Timer);
 
 	UFUNCTION(Server, Unreliable)
-	void ServerRPCStartGame();
+	void ServerRPCStartGame(bool bisNeedQuestComplete);
 
 	UFUNCTION(Server, Unreliable)
 	void ServerRPCStopMovement();
@@ -310,4 +330,7 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCCallQuestStart(FLSQuestData InQuestData);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPCStartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource);
 };
