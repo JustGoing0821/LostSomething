@@ -37,13 +37,12 @@ ALSCharacterChooseGameMode::ALSCharacterChooseGameMode()
 void ALSCharacterChooseGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (GameStartWidgetClass)
 	{
 		GameStartWidget = CreateWidget<UChooseCharacterEndWidget>(GetWorld(), GameStartWidgetClass);
 		if (GameStartWidget)
 		{
-			GameStartWidget->AddToViewport(0);
+			GameStartWidget->AddToViewport(5);
 			GameStartWidget->OnCharacterChooseEnd.BindUObject(this, &ALSCharacterChooseGameMode::GameStart);
 		}
 		else
