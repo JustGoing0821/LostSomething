@@ -171,7 +171,7 @@ void ALSTrainStep::StartInstallPuzzle()
 		float GoalPosXRate = FMath::FRandRange(0.14, 0.6);
 		int32 GoalPosYRate = FMath::RandRange(1, 2);
 
-		LS_LOG(LogLSls, Log, TEXT("GoalPosXRate, GoalPosYRate : %f, %d"), GoalPosXRate, GoalPosYRate);
+		//LS_LOG(LogLSls, Log, TEXT("GoalPosXRate, GoalPosYRate : %f, %d"), GoalPosXRate, GoalPosYRate);
 
 		FVector2D GoalPosRate = FVector2D(GoalPosXRate, GoalPosYRate);
 

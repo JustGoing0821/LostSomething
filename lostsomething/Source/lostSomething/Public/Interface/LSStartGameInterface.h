@@ -23,7 +23,7 @@ class LOSTSOMETHING_API ILSStartGameInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void StartGame() = 0;
+	virtual void StartGame(bool bisNeedQuestComplete) = 0;
 	virtual FOnStartGameDelegate& GetOnStartGameDelegate() = 0;
 };
 

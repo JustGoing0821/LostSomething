@@ -76,3 +76,7 @@ lostsomething/Content/Asset/*
 # lostsomething/Content/Stage/*
 lostsomething/Content/Stage/QuestData/*
 lostsomething/lostSomething.bat
+
+#SequenceMedias
+lostsomething/Content/Movies/*
+lostsomething/Content/Movies/
