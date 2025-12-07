@@ -90,7 +90,7 @@ public:
 	FORCEINLINE virtual const FVector2D& GetSiJaeCursorPos() override { return SiJaeCursorPos; }
 	FORCEINLINE virtual void SetSiJaeCursorPos(const FVector2D& InSiJaeCursorPos) override { SiJaeCursorPos = InSiJaeCursorPos; }
 	virtual void OnChangeSiJaeDragState(uint8 InIsSiJaeDragging) override;
-	virtual void Start2DPuzzle(float Timer, const FName& InWidgetName, const FVector2D& InGoalPos) override;
+	virtual void Start2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos) override;
 	virtual void End2DPuzzle() override;
 	virtual void OnClear2DPuzzle() override;
 
@@ -108,12 +108,12 @@ protected:
 
 // Puzzle Timer Section
 public:
+	virtual void StartPuzzleTimer(float InPuzzleTimerCount) override;
 
 protected:
 	FTimerHandle PuzzleTimerHandle;
 	float CurrentPuzzleTime;
 
-	void StartPuzzleTimer(float InPuzzleTimerCount);
 	void SetPuzzleTimer();
 	void EndPuzzleTimer();
 };

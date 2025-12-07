@@ -11,6 +11,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Character/Players/LSCharacterChoice.h"
+#include "Puzzle/Train/LSStepInteraction.h"
+#include "Interaction/LSInteractionScriptData.h" 
 #include "Interface/LSCharacterChoiceInterface.h"
 #include "Interface/LSScriptWidgetInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
@@ -47,6 +49,11 @@ ALSTrainStep::ALSTrainStep()
 	bReplicates = true;
 	bIsStepInstalled = false;
 	PuzzleTimer = 20.f;
+
+	//Script Asset
+	ScriptAssetNameSiJae = FName(TEXT("LSTrainStep"));
+	ScriptAssetNameIJae = FName(TEXT("LSTrainStep"));
+	CurrentQuest = ELSInteractionEnum::Quest7;
 }
 
 void ALSTrainStep::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -60,6 +67,8 @@ void ALSTrainStep::BeginPlay()
 {
 	Super::BeginPlay();
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+
+	PuzzleTimer = 20.f;
 
 	if (HasAuthority())
 	{
@@ -80,6 +89,8 @@ void ALSTrainStep::BeginPlay()
 		{
 			GameMode->Get2DPuzzleClearDelegate().AddUObject(this, &ALSTrainStep::InstallStep);
 			GameMode->Get2DPuzzleFailedDelegate().AddUObject(this, &ALSTrainStep::MulticastRPCFailedInstallPuzzle);
+			GameMode->StartPuzzleTimer(PuzzleTimer);
+			//LS_LOG(LogLSls, Log, TEXT("PuzzleTimer : %f"), PuzzleTimer);
 		}
 	}
 
@@ -101,43 +112,93 @@ void ALSTrainStep::BeginPlay()
 	//		}
 	//	), 1.0f, false, 2.0f);
 	//}
+
+
+}
+
+void ALSTrainStep::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//LS_LOG(LogLSls, Log, TEXT("Begin : %s"), *ScriptAssetNameSiJae.ToString());
 }
 
 void ALSTrainStep::InteractionProcess(APlayerController* InPlayerController)
 {
+	Super::InteractionProcess(InPlayerController);
+
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	ILSCharacterChoiceInterface* LSController = Cast<ILSCharacterChoiceInterface>(InPlayerController);
-	if (LSController)
+}
+
+void ALSTrainStep::InteractionProcessSiJae(APlayerController* InPlayerController)
+{
+	uint8 bIsStepGetted = false;
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSStepInteraction::StaticClass(), FoundActors);
+
+	for (AActor* Actor : FoundActors)
 	{
-		if (LSController->GetCharacterChoice() == ELSCharacterChoice::SiJae)
+		ALSStepInteraction* StepInteraction = Cast<ALSStepInteraction>(Actor);
+		if (StepInteraction)
 		{
-			if (HasAuthority())
-			{
-				//InstallStep();
-				StartInstallPuzzle();
-			}
-			else
-			{
-				//ServerRPCInstallStep();
-				ServerRPCStartInstallPuzzle();
-			}
+			bIsStepGetted = StepInteraction->GetbIsStepGetted();
+			break;
+		}
+	}
+
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	if (bIsStepGetted)
+	{
+		if (HasAuthority())
+		{
+			//InstallStep();
+			StartInstallPuzzle();
 		}
 		else
 		{
-			ILSScriptWidgetInterface* LSScript = Cast<ILSScriptWidgetInterface>(InPlayerController);
-			LSScript->UpdateScriptWidget(TEXT("I Can't Install Step"));
-			//if (HasAuthority())
-			//{
-			//	//InstallStep();
-			//	StartInstallPuzzle();
-			//}
-			//else
-			//{
-			//	//ServerRPCInstallStep();
-			//	ServerRPCStartInstallPuzzle();
-			//}
+			//ServerRPCInstallStep();
+			ServerRPCStartInstallPuzzle();
 		}
 	}
+	else
+	{
+		ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+		FString Script = "";
+		Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[2];
+		ScriptController->UpdateScriptWidget(Script);
+	}
+}
+
+void ALSTrainStep::InteractionProcessIJae(APlayerController* InPlayerController)
+{
+	uint8 bIsStepGetted = false;
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSStepInteraction::StaticClass(), FoundActors);
+
+	for (AActor* Actor : FoundActors)
+	{
+		ALSStepInteraction* StepInteraction = Cast<ALSStepInteraction>(Actor);
+		if (StepInteraction)
+		{
+			bIsStepGetted = StepInteraction->GetbIsStepGetted();
+			break;
+		}
+	}
+
+	ILSScriptWidgetInterface* LSScript = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+	
+	if (bIsStepGetted)
+	{
+		Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[3];
+	}
+	else
+	{
+		Script = InteractionScriptDataIJae->GetInteractionScripts(CurrentQuest)[4];
+	}
+
+	LSScript->UpdateScriptWidget(Script);
 }
 
 void ALSTrainStep::InstallStep()
@@ -182,7 +243,7 @@ void ALSTrainStep::StartInstallPuzzle()
 		ILS2DPuzzleGameModeInterface* GameMode = Cast<ILS2DPuzzleGameModeInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameMode)
 		{
-			GameMode->Start2DPuzzle(PuzzleTimer, TEXT("Step"), GoalPosRate);
+			GameMode->Start2DPuzzle(TEXT("Step"), GoalPosRate);
 		}
 	}
 

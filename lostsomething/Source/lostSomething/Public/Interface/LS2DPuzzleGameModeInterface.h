@@ -23,7 +23,7 @@ class LOSTSOMETHING_API ILS2DPuzzleGameModeInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Start2DPuzzle(float Timer, const FName& InWidgetName, const FVector2D& InGoalPos)=0;
+	virtual void Start2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos)=0;
 	virtual void End2DPuzzle()=0;
 	virtual void OnClear2DPuzzle() = 0;
 
@@ -31,6 +31,7 @@ public:
 	virtual void OnFailed2DPuzzle()=0;
 	virtual FOn2DPuzzleFailedDelegate& Get2DPuzzleFailedDelegate() = 0;
 
+	virtual void StartPuzzleTimer(float InPuzzleTimerCount) = 0;
 };
 
 //#include "Puzzle/UI/LS2DPuzzleDelegate.h"

@@ -3,6 +3,7 @@
 
 #include "Character/UI/LSScriptWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/Overlay.h"
 
 DEFINE_LOG_CATEGORY(LogLSWidget);
 
@@ -17,6 +18,9 @@ void ULSScriptWidget::NativeConstruct()
 	Script = Cast<UTextBlock>(GetWidgetFromName(TEXT("TxtScript")));
 	ensure(Script);
 
+	ScriptGroup = Cast<UOverlay>(GetWidgetFromName(TEXT("ScriptGroup")));
+	ensure(ScriptGroup);
+
 	//UE_LOG(LogLSWidget, Log, TEXT("Begin"));
 }
 
@@ -30,6 +34,16 @@ void ULSScriptWidget::UpdateScriptWidget(const FString& InScript)
 		Script->SetText(FText::FromString(InScript));
 	}
 
+	if ((InScript != "") && ScriptGroup)
+	{
+		ScriptGroup->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	if ((InScript == "") && ScriptGroup)
+	{
+		ScriptGroup->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
 	if (GetWorld()->GetTimerManager().IsTimerActive(ScriptTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(ScriptTimerHandle);
@@ -41,4 +55,9 @@ void ULSScriptWidget::UpdateScriptWidget(const FString& InScript)
 void ULSScriptWidget::ClearScriptWidget()
 {
 	Script->SetText(FText::FromString(""));
+
+	if (ScriptGroup)
+	{
+		ScriptGroup->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
