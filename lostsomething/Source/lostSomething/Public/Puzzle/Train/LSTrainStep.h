@@ -3,15 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Interface/LSInteractionInterface.h"
+#include "Interaction/LSInteractionActorBase.h"
 #include "LSTrainStep.generated.h"
 
 DECLARE_DELEGATE(FOnStepInstalledDelegate);
 DECLARE_DELEGATE(FOnStepInstallFailedDelegate);
 
 UCLASS()
-class LOSTSOMETHING_API ALSTrainStep : public AActor, public ILSInteractionInterface
+class LOSTSOMETHING_API ALSTrainStep : public ALSInteractionActorBase
 {
 	GENERATED_BODY()
 	
@@ -22,6 +21,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 
 //Mesh Section
 protected:
@@ -31,6 +31,8 @@ protected:
 //Interaction Section
 public:
 	virtual void InteractionProcess(APlayerController* InPlayerController) override;
+	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) override;
+	virtual void InteractionProcessIJae(APlayerController* InPlayerController) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Stage, Meta = (AllowPrivateAccess = "true"))

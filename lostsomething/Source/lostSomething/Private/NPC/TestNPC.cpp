@@ -7,7 +7,7 @@
 #include "Engine/DamageEvents.h"
 #include "Components/CapsuleComponent.h"
 #include <Net/UnrealNetwork.h>
-#include "LevelTest/Interface/LTTakeDamageInterface.h"
+//#include "LevelTest/Interface/LTTakeDamageInterface.h"
 #include "Interface/LSTakeDamageInterface.h"
 #include <NPC/AI/TestNPCAIController.h>
 #include "BehaviorTree/BlackboardData.h"

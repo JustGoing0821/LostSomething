@@ -386,7 +386,7 @@ void ALSGameMode::OnChangeSiJaeDragState(uint8 InIsSiJaeDragging)
 	}
 }
 
-void ALSGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName, const FVector2D& InGoalPos)
+void ALSGameMode::Start2DPuzzle(const FName& InWidgetName, const FVector2D& InGoalPos)
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
@@ -395,8 +395,6 @@ void ALSGameMode::Start2DPuzzle(float Timer, const FName& InWidgetName, const FV
 			PC->MulticastRPCStart2DPuzzle(InWidgetName, InGoalPos);
 		}
 	}
-
-	if (Timer > 0) StartPuzzleTimer(Timer);
 }
 
 void ALSGameMode::End2DPuzzle()
@@ -411,19 +409,21 @@ void ALSGameMode::End2DPuzzle()
 		}
 	}
 
-	EndPuzzleTimer();
+	//EndPuzzleTimer();
 }
 
 void ALSGameMode::OnClear2DPuzzle()
 {
 	QuestComplete();
 	End2DPuzzle();
+	EndPuzzleTimer();
 	On2DPuzzleClear.Broadcast();
 }
 
 void ALSGameMode::OnFailed2DPuzzle()
 {
 	End2DPuzzle();
+	EndPuzzleTimer();
 	On2DPuzzleFailed.Broadcast();
 }
 
@@ -436,6 +436,8 @@ void ALSGameMode::StartPuzzleTimer(float InPuzzleTimerCount)
 
 	CurrentPuzzleTime = InPuzzleTimerCount;
 	GetWorldTimerManager().SetTimer(PuzzleTimerHandle, this, &ALSGameMode::SetPuzzleTimer, 1.0f, true);
+
+	//LS_LOG(LogLSls, Log, TEXT("CurrentPuzzleTime : %f"), CurrentPuzzleTime);
 }
 
 void ALSGameMode::SetPuzzleTimer()
@@ -456,6 +458,8 @@ void ALSGameMode::SetPuzzleTimer()
 			}
 		}
 	}
+
+	//LS_LOG(LogLSls, Log, TEXT("CurrentPuzzleTime : %f"), CurrentPuzzleTime);
 }
 
 void ALSGameMode::EndPuzzleTimer()
