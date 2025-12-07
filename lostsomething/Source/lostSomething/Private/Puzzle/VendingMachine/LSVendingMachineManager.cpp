@@ -8,7 +8,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Puzzle/VendingMachine/LSVendingMachine.h"
+#include "Interaction/LSInteractionScriptData.h"
 #include "Interface/LSQuestInterface.h"
+#include "Interface/LSScriptWidgetInterface.h"
 #include "GameFramework/GameModeBase.h"
 #include "Quest/LSQuestManager.h"
 
@@ -63,6 +65,10 @@ ALSVendingMachineManager::ALSVendingMachineManager()
 	//MeshComponent->SetMaterial(1, MeshMaterials[EVendingMachineColor::Red]);
 
 	PuzzleActivateEnum = ELSInteractionEnum::Quest6;
+
+	//Script Asset
+	ScriptAssetNameSiJae = FName(TEXT("LSVendingMachineManager"));
+	ScriptAssetNameIJae = FName(TEXT("LSVendingMachineManager"));
 }
 
 void ALSVendingMachineManager::BeginPlay()
@@ -178,6 +184,11 @@ void ALSVendingMachineManager::SetVisibleIJae()
 
 void ALSVendingMachineManager::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+	Script = InteractionScriptDataSiJae->GetInteractionScripts(PuzzleActivateEnum)[0];
+	ScriptController->UpdateScriptWidget(Script);
+
 	if (HasAuthority())
 	{
 		StartPhase();
@@ -198,8 +209,12 @@ void ALSVendingMachineManager::InteractionProcessIJae(APlayerController* InPlaye
 	//{
 	//	ServerRPCStartPhase();
 	//}
-	LS_LOG(LogLS, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("IJae can't interact with this"));
 
+	ILSScriptWidgetInterface* ScriptController = Cast<ILSScriptWidgetInterface>(InPlayerController);
+	FString Script = "";
+	Script = InteractionScriptDataIJae->GetInteractionScripts(PuzzleActivateEnum)[1];
+	ScriptController->UpdateScriptWidget(Script);
 }
 
 void ALSVendingMachineManager::StartPhase()
