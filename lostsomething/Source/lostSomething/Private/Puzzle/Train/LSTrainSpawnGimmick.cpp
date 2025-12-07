@@ -8,12 +8,13 @@
 #include "Engine/DamageEvents.h"
 #include "Puzzle/Train/LSTrain.h"
 #include "Puzzle/Train/LSTrainStep.h"
-#include "LevelTest/Player/LTPlayerCharacter.h"
+//#include "LevelTest/Player/LTPlayerCharacter.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Players/LSCharacterChoice.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
 #include "Quest/LSQuestManager.h"
 #include "Character/Players/LSPlayerController.h"
 #include "Interface/LSCharacterChoiceInterface.h"
@@ -416,8 +417,6 @@ void ALSTrainSpawnGimmick::OnQuestChange(FLSQuestData InQuestData, ELSInteractio
 				}
 			}
 		}
-
-		//MulticastRPCPuzzleActivate();
 	}
 }
 
