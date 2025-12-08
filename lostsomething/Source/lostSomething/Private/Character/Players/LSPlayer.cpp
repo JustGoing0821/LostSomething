@@ -345,6 +345,8 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ALSPlayer, bisSequencePlaying);
+
 	DOREPLIFETIME(ALSPlayer, CurrentHp);
 	DOREPLIFETIME(ALSPlayer, bIsDead);
 
@@ -547,7 +549,7 @@ void ALSPlayer::PerformLineTrace()
 	{
 		CurrentDectectActor = nullptr;
 		TickDectectResultColor = FColor::Yellow;
-		AimScript = "Decouple";
+		AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[2];
 	}
 	else
 	{
@@ -757,6 +759,8 @@ void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInter
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (bisSequencePlaying) return DamageAmount;
 
 	if (HasAuthority())
 	{
@@ -1257,12 +1261,14 @@ void ALSPlayer::DropItemFromSlot()
 							//RefreshWeaponEquipFromCurrentSlot();
 							// 서버 : 클라이언트 것도 삭제
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+							SaveInventoryToGameInstance();
 						}
 						else
 						{
 							// 클라이언트  : 서버야 삭제 해줘
 							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
 							RefreshWeaponEquipFromCurrentSlot();
+							SaveInventoryToGameInstance();
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1641,6 +1647,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 		}
 		RefreshWeaponEquipFromCurrentSlot();
 	}
+	SaveInventoryToGameInstance();
 }
 
 
@@ -1952,7 +1959,7 @@ void ALSPlayer::Attack()
 
 void ALSPlayer::ProcessAttack()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
@@ -1970,7 +1977,7 @@ void ALSPlayer::ProcessAttack()
 
 	if (HitDetected)
 	{
-		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
+		//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
@@ -1982,7 +1989,7 @@ void ALSPlayer::ProcessAttack()
 
 		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
 		{
-			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
+			//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
 			
 			
 			//사운드
@@ -2609,3 +2616,13 @@ void ALSPlayer::ApplyCombineVisual(bool bCombined)
 
 
 
+//sequence
+void ALSPlayer::StartSequence_Implementation()
+{
+	bisSequencePlaying = true;
+}
+
+void ALSPlayer::EndSequence_Implementation()
+{
+	bisSequencePlaying = false;
+}

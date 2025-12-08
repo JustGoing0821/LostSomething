@@ -646,4 +646,23 @@ Combine Section
 
 	void Menu();
 
+
+
+/*******************
+
+Sequence Section
+
+********************/
+
+public:
+	UFUNCTION(Server, Unreliable)
+	void StartSequence();
+
+	UFUNCTION(Server, Unreliable)
+	void EndSequence();
+
+protected:
+	UPROPERTY(Replicated)
+	uint8 bisSequencePlaying : 1;
+
 };
