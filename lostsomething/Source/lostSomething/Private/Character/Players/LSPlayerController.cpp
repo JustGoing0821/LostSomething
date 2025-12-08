@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/Players/LSPlayer.h"
 #include "Character/UI/LSChatWidget.h"
 #include "Game/LSGameMode.h"
 #include "GameFramework/PlayerState.h"
@@ -628,6 +629,11 @@ void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, b
 	StopKeyInput();
 	SetInputMode(FInputModeUIOnly());
 
+
+	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
+	if (LSPlayer) LSPlayer->StartSequence();
+
+
 	if (IsLocalController())
 	{
 		if (LSHUDWidget)	 LSHUDWidget->SetVisibility(ESlateVisibility::Collapsed);
@@ -678,6 +684,9 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 	//LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
 
 	SetInputMode(FInputModeGameOnly());
+
+	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
+	if (LSPlayer) LSPlayer->EndSequence();
 
 	if (IsLocalController())
 	{
