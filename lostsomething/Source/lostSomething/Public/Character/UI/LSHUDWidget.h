@@ -101,12 +101,18 @@ protected:
 	FLinearColor SelectedSlotColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Colors")
-	FLinearColor UnselectedSlotColor = FLinearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	FLinearColor UnselectedSlotColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Border")
+	TSoftObjectPtr<UTexture2D> SelectedSlotBorderTexture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Border")
+	TSoftObjectPtr<UTexture2D> UnselectedSlotBorderTexture;
 
 private:
 	// 특정 슬롯의 테두리 색상 설정
 	void SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color);
-
+	void SetSlotBorderImage(int32 SlotIndex, UTexture2D* InTexture);
 
 //Aim Section
 public:

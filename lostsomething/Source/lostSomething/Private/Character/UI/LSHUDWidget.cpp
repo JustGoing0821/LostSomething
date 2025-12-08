@@ -49,6 +49,30 @@ void ULSHUDWidget::UpdateSlotBorderColors(int32 NewSelectedSlot)
 	// 매개변수가 전달되면 해당 값 사용, 아니면 기존 SelectedSlot 사용
 	int32 SlotToSelect = (NewSelectedSlot >= 0) ? NewSelectedSlot : SelectedSlot;
 
+	//이미지로 변경
+	UTexture2D* UnselectedTex = UnselectedSlotBorderTexture.IsValid()
+		? UnselectedSlotBorderTexture.Get()
+		: UnselectedSlotBorderTexture.LoadSynchronous();
+
+
+	UTexture2D* SelectedTex = SelectedSlotBorderTexture.IsValid()
+		? SelectedSlotBorderTexture.Get()
+		: SelectedSlotBorderTexture.LoadSynchronous();
+
+
+	for (int32 i = 0; i <= MaxSlots; ++i)
+	{
+		SetSlotBorderImage(i, UnselectedTex);
+	}
+
+	// 선택 슬롯 인덱스 적용
+	SelectedSlot = SlotToSelect;
+
+	// 선택된 슬롯만 "선택" 이미지로
+	SetSlotBorderImage(SlotToSelect, SelectedTex);
+
+
+
 
 	// 모든 슬롯을 기본 색상으로 설정
 	for (int32 i = 0; i <= MaxSlots; ++i)
@@ -174,6 +198,49 @@ void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color
 	{
 		UE_LOG(LogTemp, Error, TEXT("SlotBorder_%d is null! Check widget binding."), SlotIndex);
 	}
+}
+
+void ULSHUDWidget::SetSlotBorderImage(int32 SlotIndex, UTexture2D* InTexture)
+{
+	UBorder* TargetBorder = nullptr;
+
+	switch (SlotIndex)
+	{
+	case 0: TargetBorder = SlotBorder_0; break;
+	case 1: TargetBorder = SlotBorder_1; break;
+	case 2: TargetBorder = SlotBorder_2; break;
+	case 3: TargetBorder = SlotBorder_3; break;
+	case 4: TargetBorder = SlotBorder_4; break;
+	default:
+		//UE_LOG(LogTemp, Warning, TEXT("Invalid slot index: %d"), SlotIndex);
+		return;
+	}
+
+	if (!TargetBorder)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SlotBorder_%d is null! Check widget binding."), SlotIndex);
+		return;
+	}
+
+	if (InTexture)
+	{
+		FSlateBrush NewBrush;
+		NewBrush.SetResourceObject(InTexture);
+
+	
+		NewBrush.ImageSize = FVector2D(
+			InTexture->GetSizeX(),
+			InTexture->GetSizeY()
+		);
+
+		TargetBorder->SetBrush(NewBrush);
+	}
+	else
+	{
+		
+		TargetBorder->SetBrushColor(UnselectedSlotColor);
+	}
+
 }
 
 void ULSHUDWidget::UpdateAim(const FString& InString)
