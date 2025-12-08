@@ -345,6 +345,8 @@ void ALSPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ALSPlayer, bisSequencePlaying);
+
 	DOREPLIFETIME(ALSPlayer, CurrentHp);
 	DOREPLIFETIME(ALSPlayer, bIsDead);
 
@@ -547,7 +549,7 @@ void ALSPlayer::PerformLineTrace()
 	{
 		CurrentDectectActor = nullptr;
 		TickDectectResultColor = FColor::Yellow;
-		AimScript = "Decouple";
+		AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[2];
 	}
 	else
 	{
@@ -757,6 +759,8 @@ void ALSPlayer::RemoveOverlayMaterialToActor(AActor* TargetActor, UMaterialInter
 float ALSPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (bisSequencePlaying) return DamageAmount;
 
 	if (HasAuthority())
 	{
@@ -1955,7 +1959,7 @@ void ALSPlayer::Attack()
 
 void ALSPlayer::ProcessAttack()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
@@ -1973,7 +1977,7 @@ void ALSPlayer::ProcessAttack()
 
 	if (HitDetected)
 	{
-		LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
+		//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("HitDetected"));
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
 		if (ALSPlayer* HitPlayer = Cast<ALSPlayer>(OutHitResult.GetActor()))
@@ -1985,7 +1989,7 @@ void ALSPlayer::ProcessAttack()
 
 		else if (ILSTakeDamageInterface* HitNPC = Cast<ILSTakeDamageInterface>(OutHitResult.GetActor()))
 		{
-			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
+			//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ILSTakeDamageInterface Detected"));
 			
 			
 			//»ç¿îµå
@@ -2612,3 +2616,13 @@ void ALSPlayer::ApplyCombineVisual(bool bCombined)
 
 
 
+//sequence
+void ALSPlayer::StartSequence_Implementation()
+{
+	bisSequencePlaying = true;
+}
+
+void ALSPlayer::EndSequence_Implementation()
+{
+	bisSequencePlaying = false;
+}
