@@ -40,6 +40,14 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+
+//Characer Possesstion Section
+protected:
+	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
+	uint8 isSeverPossesed : 1;
+	virtual void SetDefaultPawn(APlayerController*& C);
+
+
 protected:
 	TSubclassOf<APawn> IJaePawnClass;
 	TSubclassOf<APawn> SiJaePawnClass;
