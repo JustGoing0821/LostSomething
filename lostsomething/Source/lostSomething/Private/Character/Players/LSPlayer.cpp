@@ -1257,12 +1257,14 @@ void ALSPlayer::DropItemFromSlot()
 							//RefreshWeaponEquipFromCurrentSlot();
 							// 서버 : 클라이언트 것도 삭제
 							//MultiDropItemFromSlot(ItemClass,SpawnLocation,SpawnRotation);
+							SaveInventoryToGameInstance();
 						}
 						else
 						{
 							// 클라이언트  : 서버야 삭제 해줘
 							ServerDropItemFromSlot(ItemClass, SpawnLocation, SpawnRotation, SelectedSlot);
 							RefreshWeaponEquipFromCurrentSlot();
+							SaveInventoryToGameInstance();
 						}
 
 						/*AMasterItem* SpawnedItem = GetWorld()->SpawnActor<AMasterItem>(
@@ -1641,6 +1643,7 @@ void ALSPlayer::ClientDropItemFromSlot_Implementation(int32 SlotIndex)
 		}
 		RefreshWeaponEquipFromCurrentSlot();
 	}
+	SaveInventoryToGameInstance();
 }
 
 
