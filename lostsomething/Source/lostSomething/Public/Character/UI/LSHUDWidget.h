@@ -101,7 +101,7 @@ protected:
 	FLinearColor SelectedSlotColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Colors")
-	FLinearColor UnselectedSlotColor = FLinearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	FLinearColor UnselectedSlotColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Border")
 	TSoftObjectPtr<UTexture2D> SelectedSlotBorderTexture;
