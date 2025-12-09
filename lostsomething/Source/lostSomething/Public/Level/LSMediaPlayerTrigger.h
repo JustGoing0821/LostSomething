@@ -28,6 +28,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
 	bool bisNeedQuestComplete;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
+	bool bisNeedLevelTransfer;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
 	TObjectPtr<class UFileMediaSource> VideoSource;
@@ -35,9 +38,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
 	TObjectPtr<class USoundBase> SoundSource;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
+	TSoftObjectPtr<UWorld> MoveTargetMap;
+
 protected:
 	UFUNCTION()
 	void OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UFUNCTION()
+	void OnEndSequenceCalled();
+
+	UFUNCTION(Server, Unreliable)
+	void StartLevelTransfer();
 
 
 };
