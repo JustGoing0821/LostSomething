@@ -30,7 +30,10 @@ protected:
 	bool bisNeedQuestComplete;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
-	TObjectPtr<class UFileMediaSource> MediaSource;
+	TObjectPtr<class UFileMediaSource> VideoSource;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LSCustom")
+	TObjectPtr<class USoundBase> SoundSource;
 
 protected:
 	UFUNCTION()

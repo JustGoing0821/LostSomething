@@ -64,7 +64,7 @@ ALSGameMode::ALSGameMode()
 
 	//2D Section
 	bIsSiJaeDragging = false;
-
+	isSeverPossesed = false;
 }
 
 APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -84,6 +84,9 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 		}
 	}
 
+	SetDefaultPawn(ResultController);
+
+	/*
 	//Used ChooseCharacterMap
 	if (GameInstance)
 	{
@@ -163,6 +166,7 @@ APlayerController* ALSGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
 			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
 		}
 	}
+	*/
 
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	return ResultController;
@@ -206,6 +210,141 @@ void ALSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+void ALSGameMode::HandleSeamlessTravelPlayer(AController*& C)
+{
+	Super::HandleSeamlessTravelPlayer(C);
+
+	LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("Begin"));
+
+	if (C && C->PlayerState)
+	{
+		LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("C is exist!"));
+		if (APawn* OldPawn = C->GetPawn())
+		{
+			LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("Destroy Pawn"));
+			OldPawn->Destroy();
+		}
+
+		APlayerController* PC = Cast<APlayerController>(C);
+		SetDefaultPawn(PC);
+
+		// DefaultPawnClass 설정 확인
+		LS_LOG(LogLSls, Warning, TEXT("DefaultPawnClass : %s"), DefaultPawnClass ? *DefaultPawnClass->GetName() : TEXT("NONE"));
+
+
+		LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("RestartPlayer"));
+		RestartPlayer(C);
+
+		APawn* NewPawn = C->GetPawn();
+		LS_LOG(LogLSls, Warning, TEXT("After RestartPlayer - Pawn : %s"), NewPawn ? *NewPawn->GetName() : TEXT("NONE"));
+	}
+
+	LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("End"));
+}
+
+void ALSGameMode::SetDefaultPawn(APlayerController*& InController)
+{
+	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(GetGameInstance());
+
+	if (GameInstance)
+	{
+		ALSPlayerController* LSPlayerController = Cast<ALSPlayerController>(InController);
+		if (LSPlayerController)
+		{
+			if (GameInstance->isVR != true)
+			{
+				LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("CharacterPossess Start!"));
+				//VR 아닐때
+				if (!isSeverPossesed)
+				{
+					if (GameInstance->GetServerCharacterChoice() == ELSCharacterChoice::SiJae)
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+						DefaultPawnClass = SiJaePawnClass;
+						LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("DefaultPawnClass Setted!"));
+					}
+					else
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+						DefaultPawnClass = IJaePawnClass;
+						LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("DefaultPawnClass Setted!"));
+					}
+					CurrentPlayerCount++;
+					isSeverPossesed = true;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+					LS_LOG(LogLSls, Error, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+				}
+				else
+				{
+					if (GameInstance->GetClientCharacterChoice() == ELSCharacterChoice::IJae)
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+						DefaultPawnClass = IJaePawnClass;
+						LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("DefaultPawnClass Setted!"));
+					}
+					else
+					{
+						ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+						LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+						DefaultPawnClass = SiJaePawnClass;
+						LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("DefaultPawnClass Setted!"));
+					}
+					CurrentPlayerCount++;
+					isSeverPossesed = false;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+					LS_LOG(LogLS, Error, TEXT("%s Setting %s"), *LSPlayerController->GetName(), *EnumString);
+				}
+			}
+			else
+			{
+				//VR 일때
+				if (!isSeverPossesed)
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::SiJae);
+					DefaultPawnClass = SiJaePawnClass;
+
+					CurrentPlayerCount++;
+					isSeverPossesed = true;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				}
+				else
+				{
+					ILSCharacterChoiceInterface* LSCharacterChoice = Cast<ILSCharacterChoiceInterface>(LSPlayerController);
+					LSCharacterChoice->SetCharacterChoice(ELSCharacterChoice::IJae);
+					DefaultPawnClass = VRPawnClass;
+
+					CurrentPlayerCount++;
+					isSeverPossesed = false;
+
+					FString EnumString = StaticEnum<ELSCharacterChoice>()->GetNameByValue(static_cast<int64>(LSPlayerController->GetCharacterChoice())).ToString();
+				}
+			}
+
+			//Quest Widget Update Bind
+			QuestManager->OnQuestClearWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestClear);
+			QuestManager->OnQuestStartWidget.AddUObject(LSPlayerController, &ALSPlayerController::CallQuestStart);
+			QuestManager->OnQuestStart.AddUObject(LSPlayerController, &ALSPlayerController::UpdateQuestWidget);
+		}
+		else
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("ALSPlayerController Not Found!!"));
+		}
+	}
+	else
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("GameInstance Not Found!!"));
+	}
+
+	LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("End"));
 }
 
 bool ALSGameMode::IsVRPlayer(APlayerController* Controller) const

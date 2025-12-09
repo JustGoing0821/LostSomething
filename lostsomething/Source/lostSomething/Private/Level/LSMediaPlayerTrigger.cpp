@@ -35,7 +35,7 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (!HasAuthority()) return;
 
-	if (!MediaSource)
+	if (!VideoSource || !SoundSource)
 	{
 		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No MediaSource!"));
 		return;
@@ -53,11 +53,11 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 				{
 					if (PC->IsLocalController())
 					{
-						PC->StartSequence(true, bIsMapStart, bisNeedQuestComplete, MediaSource);
+						PC->StartSequence(true, bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
 					}
 					else
 					{
-						PC->ClientRPCStartSequence(true, bIsMapStart, bisNeedQuestComplete, MediaSource);
+						PC->ClientRPCStartSequence(true, bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
 					}
 				}
 			}
