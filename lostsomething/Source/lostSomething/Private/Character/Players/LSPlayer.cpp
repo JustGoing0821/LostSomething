@@ -2031,11 +2031,25 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
-	/*if (!EquippedWeapon)
+	/*if (!EquippedWeaponMesh)
 	{
 		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
 		return;
 	}*/
+
+	const int32 SlotIndex = SelectedSlot;
+
+	if (!ItemInfoArray.IsValidIndex(SlotIndex))
+		return;
+
+	const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+	// 슬롯이 비었거나 무기가 아니면 해제
+	if (Info.IsEmpty || !Info.IsWeapon)
+	{
+		return;
+	}
+
 
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
