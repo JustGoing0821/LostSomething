@@ -623,7 +623,7 @@ void ALSPlayerController::StopKeyInput()
 	}
 }
 
-void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource)
+void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
 {
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	StopKeyInput();
@@ -656,12 +656,14 @@ void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, b
 					struct { 
 						bool bIsMapStart;
 						bool bisNeedQuestComplete;
-						UFileMediaSource* Source;
+						UFileMediaSource* VideoSource;
+						USoundBase* SoundSource;
 					} Params;
 
 					Params.bIsMapStart = InIsMapStart;
 					Params.bisNeedQuestComplete = InNeedQuestComplete;
-					Params.Source = InSource;
+					Params.VideoSource = InVideoSource;
+					Params.SoundSource = InSoundSource;
 					MediaPlayerWidget->ProcessEvent(Func, &Params);
 				}
 
@@ -1007,10 +1009,10 @@ void ALSPlayerController::ClientRPCCallQuestStart_Implementation(FLSQuestData In
 	}
 }
 
-void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InSource)
+void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
 {
 	if (IsLocalController())
 	{
-		StartSequence(InIsMediaPlay, InIsMapStart, InNeedQuestComplete, InSource);
+		StartSequence(InIsMediaPlay, InIsMapStart, InNeedQuestComplete, InVideoSource, InSoundSource);
 	}
 }
