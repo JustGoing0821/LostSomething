@@ -263,7 +263,7 @@ public:
 // Sequence Section
 public:
 	UFUNCTION(BlueprintCallable)
-	void StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
+	void StartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
 	UFUNCTION(BlueprintCallable)
 	void EndSequence(bool bIsMapStart, bool bisNeedQuestComplete);
 
@@ -332,5 +332,5 @@ public:
 	void ClientRPCCallQuestStart(FLSQuestData InQuestData);
 
 	UFUNCTION(Client, Unreliable)
-	void ClientRPCStartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
+	void ClientRPCStartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
 };
