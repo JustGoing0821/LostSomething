@@ -214,11 +214,13 @@ private:
     UFUNCTION(NetMulticast, Reliable)
     void MultiSpawnAOEAttack();
 
-    void HideGroupActor();
-    UFUNCTION(Server, Reliable)
-    void ServerHideGroupActor();
+    void HideGroupActor(int32 InCurrentPhase);
+
+    //UFUNCTION(Server, Reliable)
+    //void ServerHideGroupActor(int32 CurrentPhase);
+
     UFUNCTION(NetMulticast, Reliable)
-    void MultiHideGroupActor();
+    void MultiHideGroupActor(int32 InCurrentPhase);
 
     /////////////////// Dynamic Material Instance
     UPROPERTY()
