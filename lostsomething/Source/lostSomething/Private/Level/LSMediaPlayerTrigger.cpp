@@ -109,13 +109,13 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 
 void ALSMediaPlayerTrigger::OnEndSequenceCalled()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	StartLevelTransfer();
 }
 
 void ALSMediaPlayerTrigger::StartLevelTransfer_Implementation()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
