@@ -385,16 +385,21 @@ void ALSFindingPuzzle::BindQuestChange()
 
 void ALSFindingPuzzle::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	if (InQuestEnum== PuzzleActivateEnum)
-	{
-		MulticastRPCPuzzleActivate();
-		MulticastRPCLSSetMapIcon(true);
-	}
-	else
-	{
-		MulticastRPCPuzzleDeactivate();
-		MulticastRPCLSSetMapIcon(false);
-	}
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (InQuestEnum == PuzzleActivateEnum)
+			{
+				MulticastRPCPuzzleActivate();
+				MulticastRPCLSSetMapIcon(true);
+			}
+			else
+			{
+				MulticastRPCPuzzleDeactivate();
+				MulticastRPCLSSetMapIcon(false);
+			}
+		}
+	), 3.0f, false);
 }
 
 void ALSFindingPuzzle::PuzzleActivate()
