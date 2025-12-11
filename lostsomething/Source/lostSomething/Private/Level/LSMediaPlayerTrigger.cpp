@@ -31,7 +31,7 @@ ALSMediaPlayerTrigger::ALSMediaPlayerTrigger()
 void ALSMediaPlayerTrigger::BeginPlay()
 {
 	Super::BeginPlay();
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ALSMediaPlayerTrigger::OnTriggerBeginOverlap);
 
@@ -45,7 +45,7 @@ void ALSMediaPlayerTrigger::BeginPlay()
 					if (PlayerController && !PlayerController->IsLocalController())
 					{
 						SetOwner(PlayerController);
-						LS_LOG(LogLSls, Log, TEXT("Owner Setted."));
+						//LS_LOG(LogLSls, Log, TEXT("Owner Setted."));
 						break;
 					}
 				}
@@ -70,11 +70,11 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 		{
 			if (ALSPlayerController* PC = Cast<ALSPlayerController>(Iterator->Get()))
 			{
-				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Check ALSPlayerController"));
+				//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Check ALSPlayerController"));
 				if (PC->IsLocalController())
 				{
 					PC->OnBGMStart.AddDynamic(this, &ALSMediaPlayerTrigger::OnEndSequenceCalled);
-					LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Binded"));
+					//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Binded"));
 				}
 			}
 		}
@@ -94,11 +94,11 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 				{
 					if (PC->IsLocalController())
 					{
-						PC->StartSequence(true, bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
+						PC->StartSequence(bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
 					}
 					else
 					{
-						PC->ClientRPCStartSequence(true, bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
+						PC->ClientRPCStartSequence(bIsMapStart, bisNeedQuestComplete, VideoSource, SoundSource);
 					}
 				}
 			}
@@ -109,13 +109,13 @@ void ALSMediaPlayerTrigger::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 
 void ALSMediaPlayerTrigger::OnEndSequenceCalled()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	StartLevelTransfer();
 }
 
 void ALSMediaPlayerTrigger::StartLevelTransfer_Implementation()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)

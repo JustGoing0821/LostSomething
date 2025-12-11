@@ -30,16 +30,10 @@ public:
 
 protected:
 	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtServerChoiceIJae;
+	TObjectPtr<class UTextBlock> TxtChoiceIJae;
 
 	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtClientChoiceIJae;
-
-	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtServerChoiceSiJae;
-
-	UPROPERTY()
-	TObjectPtr<class UTextBlock> TxtClientChoiceSiJae;
+	TObjectPtr<class UTextBlock> TxtChoiceSiJae;
 
 	UPROPERTY()
 	TObjectPtr<class UButton> BtnSiJae;

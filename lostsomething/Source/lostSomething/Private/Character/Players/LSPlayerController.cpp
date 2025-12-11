@@ -623,7 +623,7 @@ void ALSPlayerController::StopKeyInput()
 	}
 }
 
-void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
+void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
 {
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	StopKeyInput();
@@ -642,8 +642,6 @@ void ALSPlayerController::StartSequence(bool InIsMediaPlay, bool InIsMapStart, b
 		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 
 		StopBGM();
-
-		if (!InIsMediaPlay) return;
 
 		if (MediaPlayerWidgetClass)
 		{
@@ -1009,10 +1007,10 @@ void ALSPlayerController::ClientRPCCallQuestStart_Implementation(FLSQuestData In
 	}
 }
 
-void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
+void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource)
 {
 	if (IsLocalController())
 	{
-		StartSequence(InIsMediaPlay, InIsMapStart, InNeedQuestComplete, InVideoSource, InSoundSource);
+		StartSequence(InIsMapStart, InNeedQuestComplete, InVideoSource, InSoundSource);
 	}
 }
