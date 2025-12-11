@@ -31,26 +31,39 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-
+	// 1. [시재(SiJae) 슬롯] 상태 결정
 	if (ServerChoice == ELSCharacterChoice::SiJae)
 	{
+		// 서버가 시재를 골랐으면 무조건 Host
 		TxtChoiceSiJae->SetText(FText::FromString(TEXT("Host")));
 	}
-	else if (ServerChoice == ELSCharacterChoice::IJae)
+	else if (ClientChoice == ELSCharacterChoice::SiJae)
 	{
-		TxtChoiceIJae->SetText(FText::FromString(TEXT("Host")));
+		// 서버가 시재가 아닌데, 클라가 시재를 골랐으면 Guest
+		TxtChoiceSiJae->SetText(FText::FromString(TEXT("Guest")));
+	}
+	else
+	{
+		// 아무도 시재를 안 골랐으면 빈카드로 (혹은 선택 가능 표시)
+		TxtChoiceSiJae->SetText(FText::GetEmpty());
 	}
 
-	if (ClientChoice == ELSCharacterChoice::SiJae)
+	// 2. [이재(IJae) 슬롯] 상태 결정
+	if (ServerChoice == ELSCharacterChoice::IJae)
 	{
-		TxtChoiceSiJae->SetText(FText::FromString(TEXT("Guest")));
+		TxtChoiceIJae->SetText(FText::FromString(TEXT("Host")));
 	}
 	else if (ClientChoice == ELSCharacterChoice::IJae)
 	{
 		TxtChoiceIJae->SetText(FText::FromString(TEXT("Guest")));
 	}
+	else
+	{
+		TxtChoiceIJae->SetText(FText::GetEmpty());
+	}
 	
 }
+
  void UCharacterChooseWidget::OnClickedBthSiJae()
 {
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::SiJae);
