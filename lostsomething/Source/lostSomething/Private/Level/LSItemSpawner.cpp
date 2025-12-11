@@ -75,7 +75,7 @@ void ALSItemSpawner::SpawnItem()
 
 	if (bIsWeapon)
 	{
-		GetWorld()->SpawnActor<AMasterItem>(WeaponItemArray[RandItem], GetActorLocation() - FVector(0, 0, 30), GetActorRotation());
+		GetWorld()->SpawnActor<AMasterItem>(WeaponItemArray[RandItem], GetActorLocation() - FVector(0, 0, 10), GetActorRotation());
 	}
 	else
 	{
