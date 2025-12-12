@@ -67,24 +67,10 @@ void UMenuWidget::MenuVisibility()
 	{
 		// 메뉴를 숨기고 GameOnly 모드로 전환
 		this->SetVisibility(ESlateVisibility::Hidden);
-		if (PC)
-		{
-			FInputModeGameOnly InputMode; // 게임 전용 모드 설정
-			PC->SetInputMode(InputMode);
-			PC->bShowMouseCursor = false; // 마우스 숨김
-		}
 	}
 	else // Hidden -> Visible
 	{
 		// 메뉴를 표시하고 GameAndUI 모드로 전환
 		this->SetVisibility(ESlateVisibility::Visible);
-		if (PC)
-		{
-			FInputModeGameAndUI InputMode; // 게임 및 UI 모드 설정
-			InputMode.SetWidgetToFocus(TakeWidget());
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			PC->SetInputMode(InputMode);
-			PC->bShowMouseCursor = true; // 마우스 보임
-		}
 	}
 }

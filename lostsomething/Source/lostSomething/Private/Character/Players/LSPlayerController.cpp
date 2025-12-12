@@ -193,7 +193,7 @@ void ALSPlayerController::BeginPlay()
 		MenuWidget = CreateWidget<UMenuWidget>(this, MenuWidgetClass);
 		if (MenuWidget)
 		{
-			MenuWidget->AddToViewport();
+			MenuWidget->AddToViewport(10);
 		}
 	}
 
@@ -928,12 +928,42 @@ void ALSPlayerController::ClientMinimapWidget_Implementation()
 
 void ALSPlayerController::OpenMenu()
 {
-	if(MenuWidget) MenuWidget->MenuVisibility();
+	if (MenuWidget)
+	{
+		MenuWidget->MenuVisibility();
+
+		// 메뉴 표시 상태에 따라 입력 모드 설정
+		bool bIsMenuVisible = (MenuWidget->GetVisibility() == ESlateVisibility::Visible);
+		ClientSetMenuInputMode(bIsMenuVisible);
+	}
 }
 
 void ALSPlayerController::MenuToLevel(const FString& Option)
 {
 	ServerMenuToLevel(Option);
+}
+
+void ALSPlayerController::ClientSetMenuInputMode_Implementation(bool bMenuVisible)
+{
+	if (bMenuVisible)
+	{
+		// 메뉴가 보일 때: GameAndUI 모드
+		FInputModeGameAndUI InputMode;
+		if (MenuWidget)
+		{
+			InputMode.SetWidgetToFocus(MenuWidget->TakeWidget());
+		}
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		SetInputMode(InputMode);
+		bShowMouseCursor = true;
+	}
+	else
+	{
+		// 메뉴가 숨겨질 때: GameOnly 모드
+		FInputModeGameOnly InputMode;
+		SetInputMode(InputMode);
+		bShowMouseCursor = false;
+	}
 }
 
 void ALSPlayerController::ServerMenuToLevel_Implementation(const FString& Option)
