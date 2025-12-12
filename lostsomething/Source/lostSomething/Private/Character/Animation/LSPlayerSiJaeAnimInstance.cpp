@@ -58,17 +58,17 @@ void ULSPlayerSiJaeAnimInstance::SetPickUpAnim()
 
 void ULSPlayerSiJaeAnimInstance::SetAttackAnim()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AttackAnim called"));
+	//UE_LOG(LogTemp, Warning, TEXT("AttackAnim called"));
 
 	if (!AttackMontage)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AttackMontage is NULL!"));
+		//UE_LOG(LogTemp, Error, TEXT("AttackMontage is NULL!"));
 		return;
 	}
 
 	if (!Montage_IsPlaying(AttackMontage))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
+		//UE_LOG(LogTemp, Warning, TEXT("Montage Playing Now"));
 		Montage_Play(AttackMontage);
 	}
 }

@@ -1928,7 +1928,7 @@ void ALSPlayer::Attack()
 
 	//UE_LOG(LogTemp, Error, TEXT("=== Attack() CALLED ==="));
 	//LS_LOG(LogLS, Warning, TEXT("Attack() called"));
-	MultiAttack();
+	//MultiAttack();
 
 
 	//LS_LOG(LogLS, Warning, TEXT(":Attack() called"));
@@ -1941,7 +1941,7 @@ void ALSPlayer::Attack()
 			// 아이템이 있으면 던지기
 			//LS_LOG(LogLS, Warning, TEXT("Item found in slot %d - throwing item"), CurrentSelectedSlot);
 			ThrowItem();
-			return;
+			//return;
 		}
 	}
 
@@ -1949,11 +1949,41 @@ void ALSPlayer::Attack()
 	//LS_LOG(LogLS, Warning, TEXT("No item in selected slot "));
 	if (HasAuthority())
 	{
-		MultiAttack();
+		if (CharacterChoice == ELSCharacterChoice::SiJae)
+		{
+			const int32 SlotIndex = SelectedSlot;
+			if (!ItemInfoArray.IsValidIndex(SlotIndex))
+				return;
+			const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+			if (Info.IsWeapon)
+			{
+				MultiAttack();
+			}
+
+			
+		}
+		
+
+		
 	}
 	else
 	{
-		ServerAttack();
+		if (CharacterChoice == ELSCharacterChoice::SiJae)
+		{
+			const int32 SlotIndex = SelectedSlot;
+			if (!ItemInfoArray.IsValidIndex(SlotIndex))
+				return;
+			const FItemDetails& Info = ItemInfoArray[SlotIndex];
+
+			if (Info.IsWeapon)
+			{
+				ServerAttack();
+			}
+		
+			
+		}
+		
 	}
 }
 
@@ -2031,11 +2061,17 @@ void ALSPlayer::ServerAttack_Implementation()
 
 void ALSPlayer::MultiAttack_Implementation()
 {
-	/*if (!EquippedWeapon)
+	/*if (!EquippedWeaponMesh)
 	{
 		LS_LOG(LogLS, Warning, TEXT("No weapon equipped - Attack blocked"));
 		return;
 	}*/
+
+	
+
+	// 슬롯이 비었거나 무기가 아니면 해제
+	
+
 
 	ULSPlayerSiJaeAnimInstance* AnimInstance = Cast<ULSPlayerSiJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
