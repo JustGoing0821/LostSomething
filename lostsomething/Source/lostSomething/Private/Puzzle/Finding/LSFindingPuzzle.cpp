@@ -50,6 +50,8 @@ ALSFindingPuzzle::ALSFindingPuzzle()
 	//Script Asset
 	ScriptAssetNameSiJae = FName(TEXT("LSFindingPuzzleSiJae"));
 	ScriptAssetNameIJae = FName(TEXT("LSFindingPuzzleIJae"));
+
+	bISTexturesUpdated = false;
 }
 
 void ALSFindingPuzzle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -108,7 +110,7 @@ void ALSFindingPuzzle::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	UAssetManager& Manager = UAssetManager::Get();
 
@@ -194,11 +196,24 @@ void ALSFindingPuzzle::PostInitializeComponents()
 			LS_LOG(LogLSls, Error, TEXT("No SijaeTexture!!"));
 		}
 	}
+
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
+
+	bISTexturesUpdated = true;
 }
 
 void ALSFindingPuzzle::InteractionProcess(APlayerController* InPlayerController)
 {
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	), 3.0f, false);
+
 	if (HasAuthority())
 	{
 		SetCurrentInteractController(InPlayerController);
@@ -309,12 +324,23 @@ void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerControl
 
 void ALSFindingPuzzle::SetVisibleSiJae()
 {
-	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (!Material)
 	{
 		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
 		return;
+	}
+
+	if (!bISTexturesUpdated)
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
+				SetVisibleSiJae();
+			}
+		), 2.0f, false);
 	}
 
 	int32 MaxCount = SijaeTextures.Num();
@@ -323,12 +349,23 @@ void ALSFindingPuzzle::SetVisibleSiJae()
 
 void ALSFindingPuzzle::SetVisibleIJae()
 {
-	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (!Material)
 	{
 		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
 		return;
+	}
+
+	if (!bISTexturesUpdated)
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
+				SetVisibleSiJae();
+			}
+		), 2.0f, false);
 	}
 
 	if (bIsCorrectPuzzle)
@@ -345,6 +382,7 @@ void ALSFindingPuzzle::SetVisibleIJae()
 
 void ALSFindingPuzzle::SetPuzzleAnswer(uint8 bInCorrectPuzzle)
 {
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (bInCorrectPuzzle)
 	{
 		bIsCorrectPuzzle = true;
@@ -373,6 +411,7 @@ void ALSFindingPuzzle::PuzzleCheck()
 
 void ALSFindingPuzzle::BindQuestChange()
 {
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (HasAuthority())
 	{
 		ILSQuestInterface* GameModeQuest = Cast<ILSQuestInterface>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -385,21 +424,19 @@ void ALSFindingPuzzle::BindQuestChange()
 
 void ALSFindingPuzzle::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-		{
-			if (InQuestEnum == PuzzleActivateEnum)
-			{
-				MulticastRPCPuzzleActivate();
-				MulticastRPCLSSetMapIcon(true);
-			}
-			else
-			{
-				MulticastRPCPuzzleDeactivate();
-				MulticastRPCLSSetMapIcon(false);
-			}
-		}
-	), 3.0f, false);
+	FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+
+	if (InQuestEnum == PuzzleActivateEnum)
+	{
+		MulticastRPCPuzzleActivate();
+		MulticastRPCLSSetMapIcon(true);
+	}
+	else
+	{
+		MulticastRPCPuzzleDeactivate();
+		MulticastRPCLSSetMapIcon(false);
+	}
 }
 
 void ALSFindingPuzzle::PuzzleActivate()
