@@ -27,6 +27,7 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "Interface/LSStartGameInterface.h"
 #include "BossNPC/BMSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
@@ -113,10 +114,16 @@ ALSPlayerController::ALSPlayerController()
 		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
 	}
 
+	//Sequence
 	static ConstructorHelpers::FClassFinder<UUserWidget> MediaPlayerWidgetRef(TEXT("/Game/Sequences/Sequencers/SequencePlayers/WBP_LSMediaPlay.WBP_LSMediaPlay_C"));
 	if (MediaPlayerWidgetRef.Class)
 	{
 		MediaPlayerWidgetClass = MediaPlayerWidgetRef.Class;
+	}
+	static ConstructorHelpers::FClassFinder<UUserWidget> WaitClientWidgetRef(TEXT("/Game/UI/Network/WBP_WaitClient.WBP_WaitClient_C"));
+	if (WaitClientWidgetRef.Class)
+	{
+		WaitClientWidgetClass = WaitClientWidgetRef.Class;
 	}
 
 	bIs2DPuzzleActive = false;
@@ -232,11 +239,29 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
-	SetInputMode(FInputModeGameOnly());
+	if (IsLocalController() && HasAuthority())
+	{
+		WaitClientWidget = CreateWidget<UUserWidget>(this, WaitClientWidgetClass);
+		if (WaitClientWidget)
+		{
+			WaitClientWidget->AddToViewport();
+			WaitClientWidget->SetVisibility(ESlateVisibility::Collapsed);
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
+		}
+
+		ILSStartGameInterface* GameModeGameStart = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeGameStart)
+		{
+			GameModeGameStart->GetOnStartGameDelegate().AddUObject(this, &ALSPlayerController::EndWaitClient);
+		}
+	}
+
 	//if (IsLocalController() && !HasAuthority())
 	//{
 	//	ServerRPCStartGame();
 	//}
+
+	SetInputMode(FInputModeGameOnly());
 
 	if (IsLocalController())
 	{
@@ -245,6 +270,8 @@ void ALSPlayerController::BeginPlay()
 		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
 		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
 }
 
 void ALSPlayerController::Tick(float DeltaTime)
@@ -681,9 +708,7 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 
 void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplete)
 {
-	//LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
-
-	SetInputMode(FInputModeGameOnly());
+	LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
 
 	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
 	if (LSPlayer) LSPlayer->EndSequence();
@@ -698,9 +723,35 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 		StartBGM();
 	}
 
-	if (bIsMapStart && IsLocalController() && !HasAuthority())
+
+	if (bIsMapStart && IsLocalController())
 	{
-		ServerRPCStartGame(bisNeedQuestComplete);
+		if (HasAuthority())
+		{
+			if (WaitClientWidget)
+			{
+				WaitClientWidget->SetVisibility(ESlateVisibility::Visible);
+				//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
+			}
+		}
+		else
+		{
+			ServerRPCStartGame(bisNeedQuestComplete);
+			SetInputMode(FInputModeGameOnly());
+		}
+	}
+	else if (!bIsMapStart && IsLocalController())
+	{
+		SetInputMode(FInputModeGameOnly());
+	}
+}
+
+void ALSPlayerController::EndWaitClient()
+{
+	if (IsLocalController())
+	{
+		SetInputMode(FInputModeGameOnly());
+		WaitClientWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

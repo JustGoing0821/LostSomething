@@ -129,11 +129,16 @@ void ALSAttackTutorial::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEn
 void ALSAttackTutorial::PuzzleActivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	MeshComponent->SetVisibility(true);
 
-	// SpawnSystem 커스텀 이벤트 호출
-	SpawnSystem();
-	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALSAttackTutorial::SpawnSystem, LoopDuration, true);
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (CorrectCauserCharacter == Cast<ILSCharacterChoiceInterface>(PC)->GetCharacterChoice())
+	{
+		MeshComponent->SetVisibility(true);
+
+		// SpawnSystem 커스텀 이벤트 호출
+		SpawnSystem();
+		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALSAttackTutorial::SpawnSystem, LoopDuration, true);
+	}
 }
 
 void ALSAttackTutorial::PuzzleDeactivate()
