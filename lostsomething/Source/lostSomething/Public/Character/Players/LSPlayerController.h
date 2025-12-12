@@ -267,9 +267,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndSequence(bool bIsMapStart, bool bisNeedQuestComplete);
 
+	void EndWaitClient();
+
 protected:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MediaPlayerWidgetClass;
+
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> WaitClientWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UUserWidget> WaitClientWidget;
 
 //BGM Section
 public:
