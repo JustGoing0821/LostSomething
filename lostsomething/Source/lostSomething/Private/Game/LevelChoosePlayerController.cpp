@@ -6,32 +6,37 @@
 
 ALevelChoosePlayerController::ALevelChoosePlayerController()
 {
-	static ConstructorHelpers::FClassFinder<ULevelChooseWidget> LevelChooseWidgetRef(TEXT("/Game/UI/Network/WBP_LevelChooseWidget.WBP_LevelChooseWidget_C"));
-	if (LevelChooseWidgetRef.Class)
-	{
-		LevelChooseWidgetClass = LevelChooseWidgetRef.Class;
-	}
+    bReplicates = true;
+}
+
+void ALevelChoosePlayerController::CreateLevelChooseWidget()
+{
+    if (HasAuthority())
+    {
+        Client_CreateLevelChooseWidget();
+    }
 }
 
 void ALevelChoosePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-    UE_LOG(LogTemp, Error, TEXT("ALevelChooseMapGameMode::BeginPlay()"));
+    UE_LOG(LogTemp, Error, TEXT("ALevelChoosePlayerController::BeginPlay()"));
 
-    if (IsLocalPlayerController() && HasAuthority())
+}
+
+void ALevelChoosePlayerController::Client_CreateLevelChooseWidget_Implementation()
+{
+    auto ui = CreateWidget<ULevelChooseWidget>(this, LevelChooseWidget);
+    if (ui)
     {
-        if (LevelChooseWidgetClass)
-        {
-            LevelChooseWidget = CreateWidget<ULevelChooseWidget>(this, LevelChooseWidgetClass);
-            if (LevelChooseWidget)
-            {
-                LevelChooseWidget->AddToViewport();
+        ui->AddToViewport();
 
-                // 마우스 커서 보이게 설정 (UI 맵이니까 필수)
-                bShowMouseCursor = true;
-                SetInputMode(FInputModeUIOnly());
-            }
-        }
+        // 마우스 커서 보이게 설정 (UI 맵이니까 필수)
+        bShowMouseCursor = true;
+        SetInputMode(FInputModeUIOnly());
+
+        bool bIsServer = HasAuthority();
+        ui->SetupInputPermission(bIsServer);
     }
 }

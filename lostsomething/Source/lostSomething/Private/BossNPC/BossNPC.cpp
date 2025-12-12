@@ -144,6 +144,7 @@ void ABossNPC::SetHP(float NewHP)
         CurrentPhase = 2;
         bIsPhaseChanging = true;
         DamageMontagePlay();
+        HideGroupActor(2);
     }
     else if (CurrentPhase == 2 && NewHP <= 40.0f)
     {
@@ -152,7 +153,7 @@ void ABossNPC::SetHP(float NewHP)
         CurrentPhase = 3; 
         bIsPhaseChanging = true;
         DamageMontagePlay();
-        HideGroupActor();
+        HideGroupActor(3);
     }
     CurrentHP = (NewHP < 0.0f) ? 0.0f : NewHP;
 }
@@ -265,32 +266,69 @@ void ABossNPC::EnterPhase3()
     }
 }
 
-void ABossNPC::HideGroupActor()
+void ABossNPC::HideGroupActor(int32 InCurrentPhase)
 {
     if (HasAuthority())
     {
-        ServerHideGroupActor();
+        MultiHideGroupActor(InCurrentPhase);
     }
 }
 
-void ABossNPC::ServerHideGroupActor_Implementation()
-{
-    MultiHideGroupActor();
-}
+//void ABossNPC::ServerHideGroupActor_Implementation(int32 CurrentPhase)
+//{
+//    MultiHideGroupActor(CurrentPhase);
+//}
 
-void ABossNPC::MultiHideGroupActor_Implementation()
+void ABossNPC::MultiHideGroupActor_Implementation(int32 InCurrentPhase)
 {
-    TArray<AActor*> FoundActors;
-    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("GroupActor")), FoundActors);
-
-    for (AActor* Actor : FoundActors)
+    if (InCurrentPhase == 2)
     {
-        if (Actor)
+        //LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Phase2Remove Begin"));
+        TArray<AActor*> Phase2RemoveActors;
+        UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Phase2Remove")), Phase2RemoveActors);
+        for (AActor* Actor : Phase2RemoveActors)
         {
-            Actor->SetActorHiddenInGame(true);
-            Actor->SetActorEnableCollision(false);
+            if (Actor)
+            {
+                Actor->SetActorHiddenInGame(true);
+                Actor->SetActorEnableCollision(false);
+            }
         }
     }
+    else
+    {
+        //LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Phase3Remove Begin"));
+        TArray<AActor*> Phase2RemoveActors;
+        UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Phase2Remove")), Phase2RemoveActors);
+        for (AActor* Actor : Phase2RemoveActors)
+        {
+            if (Actor)
+            {
+                Actor->SetActorHiddenInGame(true);
+                Actor->SetActorEnableCollision(false);
+            }
+        }
+
+        TArray<AActor*> Phase3RemoveActors;
+        UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Phase3Remove")), Phase3RemoveActors);
+        for (AActor* Actor : Phase3RemoveActors)
+        {
+            if (Actor)
+            {
+                Actor->SetActorHiddenInGame(true);
+                Actor->SetActorEnableCollision(false);
+            }
+        }
+    }
+
+    //for (AActor* Actor : FoundActors)
+    //{
+    //    if (Actor)
+    //    {
+    //        Actor->SetActorHiddenInGame(true);
+    //        Actor->SetActorEnableCollision(false);
+    //    }
+    //}
 }
 
 void ABossNPC::AOEMontagePlay()

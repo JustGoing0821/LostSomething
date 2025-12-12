@@ -18,10 +18,17 @@ class LOSTSOMETHING_API ALevelChooseMapGameMode : public AGameModeBase
 
 public:
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void MoveToCharacterSelect();
 
 protected:
 	virtual void BeginPlay() override;
 
+private:
+	void CheckAllPlayersReady_Level();
+
+	UPROPERTY()
+	int32 RequiredPlayerCount = 2;
 };

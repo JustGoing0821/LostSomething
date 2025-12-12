@@ -4,6 +4,7 @@
 #include "UserInterface/Network/CharacterChooseWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include <Game/LSGameInstance.h>
 
 UCharacterChooseWidget::UCharacterChooseWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -13,17 +14,11 @@ void UCharacterChooseWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TxtServerChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ServerChoiceIJae")));
-	ensure(TxtServerChoiceIJae);
+	TxtChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceIJae")));
+	ensure(TxtChoiceIJae);
 
-	TxtClientChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ClientChoiceIJae")));
-	ensure(TxtClientChoiceIJae);
-
-	TxtServerChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ServerChoiceSiJae")));
-	ensure(TxtServerChoiceSiJae);
-
-	TxtClientChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ClientChoiceSiJae")));
-	ensure(TxtClientChoiceSiJae);
+	TxtChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceSiJae")));
+	ensure(TxtChoiceSiJae);
 
 	BtnSiJae = Cast<UButton>(GetWidgetFromName(TEXT("btn_SiJae")));
 	ensure(BtnSiJae);
@@ -37,32 +32,53 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-	FColor sRGBColor = FColor::FromHex("2A2A3A");
-	FLinearColor TargetColor = FLinearColor::FromSRGBColor(sRGBColor);
+	auto GI = Cast<ULSGameInstance>(GetWorld()->GetGameInstance());
+	if (!GI)
+		return;
 
+	// 1. [시재(SiJae) 슬롯] 상태 결정
 	if (ServerChoice == ELSCharacterChoice::SiJae)
 	{
-		TxtServerChoiceSiJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		TxtServerChoiceIJae->SetColorAndOpacity(FSlateColor(TargetColor));
+		if(GI->NickName ==  "")
+			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Host")));
+		else
+			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
 	}
-	else if (ServerChoice == ELSCharacterChoice::IJae)
+	else if (ClientChoice == ELSCharacterChoice::SiJae)
 	{
-		TxtServerChoiceIJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		TxtServerChoiceSiJae->SetColorAndOpacity(FSlateColor(TargetColor));
+		if (GI->NickName == "")
+			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Guest")));
+		else
+			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
+	}
+	else
+	{
+		// 아무도 시재를 안 골랐으면 빈카드로 (혹은 선택 가능 표시)
+		TxtChoiceSiJae->SetText(FText::GetEmpty());
 	}
 
-	if (ClientChoice == ELSCharacterChoice::SiJae)
+	// 2. [이재(IJae) 슬롯] 상태 결정
+	if (ServerChoice == ELSCharacterChoice::IJae)
 	{
-		TxtClientChoiceSiJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		TxtClientChoiceIJae->SetColorAndOpacity(FSlateColor(TargetColor));
+		if (GI->NickName == "")
+			TxtChoiceIJae->SetText(FText::FromString(TEXT("Host")));
+		else
+			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
 	}
 	else if (ClientChoice == ELSCharacterChoice::IJae)
 	{
-		TxtClientChoiceIJae->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		TxtClientChoiceSiJae->SetColorAndOpacity(FSlateColor(TargetColor));
+		if (GI->NickName == "")
+			TxtChoiceIJae->SetText(FText::FromString(TEXT("Guest")));
+		else
+			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
+	}
+	else
+	{
+		TxtChoiceIJae->SetText(FText::GetEmpty());
 	}
 	
 }
+
  void UCharacterChooseWidget::OnClickedBthSiJae()
 {
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::SiJae);

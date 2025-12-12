@@ -263,13 +263,21 @@ public:
 // Sequence Section
 public:
 	UFUNCTION(BlueprintCallable)
-	void StartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
+	void StartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
 	UFUNCTION(BlueprintCallable)
 	void EndSequence(bool bIsMapStart, bool bisNeedQuestComplete);
+
+	void EndWaitClient();
 
 protected:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MediaPlayerWidgetClass;
+
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> WaitClientWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UUserWidget> WaitClientWidget;
 
 //BGM Section
 public:
@@ -332,5 +340,5 @@ public:
 	void ClientRPCCallQuestStart(FLSQuestData InQuestData);
 
 	UFUNCTION(Client, Unreliable)
-	void ClientRPCStartSequence(bool InIsMediaPlay, bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
+	void ClientRPCStartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
 };

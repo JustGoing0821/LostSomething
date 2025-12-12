@@ -30,7 +30,7 @@ void ALSFindingPuzzleManager::BeginPlay()
 
 void ALSFindingPuzzleManager::PuzzleStart()
 {
-	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSFindingPuzzle::StaticClass(), FoundActors);
@@ -87,11 +87,18 @@ void ALSFindingPuzzleManager::BindQuestChange()
 
 void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (InQuestEnum == PuzzleActivateEnum)
-	{
-		PuzzleStart();
-	}
+	FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (InQuestEnum == PuzzleActivateEnum)
+			{
+				PuzzleStart();
+			}
+		}
+	), 2.0f, false);
 }
 
 void ALSFindingPuzzleManager::QuestClear()
