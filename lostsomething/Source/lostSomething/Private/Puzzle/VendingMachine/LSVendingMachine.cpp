@@ -120,6 +120,14 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 {
 	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
 
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	), 2.0f, false);
+
 	if (HasAuthority())
 	{
 		SetCurrentInteractController(InPlayerController);
@@ -134,6 +142,8 @@ void ALSVendingMachine::InteractionProcess(APlayerController* InPlayerController
 
 void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerController)
 {
+	if (CurrentQuest != PuzzleActivateEnum) return;
+
 	//Script
 	TArray<FString> ScriptArray;
 	FString Script = "";
@@ -199,6 +209,8 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 		return;
 	}
 
+
+
 	if (HasAuthority())
 	{
 		PuzzleCheck();
@@ -211,6 +223,8 @@ void ALSVendingMachine::InteractionProcessSiJae(APlayerController* InPlayerContr
 
 void ALSVendingMachine::InteractionProcessIJae(APlayerController* InPlayerController)
 {
+	if (CurrentQuest != PuzzleActivateEnum) return;
+
 	//Script
 	TArray<FString> ScriptArray;
 	FString Script = "";
@@ -339,6 +353,7 @@ void ALSVendingMachine::PuzzleDeactivate()
 {
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetMaterial(0, GreyMaterial);
+	bisPhaseStart = false;
 }
 
 void ALSVendingMachine::SetMachineColor(EVendingMachineColor InAnswerColor, int32 InCurrentColorSet)

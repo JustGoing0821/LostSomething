@@ -10,7 +10,7 @@
 
 ALSMobDeadThreashold::ALSMobDeadThreashold()
 {
-	TargetKilledMobCount = 5;
+	TargetKilledMobCount = 3;
 	CurrentKilledMobCount = 0;
 	MobCleanEnum = ELSInteractionEnum::Quest0;
 }

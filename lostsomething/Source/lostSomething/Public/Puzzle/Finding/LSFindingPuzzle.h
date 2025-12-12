@@ -63,6 +63,7 @@ protected:
 
 	TArray<class UTexture2D*> SijaeTextures;
 
+	uint8 bISTexturesUpdated : 1;
 
 
 // Quest Section
