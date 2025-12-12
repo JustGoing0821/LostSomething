@@ -6,6 +6,8 @@
 #include "Components/Button.h"
 #include "Game/LevelType.h"
 #include <Game/LevelChooseMapGameMode.h>
+#include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 
 void ULevelChooseWidget::NativeConstruct()
 {
@@ -15,6 +17,7 @@ void ULevelChooseWidget::NativeConstruct()
 	btn_ChooseStage1->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage1);
 	btn_ChooseStage2->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage2);
 	btn_ChooseStage3->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage3);
+	btn_GoLobby->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_GoLobby);
 }
 
 void ULevelChooseWidget::OnMyClicked_ChooseNewStart()
@@ -35,6 +38,11 @@ void ULevelChooseWidget::OnMyClicked_ChooseStage2()
 void ULevelChooseWidget::OnMyClicked_ChooseStage3()
 {
 	MoveToCharacterChooseMap(ELevelType::Stage3);
+}
+
+void ULevelChooseWidget::OnMyClicked_GoLobby()
+{
+	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }
 
 void ULevelChooseWidget::MoveToCharacterChooseMap(ELevelType LevelType)
@@ -65,6 +73,34 @@ void ULevelChooseWidget::MoveToCharacterChooseMap(ELevelType LevelType)
 		if (GM)
 		{
 			GM->MoveToCharacterSelect();
+		}
+	}
+}
+
+void ULevelChooseWidget::SetupInputPermission(bool bCanSelect)
+{
+	if (bCanSelect)
+	{
+		if (btn_ChooseNewStart) btn_ChooseNewStart->SetIsEnabled(true);
+		if (btn_ChooseStage1) btn_ChooseStage1->SetIsEnabled(true);
+		if (btn_ChooseStage2) btn_ChooseStage2->SetIsEnabled(true);
+		if (btn_ChooseStage3) btn_ChooseStage3->SetIsEnabled(true);
+
+		if (txt_StatusMessage)
+		{
+			txt_StatusMessage->SetText(FText::FromString(TEXT("Please Select a Map")));
+		}
+	}
+	else
+	{
+		if (btn_ChooseNewStart) btn_ChooseNewStart->SetIsEnabled(false);
+		if (btn_ChooseStage1) btn_ChooseStage1->SetIsEnabled(false);
+		if (btn_ChooseStage2) btn_ChooseStage2->SetIsEnabled(false);
+		if (btn_ChooseStage3) btn_ChooseStage3->SetIsEnabled(false);
+
+		if (txt_StatusMessage)
+		{
+			txt_StatusMessage->SetText(FText::FromString(TEXT("Host is selecting the map...")));
 		}
 	}
 }

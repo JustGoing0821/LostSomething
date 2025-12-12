@@ -17,13 +17,16 @@ class LOSTSOMETHING_API ALevelChoosePlayerController : public APlayerController
 public:
 	ALevelChoosePlayerController();
 
+	UFUNCTION()
+	void CreateLevelChooseWidget();
+
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<class ULevelChooseWidget> LevelChooseWidgetClass;
+	UFUNCTION(Client, Reliable)
+	void Client_CreateLevelChooseWidget();
 
-	UPROPERTY()
-	TObjectPtr<class ULevelChooseWidget> LevelChooseWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UUserWidget> LevelChooseWidget;
 
 };
