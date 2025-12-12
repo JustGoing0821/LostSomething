@@ -164,6 +164,8 @@ public:
 	//클라->서버
 	UFUNCTION(Server, Reliable)
 	void ServerMenuToLevel(const FString& Option);
+	UFUNCTION(Client, Reliable)
+	void ClientSetMenuInputMode(bool bMenuVisible);
 
 
 
