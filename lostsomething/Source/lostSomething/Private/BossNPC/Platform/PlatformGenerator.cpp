@@ -9,8 +9,8 @@
 // Sets default values
 APlatformGenerator::APlatformGenerator()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = false;
     bReplicates = true;
 
 }
@@ -18,8 +18,8 @@ APlatformGenerator::APlatformGenerator()
 // Called when the game starts or when spawned
 void APlatformGenerator::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
     if (!BossNPC)
     {
         BossNPC = Cast<ABossNPC>(
@@ -31,13 +31,24 @@ void APlatformGenerator::BeginPlay()
 // Called every frame
 void APlatformGenerator::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
 }
 
 void APlatformGenerator::GenerateMaze()
 {
-	SpecialMap = GenerateConnectedSpecialPath();
+    if (BossNPC)
+    {
+        StartOrigin = BossNPC->GetActorLocation();
+        StartForward = BossNPC->GetActorForwardVector();
+        StartRight = BossNPC->GetActorRightVector();
+
+        // 혹시 보스가 위아래(Pitch)로 회전해 있다면 바닥이 기울어질 수 있으므로
+        // Z축 회전을 배제하고 싶다면 아래 주석처럼 벡터를 평탄화할 수 있습니다.
+        // StartForward.Z = 0; StartForward.Normalize();
+        // StartRight.Z = 0; StartRight.Normalize();
+    }
+    SpecialMap = GenerateConnectedSpecialPath();
     SpawnedColumns.Init(false, NumCols);
     SpawnTilesColumn(NumCols - 1);
 }
@@ -118,9 +129,9 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
     BossNPC->BMSoundPlay("Phase3");
     int32 Rows = SpecialMap.Num();
 
-    FVector Forward = BossNPC->GetActorForwardVector();
-    FVector Right = BossNPC->GetActorRightVector();
-    FVector Origin = BossNPC->GetActorLocation();
+    FVector Forward = StartForward;
+    FVector Right = StartRight;
+    FVector Origin = StartOrigin;
 
     // 행 중앙 기준 좌우 오프셋 (왼쪽으로 땡기려면 음수)
     float RowOffset = (Rows - 1) * 0.5f * TileSpacing;
@@ -131,7 +142,7 @@ void APlatformGenerator::SpawnTilesColumn(int32 ColIndex)
             Origin +
             Forward * (ColIndex * TileSpacing + 250.f) +
             Right * (Row * TileSpacing - RowOffset) +  // 여기서 좌측으로 땡김
-            FVector(0, 0, -140.f);
+            FVector(0, 0, -80.f);
 
         bool bIsSpecial = SpecialMap[Row][ColIndex];
         FRotator TileRotation = Forward.Rotation();

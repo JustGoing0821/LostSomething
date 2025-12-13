@@ -917,6 +917,17 @@ void ABossNPC::MultiDestroyObstacles_Implementation()
             Obstacle->Destroy();
         }
     }
+
+    TArray<AActor*> FoundSObstacles;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpecialObstacle::StaticClass(), FoundObstacles);
+
+    for (AActor* SObstacle : FoundObstacles)
+    {
+        if (SObstacle)
+        {
+            SObstacle->Destroy();
+        }
+    }
 }
 
 void ABossNPC::SpawnPlatform()
