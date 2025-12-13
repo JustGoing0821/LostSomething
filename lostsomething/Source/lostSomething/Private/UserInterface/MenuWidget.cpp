@@ -6,6 +6,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include "Game/LSGameMode.h"
 #include "Character/Players/LSPlayerController.h"
+#include <Game/LSGameInstance.h>
 
 void UMenuWidget::NativeConstruct()
 {
@@ -42,6 +43,9 @@ void UMenuWidget::GoLobby()
 {
 	if (PC && PC->IsLocalController())
 	{
+		auto GI = GetWorld()->GetGameInstance<ULSGameInstance>();
+		if(GI)
+			GI->ExitRoom();
 		PC->MenuToLevel("Lobby");
 	}
 }

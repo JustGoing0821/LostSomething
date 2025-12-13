@@ -18,15 +18,6 @@ class LOSTSOMETHING_API ALSCharacterChoiceController : public APlayerController
 public:
 	ALSCharacterChoiceController();
 
-	UFUNCTION(Client, Reliable)
-	void ClientReceiveNickNames(const FString& ServerNick, const FString& ClientNick);
-
-	UPROPERTY(BlueprintReadWrite)
-	FString ReceivedServerNickName;
-
-	UPROPERTY(BlueprintReadWrite)
-	FString ReceivedClientNickName;
-
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class UCharacterChooseWidget> CharacterChooseWidgetClass;

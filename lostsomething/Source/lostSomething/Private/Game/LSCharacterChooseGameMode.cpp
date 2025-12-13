@@ -35,37 +35,6 @@ ALSCharacterChooseGameMode::ALSCharacterChooseGameMode()
 	CharacterChoices.Add(ELSNetworkPosition::Client, ELSCharacterChoice::None);
 }
 
-void ALSCharacterChooseGameMode::PostLogin(APlayerController* NewPlayer)
-{
-	Super::PostLogin(NewPlayer);
-
-	if (!NewPlayer) return;
-
-	auto GI = Cast<ULSGameInstance>(NewPlayer->GetGameInstance());
-	if (!GI) return;
-
-	PlayerCount++;
-
-	if (PlayerCount == 1)
-	{
-		ServerPlayerNickName = GI->ServerNickName;
-	}
-	else if (PlayerCount == 2)
-	{
-		ClientPlayerNickName = GI->ClientNickName;
-
-		//모든 플레이어에게 닉네임 전송
-		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-		{
-			auto PC = Cast<ALSCharacterChoiceController>(It->Get());
-			if (PC)
-			{
-				PC->ClientReceiveNickNames(ServerPlayerNickName, ClientPlayerNickName);
-			}
-		}
-	}
-}
-
 void ALSCharacterChooseGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -131,41 +100,5 @@ void ALSCharacterChooseGameMode::GameStart()
 	else
 	{
 		LS_LOG(LogLS, Error, TEXT("%s"), TEXT("Character Choose Error"));
-	}
-}
-
-void ALSCharacterChooseGameMode::SetPlayerNickName(APlayerController* PC, const FString& NickName)
-{
-	if (!PC) return;
-
-	// 서버인지 클라이언트인지 확인
-	if (PC->GetLocalRole() == ROLE_Authority && PC->IsLocalController())
-	{
-		ServerPlayerNickName = NickName;
-	}
-	else
-	{
-		ClientPlayerNickName = NickName;
-	}
-
-	// 닉네임이 모두 설정되면 브로드캐스트
-	BroadcastNickNames();
-}
-
-void ALSCharacterChooseGameMode::BroadcastNickNames()
-{
-	// 모든 플레이어 컨트롤러에게 닉네임 전송
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		APlayerController* PC = It->Get();
-		if (PC)
-		{
-			auto GI = Cast<ULSGameInstance>(PC->GetGameInstance());
-			if (GI)
-			{
-				GI->ServerNickName = ServerPlayerNickName;
-				GI->ClientNickName = ClientPlayerNickName;
-			}
-		}
 	}
 }
