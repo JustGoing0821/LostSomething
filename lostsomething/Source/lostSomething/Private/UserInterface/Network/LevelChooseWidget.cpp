@@ -60,6 +60,7 @@ void ULevelChooseWidget::OnMyClicked_ChooseStage3()
 
 void ULevelChooseWidget::OnMyClicked_GoLobby()
 {
+	GI->ExitRoom();
 	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }
 

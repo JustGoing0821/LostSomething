@@ -106,5 +106,8 @@ void UCharacterChooseWidget::OnClickedBthIJae()
 
 void UCharacterChooseWidget::OnClickedBtnGoLobby()
 {
+    auto GI = GetWorld()->GetGameInstance<ULSGameInstance>();
+    if (GI)
+        GI->ExitRoom();
 	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }
