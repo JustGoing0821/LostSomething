@@ -81,6 +81,12 @@ public:
 
 	TMap<ELevelType, FString> LevelUrlMap;
 
+	UPROPERTY(BlueprintReadWrite)
+	FString ServerNickName;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString ClientNickName;
+
 	//=============================================
 	//     FUCTIONS
 	//=============================================
