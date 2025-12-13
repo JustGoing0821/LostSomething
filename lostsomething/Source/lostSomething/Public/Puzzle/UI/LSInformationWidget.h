@@ -24,6 +24,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> TxtInfo;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UImage> InformationImage;
+
 public:
-	void UpdateInfo(const FString& Script);
+	void UpdateInfo(const class ULSInformationData& InInformationData);
 };
