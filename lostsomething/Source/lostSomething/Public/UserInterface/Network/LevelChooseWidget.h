@@ -26,6 +26,13 @@ public:
 	class UButton* btn_ChooseStage2;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class UButton* btn_ChooseStage3;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	class UButton* btn_GoLobby;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	class UTextBlock* txt_StatusMessage;
+
+	void SetupInputPermission(bool bCanSelect);
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -41,6 +48,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void OnMyClicked_ChooseStage3();
+
+	UFUNCTION()
+	void OnMyClicked_GoLobby();
 
 	UFUNCTION()
 	void MoveToCharacterChooseMap(ELevelType LevelType);

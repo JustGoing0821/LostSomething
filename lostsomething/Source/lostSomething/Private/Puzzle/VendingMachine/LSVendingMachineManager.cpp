@@ -103,6 +103,7 @@ void ALSVendingMachineManager::BeginPlay()
 				VendingMachine->SetMachineNumber(CurrentMachine);
 				VendingMachine->BindVendingMachine(this);
 				VendingMachine->OnVMPuzzleCheck.BindUObject(this, &ALSVendingMachineManager::PuzzleCheck);
+				OnVMPuzzleEnd.AddUObject(VendingMachine, &ALSVendingMachine::MulticastRPCPuzzleDeactivate);
 				CurrentMachine++;
 			}
 		}

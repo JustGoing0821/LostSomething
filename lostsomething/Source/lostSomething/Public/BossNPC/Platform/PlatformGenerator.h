@@ -11,19 +11,30 @@ class ABossNPC;
 UCLASS()
 class LOSTSOMETHING_API APlatformGenerator : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	APlatformGenerator();
+    GENERATED_BODY()
+
+public:
+    // Sets default values for this actor's properties
+    APlatformGenerator();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+    // 맵 생성 시작 시점의 기준 정보를 저장할 변수들
+    UPROPERTY()
+    FVector StartOrigin;
+
+    UPROPERTY()
+    FVector StartForward;
+
+    UPROPERTY()
+    FVector StartRight;
+
+public:
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(EditAnywhere)
     TSubclassOf<AActor> NormalTileClass;

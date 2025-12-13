@@ -164,6 +164,8 @@ public:
 	//클라->서버
 	UFUNCTION(Server, Reliable)
 	void ServerMenuToLevel(const FString& Option);
+	UFUNCTION(Client, Reliable)
+	void ClientSetMenuInputMode(bool bMenuVisible);
 
 
 
@@ -267,9 +269,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndSequence(bool bIsMapStart, bool bisNeedQuestComplete);
 
+	void EndWaitClient();
+
+	uint8 bIsClientEnd : 1;
+
 protected:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MediaPlayerWidgetClass;
+
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> WaitClientWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UUserWidget> WaitClientWidget;
 
 //BGM Section
 public:

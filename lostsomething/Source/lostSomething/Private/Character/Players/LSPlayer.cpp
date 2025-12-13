@@ -1372,8 +1372,19 @@ void ALSPlayer::InitializeInventory()
 
 void ALSPlayer::SaveInventoryToGameInstance()
 {
+
+	if (!IsLocallyControlled())
+		return;
+
+	if (ULSGameInstance* GI = GetWorld()->GetGameInstance<ULSGameInstance>())
+	{
+		const ELSNetworkPosition Position = GetNetworkPositionForInventory();
+		GI->SaveInventory(Position, ItemInfoArray, SelectedSlot);
+	}
+
+
 	// 서버도 아니고, 로컬도 아니면 패스
-	if (!HasAuthority() && !IsLocallyControlled())
+	/*if (!HasAuthority() && !IsLocallyControlled())
 	{
 		return;
 	}
@@ -1388,7 +1399,7 @@ void ALSPlayer::SaveInventoryToGameInstance()
 			static_cast<int32>(Position),
 			ItemInfoArray.Num(),
 			SelectedSlot);
-	}
+	}*/
 }
 
 void ALSPlayer::LoadInventoryFromGameInstance()
@@ -1397,10 +1408,10 @@ void ALSPlayer::LoadInventoryFromGameInstance()
 	InitializeInventory();
 
 
-	if (!HasAuthority() && !IsLocallyControlled())
+	/*if (!HasAuthority() && !IsLocallyControlled())
 	{
 		return;
-	}
+	}*/
 
 	if (ULSGameInstance* LSGameInstance = GetWorld()->GetGameInstance<ULSGameInstance>())
 	{
@@ -1777,11 +1788,14 @@ void ALSPlayer::ThrowItem()
 					EmptySlot.IsEmpty = true;
 					ItemInfoArray[CurrentSelectedSlot] = EmptySlot;
 
+					SaveInventoryToGameInstance();
+
 					// UI 아이콘 제거
 					HUD->SetIcon(CurrentSelectedSlot, nullptr);
 					//UE_LOG(LogTemp, Warning, TEXT("Item thrown from slot %d"), CurrentSelectedSlot);
 				}
 			}
+			//SaveInventoryToGameInstance();
 		}
 	}
 }
@@ -2573,11 +2587,11 @@ void ALSPlayer::Menu()
 //item instance
 ELSNetworkPosition ALSPlayer::GetNetworkPositionForInventory() const
 {
-	//if (HasAuthority())
-	//{
-	//	
-	//	return IsLocallyControlled() ? ELSNetworkPosition::Server : ELSNetworkPosition::Client;
-	//}
+	if (HasAuthority())
+	{
+		
+		return IsLocallyControlled() ? ELSNetworkPosition::Server : ELSNetworkPosition::Client;
+	}
 
 	// 클라이언트
 	return ELSNetworkPosition::Client;

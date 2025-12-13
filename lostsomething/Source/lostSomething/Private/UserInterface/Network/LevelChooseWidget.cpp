@@ -6,6 +6,9 @@
 #include "Components/Button.h"
 #include "Game/LevelType.h"
 #include <Game/LevelChooseMapGameMode.h>
+#include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
+#include <Game/LevelChoosePlayerController.h>
 
 void ULevelChooseWidget::NativeConstruct()
 {
@@ -15,6 +18,24 @@ void ULevelChooseWidget::NativeConstruct()
 	btn_ChooseStage1->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage1);
 	btn_ChooseStage2->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage2);
 	btn_ChooseStage3->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_ChooseStage3);
+	btn_GoLobby->OnClicked.AddDynamic(this, &ULevelChooseWidget::OnMyClicked_GoLobby);
+
+	if (btn_ChooseNewStart) btn_ChooseNewStart->SetIsEnabled(false);
+	if (btn_ChooseStage1) btn_ChooseStage1->SetIsEnabled(false);
+	if (btn_ChooseStage2) btn_ChooseStage2->SetIsEnabled(false);
+	if (btn_ChooseStage3) btn_ChooseStage3->SetIsEnabled(false);
+
+	if (txt_StatusMessage)
+	{
+		txt_StatusMessage->SetText(FText::FromString(TEXT("Please Select a Map")));
+	}
+
+	auto PC = Cast<ALevelChoosePlayerController>(GetOwningPlayer());
+	if (PC)
+	{
+		// 3. 컨트롤러에게 "나 준비됐으니 서버에 알려줘"라고 요청
+		PC->Server_NotifyWidgetReady();
+	}
 }
 
 void ULevelChooseWidget::OnMyClicked_ChooseNewStart()
@@ -35,6 +56,12 @@ void ULevelChooseWidget::OnMyClicked_ChooseStage2()
 void ULevelChooseWidget::OnMyClicked_ChooseStage3()
 {
 	MoveToCharacterChooseMap(ELevelType::Stage3);
+}
+
+void ULevelChooseWidget::OnMyClicked_GoLobby()
+{
+	GI->ExitRoom();
+	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }
 
 void ULevelChooseWidget::MoveToCharacterChooseMap(ELevelType LevelType)
@@ -67,4 +94,33 @@ void ULevelChooseWidget::MoveToCharacterChooseMap(ELevelType LevelType)
 			GM->MoveToCharacterSelect();
 		}
 	}
+}
+
+void ULevelChooseWidget::SetupInputPermission(bool bCanSelect)
+{
+	if (bCanSelect)
+	{
+		if (btn_ChooseNewStart) btn_ChooseNewStart->SetIsEnabled(true);
+		if (btn_ChooseStage1) btn_ChooseStage1->SetIsEnabled(true);
+		if (btn_ChooseStage2) btn_ChooseStage2->SetIsEnabled(true);
+		if (btn_ChooseStage3) btn_ChooseStage3->SetIsEnabled(true);
+
+		if (txt_StatusMessage)
+		{
+			txt_StatusMessage->SetText(FText::FromString(TEXT("Please Select a Map")));
+		}
+	}
+	else
+	{
+		if (btn_ChooseNewStart) btn_ChooseNewStart->SetIsEnabled(false);
+		if (btn_ChooseStage1) btn_ChooseStage1->SetIsEnabled(false);
+		if (btn_ChooseStage2) btn_ChooseStage2->SetIsEnabled(false);
+		if (btn_ChooseStage3) btn_ChooseStage3->SetIsEnabled(false);
+
+		if (txt_StatusMessage)
+		{
+			txt_StatusMessage->SetText(FText::FromString(TEXT("Host is selecting the map...")));
+		}
+	}
+
 }

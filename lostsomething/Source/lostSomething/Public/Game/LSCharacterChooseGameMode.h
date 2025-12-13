@@ -29,6 +29,9 @@ public:
 
 	void SetCharacterChoice(bool bisServer, ELSCharacterChoice InCharacterChoice);
 
+	UPROPERTY()
+	int32 PlayerCount = 0;
+
 protected:
 	TMap<ELSNetworkPosition, ELSCharacterChoice> CharacterChoices;
 

@@ -22,13 +22,17 @@ public:
 	}
 
 	FORCEINLINE ELS2DWidgetProperty GetWidgetProperty() const { return WidgetProperty; }
-	FORCEINLINE const FString& GetInformationData() const { return InformationData; }
+	FORCEINLINE const FString& GetInformationScript() const { return InformationData; }
+	FORCEINLINE const TObjectPtr<class UTexture2D>& GetInformationImage() const { return InformationImage; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ELS2DWidgetProperty WidgetProperty;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MultiLine = true, ToolTip = "Multi-line text supported"))
 	FString InformationData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UTexture2D> InformationImage;
 };
 
 //#include "Level/LSInformationData.h"

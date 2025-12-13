@@ -27,14 +27,13 @@ ABossNPC::ABossNPC()
     // AIController가 자동으로 소환되도록 설정
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-    // 예시: SceneComponent 생성
     for (int i = 0; i < 9; ++i)
     {
         FString Name = FString::Printf(TEXT("SpawnPoint_%d"), i);
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
         float YOffset = (i - 3) * 76.0f;
-        SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, -45.f));
+        SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, 20.0f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
 
@@ -222,6 +221,9 @@ void ABossNPC::EnterPhase1()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         StartAOEAttackPattern();
     }
 }
@@ -231,6 +233,9 @@ void ABossNPC::EnterPhase2()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         // 장애물 스폰 패턴 시작
         SpawnObstacles();
     }
@@ -241,6 +246,9 @@ void ABossNPC::EnterPhase3()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         if (PlatformGeneratorClass)
         {
             FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
@@ -907,6 +915,17 @@ void ABossNPC::MultiDestroyObstacles_Implementation()
         if (Obstacle)
         {
             Obstacle->Destroy();
+        }
+    }
+
+    TArray<AActor*> FoundSObstacles;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpecialObstacle::StaticClass(), FoundObstacles);
+
+    for (AActor* SObstacle : FoundObstacles)
+    {
+        if (SObstacle)
+        {
+            SObstacle->Destroy();
         }
     }
 }

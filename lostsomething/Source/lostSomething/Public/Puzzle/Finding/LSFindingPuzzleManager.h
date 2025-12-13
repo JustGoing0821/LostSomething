@@ -34,4 +34,5 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Puzzle, Meta = (AllowPrivateAccess = "true"))
 	ELSInteractionEnum PuzzleActivateEnum;
 
+	ELSInteractionEnum CurrentQuestEnum;
 };

@@ -10,6 +10,7 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include <Kismet/KismetSystemLibrary.h>
 
 const int SWITCHER_INDEX_MENU = 0;
 const int SWITCHER_INDEX_CREATEROOM = 1;
@@ -38,6 +39,8 @@ void ULobbyWidget::NativeConstruct()
 		btn_GoMenuFromCreateRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
 	if(btn_GoMenuFromFindRoom)
 		btn_GoMenuFromFindRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
+	if (btn_GameExit)
+		btn_GameExit->OnClicked.AddDynamic(this, &ULobbyWidget::GameExit);
 
 }
 
@@ -124,6 +127,12 @@ void ULobbyWidget::OnMyGoCreateRoom()
 		{
 			// 적은 이름을 내 닉네임으로 하고싶다.
 			GI->NickName = edit_NickName->GetText().ToString();
+			GI->ServerNickName = GI->NickName;
+			
+			UE_LOG(LogTemp, Warning, TEXT("Server Nickname Set"));
+			UE_LOG(LogTemp, Warning, TEXT("   - NickName: %s"), *GI->NickName);
+			UE_LOG(LogTemp, Warning, TEXT("   - ServerNickName: %s"), *GI->ServerNickName);
+
 		}
 		else
 		{
@@ -147,6 +156,12 @@ void ULobbyWidget::OnMyGoFindRoom()
 		{
 			// 적은 이름을 내 닉네임으로 하고싶다.
 			GI->NickName = edit_NickName->GetText().ToString();
+			GI->ClientNickName = GI->NickName;
+
+			UE_LOG(LogTemp, Warning, TEXT(" Client Nickname Set"));
+			UE_LOG(LogTemp, Warning, TEXT("   - NickName: %s"), *GI->NickName);
+			UE_LOG(LogTemp, Warning, TEXT("   - ClientNickName: %s"), *GI->ClientNickName);
+
 		}
 		else
 		{
@@ -201,4 +216,9 @@ void ULobbyWidget::SetFindActive(bool bActive)
 		// txt_findingRooms를 안 보이게 하고싶다.
 		txt_FindingRooms->SetVisibility(ESlateVisibility::Hidden);
 	}
+}
+
+void ULobbyWidget::GameExit()
+{
+	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
 }

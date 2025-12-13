@@ -27,6 +27,7 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
+#include "Interface/LSStartGameInterface.h"
 #include "BossNPC/BMSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
@@ -113,13 +114,20 @@ ALSPlayerController::ALSPlayerController()
 		LS2DPuzzleHUDClass = LS2DPuzzleHUDRef.Class;
 	}
 
+	//Sequence
 	static ConstructorHelpers::FClassFinder<UUserWidget> MediaPlayerWidgetRef(TEXT("/Game/Sequences/Sequencers/SequencePlayers/WBP_LSMediaPlay.WBP_LSMediaPlay_C"));
 	if (MediaPlayerWidgetRef.Class)
 	{
 		MediaPlayerWidgetClass = MediaPlayerWidgetRef.Class;
 	}
+	static ConstructorHelpers::FClassFinder<UUserWidget> WaitClientWidgetRef(TEXT("/Game/UI/Network/WBP_WaitClient.WBP_WaitClient_C"));
+	if (WaitClientWidgetRef.Class)
+	{
+		WaitClientWidgetClass = WaitClientWidgetRef.Class;
+	}
 
 	bIs2DPuzzleActive = false;
+	bIsClientEnd = false;
 }
 
 void ALSPlayerController::PostInitializeComponents()
@@ -186,7 +194,7 @@ void ALSPlayerController::BeginPlay()
 		MenuWidget = CreateWidget<UMenuWidget>(this, MenuWidgetClass);
 		if (MenuWidget)
 		{
-			MenuWidget->AddToViewport();
+			MenuWidget->AddToViewport(10);
 		}
 	}
 
@@ -232,11 +240,29 @@ void ALSPlayerController::BeginPlay()
 		}
 	}
 
-	SetInputMode(FInputModeGameOnly());
+	if (IsLocalController() && HasAuthority())
+	{
+		WaitClientWidget = CreateWidget<UUserWidget>(this, WaitClientWidgetClass);
+		if (WaitClientWidget)
+		{
+			WaitClientWidget->AddToViewport();
+			WaitClientWidget->SetVisibility(ESlateVisibility::Collapsed);
+			//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
+		}
+
+		ILSStartGameInterface* GameModeGameStart = Cast<ILSStartGameInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameModeGameStart)
+		{
+			GameModeGameStart->GetOnStartGameDelegate().AddUObject(this, &ALSPlayerController::EndWaitClient);
+		}
+	}
+
 	//if (IsLocalController() && !HasAuthority())
 	//{
 	//	ServerRPCStartGame();
 	//}
+
+	SetInputMode(FInputModeGameOnly());
 
 	if (IsLocalController())
 	{
@@ -245,6 +271,8 @@ void ALSPlayerController::BeginPlay()
 		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
 		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
 }
 
 void ALSPlayerController::Tick(float DeltaTime)
@@ -683,8 +711,6 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 {
 	//LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
 
-	SetInputMode(FInputModeGameOnly());
-
 	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
 	if (LSPlayer) LSPlayer->EndSequence();
 
@@ -698,9 +724,37 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 		StartBGM();
 	}
 
-	if (bIsMapStart && IsLocalController() && !HasAuthority())
+
+	if (bIsMapStart && IsLocalController())
 	{
-		ServerRPCStartGame(bisNeedQuestComplete);
+		if (HasAuthority())
+		{
+			if (WaitClientWidget && !bIsClientEnd)
+			{
+				WaitClientWidget->SetVisibility(ESlateVisibility::Visible);
+				SetInputMode(FInputModeUIOnly());
+				//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
+			}
+		}
+		else
+		{
+			ServerRPCStartGame(bisNeedQuestComplete);
+			SetInputMode(FInputModeGameOnly());
+		}
+	}
+	else if (!bIsMapStart && IsLocalController())
+	{
+		SetInputMode(FInputModeGameOnly());
+	}
+}
+
+void ALSPlayerController::EndWaitClient()
+{
+	if (IsLocalController())
+	{
+		SetInputMode(FInputModeGameOnly());
+		WaitClientWidget->SetVisibility(ESlateVisibility::Collapsed);
+		bIsClientEnd = true;
 	}
 }
 
@@ -877,12 +931,42 @@ void ALSPlayerController::ClientMinimapWidget_Implementation()
 
 void ALSPlayerController::OpenMenu()
 {
-	if(MenuWidget) MenuWidget->MenuVisibility();
+	if (MenuWidget)
+	{
+		MenuWidget->MenuVisibility();
+
+		// 메뉴 표시 상태에 따라 입력 모드 설정
+		bool bIsMenuVisible = (MenuWidget->GetVisibility() == ESlateVisibility::Visible);
+		ClientSetMenuInputMode(bIsMenuVisible);
+	}
 }
 
 void ALSPlayerController::MenuToLevel(const FString& Option)
 {
 	ServerMenuToLevel(Option);
+}
+
+void ALSPlayerController::ClientSetMenuInputMode_Implementation(bool bMenuVisible)
+{
+	if (bMenuVisible)
+	{
+		// 메뉴가 보일 때: GameAndUI 모드
+		FInputModeGameAndUI InputMode;
+		if (MenuWidget)
+		{
+			InputMode.SetWidgetToFocus(MenuWidget->TakeWidget());
+		}
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		SetInputMode(InputMode);
+		bShowMouseCursor = true;
+	}
+	else
+	{
+		// 메뉴가 숨겨질 때: GameOnly 모드
+		FInputModeGameOnly InputMode;
+		SetInputMode(InputMode);
+		bShowMouseCursor = false;
+	}
 }
 
 void ALSPlayerController::ServerMenuToLevel_Implementation(const FString& Option)

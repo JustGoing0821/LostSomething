@@ -3,35 +3,50 @@
 
 #include "Game/LevelChoosePlayerController.h"
 #include "UserInterface/Network/LevelChooseWidget.h"
+#include <Game/LevelChooseMapGameMode.h>
+#include <Kismet/GameplayStatics.h>
 
 ALevelChoosePlayerController::ALevelChoosePlayerController()
 {
-	static ConstructorHelpers::FClassFinder<ULevelChooseWidget> LevelChooseWidgetRef(TEXT("/Game/UI/Network/WBP_LevelChooseWidget.WBP_LevelChooseWidget_C"));
-	if (LevelChooseWidgetRef.Class)
-	{
-		LevelChooseWidgetClass = LevelChooseWidgetRef.Class;
-	}
+    bReplicates = true;
+}
+
+void ALevelChoosePlayerController::CreateLevelChooseWidget()
+{
+    if (HasAuthority())
+    {
+        Client_CreateLevelChooseWidget();
+    }
+}
+
+void ALevelChoosePlayerController::Server_NotifyWidgetReady_Implementation()
+{
+    auto GM = Cast<ALevelChooseMapGameMode>(UGameplayStatics::GetGameMode(this));
+    if (GM)
+    {
+        GM->AddReadyPlayerCount(); // 게임모드 함수 호출
+    }
+}
+
+void ALevelChoosePlayerController::Client_UnlockButton_Implementation()
+{
+    LevelWidgetInstance->SetupInputPermission(HasAuthority());
 }
 
 void ALevelChoosePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-    UE_LOG(LogTemp, Error, TEXT("ALevelChooseMapGameMode::BeginPlay()"));
-
-    if (IsLocalPlayerController() && HasAuthority())
+void ALevelChoosePlayerController::Client_CreateLevelChooseWidget_Implementation()
+{
+    LevelWidgetInstance = CreateWidget<ULevelChooseWidget>(this, LevelChooseWidget);
+    if (LevelWidgetInstance)
     {
-        if (LevelChooseWidgetClass)
-        {
-            LevelChooseWidget = CreateWidget<ULevelChooseWidget>(this, LevelChooseWidgetClass);
-            if (LevelChooseWidget)
-            {
-                LevelChooseWidget->AddToViewport();
+        LevelWidgetInstance->AddToViewport();
 
-                // 마우스 커서 보이게 설정 (UI 맵이니까 필수)
-                bShowMouseCursor = true;
-                SetInputMode(FInputModeUIOnly());
-            }
-        }
+        // 마우스 커서 보이게 설정 (UI 맵이니까 필수)
+        bShowMouseCursor = true;
+        SetInputMode(FInputModeUIOnly());
     }
 }

@@ -15,6 +15,7 @@ ALSFindingPuzzleManager::ALSFindingPuzzleManager()
 {
 	bReplicates = true;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest11;
+	CurrentQuestEnum = ELSInteractionEnum::Quest0;
 }
 
 // Called when the game starts or when spawned
@@ -87,11 +88,20 @@ void ALSFindingPuzzleManager::BindQuestChange()
 
 void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
-	if (InQuestEnum == PuzzleActivateEnum)
-	{
-		PuzzleStart();
-	}
+	//FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	//LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+
+	CurrentQuestEnum = InQuestEnum;
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			if (CurrentQuestEnum == PuzzleActivateEnum)
+			{
+				PuzzleStart();
+			}
+		}
+	), 1.0f, false);
 }
 
 void ALSFindingPuzzleManager::QuestClear()

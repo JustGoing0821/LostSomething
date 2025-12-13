@@ -27,6 +27,11 @@ void ULSGameInstance::Init()
 	if (auto Subsystem = IOnlineSubsystem::Get())
 	{
 		SessionInterface = Subsystem->GetSessionInterface();
+		if (!SessionInterface.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to get SessionInterface!"));
+			return;
+		}
 
 		SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &ULSGameInstance::OnMyCreateRoomComplete);
 
@@ -113,7 +118,12 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 
 	// 세션 생성
 	UE_LOG(LogTemp, Warning, TEXT("All checks passed, creating session now..."));
-	SessionInterface->CreateSession(*NetID, FName("MySession"), Setting);
+	FGuid UniqueID = FGuid::NewGuid();
+	FString UniqueSessionName = FString::Printf(TEXT("Session_%s"), *UniqueID.ToString());
+
+	UE_LOG(LogTemp, Warning, TEXT("Creating session with name: %s"), *UniqueSessionName);
+
+	SessionInterface->CreateSession(*NetID, FName(*UniqueSessionName), Setting);
 
 	UE_LOG(LogTemp, Warning, TEXT("CreateRoom finished without crash."));
 }
@@ -192,7 +202,10 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 		// 여행을 떠나고 싶다.
 		auto pc = GetWorld()->GetFirstPlayerController();
 		if (pc)
+		{
 			pc->ClientTravel(url, TRAVEL_Absolute);
+		}
+			
 	}
 	// 그렇지않다면
 	else
@@ -209,6 +222,12 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
 	{
+		if (!RoomSearch.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("RoomSearch is not valid!"));
+			return;
+		}
+
 		auto SearchResult = RoomSearch->SearchResults[i];
 
 		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);

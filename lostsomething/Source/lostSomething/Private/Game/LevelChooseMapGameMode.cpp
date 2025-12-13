@@ -3,10 +3,30 @@
 
 #include "Game/LevelChooseMapGameMode.h"
 #include "UserInterface/Network/LevelChooseWidget.h"
+#include "Game/LevelChoosePlayerController.h"
 
 ALevelChooseMapGameMode::ALevelChooseMapGameMode()
 {
 
+}
+
+void ALevelChooseMapGameMode::PostLogin(APlayerController* NewPlayer)
+{
+    Super::PostLogin(NewPlayer);
+
+    auto MyPC = Cast<ALevelChoosePlayerController>(NewPlayer);
+    if (MyPC)
+    {
+        // 0.5초~1초 뒤에 부르도록 타이머 설정 (안전빵)
+        FTimerHandle WaitHandle;
+        GetWorld()->GetTimerManager().SetTimer(WaitHandle, [MyPC]()
+            {
+                if (MyPC && IsValid(MyPC)) // 포인터 유효성 체크
+                {
+                    MyPC->CreateLevelChooseWidget();
+                }
+            }, 2.0f, false); // 1초 뒤 실행
+    }
 }
 
 void ALevelChooseMapGameMode::MoveToCharacterSelect()
@@ -25,5 +45,41 @@ void ALevelChooseMapGameMode::MoveToCharacterSelect()
 
 void ALevelChooseMapGameMode::BeginPlay()
 {
-	UE_LOG(LogTemp, Error, TEXT("ALevelChooseMapGameMode::BeginPlay()"));
+}
+
+void ALevelChooseMapGameMode::CheckAllPlayersReady_Level()
+{
+    int32 CurrentPlayerCount = GetNumPlayers();
+
+    if (CurrentPlayerCount >= RequiredPlayerCount)
+    {
+        for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+        {
+            // Iterator->Get()으로 컨트롤러를 가져와서 내 컨트롤러 타입으로 캐스팅
+            ALevelChoosePlayerController* PC = Cast<ALevelChoosePlayerController>(Iterator->Get());
+
+            if (PC)
+            {
+                PC->CreateLevelChooseWidget();
+            }
+        }
+    }
+}
+
+void ALevelChooseMapGameMode::AddReadyPlayerCount()
+{
+    ReadyCount++;
+
+    if (ReadyCount >= RequiredPlayerCount)
+    {
+        // 모든 플레이어(Controller)에게 "버튼 잠금 해제해!" 명령 방송
+        for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+        {
+            auto PC = Cast<ALevelChoosePlayerController>(Iterator->Get());
+            if (PC)
+            {
+                PC->Client_UnlockButton(); // Client RPC 호출
+            }
+        }
+    }
 }

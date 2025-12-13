@@ -5,6 +5,7 @@
 #include "lostSomething.h"
 #include "UserInterface/Network/ChooseCharacterEndWidget.h"
 #include "Game/LSGameInstance.h"
+#include <Game/LSCharacterChoiceController.h>
 
 ALSCharacterChooseGameMode::ALSCharacterChooseGameMode()
 {

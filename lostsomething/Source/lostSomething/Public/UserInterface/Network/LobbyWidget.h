@@ -35,6 +35,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	class  UEditableText* edit_NickName;
 
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	class UButton* btn_GameExit;
+
 	//--------------------------------------------Create Room
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
@@ -96,5 +99,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetFindActive(bool bActive);
+
+	UFUNCTION()
+	void GameExit();
 	
 };
