@@ -52,6 +52,74 @@ ALSFindingPuzzle::ALSFindingPuzzle()
 	ScriptAssetNameIJae = FName(TEXT("LSFindingPuzzleIJae"));
 
 	bISTexturesUpdated = false;
+
+
+
+
+
+	//Fucking Texture Shits
+	//Answer
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef1(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_01.T_FP_Answer_01"));
+	if (AnswerTextureRef1.Object) AnswerTextures.Add(AnswerTextureRef1.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef2(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_02.T_FP_Answer_02"));
+	if (AnswerTextureRef2.Object) AnswerTextures.Add(AnswerTextureRef2.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef3(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_03.T_FP_Answer_03"));
+	if (AnswerTextureRef3.Object) AnswerTextures.Add(AnswerTextureRef3.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef4(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_04.T_FP_Answer_04"));
+	if (AnswerTextureRef4.Object) AnswerTextures.Add(AnswerTextureRef4.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef5(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_05.T_FP_Answer_05"));
+	if (AnswerTextureRef5.Object) AnswerTextures.Add(AnswerTextureRef5.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef6(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_06.T_FP_Answer_06"));
+	if (AnswerTextureRef6.Object) AnswerTextures.Add(AnswerTextureRef6.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef7(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_07.T_FP_Answer_07"));
+	if (AnswerTextureRef7.Object) AnswerTextures.Add(AnswerTextureRef7.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> AnswerTextureRef8(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/answer/T_FP_Answer_08.T_FP_Answer_08"));
+	if (AnswerTextureRef8.Object) AnswerTextures.Add(AnswerTextureRef8.Object);
+
+	//Wrong
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef1(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_01.T_FP_Wrong_01"));
+	if (WrongTextureRef1.Object) WrongTextures.Add(WrongTextureRef1.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef2(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_02.T_FP_Wrong_02"));
+	if (WrongTextureRef2.Object) WrongTextures.Add(WrongTextureRef2.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef3(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_03.T_FP_Wrong_03"));
+	if (WrongTextureRef3.Object) WrongTextures.Add(WrongTextureRef3.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef4(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_04.T_FP_Wrong_04"));
+	if (WrongTextureRef4.Object) WrongTextures.Add(WrongTextureRef4.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef5(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_05.T_FP_Wrong_05"));
+	if (WrongTextureRef5.Object) WrongTextures.Add(WrongTextureRef5.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef6(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_06.T_FP_Wrong_06"));
+	if (WrongTextureRef6.Object) WrongTextures.Add(WrongTextureRef6.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef7(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_07.T_FP_Wrong_07"));
+	if (WrongTextureRef7.Object) WrongTextures.Add(WrongTextureRef7.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef8(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_08.T_FP_Wrong_08"));
+	if (WrongTextureRef8.Object) WrongTextures.Add(WrongTextureRef8.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WrongTextureRef9(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/wrong/T_FP_Wrong_09.T_FP_Wrong_09"));
+	if (WrongTextureRef9.Object) WrongTextures.Add(WrongTextureRef9.Object);
+
+	//SiJae
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef1(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_01.T_FP_Sijae_01"));
+	if (SiJaeTextureRef1.Object) SijaeTextures.Add(SiJaeTextureRef1.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef2(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_02.T_FP_Sijae_02"));
+	if (SiJaeTextureRef2.Object) SijaeTextures.Add(SiJaeTextureRef2.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef3(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_03.T_FP_Sijae_03"));
+	if (SiJaeTextureRef3.Object) SijaeTextures.Add(SiJaeTextureRef3.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef4(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_04.T_FP_Sijae_04"));
+	if (SiJaeTextureRef4.Object) SijaeTextures.Add(SiJaeTextureRef4.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef5(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_05.T_FP_Sijae_05"));
+	if (SiJaeTextureRef5.Object) SijaeTextures.Add(SiJaeTextureRef5.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef6(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_06.T_FP_Sijae_06"));
+	if (SiJaeTextureRef6.Object) SijaeTextures.Add(SiJaeTextureRef6.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef7(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_07.T_FP_Sijae_07"));
+	if (SiJaeTextureRef7.Object) SijaeTextures.Add(SiJaeTextureRef7.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef8(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_08.T_FP_Sijae_08"));
+	if (SiJaeTextureRef8.Object) SijaeTextures.Add(SiJaeTextureRef8.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef9(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_09.T_FP_Sijae_09"));
+	if (SiJaeTextureRef9.Object) SijaeTextures.Add(SiJaeTextureRef9.Object);
+	static ConstructorHelpers::FObjectFinder<UTexture2D> SiJaeTextureRef10(TEXT("/Game/Level/Puzzle/Finding/Materials/Textures/sijae/T_FP_Sijae_10.T_FP_Sijae_10"));
+	if (SiJaeTextureRef10.Object) SijaeTextures.Add(SiJaeTextureRef10.Object);
+
+
+
 }
 
 void ALSFindingPuzzle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -110,94 +178,94 @@ void ALSFindingPuzzle::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
-	UAssetManager& Manager = UAssetManager::Get();
+	//UAssetManager& Manager = UAssetManager::Get();
 
-	//FPAnswer
-	TArray<FPrimaryAssetId> FPAnswerAssets;
-	Manager.GetPrimaryAssetIdList(TEXT("FPAnswer"), FPAnswerAssets);
-	ensure(0 < FPAnswerAssets.Num());
+	////FPAnswer
+	//TArray<FPrimaryAssetId> FPAnswerAssets;
+	//Manager.GetPrimaryAssetIdList(TEXT("FPAnswer"), FPAnswerAssets);
+	//ensure(0 < FPAnswerAssets.Num());
 
-	for (const FPrimaryAssetId& AssetId : FPAnswerAssets)
-	{
-		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
-		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+	//for (const FPrimaryAssetId& AssetId : FPAnswerAssets)
+	//{
+	//	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+	//	//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
 
-		if (AssetPtr.IsPending())
-		{
-			AssetPtr.LoadSynchronous();
-		}
+	//	if (AssetPtr.IsPending())
+	//	{
+	//		AssetPtr.LoadSynchronous();
+	//	}
 
-		UTexture2D* Texture  = Cast<UTexture2D>(AssetPtr.Get());
-		if (Texture)
-		{
-			AnswerTextures.Add(Texture);
-		}
-		else
-		{
-			LS_LOG(LogLSls, Error, TEXT("No AnswerTexture!!"));
-		}
-	}
-
-
-
-	//FPWrong
-	TArray<FPrimaryAssetId> FPWrongAssets;
-	Manager.GetPrimaryAssetIdList(TEXT("FPWrong"), FPWrongAssets);
-	ensure(0 < FPWrongAssets.Num());
-
-	for (const FPrimaryAssetId& AssetId : FPWrongAssets)
-	{
-		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
-		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
-
-		if (AssetPtr.IsPending())
-		{
-			AssetPtr.LoadSynchronous();
-		}
-
-		UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
-		if (Texture)
-		{
-			WrongTextures.Add(Texture);
-		}
-		else
-		{
-			LS_LOG(LogLSls, Error, TEXT("No WrongTexture!!"));
-		}
-
-	}
+	//	UTexture2D* Texture  = Cast<UTexture2D>(AssetPtr.Get());
+	//	if (Texture)
+	//	{
+	//		AnswerTextures.Add(Texture);
+	//	}
+	//	else
+	//	{
+	//		LS_LOG(LogLSls, Error, TEXT("No AnswerTexture!!"));
+	//	}
+	//}
 
 
 
-	//FPSiJae
-	TArray<FPrimaryAssetId> FPSiJaeAssets;
-	Manager.GetPrimaryAssetIdList(TEXT("FPSiJae"), FPSiJaeAssets);
-	ensure(0 < FPSiJaeAssets.Num());
+	////FPWrong
+	//TArray<FPrimaryAssetId> FPWrongAssets;
+	//Manager.GetPrimaryAssetIdList(TEXT("FPWrong"), FPWrongAssets);
+	//ensure(0 < FPWrongAssets.Num());
 
-	for (const FPrimaryAssetId& AssetId : FPSiJaeAssets)
-	{
-		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
-		//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+	//for (const FPrimaryAssetId& AssetId : FPWrongAssets)
+	//{
+	//	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+	//	//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
 
-		if (AssetPtr.IsPending())
-		{
-			AssetPtr.LoadSynchronous();
-		}
+	//	if (AssetPtr.IsPending())
+	//	{
+	//		AssetPtr.LoadSynchronous();
+	//	}
 
-		UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
-		if (Texture)
-		{
-			SijaeTextures.Add(Texture);
-		}
-		else
-		{
-			LS_LOG(LogLSls, Error, TEXT("No SijaeTexture!!"));
-		}
-	}
+	//	UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
+	//	if (Texture)
+	//	{
+	//		WrongTextures.Add(Texture);
+	//	}
+	//	else
+	//	{
+	//		LS_LOG(LogLSls, Error, TEXT("No WrongTexture!!"));
+	//	}
 
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
+	//}
+
+
+
+	////FPSiJae
+	//TArray<FPrimaryAssetId> FPSiJaeAssets;
+	//Manager.GetPrimaryAssetIdList(TEXT("FPSiJae"), FPSiJaeAssets);
+	//ensure(0 < FPSiJaeAssets.Num());
+
+	//for (const FPrimaryAssetId& AssetId : FPSiJaeAssets)
+	//{
+	//	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(AssetId));
+	//	//LS_LOG(LogLS, Log, TEXT("Found TestItem at path: %s"), *AssetPtr.ToString());
+
+	//	if (AssetPtr.IsPending())
+	//	{
+	//		AssetPtr.LoadSynchronous();
+	//	}
+
+	//	UTexture2D* Texture = Cast<UTexture2D>(AssetPtr.Get());
+	//	if (Texture)
+	//	{
+	//		SijaeTextures.Add(Texture);
+	//	}
+	//	else
+	//	{
+	//		LS_LOG(LogLSls, Error, TEXT("No SijaeTexture!!"));
+	//	}
+	//}
+
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
 
 	bISTexturesUpdated = true;
 }
