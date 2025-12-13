@@ -45,17 +45,13 @@ void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice Serv
 	// 1. [시재(SiJae) 슬롯] 상태 결정
 	if (ServerChoice == ELSCharacterChoice::SiJae)
 	{
-		if(GI->NickName ==  "")
-			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Host")));
-		else
-			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
+		FString DisplayName = GI->ServerNickName.IsEmpty() ? TEXT("Host") : GI->ServerNickName;
+		TxtChoiceSiJae->SetText(FText::FromString(DisplayName));
 	}
 	else if (ClientChoice == ELSCharacterChoice::SiJae)
 	{
-		if (GI->NickName == "")
-			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Guest")));
-		else
-			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
+		FString DisplayName = GI->ClientNickName.IsEmpty() ? TEXT("Guest") : GI->ClientNickName;
+		TxtChoiceSiJae->SetText(FText::FromString(DisplayName));
 	}
 	else
 	{
@@ -66,17 +62,13 @@ void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice Serv
 	// 2. [이재(IJae) 슬롯] 상태 결정
 	if (ServerChoice == ELSCharacterChoice::IJae)
 	{
-		if (GI->NickName == "")
-			TxtChoiceIJae->SetText(FText::FromString(TEXT("Host")));
-		else
-			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
+		FString DisplayName = GI->ServerNickName.IsEmpty() ? TEXT("Host") : GI->ServerNickName;
+		TxtChoiceIJae->SetText(FText::FromString(DisplayName));
 	}
 	else if (ClientChoice == ELSCharacterChoice::IJae)
 	{
-		if (GI->NickName == "")
-			TxtChoiceIJae->SetText(FText::FromString(TEXT("Guest")));
-		else
-			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
+		FString DisplayName = GI->ClientNickName.IsEmpty() ? TEXT("Guest") : GI->ClientNickName;
+		TxtChoiceIJae->SetText(FText::FromString(DisplayName));
 	}
 	else
 	{
