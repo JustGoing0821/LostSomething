@@ -224,6 +224,11 @@ void ATestNPC::ServerAttackHitCheck_Implementation()
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
 
+	if (ATestNPC* HitPlayer = Cast<ATestNPC>(OutHitResult.GetActor()))
+	{
+		return;
+	}
+
 	if (HitDetected)
 	{
 		FDamageEvent DamageEvent;
@@ -295,14 +300,14 @@ void ATestNPC::ServerDamage_Implementation()
 
 	// 변경 전 값 확인
 	bool bBeforeValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
-	UE_LOG(LogTemp, Warning, TEXT("IsHit Before: %s"), bBeforeValue ? TEXT("true") : TEXT("false")); // ?
+	//UE_LOG(LogTemp, Warning, TEXT("IsHit Before: %s"), bBeforeValue ? TEXT("true") : TEXT("false")); // ?
 
 	// IsHit 설정
 	Blackboard->SetValueAsBool(TEXT("bIsHit"), true);
 
 	// 변경 후 값 확인
 	bool bAfterValue = Blackboard->GetValueAsBool(TEXT("bIsHit"));
-	UE_LOG(LogTemp, Warning, TEXT("IsHit After: %s"), bAfterValue ? TEXT("true") : TEXT("false")); // ?
+	//UE_LOG(LogTemp, Warning, TEXT("IsHit After: %s"), bAfterValue ? TEXT("true") : TEXT("false")); // ?
 
 	// IsHit를 true로 설정 → Move To 즉시 중단!
 	Blackboard->SetValueAsBool("IsHit", true);

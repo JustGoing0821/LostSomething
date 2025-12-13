@@ -118,7 +118,12 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 
 	// 技记 积己
 	UE_LOG(LogTemp, Warning, TEXT("All checks passed, creating session now..."));
-	SessionInterface->CreateSession(*NetID, FName("MySession"), Setting);
+	FGuid UniqueID = FGuid::NewGuid();
+	FString UniqueSessionName = FString::Printf(TEXT("Session_%s"), *UniqueID.ToString());
+
+	UE_LOG(LogTemp, Warning, TEXT("Creating session with name: %s"), *UniqueSessionName);
+
+	SessionInterface->CreateSession(*NetID, FName(*UniqueSessionName), Setting);
 
 	UE_LOG(LogTemp, Warning, TEXT("CreateRoom finished without crash."));
 }

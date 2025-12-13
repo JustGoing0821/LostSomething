@@ -57,11 +57,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UMaterialInstanceDynamic> Material;
 
-	TArray<class UTexture2D*> AnswerTextures;
+	TArray<TObjectPtr<class UTexture2D>> AnswerTextures;
 
-	TArray<class UTexture2D*> WrongTextures;
+	TArray<TObjectPtr<class UTexture2D>> WrongTextures;
 
-	TArray<class UTexture2D*> SijaeTextures;
+	TArray<TObjectPtr<class UTexture2D>> SijaeTextures;
 
 	uint8 bISTexturesUpdated : 1;
 

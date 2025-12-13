@@ -271,6 +271,8 @@ public:
 
 	void EndWaitClient();
 
+	uint8 bIsClientEnd : 1;
+
 protected:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MediaPlayerWidgetClass;

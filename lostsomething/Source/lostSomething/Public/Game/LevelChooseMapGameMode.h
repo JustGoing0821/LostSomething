@@ -31,4 +31,8 @@ private:
 
 	UPROPERTY()
 	int32 RequiredPlayerCount = 2;
+
+public:
+	int32 ReadyCount = 0;
+	void AddReadyPlayerCount();
 };

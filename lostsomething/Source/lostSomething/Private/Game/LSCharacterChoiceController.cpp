@@ -29,14 +29,6 @@ ALSCharacterChoiceController::ALSCharacterChoiceController()
 	bReplicates = true;
 }
 
-void ALSCharacterChoiceController::ClientReceiveNickNames_Implementation(const FString& ServerNick, const FString& ClientNick)
-{
-	ReceivedServerNickName = ServerNick;
-	ReceivedClientNickName = ClientNick;
-
-	UE_LOG(LogTemp, Warning, TEXT("Received nicknames - Server: %s, Client: %s"), *ServerNick, *ClientNick);
-}
-
 void ALSCharacterChoiceController::BeginPlay()
 {
 	Super::BeginPlay();

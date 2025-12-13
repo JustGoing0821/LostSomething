@@ -127,6 +127,7 @@ ALSPlayerController::ALSPlayerController()
 	}
 
 	bIs2DPuzzleActive = false;
+	bIsClientEnd = false;
 }
 
 void ALSPlayerController::PostInitializeComponents()
@@ -271,7 +272,7 @@ void ALSPlayerController::BeginPlay()
 		if (MiniMapWidget) MiniMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
 }
 
 void ALSPlayerController::Tick(float DeltaTime)
@@ -708,7 +709,7 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 
 void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplete)
 {
-	LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
+	//LS_LOG(LogLSls, Log, TEXT("Begin : % d"), IsLocalController());
 
 	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
 	if (LSPlayer) LSPlayer->EndSequence();
@@ -728,9 +729,10 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 	{
 		if (HasAuthority())
 		{
-			if (WaitClientWidget)
+			if (WaitClientWidget && !bIsClientEnd)
 			{
 				WaitClientWidget->SetVisibility(ESlateVisibility::Visible);
+				SetInputMode(FInputModeUIOnly());
 				//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
 			}
 		}
@@ -752,6 +754,7 @@ void ALSPlayerController::EndWaitClient()
 	{
 		SetInputMode(FInputModeGameOnly());
 		WaitClientWidget->SetVisibility(ESlateVisibility::Collapsed);
+		bIsClientEnd = true;
 	}
 }
 

@@ -25,7 +25,7 @@ void ALevelChooseMapGameMode::PostLogin(APlayerController* NewPlayer)
                 {
                     MyPC->CreateLevelChooseWidget();
                 }
-            }, 1.0f, false); // 1초 뒤 실행
+            }, 2.0f, false); // 1초 뒤 실행
     }
 }
 
@@ -49,7 +49,7 @@ void ALevelChooseMapGameMode::BeginPlay()
 
 void ALevelChooseMapGameMode::CheckAllPlayersReady_Level()
 {
-    int32 CurrentPlayerCount = GetNumPlayers();;
+    int32 CurrentPlayerCount = GetNumPlayers();
 
     if (CurrentPlayerCount >= RequiredPlayerCount)
     {
@@ -61,6 +61,24 @@ void ALevelChooseMapGameMode::CheckAllPlayersReady_Level()
             if (PC)
             {
                 PC->CreateLevelChooseWidget();
+            }
+        }
+    }
+}
+
+void ALevelChooseMapGameMode::AddReadyPlayerCount()
+{
+    ReadyCount++;
+
+    if (ReadyCount >= RequiredPlayerCount)
+    {
+        // 모든 플레이어(Controller)에게 "버튼 잠금 해제해!" 명령 방송
+        for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+        {
+            auto PC = Cast<ALevelChoosePlayerController>(Iterator->Get());
+            if (PC)
+            {
+                PC->Client_UnlockButton(); // Client RPC 호출
             }
         }
     }
