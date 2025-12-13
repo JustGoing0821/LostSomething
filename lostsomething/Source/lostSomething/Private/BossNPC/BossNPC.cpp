@@ -222,6 +222,9 @@ void ABossNPC::EnterPhase1()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         StartAOEAttackPattern();
     }
 }
@@ -231,6 +234,9 @@ void ABossNPC::EnterPhase2()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         // 장애물 스폰 패턴 시작
         SpawnObstacles();
     }
@@ -241,6 +247,9 @@ void ABossNPC::EnterPhase3()
 {
     if (HasAuthority())
     {
+        this->SetActorLocationAndRotation(
+            FVector(-4.363589f, -3764.906206f, 73.247542f),
+            FRotator(0.0f, 90.0f, 0.0f));
         if (PlatformGeneratorClass)
         {
             FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 0);
