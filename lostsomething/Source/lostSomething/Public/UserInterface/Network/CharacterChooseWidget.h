@@ -41,10 +41,16 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UButton> BtnIJae;
 
+	UPROPERTY()
+	TObjectPtr<class UButton> BtnGoLobby;
+
 	UFUNCTION()
 	void OnClickedBthSiJae();
 
 	UFUNCTION()
 	void OnClickedBthIJae();
+
+	UFUNCTION()
+	void OnClickedBtnGoLobby();
 
 };
