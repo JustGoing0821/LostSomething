@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include <Game/LSGameInstance.h>
+#include <Kismet/GameplayStatics.h>
 
 UCharacterChooseWidget::UCharacterChooseWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -26,8 +27,13 @@ void UCharacterChooseWidget::NativeConstruct()
 	BtnIJae = Cast<UButton>(GetWidgetFromName(TEXT("btn_IJae")));
 	ensure(BtnIJae);
 
+	BtnGoLobby= Cast<UButton>(GetWidgetFromName(TEXT("btn_GoLobby")));
+	ensure(BtnGoLobby);
+
 	BtnSiJae->OnClicked.AddDynamic(this, &UCharacterChooseWidget::OnClickedBthSiJae);
 	BtnIJae->OnClicked.AddDynamic(this, &UCharacterChooseWidget::OnClickedBthIJae);
+	BtnGoLobby->OnClicked.AddDynamic(this, &UCharacterChooseWidget::OnClickedBtnGoLobby);
+
 }
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
@@ -87,4 +93,9 @@ void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice Serv
 void UCharacterChooseWidget::OnClickedBthIJae()
 {
 	OnCharacterChoose.ExecuteIfBound(ELSCharacterChoice::IJae);
+}
+
+void UCharacterChooseWidget::OnClickedBtnGoLobby()
+{
+	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }

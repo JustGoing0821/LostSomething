@@ -27,6 +27,11 @@ void ULSGameInstance::Init()
 	if (auto Subsystem = IOnlineSubsystem::Get())
 	{
 		SessionInterface = Subsystem->GetSessionInterface();
+		if (!SessionInterface.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to get SessionInterface!"));
+			return;
+		}
 
 		SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &ULSGameInstance::OnMyCreateRoomComplete);
 
@@ -209,6 +214,12 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
 	{
+		if (!RoomSearch.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("RoomSearch is not valid!"));
+			return;
+		}
+
 		auto SearchResult = RoomSearch->SearchResults[i];
 
 		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);

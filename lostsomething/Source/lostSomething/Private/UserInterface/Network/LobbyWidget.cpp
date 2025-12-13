@@ -10,6 +10,7 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include <Kismet/KismetSystemLibrary.h>
 
 const int SWITCHER_INDEX_MENU = 0;
 const int SWITCHER_INDEX_CREATEROOM = 1;
@@ -38,6 +39,8 @@ void ULobbyWidget::NativeConstruct()
 		btn_GoMenuFromCreateRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
 	if(btn_GoMenuFromFindRoom)
 		btn_GoMenuFromFindRoom->OnClicked.AddDynamic(this, &ULobbyWidget::OnMyGoMenu);
+	if (btn_GameExit)
+		btn_GameExit->OnClicked.AddDynamic(this, &ULobbyWidget::GameExit);
 
 }
 
@@ -201,4 +204,9 @@ void ULobbyWidget::SetFindActive(bool bActive)
 		// txt_findingRooms를 안 보이게 하고싶다.
 		txt_FindingRooms->SetVisibility(ESlateVisibility::Hidden);
 	}
+}
+
+void ULobbyWidget::GameExit()
+{
+	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
 }
