@@ -98,7 +98,7 @@ void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInterac
 				PuzzleStart();
 			}
 		}
-	), 2.0f, false);
+	), 1.0f, false);
 }
 
 void ALSFindingPuzzleManager::QuestClear()

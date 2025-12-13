@@ -396,22 +396,27 @@ void ALSFindingPuzzle::SetVisibleSiJae()
 
 	if (!Material)
 	{
-		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
+		LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
 		return;
 	}
 
-	if (!bISTexturesUpdated)
-	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-			{
-				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
-				SetVisibleSiJae();
-			}
-		), 2.0f, false);
-	}
+	//if (!bISTexturesUpdated)
+	//{
+	//	FTimerHandle Handle;
+	//	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	//		{
+	//			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
+	//			SetVisibleSiJae();
+	//		}
+	//	), 2.0f, false);
+	//}
 
 	int32 MaxCount = SijaeTextures.Num();
+	if (MaxCount == 0)
+	{
+		LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("No SijaeTextures!!!"));
+		return;
+	}
 	Material->SetTextureParameterValue(TEXT("CartelImage"), SijaeTextures[FMath::RandRange(0, MaxCount - 1)]);
 }
 
@@ -421,29 +426,39 @@ void ALSFindingPuzzle::SetVisibleIJae()
 
 	if (!Material)
 	{
-		//LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
+		LS_LOG(LogLSls, Error, TEXT("Material is nullptr!"));
 		return;
 	}
 
-	if (!bISTexturesUpdated)
-	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-			{
-				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
-				SetVisibleSiJae();
-			}
-		), 2.0f, false);
-	}
+	//if (!bISTexturesUpdated)
+	//{
+	//	FTimerHandle Handle;
+	//	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+	//		{
+	//			LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("bISTexturesUpdated false"));
+	//			SetVisibleSiJae();
+	//		}
+	//	), 2.0f, false);
+	//}
 
 	if (bIsCorrectPuzzle)
 	{
 		int32 MaxCount = AnswerTextures.Num();
+		if (MaxCount == 0)
+		{
+			LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("No AnswerTextures!!!"));
+			return;
+		}
 		Material->SetTextureParameterValue(TEXT("CartelImage"), AnswerTextures[FMath::RandRange(0, MaxCount-1)]);
 	}
 	else
 	{
 		int32 MaxCount = WrongTextures.Num();
+		if (MaxCount == 0)
+		{
+			LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("No WrongTextures!!!"));
+			return;
+		}
 		Material->SetTextureParameterValue(TEXT("CartelImage"), WrongTextures[FMath::RandRange(0, MaxCount - 1)]);
 	}
 }
