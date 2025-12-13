@@ -392,7 +392,7 @@ void ALSFindingPuzzle::InteractionProcessIJae(APlayerController* InPlayerControl
 
 void ALSFindingPuzzle::SetVisibleSiJae()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (!Material)
 	{
@@ -422,7 +422,7 @@ void ALSFindingPuzzle::SetVisibleSiJae()
 
 void ALSFindingPuzzle::SetVisibleIJae()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	if (!Material)
 	{
@@ -465,7 +465,7 @@ void ALSFindingPuzzle::SetVisibleIJae()
 
 void ALSFindingPuzzle::SetPuzzleAnswer(uint8 bInCorrectPuzzle)
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 	if (bInCorrectPuzzle)
 	{
 		bIsCorrectPuzzle = true;
@@ -507,8 +507,8 @@ void ALSFindingPuzzle::BindQuestChange()
 
 void ALSFindingPuzzle::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
-	LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+	//FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	//LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
 
 	if (InQuestEnum == PuzzleActivateEnum)
 	{

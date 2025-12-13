@@ -31,7 +31,7 @@ void ALSFindingPuzzleManager::BeginPlay()
 
 void ALSFindingPuzzleManager::PuzzleStart()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSFindingPuzzle::StaticClass(), FoundActors);
@@ -88,8 +88,8 @@ void ALSFindingPuzzleManager::BindQuestChange()
 
 void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
-	LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+	//FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	//LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
 
 	CurrentQuestEnum = InQuestEnum;
 
