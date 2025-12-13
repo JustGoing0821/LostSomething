@@ -45,7 +45,7 @@ ASpecialObstacle::ASpecialObstacle()
 	{
 		ObstacleMesh->SetStaticMesh(MeshAsset.Object);
 		ObstacleMesh->SetRelativeScale3D(FVector(1.0f));
-		ObstacleMesh->SetRelativeLocation(FVector(-5.0f, 40.0f, -127.0f)); // Z축으로 50만큼 올림
+		ObstacleMesh->SetRelativeLocation(FVector(-5.0f, 40.0f, -107.0f)); // Z축으로 50만큼 올림
 		ObstacleMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	}
 
@@ -88,7 +88,7 @@ void ASpecialObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(7.0f);
+	SetLifeSpan(8.5f);
 
 	// 시작 시 정면 방향을 기억 (Z는 고정)
 	MoveDirection = GetActorForwardVector();
