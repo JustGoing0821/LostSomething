@@ -15,6 +15,7 @@ ALSFindingPuzzleManager::ALSFindingPuzzleManager()
 {
 	bReplicates = true;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest11;
+	CurrentQuestEnum = ELSInteractionEnum::Quest0;
 }
 
 // Called when the game starts or when spawned
@@ -30,7 +31,7 @@ void ALSFindingPuzzleManager::BeginPlay()
 
 void ALSFindingPuzzleManager::PuzzleStart()
 {
-	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSFindingPuzzle::StaticClass(), FoundActors);
@@ -87,18 +88,20 @@ void ALSFindingPuzzleManager::BindQuestChange()
 
 void ALSFindingPuzzleManager::OnQuestChange(FLSQuestData InQuestData, ELSInteractionEnum InQuestEnum)
 {
-	FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
-	LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+	//FString EnumString = StaticEnum<ELSInteractionEnum>()->GetNameByValue(static_cast<int64>(InQuestEnum)).ToString();
+	//LS_LOG(LogLSls, Log, TEXT("EnumValue : %s"), *EnumString);
+
+	CurrentQuestEnum = InQuestEnum;
 
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
 		{
-			if (InQuestEnum == PuzzleActivateEnum)
+			if (CurrentQuestEnum == PuzzleActivateEnum)
 			{
 				PuzzleStart();
 			}
 		}
-	), 2.0f, false);
+	), 1.0f, false);
 }
 
 void ALSFindingPuzzleManager::QuestClear()
