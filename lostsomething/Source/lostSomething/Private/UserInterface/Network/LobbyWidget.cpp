@@ -127,6 +127,12 @@ void ULobbyWidget::OnMyGoCreateRoom()
 		{
 			// 적은 이름을 내 닉네임으로 하고싶다.
 			GI->NickName = edit_NickName->GetText().ToString();
+			GI->ServerNickName = GI->NickName;
+			
+			UE_LOG(LogTemp, Warning, TEXT("Server Nickname Set"));
+			UE_LOG(LogTemp, Warning, TEXT("   - NickName: %s"), *GI->NickName);
+			UE_LOG(LogTemp, Warning, TEXT("   - ServerNickName: %s"), *GI->ServerNickName);
+
 		}
 		else
 		{
@@ -150,6 +156,12 @@ void ULobbyWidget::OnMyGoFindRoom()
 		{
 			// 적은 이름을 내 닉네임으로 하고싶다.
 			GI->NickName = edit_NickName->GetText().ToString();
+			GI->ClientNickName = GI->NickName;
+
+			UE_LOG(LogTemp, Warning, TEXT(" Client Nickname Set"));
+			UE_LOG(LogTemp, Warning, TEXT("   - NickName: %s"), *GI->NickName);
+			UE_LOG(LogTemp, Warning, TEXT("   - ClientNickName: %s"), *GI->ClientNickName);
+
 		}
 		else
 		{

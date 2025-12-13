@@ -197,7 +197,10 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 		// 여행을 떠나고 싶다.
 		auto pc = GetWorld()->GetFirstPlayerController();
 		if (pc)
+		{
 			pc->ClientTravel(url, TRAVEL_Absolute);
+		}
+			
 	}
 	// 그렇지않다면
 	else

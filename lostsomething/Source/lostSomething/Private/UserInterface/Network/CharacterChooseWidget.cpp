@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include <Game/LSGameInstance.h>
 #include <Kismet/GameplayStatics.h>
+#include <Game/LSCharacterChoiceController.h>
 
 UCharacterChooseWidget::UCharacterChooseWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -38,51 +39,45 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-	auto GI = Cast<ULSGameInstance>(GetWorld()->GetGameInstance());
-	if (!GI)
-		return;
+    auto PC = Cast<ALSCharacterChoiceController>(GetOwningPlayer());
+    if (!PC)
+    {
+        UE_LOG(LogTemp, Error, TEXT("PlayerController is null!"));
+        return;
+    }
 
-	// 1. [시재(SiJae) 슬롯] 상태 결정
-	if (ServerChoice == ELSCharacterChoice::SiJae)
-	{
-		if(GI->NickName ==  "")
-			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Host")));
-		else
-			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
-	}
-	else if (ClientChoice == ELSCharacterChoice::SiJae)
-	{
-		if (GI->NickName == "")
-			TxtChoiceSiJae->SetText(FText::FromString(TEXT("Guest")));
-		else
-			TxtChoiceSiJae->SetText(FText::FromString(GI->NickName));
-	}
-	else
-	{
-		// 아무도 시재를 안 골랐으면 빈카드로 (혹은 선택 가능 표시)
-		TxtChoiceSiJae->SetText(FText::GetEmpty());
-	}
+    FString ServerNick = PC->ReceivedServerNickName.IsEmpty() ? TEXT("Host") : PC->ReceivedServerNickName;
+    FString ClientNick = PC->ReceivedClientNickName.IsEmpty() ? TEXT("Guest") : PC->ReceivedClientNickName;
 
-	// 2. [이재(IJae) 슬롯] 상태 결정
-	if (ServerChoice == ELSCharacterChoice::IJae)
-	{
-		if (GI->NickName == "")
-			TxtChoiceIJae->SetText(FText::FromString(TEXT("Host")));
-		else
-			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
-	}
-	else if (ClientChoice == ELSCharacterChoice::IJae)
-	{
-		if (GI->NickName == "")
-			TxtChoiceIJae->SetText(FText::FromString(TEXT("Guest")));
-		else
-			TxtChoiceIJae->SetText(FText::FromString(GI->NickName));
-	}
-	else
-	{
-		TxtChoiceIJae->SetText(FText::GetEmpty());
-	}
-	
+    UE_LOG(LogTemp, Warning, TEXT("UpdateWidget - Server: %s, Client: %s"), *ServerNick, *ClientNick);
+
+    // 1. [시재(SiJae) 슬롯] 상태 결정
+    if (ServerChoice == ELSCharacterChoice::SiJae)
+    {
+        TxtChoiceSiJae->SetText(FText::FromString(ServerNick));
+    }
+    else if (ClientChoice == ELSCharacterChoice::SiJae)
+    {
+        TxtChoiceSiJae->SetText(FText::FromString(ClientNick));
+    }
+    else
+    {
+        TxtChoiceSiJae->SetText(FText::GetEmpty());
+    }
+
+    // 2. [이재(IJae) 슬롯] 상태 결정
+    if (ServerChoice == ELSCharacterChoice::IJae)
+    {
+        TxtChoiceIJae->SetText(FText::FromString(ServerNick));
+    }
+    else if (ClientChoice == ELSCharacterChoice::IJae)
+    {
+        TxtChoiceIJae->SetText(FText::FromString(ClientNick));
+    }
+    else
+    {
+        TxtChoiceIJae->SetText(FText::GetEmpty());
+    }
 }
 
  void UCharacterChooseWidget::OnClickedBthSiJae()
