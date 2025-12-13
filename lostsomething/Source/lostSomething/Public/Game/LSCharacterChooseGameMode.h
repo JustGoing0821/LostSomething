@@ -25,30 +25,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void PostLogin(APlayerController* NewPlayer) override;
-
-private:
-	UPROPERTY()
-	TArray<APlayerController*> LoggedInPlayers;
-
-public:
 	FCharacterChoiceChangedDelegate CharacterChoiceChanged;
 
 	void SetCharacterChoice(bool bisServer, ELSCharacterChoice InCharacterChoice);
-
-	UPROPERTY()
-	FString ServerPlayerNickName;
-
-	UPROPERTY()
-	FString ClientPlayerNickName;
-
-	// 닉네임 설정 (클라이언트가 서버에 요청)
-	UFUNCTION(BlueprintCallable)
-	void SetPlayerNickName(APlayerController* PC, const FString& NickName);
-
-	// 모든 클라이언트에게 닉네임 전송
-	UFUNCTION(BlueprintCallable)
-	void BroadcastNickNames();
 
 	UPROPERTY()
 	int32 PlayerCount = 0;

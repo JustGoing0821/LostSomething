@@ -20,6 +20,15 @@ public:
 	UFUNCTION()
 	void CreateLevelChooseWidget();
 
+	UFUNCTION(Server, Reliable)
+	void Server_NotifyWidgetReady(); // 위젯 -> 서버 (보고)
+
+	UFUNCTION(Client, Reliable)
+	void Client_UnlockButton();
+	
+	UPROPERTY()
+	class ULevelChooseWidget* LevelWidgetInstance;
+
 protected:
 	virtual void BeginPlay() override;
 

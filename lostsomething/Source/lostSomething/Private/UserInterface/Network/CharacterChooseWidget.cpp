@@ -16,17 +16,24 @@ void UCharacterChooseWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TxtChoiceIJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceIJae")));
-	ensure(TxtChoiceIJae);
+	TxtChoiceIJaeServer = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceIJaeServer")));
+	ensure(TxtChoiceIJaeServer);
 
-	TxtChoiceSiJae = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceSiJae")));
-	ensure(TxtChoiceSiJae);
+	TxtChoiceSiJaeServer = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceSiJaeServer")));
+	ensure(TxtChoiceSiJaeServer);
+
+	TxtChoiceIJaeClient = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceIJaeClient")));
+	ensure(TxtChoiceIJaeClient);
+
+	TxtChoiceSiJaeClient = Cast<UTextBlock>(GetWidgetFromName(TEXT("txt_ChoiceSiJaeClient")));
+	ensure(TxtChoiceSiJaeClient);
 
 	BtnSiJae = Cast<UButton>(GetWidgetFromName(TEXT("btn_SiJae")));
 	ensure(BtnSiJae);
 
 	BtnIJae = Cast<UButton>(GetWidgetFromName(TEXT("btn_IJae")));
 	ensure(BtnIJae);
+
 
 	BtnGoLobby= Cast<UButton>(GetWidgetFromName(TEXT("btn_GoLobby")));
 	ensure(BtnGoLobby);
@@ -39,44 +46,51 @@ void UCharacterChooseWidget::NativeConstruct()
 
 void UCharacterChooseWidget::UpdateCharacterChooseWidget(ELSCharacterChoice ServerChoice, ELSCharacterChoice ClientChoice)
 {
-    auto PC = Cast<ALSCharacterChoiceController>(GetOwningPlayer());
-    if (!PC)
-    {
-        UE_LOG(LogTemp, Error, TEXT("PlayerController is null!"));
-        return;
-    }
+    const FSlateColor SelectedColor = FSlateColor(FLinearColor::White);
 
-    FString ServerNick = PC->ReceivedServerNickName.IsEmpty() ? TEXT("Host") : PC->ReceivedServerNickName;
-    FString ClientNick = PC->ReceivedClientNickName.IsEmpty() ? TEXT("Guest") : PC->ReceivedClientNickName;
+    FLinearColor DarkLinearColor = FLinearColor::FromSRGBColor(FColor::FromHex("2A2A3A"));
+    DarkLinearColor.A = 0.8f;
+    const FSlateColor UnselectedColor = FSlateColor(DarkLinearColor);
 
-    UE_LOG(LogTemp, Warning, TEXT("UpdateWidget - Server: %s, Client: %s"), *ServerNick, *ClientNick);
-
-    // 1. [시재(SiJae) 슬롯] 상태 결정
     if (ServerChoice == ELSCharacterChoice::SiJae)
     {
-        TxtChoiceSiJae->SetText(FText::FromString(ServerNick));
-    }
-    else if (ClientChoice == ELSCharacterChoice::SiJae)
-    {
-        TxtChoiceSiJae->SetText(FText::FromString(ClientNick));
+        TxtChoiceSiJaeServer->SetText(FText::FromString(TEXT("Host")));
+        TxtChoiceSiJaeServer->SetColorAndOpacity(SelectedColor); // 흰색
     }
     else
     {
-        TxtChoiceSiJae->SetText(FText::GetEmpty());
+        TxtChoiceSiJaeServer->SetColorAndOpacity(UnselectedColor); // 어두운 색
     }
 
-    // 2. [이재(IJae) 슬롯] 상태 결정
-    if (ServerChoice == ELSCharacterChoice::IJae)
+    if (ClientChoice == ELSCharacterChoice::SiJae)
     {
-        TxtChoiceIJae->SetText(FText::FromString(ServerNick));
-    }
-    else if (ClientChoice == ELSCharacterChoice::IJae)
-    {
-        TxtChoiceIJae->SetText(FText::FromString(ClientNick));
+        TxtChoiceSiJaeClient->SetText(FText::FromString(TEXT("Guest")));
+        TxtChoiceSiJaeClient->SetColorAndOpacity(SelectedColor); // 흰색
     }
     else
     {
-        TxtChoiceIJae->SetText(FText::GetEmpty());
+        TxtChoiceSiJaeClient->SetColorAndOpacity(UnselectedColor); // 어두운 색
+    }
+
+    if (ServerChoice == ELSCharacterChoice::IJae)
+    {
+        TxtChoiceIJaeServer->SetText(FText::FromString(TEXT("Host")));
+        TxtChoiceIJaeServer->SetColorAndOpacity(SelectedColor);
+    }
+    else
+    {
+        TxtChoiceIJaeServer->SetColorAndOpacity(UnselectedColor);
+    }
+
+    // (2) 클라이언트 텍스트
+    if (ClientChoice == ELSCharacterChoice::IJae)
+    {
+        TxtChoiceIJaeClient->SetText(FText::FromString(TEXT("Guest")));
+        TxtChoiceIJaeClient->SetColorAndOpacity(SelectedColor);
+    }
+    else
+    {
+        TxtChoiceIJaeClient->SetColorAndOpacity(UnselectedColor);
     }
 }
 
