@@ -166,7 +166,7 @@ void ULS2DPuzzleHUD::OnStartWidget(const FName& InDataName, const FVector2D& InG
 				if (DataAsset)
 				{
 					CurrentActivateWidget = DataAsset->GetWidgetProperty();
-					if (InformationWidget) InformationWidget->UpdateInfo(DataAsset->GetInformationData());
+					if (InformationWidget) InformationWidget->UpdateInfo(*DataAsset);
 					break;
 				}
 			}
