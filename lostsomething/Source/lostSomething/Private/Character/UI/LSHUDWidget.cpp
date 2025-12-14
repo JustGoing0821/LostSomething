@@ -22,6 +22,8 @@ void ULSHUDWidget::NativeConstruct()
 	ImgAim = Cast<UImage>(GetWidgetFromName(TEXT("img_aim")));
 	ensure(ImgAim);
 
+	SetProfileIsSiJae(true);
+
 	if (StaminaBar)
 	{
 		DefaultBarColor = StaminaBar->GetFillColorAndOpacity();
@@ -159,6 +161,17 @@ void ULSHUDWidget::SetIcon(int32 CurrentSlot, UTexture2D* ItemIcon)
 	{
 		UE_LOG(LogTemp, Error, TEXT("SlotImage_%d widget is null"), CurrentSlot);
 	}
+}
+
+void ULSHUDWidget::SetProfileIsSiJae(bool bIsSiJae)
+{
+	if (ImgProfile_SiJae)
+		ImgProfile_SiJae->SetVisibility(bIsSiJae ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	if (ImgProfile_IJae)
+		ImgProfile_IJae->SetVisibility(!bIsSiJae ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+
 }
 
 void ULSHUDWidget::SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color)

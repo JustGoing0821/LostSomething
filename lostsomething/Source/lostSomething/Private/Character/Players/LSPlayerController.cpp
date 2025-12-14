@@ -151,6 +151,9 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHUDWidget->AddToViewport();
 		}
+
+		const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
+		LSHUDWidget->SetProfileIsSiJae(bIsSiJae);
 	}
 
 
