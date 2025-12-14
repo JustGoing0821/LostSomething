@@ -579,11 +579,19 @@ void ALSPlayer::PerformLineTrace()
 					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[1];
 				
 				}
-				else
+				else if (Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae && !IsPlayerNear())
+				
 				{
 					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 					TickDectectResultColor = FColor::Black;
 					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[3];
+					CurrentDectectActor = nullptr;
+				}
+				else
+				{
+					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
+					TickDectectResultColor = FColor::Black;
+					AimScript = "";
 					CurrentDectectActor = nullptr;
 				}
 			}
