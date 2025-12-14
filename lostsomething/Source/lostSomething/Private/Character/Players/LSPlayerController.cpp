@@ -151,6 +151,8 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHUDWidget->AddToViewport();
 		}
+
+		
 	}
 
 
@@ -161,6 +163,9 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHpWidget->AddToViewport();
 		}
+
+		const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
+		LSHpWidget->SetProfileIsSiJae(bIsSiJae);
 	}
 
 	//chat
