@@ -4,11 +4,14 @@
 #include "Character/UI/LSHpWidget.h"
 
 
+
+
 void ULSHpWidget::NativeConstruct()
 {
     Super::NativeConstruct();
    // UE_LOG(LogTemp, Warning, TEXT("ULSHUDWidget::NativeConstruct() Called"));
 
+    SetProfileIsSiJae(true);
 }
 
 
@@ -25,4 +28,14 @@ void ULSHpWidget::UpdateHpBar(float NewHp)
     {
         UE_LOG(LogTemp, Error, TEXT("HUD : PbHpBar is nullptr!"));
     }
+}
+
+void ULSHpWidget::SetProfileIsSiJae(bool bIsSiJae)
+{
+    if (ImgProfile_SiJae)
+        ImgProfile_SiJae->SetVisibility(bIsSiJae ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+    if (ImgProfile_IJae)
+        ImgProfile_IJae->SetVisibility(!bIsSiJae ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
 }

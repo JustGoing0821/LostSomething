@@ -110,7 +110,7 @@ protected:
 	TSoftObjectPtr<UTexture2D> UnselectedSlotBorderTexture;
 
 
-	UPROPERTY(meta = (BindWidget))
+	/*UPROPERTY(meta = (BindWidget))
 	UImage* ImgProfile_SiJae;
 
 	UPROPERTY(meta = (BindWidget))
@@ -118,7 +118,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetProfileIsSiJae(bool bIsSiJae);
+	void SetProfileIsSiJae(bool bIsSiJae);*/
 
 
 
