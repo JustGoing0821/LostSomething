@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ProgressBar.h"
+#include "Components/Image.h"
 #include "Blueprint/UserWidget.h"
 #include "LSHpWidget.generated.h"
 
@@ -15,6 +16,17 @@ class LOSTSOMETHING_API ULSHpWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UImage* ImgProfile_SiJae;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* ImgProfile_IJae;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetProfileIsSiJae(bool bIsSiJae);
+
 public:
 	virtual void NativeConstruct() override;
 
@@ -23,6 +35,7 @@ public:
 
 	// 바인딩용 함수
 	void UpdateHpBar(float NewHp);
+
 
 	
 };
