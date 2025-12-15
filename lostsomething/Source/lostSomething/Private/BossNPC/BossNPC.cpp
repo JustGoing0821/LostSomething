@@ -555,16 +555,14 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         }
     }
 
-    if (bShouldSpawnLargeAOE)
+    /* if (bShouldSpawnLargeAOE)
     {
         FVector FixedLargeAOELocation = FVector(-33.409138f, -4088.049805f, 9.5f);
 
         SpawnSingleLargeCircleAOE(FixedLargeAOELocation, FString::Printf(TEXT("Fixed Position Large Circle AOE")));
-
-        //UE_LOG(LogTemp, Warning, TEXT("Spawned LARGE Circle AOE at FIXED position: %s"), *FixedLargeAOELocation.ToString());
-        //UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: LARGE AOE ONLY - No other AOEs spawned"));
         return; 
     }
+    */
 
     bool bHasSpawnedShareAOE = false;
     int32 PlayerAOECount = 0;
