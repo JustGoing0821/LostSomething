@@ -2053,7 +2053,7 @@ void ALSPlayer::ProcessAttack()
 
 			// NPC만 데미지 적용
 			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			HitNPC->TakeDamage(20.0f, DamageEvent, GetController(), this);
 			DrawColor = FColor::Blue;
 		}
 	}

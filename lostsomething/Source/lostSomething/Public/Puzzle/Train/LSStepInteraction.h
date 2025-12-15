@@ -25,6 +25,9 @@ public:
 
 	FORCEINLINE uint8 GetbIsStepGetted() { return bIsStepGetted; }
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void MulticastRPCHideStep();
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CollisionBox;

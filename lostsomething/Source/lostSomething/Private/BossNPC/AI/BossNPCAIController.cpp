@@ -40,8 +40,8 @@ void ABossNPCAIController::OnPossess(APawn* InPawn)
 		ABossNPC* BossNPC = Cast<ABossNPC>(GetPawn());
 		if (BossNPC)
 		{
-			float CurrentHP = 100.0f;
-			LS_LOG(LogLS, Log, TEXT("BossNPCController OnPossess : %f"), CurrentHP)
+			float CurrentHP = 240.0;
+			//LS_LOG(LogLS, Log, TEXT("BossNPCController OnPossess : %f"), CurrentHP)
 			Blackboard->SetValueAsFloat(FName("CurrentHP"), CurrentHP);
 		}
 

@@ -59,8 +59,6 @@ void ALSStepInteraction::InteractionProcessSiJae(APlayerController* InPlayerCont
 	Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[1];
 	ScriptController->UpdateScriptWidget(Script);
 
-	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetVisibility(false);
 	bIsStepGetted = true;
 }
 
@@ -71,4 +69,10 @@ void ALSStepInteraction::InteractionProcessIJae(APlayerController* InPlayerContr
 
 	Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
 	ScriptController->UpdateScriptWidget(Script);
+}
+
+void ALSStepInteraction::MulticastRPCHideStep_Implementation()
+{
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetVisibility(false);
 }
