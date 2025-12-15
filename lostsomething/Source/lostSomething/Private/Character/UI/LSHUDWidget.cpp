@@ -288,7 +288,9 @@ void ULSHUDWidget::UpdateStaminaBar(float CurrentStamina, float MaxStamina)
 
 		if (Percentage < 0.3f)
 		{
-			StaminaBar->SetFillColorAndOpacity(FLinearColor::Red);
+			//StaminaBar->SetFillColorAndOpacity(FLinearColor::Red);
+
+			StaminaBar->SetFillColorAndOpacity(DefaultBarColor);
 		}
 		else
 		{
