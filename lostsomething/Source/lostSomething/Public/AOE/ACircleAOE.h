@@ -112,7 +112,7 @@ protected:
     float ShareDamageReduction = 0.5f;
 
     UPROPERTY(EditAnywhere, Category = "Share Settings", meta = (EditCondition = "AOEType == EAOEType::Share"))
-    float MaxSoloFatalDamage = 1000.0f;
+    float MaxSoloFatalDamage = 50.0f;
 
     UPROPERTY(Replicated)
     AActor* TrackedPlayer = nullptr;
