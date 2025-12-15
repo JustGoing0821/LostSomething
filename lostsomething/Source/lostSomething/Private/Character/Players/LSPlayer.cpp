@@ -861,8 +861,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	}
 	else
 	{
-		if (!LSController)
-			UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
+		//if (!LSController) UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
 	}
 }
 
@@ -975,14 +974,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
 	}
 
 	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstanceIJae)
 	{
 		AnimInstanceIJae->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
@@ -1461,16 +1460,12 @@ void ALSPlayer::LoadInventoryFromGameInstance()
 		
 			RefreshWeaponEquipFromCurrentSlot();
 
-			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - Pos:%d, LoadedSlots:%d, Selected:%d"),
-				static_cast<int32>(Position),
-				ItemInfoArray.Num(),
-				SelectedSlot);
+			///UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - Pos:%d, LoadedSlots:%d, Selected:%d"), static_cast<int32>(Position), ItemInfoArray.Num(), SelectedSlot);
 		}
 		else
 		{
 			// 저장된 게 없으면 그냥 초기화된 빈 인벤토리 유지
-			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - No saved data (Pos:%d)"),
-				static_cast<int32>(Position));
+			//UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - No saved data (Pos:%d)"), static_cast<int32>(Position));
 		}
 	}
 }

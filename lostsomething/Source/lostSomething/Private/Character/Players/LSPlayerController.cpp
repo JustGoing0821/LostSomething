@@ -513,7 +513,7 @@ void ALSPlayerController::End2DPuzzle()
 
 		if (LS2DPuzzleHUDWidget)
 		{
-			LS2DPuzzleHUDWidget->RemoveFromViewport();
+			LS2DPuzzleHUDWidget->RemoveFromParent();
 		}
 	}
 }

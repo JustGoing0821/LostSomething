@@ -22,7 +22,7 @@ void ULSHpWidget::UpdateHpBar(float NewHp)
     {
         const float Percent = NewHp / 100.0f;
         PbHpBar->SetPercent(Percent);
-        UE_LOG(LogTemp, Warning, TEXT("hud : HpBar updated: %.1f%%"), Percent * 100.0f);
+       // UE_LOG(LogTemp, Warning, TEXT("hud : HpBar updated: %.1f%%"), Percent * 100.0f);
     }
     else
     {

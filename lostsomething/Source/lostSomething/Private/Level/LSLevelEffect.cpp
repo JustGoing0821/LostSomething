@@ -108,13 +108,13 @@ void ALSLevelEffect::SpawnSystem()
     if (SpawnedSystem)
     {
         // Set Niagara Variable (Float) - Scale 설정
-        SpawnedSystem->SetNiagaraVariableFloat(FString("Scale"), Scale);
+        SpawnedSystem->SetNiagaraVariableFloat(TEXT("Scale"), Scale);
 
         // Branch 노드 구현 - Change Color 체크
         if (bChangeColor)
         {
             // Set Niagara Variable (LinearColor) - MainColor 설정
-            SpawnedSystem->SetNiagaraVariableLinearColor(FString("MainColor"), CustomColor);
+            SpawnedSystem->SetNiagaraVariableLinearColor(TEXT("MainColor"), CustomColor);
         }
     }
 }

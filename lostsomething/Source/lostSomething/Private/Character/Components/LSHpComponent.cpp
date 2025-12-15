@@ -23,7 +23,7 @@ void ULSHpComponent::BeginPlay()
 
 	// MaxHp로 초기화
 	CurrentHp = MaxHp;
-	UE_LOG(LogTemp, Warning, TEXT("hpcomponent :: HP Component initialized with HP: %.1f"), CurrentHp);
+	//UE_LOG(LogTemp, Warning, TEXT("hpcomponent :: HP Component initialized with HP: %.1f"), CurrentHp);
 
 }
 
@@ -114,7 +114,7 @@ void ULSHpComponent::SetHp(float NewHp)
     {
         CurrentHp = ClampedHp;
         OnHpChanged.Broadcast(CurrentHp);
-        UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
+       //UE_LOG(LogTemp, Warning, TEXT("HP changed: %.1f"), CurrentHp);
 
         if (ClampedHp < PrevHp && ClampedHp > 0.0f)
         {

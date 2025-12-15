@@ -31,7 +31,7 @@ void ALSPlayerSiJae::BeginPlay()
  
     if (IJae == nullptr)
     {
-        UE_LOG(LogTemp, Warning, TEXT("SiJae: IJae was not found!"));
+       UE_LOG(LogTemp, Error, TEXT("SiJae: IJae was not found!"));
     }
 
     if (IsLocallyControlled())
@@ -44,7 +44,7 @@ void ALSPlayerSiJae::BeginPlay()
             if (DarkWidgetInstance)
             {
                 DarkWidgetInstance->AddToViewport();
-                UE_LOG(LogTemp, Warning, TEXT("DarkWidget successfully added to viewport"));
+                //UE_LOG(LogTemp, Warning, TEXT("DarkWidget successfully added to viewport"));
             }
         }
         else
@@ -191,7 +191,7 @@ void ALSPlayerSiJae::Tick(float DeltaTime)
         IJae = Cast<ALSPlayerIJae>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSPlayerIJae::StaticClass()));
         if (IJae)
         {
-            UE_LOG(LogTemp, Warning, TEXT("SiJae: Found IJae player!"));
+           // UE_LOG(LogTemp, Warning, TEXT("SiJae: Found IJae player!"));
         }
     }
 
