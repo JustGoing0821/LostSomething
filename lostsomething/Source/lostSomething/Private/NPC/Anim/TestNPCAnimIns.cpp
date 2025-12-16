@@ -116,6 +116,7 @@ void UTestNPCAnimIns::AnimNotify_Despawn()
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Despawn : nullptr"));
         return;
     }
+    NPCCharacter->SetActorEnableCollision(false);
     NPCCharacter->Destroy();
 }
 
