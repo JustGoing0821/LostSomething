@@ -52,6 +52,8 @@ ALSAttackTutorial::ALSAttackTutorial()
 
 void ALSAttackTutorial::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (HasAuthority())
 	{
 		FTimerHandle Handle;
