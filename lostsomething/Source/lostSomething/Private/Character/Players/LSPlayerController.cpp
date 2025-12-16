@@ -995,8 +995,8 @@ void ALSPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	//엔터로 열고 ESC로 닫음
-	InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
-	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
+	//InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
+	//InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
 
 }
 
