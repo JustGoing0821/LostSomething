@@ -42,7 +42,7 @@ void ATestNPCAIController::OnPossess(APawn* InPawn)
 	{
 		// HomePos 값을 AI의 현재 위치로 초기화
 		Blackboard->SetValueAsVector(Key_HomePos, InPawn->GetActorLocation());
-		UE_LOG(LogTemp, Log, TEXT("ANPCAIController: Home Position Set To %s"), *InPawn->GetActorLocation().ToString());
+		//UE_LOG(LogTemp, Log, TEXT("ANPCAIController: Home Position Set To %s"), *InPawn->GetActorLocation().ToString());
 
 		RunBehaviorTree(BTAsset);
 	}
