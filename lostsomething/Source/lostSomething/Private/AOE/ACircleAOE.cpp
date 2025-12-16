@@ -218,8 +218,8 @@ void ACircleAOE::SetupCircleVisual()
     {
         WarningEffect->SetAsset(CircleWarningEffect);
 
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CircleWarningColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), CircleWarningColor);
 
         UE_LOG(LogTemp, Warning, TEXT("Circle Warning Effect configured: Scale 1.0"));
     }
@@ -228,8 +228,8 @@ void ACircleAOE::SetupCircleVisual()
     {
         ExplosionEffect->SetAsset(CircleExplosionEffect);
 
-        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CircleExplosionColor);
+        ExplosionEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), CircleExplosionColor);
     }
 }
 
@@ -239,16 +239,16 @@ void ACircleAOE::SetupShareVisual()
     {
         WarningEffect->SetAsset(ShareWarningEffect);
 
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), ShareWarningColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), ShareWarningColor);
     }
 
     if (ShareExplosionEffect && ExplosionEffect)
     {
         ExplosionEffect->SetAsset(ShareExplosionEffect);
 
-        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), ShareExplosionColor);
+        ExplosionEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), ShareExplosionColor);
     }
 }
 
@@ -258,16 +258,16 @@ void ACircleAOE::SetupLargeCircleVisual()
     {
         WarningEffect->SetAsset(LargeCircleWarningEffect);
 
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), LargeCircleWarningColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), LargeCircleWarningColor);
     }
 
     if (LargeCircleExplosionEffect && ExplosionEffect)
     {
         ExplosionEffect->SetAsset(LargeCircleExplosionEffect);
 
-        ExplosionEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
-        ExplosionEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), LargeCircleExplosionColor);
+        ExplosionEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
+        ExplosionEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), LargeCircleExplosionColor);
     }
 }
 
@@ -432,8 +432,8 @@ void ACircleAOE::UpdateCircleAnimation(float Alpha)
             Alpha
         );
 
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
     }
 }
 
@@ -447,8 +447,8 @@ void ACircleAOE::UpdateShareAnimation(float Alpha)
             Alpha
         );
 
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
     }
 }
 
@@ -462,8 +462,8 @@ void ACircleAOE::UpdateLargeCircleAnimation(float Alpha)
             Alpha
         );
 
-        WarningEffect->SetNiagaraVariableLinearColor(FString("User.MainColor"), CurrentColor);
-        WarningEffect->SetNiagaraVariableFloat(FString("User.Scale"), 1.0f);
+        WarningEffect->SetNiagaraVariableLinearColor(TEXT("User.MainColor"), CurrentColor);
+        WarningEffect->SetNiagaraVariableFloat(TEXT("User.Scale"), 1.0f);
     }
 }
 

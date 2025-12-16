@@ -107,7 +107,7 @@ class LOSTSOMETHING_API ABossNPC : public ACharacter, public ILSTakeDamageInterf
 protected:
     virtual void BeginPlay() override;
 
-    float MaxHP = 120.0f;
+    float MaxHP = 240.0f;
     float CurrentHP;
 
     bool bIsPhaseChanging;

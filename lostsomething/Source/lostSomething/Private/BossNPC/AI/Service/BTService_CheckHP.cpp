@@ -21,12 +21,12 @@ void UBTService_CheckHP::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Node
     float CurrentHP = BlackboardComp->GetValueAsFloat(FName("CurrentHP"));
 
     FName NewState;
-    if (CurrentHP <= 40.0f)
+    if (CurrentHP <= 80.0f)
     {
         BlackboardComp->SetValueAsEnum(FName("Phase"), static_cast<uint8>(EPhaseType::Phase3));
         //UE_LOG(LogTemp, Warning, TEXT("UBTService_CheckHP::EPhaseType::Phase3"))
     }     
-    else if (CurrentHP <= 80.0f)
+    else if (CurrentHP <= 160.0f)
     {
         BlackboardComp->SetValueAsEnum(FName("Phase"), static_cast<uint8>(EPhaseType::Phase2));
         //UE_LOG(LogTemp, Warning, TEXT("UBTService_CheckHP::EPhaseType::Phase2"))

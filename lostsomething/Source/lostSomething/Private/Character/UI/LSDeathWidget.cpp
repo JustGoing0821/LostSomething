@@ -11,6 +11,6 @@ void ULSDeathWidget::UpdateCountdown(int32 Count)
         FString CountText = FString::Printf(TEXT("%d"), Count);
         CountdownText->SetText(FText::FromString(CountText));
 
-        UE_LOG(LogTemp, Warning, TEXT("Death countdown: %d"), Count);
+        //UE_LOG(LogTemp, Warning, TEXT("Death countdown: %d"), Count);
     }
 }

@@ -184,7 +184,7 @@ void ULSGameInstance::FindOtherRooms()
 	if (OnFindingRoomsDelegate.IsBound())
 	{
 		OnFindingRoomsDelegate.Broadcast(true);
-		UE_LOG(LogTemp, Warning, TEXT("OnFindingRoomsDelegate.Broadcast"));
+		//UE_LOG(LogTemp, Warning, TEXT("OnFindingRoomsDelegate.Broadcast"));
 	}
 }
 
@@ -216,9 +216,9 @@ void ULSGameInstance::OnMyJoinRoomComplete(FName SessionName, EOnJoinSessionComp
 
 void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnMyFindOtherRoomsComplete CALLED!!!"));
-	UE_LOG(LogTemp, Warning, TEXT("search success: %d"), bWasSuccesful);
-	UE_LOG(LogTemp, Warning, TEXT("find room numbers: %d"), RoomSearch->SearchResults.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("OnMyFindOtherRoomsComplete CALLED!!!"));
+	//UE_LOG(LogTemp, Warning, TEXT("search success: %d"), bWasSuccesful);
+	//UE_LOG(LogTemp, Warning, TEXT("find room numbers: %d"), RoomSearch->SearchResults.Num());
 
 	for (int32 i = 0; i < RoomSearch->SearchResults.Num(); i++)
 	{
@@ -230,11 +230,11 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 
 		auto SearchResult = RoomSearch->SearchResults[i];
 
-		UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);
+		//UE_LOG(LogTemp, Warning, TEXT("=== room [%d] information ==="), i);
 
 		if (!SearchResult.IsValid())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("INVALID SESSION"));
+			//UE_LOG(LogTemp, Warning, TEXT("INVALID SESSION"));
 			continue;
 		}
 
@@ -252,10 +252,10 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 			FString DecodedRoomName = StringBase64Decode(roomName);
 			FString DecodedHostName = StringBase64Decode(hostName);
 
-			UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
-			UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
-			UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
-			UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
+			//UE_LOG(LogTemp, Warning, TEXT("encoded room name: %s"), *roomName);
+			//UE_LOG(LogTemp, Warning, TEXT("decoded room name: %s"), *DecodedRoomName);
+			//UE_LOG(LogTemp, Warning, TEXT("encoded host name: %s"), *hostName);
+			//UE_LOG(LogTemp, Warning, TEXT("decoded host name: %s"), *DecodedHostName);
 
 			// UI 델리게이트 호출
 			if (OnAddRoomInfoDelegate.IsBound())
@@ -271,10 +271,10 @@ void ULSGameInstance::OnMyFindOtherRoomsComplete(bool bWasSuccesful)
 				roomInfo.PlayerCount = TEXT("1");
 				roomInfo.PingMS = FString::FromInt(SearchResult.PingInMs);
 
-				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
+				//UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : begin"));
 				OnAddRoomInfoDelegate.Broadcast(roomInfo);
-				UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
-				UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
+				//UE_LOG(LogTemp, Warning, TEXT("AddRoomInfoWidget : end"));
+				//UE_LOG(LogTemp, Warning, TEXT("OnAddRoomInfoDelegate.Broadcast(roomInfo)"));
 			}
 		}
 		else
@@ -363,10 +363,7 @@ void ULSGameInstance::SaveInventory(ELSNetworkPosition Position,const TArray<FIt
 	SavedInventories.Add(Position, Snapshot);
 
 	//로그
-	UE_LOG(LogTemp, Log, TEXT("SaveInventory: Position=%d, Items=%d, SelectedSlot=%d"),
-		static_cast<int32>(Position),
-		Snapshot.ItemInfos.Num(),
-		Snapshot.SelectedSlot);
+	//UE_LOG(LogTemp, Log, TEXT("SaveInventory: Position=%d, Items=%d, SelectedSlot=%d"),static_cast<int32>(Position),Snapshot.ItemInfos.Num(),Snapshot.SelectedSlot);
 }
 
 bool ULSGameInstance::LoadInventory(ELSNetworkPosition Position,TArray<FItemDetails>& OutItems,int32& OutSelectedSlot) const
@@ -377,16 +374,12 @@ bool ULSGameInstance::LoadInventory(ELSNetworkPosition Position,TArray<FItemDeta
 		OutItems = Found->ItemInfos;     
 		OutSelectedSlot = Found->SelectedSlot;
 
-		UE_LOG(LogTemp, Log, TEXT("LoadInventory: Position=%d, Items=%d, SelectedSlot=%d"),
-			static_cast<int32>(Position),
-			OutItems.Num(),
-			OutSelectedSlot);
+		//UE_LOG(LogTemp, Log, TEXT("LoadInventory: Position=%d, Items=%d, SelectedSlot=%d"),static_cast<int32>(Position),OutItems.Num(),OutSelectedSlot);
 
 		return true;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("LoadInventory: No snapshot for Position=%d"),
-		static_cast<int32>(Position));
+	//UE_LOG(LogTemp, Warning, TEXT("LoadInventory: No snapshot for Position=%d"),static_cast<int32>(Position));
 
 	return false;
 }

@@ -137,18 +137,18 @@ void ABossNPC::SetHP(float NewHP)
         return;
     }
 
-    if (CurrentPhase == 1 && NewHP <= 80.0f)
+    if (CurrentPhase == 1 && NewHP <= 160.0f)
     {
-        NewHP = 80.0f;
+        NewHP = 160.0f;
         CurrentPhase = 2;
         bIsPhaseChanging = true;
         DamageMontagePlay();
         HideGroupActor(2);
     }
-    else if (CurrentPhase == 2 && NewHP <= 40.0f)
+    else if (CurrentPhase == 2 && NewHP <= 80.0f)
     {
         DestroyObstacles();
-        NewHP = 40.0f;
+        NewHP = 80.0f;
         CurrentPhase = 3; 
         bIsPhaseChanging = true;
         DamageMontagePlay();
@@ -555,16 +555,14 @@ void ABossNPC::ServerSpawnAOEAttack_Implementation()
         }
     }
 
-    if (bShouldSpawnLargeAOE)
+    /* if (bShouldSpawnLargeAOE)
     {
         FVector FixedLargeAOELocation = FVector(-33.409138f, -4088.049805f, 9.5f);
 
         SpawnSingleLargeCircleAOE(FixedLargeAOELocation, FString::Printf(TEXT("Fixed Position Large Circle AOE")));
-
-        //UE_LOG(LogTemp, Warning, TEXT("Spawned LARGE Circle AOE at FIXED position: %s"), *FixedLargeAOELocation.ToString());
-        //UE_LOG(LogTemp, Warning, TEXT("AOE Spawn Summary: LARGE AOE ONLY - No other AOEs spawned"));
         return; 
     }
+    */
 
     bool bHasSpawnedShareAOE = false;
     int32 PlayerAOECount = 0;

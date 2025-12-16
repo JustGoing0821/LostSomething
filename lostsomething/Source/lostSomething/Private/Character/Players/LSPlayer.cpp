@@ -579,11 +579,19 @@ void ALSPlayer::PerformLineTrace()
 					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[1];
 				
 				}
-				else
+				else if (Cast<ILSCharacterChoiceInterface>(GetController())->GetCharacterChoice() == ELSCharacterChoice::SiJae && !IsPlayerNear())
+				
 				{
 					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
 					TickDectectResultColor = FColor::Black;
 					AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[3];
+					CurrentDectectActor = nullptr;
+				}
+				else
+				{
+					RemoveOverlayMaterialToActor(CurrentDectectActor, ItemOverlayMaterial2);
+					TickDectectResultColor = FColor::Black;
+					AimScript = "";
 					CurrentDectectActor = nullptr;
 				}
 			}
@@ -853,8 +861,7 @@ void ALSPlayer::OnHpChanged(float NewHp)
 	}
 	else
 	{
-		if (!LSController)
-			UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
+		//if (!LSController) UE_LOG(LogTemp, Error, TEXT("LSPLAYER :: LSPlayerController is null"));
 	}
 }
 
@@ -967,14 +974,14 @@ void ALSPlayer::MultiDie_Implementation()
 	if (AnimInstance)
 	{
 		AnimInstance->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION SIJAE"));
 	}
 
 	ULSPlayerIJaeAnimInstance* AnimInstanceIJae = Cast<ULSPlayerIJaeAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstanceIJae)
 	{
 		AnimInstanceIJae->SetDeadAnim();
-		UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
+		//UE_LOG(LogTemp, Warning, TEXT("Player died ANIMATION IJAE"));
 	}
 
 	// 본인 클라이언트에서만 UI 처리
@@ -1453,16 +1460,12 @@ void ALSPlayer::LoadInventoryFromGameInstance()
 		
 			RefreshWeaponEquipFromCurrentSlot();
 
-			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - Pos:%d, LoadedSlots:%d, Selected:%d"),
-				static_cast<int32>(Position),
-				ItemInfoArray.Num(),
-				SelectedSlot);
+			///UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - Pos:%d, LoadedSlots:%d, Selected:%d"), static_cast<int32>(Position), ItemInfoArray.Num(), SelectedSlot);
 		}
 		else
 		{
 			// 저장된 게 없으면 그냥 초기화된 빈 인벤토리 유지
-			UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - No saved data (Pos:%d)"),
-				static_cast<int32>(Position));
+			//UE_LOG(LogTemp, Log, TEXT("ALSPlayer::LoadInventoryFromGameInstance - No saved data (Pos:%d)"), static_cast<int32>(Position));
 		}
 	}
 }
@@ -2045,7 +2048,7 @@ void ALSPlayer::ProcessAttack()
 
 			// NPC만 데미지 적용
 			FDamageEvent DamageEvent;
-			HitNPC->TakeDamage(10.0f, DamageEvent, GetController(), this);
+			HitNPC->TakeDamage(20.0f, DamageEvent, GetController(), this);
 			DrawColor = FColor::Blue;
 		}
 	}

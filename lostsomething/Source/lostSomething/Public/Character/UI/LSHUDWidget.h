@@ -109,6 +109,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Border")
 	TSoftObjectPtr<UTexture2D> UnselectedSlotBorderTexture;
 
+
+	/*UPROPERTY(meta = (BindWidget))
+	UImage* ImgProfile_SiJae;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* ImgProfile_IJae;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetProfileIsSiJae(bool bIsSiJae);*/
+
+
+
 private:
 	// 특정 슬롯의 테두리 색상 설정
 	void SetSlotBorderColor(int32 SlotIndex, const FLinearColor& Color);
