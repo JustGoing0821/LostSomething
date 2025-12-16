@@ -46,6 +46,29 @@ void ALSStepInteraction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ALSStepInteraction, bIsStepGetted);
 }
 
+void ALSStepInteraction::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+				{
+					if (PlayerController && !PlayerController->IsLocalController())
+					{
+						SetOwner(PlayerController);
+						break;
+					}
+				}
+			}
+		), 1.0f, false, 2.0f);
+	}
+}
+
+
 void ALSStepInteraction::InteractionProcess(APlayerController* InPlayerController)
 {
 	Super::InteractionProcess(InPlayerController);
@@ -60,6 +83,15 @@ void ALSStepInteraction::InteractionProcessSiJae(APlayerController* InPlayerCont
 	ScriptController->UpdateScriptWidget(Script);
 
 	bIsStepGetted = true;
+
+	if (HasAuthority())
+	{
+		MulticastRPCHideStep();
+	}
+	else
+	{
+		ServerRPCHideStep();
+	}
 }
 
 void ALSStepInteraction::InteractionProcessIJae(APlayerController* InPlayerController)
@@ -69,6 +101,11 @@ void ALSStepInteraction::InteractionProcessIJae(APlayerController* InPlayerContr
 
 	Script = InteractionScriptDataSiJae->GetInteractionScripts(CurrentQuest)[0];
 	ScriptController->UpdateScriptWidget(Script);
+}
+
+void ALSStepInteraction::ServerRPCHideStep_Implementation()
+{
+	MulticastRPCHideStep();
 }
 
 void ALSStepInteraction::MulticastRPCHideStep_Implementation()

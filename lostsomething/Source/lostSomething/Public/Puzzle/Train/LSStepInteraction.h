@@ -18,6 +18,9 @@ public:
 	ALSStepInteraction();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	virtual void InteractionProcess(APlayerController* InPlayerController) override;
 	virtual void InteractionProcessSiJae(APlayerController* InPlayerController) override;
@@ -27,6 +30,9 @@ public:
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void MulticastRPCHideStep();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCHideStep();
 
 protected:
 	UPROPERTY(VisibleAnywhere)
