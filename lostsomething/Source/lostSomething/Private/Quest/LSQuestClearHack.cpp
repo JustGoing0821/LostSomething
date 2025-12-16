@@ -46,7 +46,7 @@ void ALSQuestClearHack::BeginPlay()
 					}
 				}
 			}
-		), 1.0f, false, 2.0f);
+		), 15.0f, false, 2.0f);
 	}
 }
 

@@ -3,6 +3,7 @@
 
 #include "Puzzle/Train/LSStepInteraction.h"
 #include "lostSomething.h"
+#include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Physics/LSCollisionProfile.h"
 #include "Components/BoxComponent.h"
@@ -64,7 +65,7 @@ void ALSStepInteraction::BeginPlay()
 					}
 				}
 			}
-		), 1.0f, false, 2.0f);
+		), 15.0f, false, 2.0f);
 	}
 }
 
