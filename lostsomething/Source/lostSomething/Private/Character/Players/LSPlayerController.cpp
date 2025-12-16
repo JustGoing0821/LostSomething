@@ -11,6 +11,7 @@
 #include "Character/Players/LSPlayer.h"
 #include "Character/UI/LSChatWidget.h"
 #include "Game/LSGameMode.h"
+#include "Game/LSGameInstance.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
@@ -141,9 +142,6 @@ void ALSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FInputModeGameOnly GameOnlyInputMode;
-	SetInputMode(GameOnlyInputMode);
-
 	if (IsLocalController() && LSHUDWidgetClass)
 	{
 		LSHUDWidget = CreateWidget<ULSHUDWidget>(this, LSHUDWidgetClass);
@@ -151,8 +149,6 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHUDWidget->AddToViewport();
 		}
-
-		
 	}
 
 
@@ -162,6 +158,23 @@ void ALSPlayerController::BeginPlay()
 		if (LSHpWidget)
 		{
 			LSHpWidget->AddToViewport();
+		}
+
+		if (CharacterChoice == ELSCharacterChoice::None)
+		{
+			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("CharacterChoice is None!!"));
+			ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+			if (GameInstance)
+			{
+				if (HasAuthority())
+				{
+					CharacterChoice = GameInstance->GetServerCharacterChoice();
+				}
+				else
+				{
+					CharacterChoice = GameInstance->GetClientCharacterChoice();
+				}
+			}
 		}
 
 		const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
@@ -267,7 +280,7 @@ void ALSPlayerController::BeginPlay()
 	//	ServerRPCStartGame();
 	//}
 
-	SetInputMode(FInputModeGameOnly());
+	//SetInputMode(FInputModeGameOnly());
 
 	if (IsLocalController())
 	{
