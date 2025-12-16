@@ -172,7 +172,7 @@ void ALSPlayerController::BeginPlay()
 				}
 				else
 				{
-					CharacterChoice = GameInstance->GetClientCharacterChoice();
+					ServerRPCSetClientCharacterChoiceFromGameInstance();
 				}
 			}
 		}
@@ -341,6 +341,18 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
 	DOREPLIFETIME(ALSPlayerController, SiJaeCursorPos);
+}
+
+void ALSPlayerController::ServerRPCSetClientCharacterChoiceFromGameInstance_Implementation()
+{
+	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GameInstance)
+	{
+		if (HasAuthority())
+		{
+			CharacterChoice = GameInstance->GetClientCharacterChoice();
+		}
+	}
 }
 
 //Blood
