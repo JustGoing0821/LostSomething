@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/AudioComponent.h"
+#include "EngineUtils.h"
 #include "Engine/DamageEvents.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -98,6 +99,24 @@ ALSVendingMachine::ALSVendingMachine()
 void ALSVendingMachine::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+				{
+					if (PlayerController && !PlayerController->IsLocalController())
+					{
+						SetOwner(PlayerController);
+						//LS_LOG(LogLSls, Log, TEXT("Owner Setted."));
+						break;
+					}
+				}
+			}
+		), 2.0f, false);
+	}
 
 	if (HasAuthority())
 	{
