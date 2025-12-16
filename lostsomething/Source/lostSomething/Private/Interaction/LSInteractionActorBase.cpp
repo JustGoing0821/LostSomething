@@ -138,7 +138,7 @@ void ALSInteractionActorBase::BeginPlay()
 					}
 				}
 			}
-		), 1.0f, false, 3.0f);
+		), 5.0f, false, 3.0f);
 	}
 
 	//SiJae IJae Difference Setting

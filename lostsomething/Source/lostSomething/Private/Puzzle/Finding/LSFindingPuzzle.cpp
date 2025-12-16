@@ -151,7 +151,7 @@ void ALSFindingPuzzle::BeginPlay()
 					}
 				}
 			}
-		), 2.0f, false);
+		), 15.0f, false);
 	}
 
 	if (HasAuthority())
