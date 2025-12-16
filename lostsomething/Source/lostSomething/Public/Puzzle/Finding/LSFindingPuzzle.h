@@ -94,15 +94,15 @@ protected:
 
 //RPC Section
 public:
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCPuzzleActivate();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCPuzzleDeactivate();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCSetCurrentInteractController(APlayerController* InPlayerController);
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCPuzzleCheck();
 };

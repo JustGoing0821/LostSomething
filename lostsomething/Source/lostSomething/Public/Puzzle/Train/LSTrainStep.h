@@ -64,15 +64,15 @@ public:
 	UPROPERTY(Replicated)
 	uint8 bIsStepInstalled : 1;
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCInstallStep();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCInstallStep();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCStartInstallPuzzle();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCFailedInstallPuzzle();
 };
