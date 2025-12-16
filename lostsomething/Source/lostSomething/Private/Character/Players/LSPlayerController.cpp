@@ -159,26 +159,6 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHpWidget->AddToViewport();
 		}
-
-		if (CharacterChoice == ELSCharacterChoice::None)
-		{
-			LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("CharacterChoice is None!!"));
-			ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
-			if (GameInstance)
-			{
-				if (HasAuthority())
-				{
-					CharacterChoice = GameInstance->GetServerCharacterChoice();
-				}
-				else
-				{
-					ServerRPCSetClientCharacterChoiceFromGameInstance();
-				}
-			}
-		}
-
-		const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
-		LSHpWidget->SetProfileIsSiJae(bIsSiJae);
 	}
 
 	//chat
@@ -293,6 +273,19 @@ void ALSPlayerController::BeginPlay()
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
 }
 
+void ALSPlayerController::ServerRPCSetClientCharacterChoiceFromGameInstance_Implementation()
+{
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GameInstance)
+	{
+		if (HasAuthority())
+		{
+			CharacterChoice = GameInstance->GetClientCharacterChoice();
+		}
+	}
+}
+
 void ALSPlayerController::Tick(float DeltaTime)
 {
 	if (bIs2DPuzzleActive)
@@ -341,18 +334,6 @@ void ALSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(ALSPlayerController, CharacterChoice);
 	DOREPLIFETIME(ALSPlayerController, SiJaeCursorPos);
-}
-
-void ALSPlayerController::ServerRPCSetClientCharacterChoiceFromGameInstance_Implementation()
-{
-	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GameInstance)
-	{
-		if (HasAuthority())
-		{
-			CharacterChoice = GameInstance->GetClientCharacterChoice();
-		}
-	}
 }
 
 //Blood
@@ -754,6 +735,26 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 		StartBGM();
 	}
 
+	if (CharacterChoice == ELSCharacterChoice::None)
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("CharacterChoice is None!!"));
+		ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+		if (GameInstance)
+		{
+			if (HasAuthority())
+			{
+				CharacterChoice = GameInstance->GetServerCharacterChoice();
+			}
+			else
+			{
+				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ServerRPC Call"));
+				ServerRPCSetClientCharacterChoiceFromGameInstance();
+			}
+		}
+	}
+	const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
+	if (LSHpWidget) LSHpWidget->SetProfileIsSiJae(bIsSiJae);
+	else LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No LSHpWidget!"));
 
 	if (bIsMapStart && IsLocalController())
 	{
