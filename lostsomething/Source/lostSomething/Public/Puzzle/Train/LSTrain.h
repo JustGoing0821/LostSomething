@@ -181,10 +181,10 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCGetOffPassengers();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCStopTrain();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCLeaveTrain();
 
 	UFUNCTION(NetMulticast, Unreliable)

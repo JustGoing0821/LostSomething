@@ -48,21 +48,10 @@ void ALSQuestClearHack::BeginPlay()
 			}
 		), 1.0f, false, 2.0f);
 	}
-
-	if (bIsStartClear)
-	{
-		FTimerHandle Handle2;
-		GetWorld()->GetTimerManager().SetTimer(Handle2, FTimerDelegate::CreateLambda([&]
-			{
-				QuestClear();
-			}
-		), 3.0f, false);
-	}
 }
 
 void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController)
 {
-#if WITH_EDITOR
 	if (HasAuthority())
 	{
 		QuestClear();
@@ -72,7 +61,6 @@ void ALSQuestClearHack::InteractionProcess(APlayerController* InPlayerController
 		ServerRPCQuestClear();
 		//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("End"));
 	}
-#endif
 }
 
 void ALSQuestClearHack::QuestClear()
@@ -90,7 +78,7 @@ void ALSQuestClearHack::QuestClear()
 
 void ALSQuestClearHack::ServerRPCQuestClear_Implementation()
 {
-	//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("Begin"));
+	LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("Begin"));
 	QuestClear();
 }
 
