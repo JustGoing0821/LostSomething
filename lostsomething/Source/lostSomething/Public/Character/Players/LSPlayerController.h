@@ -27,6 +27,7 @@ public:
 	//수정 게터함수
 	FORCEINLINE TObjectPtr<class ULSHUDWidget> GetLSHUDWidget() const { return LSHUDWidget; }
 	FORCEINLINE TObjectPtr<class ULSHpWidget> GetLSHpWidget() const { return LSHpWidget; }
+	FORCEINLINE TObjectPtr<class ULSDeathWidget> GetLSDeathWidget() const { return DeathWidget; }
 
 	//UFUNCTION(BlueprintCallable, Category = "HUD")
 	//void SelectNextSlot();

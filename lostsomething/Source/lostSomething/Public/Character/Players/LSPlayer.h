@@ -253,6 +253,10 @@ protected:
 		// 부활 타이머
 		FTimerHandle RespawnTimerHandle;
 		FTimerHandle MeshHideTimerHandle;
+		FTimerHandle RespawnUpdateTimerHandle;
+
+		const float RespawnTime = 5.0f;    
+		float RespawnElapsedTime = 0.0f;    
 
 
 public:
@@ -276,6 +280,8 @@ protected:
 
 	UFUNCTION()
 	void Respawn();
+
+	void UpdateRespawnProgress();
 
 	
 

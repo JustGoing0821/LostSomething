@@ -89,13 +89,13 @@ protected:
 
     // Base AOE
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
-    float Radius = 250.0f;
+    float Radius = 200.0f;
 
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
-    float WarningDuration = 2.0f;
+    float WarningDuration = 3.0f;
 
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
-    float Damage = 20.0f;
+    float Damage = 15.0f;
 
     // Explosion effect duration
     UPROPERTY(EditAnywhere, Category = "AOE Settings")
@@ -112,7 +112,7 @@ protected:
     float ShareDamageReduction = 0.5f;
 
     UPROPERTY(EditAnywhere, Category = "Share Settings", meta = (EditCondition = "AOEType == EAOEType::Share"))
-    float MaxSoloFatalDamage = 50.0f;
+    float MaxSoloFatalDamage = 30.0f;
 
     UPROPERTY(Replicated)
     AActor* TrackedPlayer = nullptr;
