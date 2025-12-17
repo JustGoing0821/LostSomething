@@ -395,6 +395,14 @@ void ALSPlayerController::CallQuestClear()
 	if (IsLocalController())
 	{
 		QuestWidget->CallQuestClear();
+		if (bIs2DPuzzleActive)
+		{
+			if (LS2DPuzzleHUDWidget)
+			{
+				LS2DPuzzleHUDWidget->OnBtnExitClicked();
+			}
+			bIs2DPuzzleActive = false;
+		}
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 	else
@@ -1106,6 +1114,14 @@ void ALSPlayerController::ClientRPCCallQuestClear_Implementation()
 	if (this->IsLocalController())
 	{
 		if(QuestWidget) QuestWidget->CallQuestClear();
+		if (bIs2DPuzzleActive)
+		{
+			if (LS2DPuzzleHUDWidget)
+			{
+				LS2DPuzzleHUDWidget->OnBtnExitClicked();
+			}
+			bIs2DPuzzleActive = false;
+		}
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }
