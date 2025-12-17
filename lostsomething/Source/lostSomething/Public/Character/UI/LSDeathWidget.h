@@ -14,12 +14,15 @@ class LOSTSOMETHING_API ULSDeathWidget : public UUserWidget
     GENERATED_BODY()
 
 public:
-    // 카운트다운 업데이트
+    virtual void NativeConstruct() override;
+
     UFUNCTION(BlueprintCallable)
-    void UpdateCountdown(int32 Count);
+    void UpdateRespawnProgress(float RemainingTime, float TotalTime);
 
 protected:
-    // 카운트다운 텍스트
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UTextBlock> CountdownText;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UUserWidget> RoundBar;
 };
