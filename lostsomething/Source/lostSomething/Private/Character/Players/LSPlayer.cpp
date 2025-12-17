@@ -551,6 +551,12 @@ void ALSPlayer::PerformLineTrace()
 		TickDectectResultColor = FColor::Yellow;
 		AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[2];
 	}
+	else if (bIsCombining && CharacterChoice == ELSCharacterChoice::IJae)
+	{
+		CurrentDectectActor = nullptr;
+		TickDectectResultColor = FColor::Yellow;
+		AimScript = "";
+	}
 	else
 	{
 		FHitResult HitResult;
@@ -1676,6 +1682,16 @@ void ALSPlayer::StartThrowPreview()
 {
 	if (bIsDead) return;
 
+	if (bIsCombining)
+	{
+		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(GetController());
+		if (ScriptWidget)
+		{
+			ScriptWidget->UpdateScriptWidget(AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[6]);
+		}
+		return;
+	}
+
 	//±À¿˚ √ ±‚»≠
 	bThrowPreview = true;
 	CachedPathPoints.Reset();
@@ -1938,7 +1954,7 @@ void ALSPlayer::Attack()
 		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(GetController());
 		if (ScriptWidget)
 		{
-			ScriptWidget->UpdateScriptWidget("Decouple to Attack");
+			ScriptWidget->UpdateScriptWidget(AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[6]);
 		}
 		return;
 	}
