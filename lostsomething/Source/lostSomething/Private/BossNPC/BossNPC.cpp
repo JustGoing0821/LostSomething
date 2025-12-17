@@ -40,7 +40,7 @@ ABossNPC::ABossNPC()
     CurrentHP = MaxHP;
 
     // AOE 관련 기본값 설정
-    AOEAttackInterval = 10.0f;
+    AOEAttackInterval = 15.0f;
     MaxAOECount = 2;
     AOESpawnRadius = 500.0f;
     CurrentPhase = 1;
