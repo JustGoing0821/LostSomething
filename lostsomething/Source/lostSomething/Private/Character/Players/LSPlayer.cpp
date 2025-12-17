@@ -232,7 +232,7 @@ ALSPlayer::ALSPlayer()
 	//push socket
 	PushSocket = CreateDefaultSubobject<USceneComponent>(TEXT("PushSocket"));
 	PushSocket->SetupAttachment(RootComponent); 
-	PushSocket->SetRelativeLocation(FVector(80.f, 0.f, 0.f)); 
+	PushSocket->SetRelativeLocation(FVector(80.f, 0.f, -5.f)); 
 
 }
 
@@ -2561,15 +2561,23 @@ void ALSPlayer::BeginCombine_Attach()
 	}
 
 	
-	IJae->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//IJae->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	UCapsuleComponent* Cap = IJae->GetCapsuleComponent();
+
+	Cap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	// 플레이어끼리는 무시 (덜덜 방지 핵심)
+	Cap->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+
+	// 월드는 막기 (뚫림 방지 핵심)
+	Cap->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	Cap->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+
 
 	
 	USceneComponent* AttachTarget = SiJae->PushSocket ? SiJae->PushSocket : SiJae->GetRootComponent();
 
-	IJae->AttachToComponent(
-		AttachTarget,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale
-	);
+	IJae->AttachToComponent(AttachTarget,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	
 	IJae->SetActorRotation(SiJae->GetActorRotation());
@@ -2581,6 +2589,15 @@ void ALSPlayer::EndCombine_Detach()
 	if (!PushedIJaeCharacter) return;
 
 	ALSPlayer* IJae = PushedIJaeCharacter;
+
+	UCapsuleComponent* Cap = IJae->GetCapsuleComponent();
+	Cap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	// 다시 원래대로(보통 Pawn은 Block)
+	Cap->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	Cap->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	Cap->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+
 
 	
 	IJae->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
