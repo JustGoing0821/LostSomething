@@ -49,9 +49,9 @@ void ULSGameInstance::CreateRoom(FString RoomName)
 	Setting.bIsDedicated = false;
 
 	auto SubSys = IOnlineSubsystem::Get();
-	Setting.bIsLANMatch = false;
+	//Setting.bIsLANMatch = false;
 	//Setting.bIsLANMatch = SubSys->GetSubsystemName().IsEqual("NULL");
-	//Setting.bIsLANMatch = true;
+	Setting.bIsLANMatch = true;
 
 	Setting.bShouldAdvertise = true;
 	Setting.bUsesPresence = true;
