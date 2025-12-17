@@ -135,7 +135,7 @@ ALSTrainSpawnGimmick::ALSTrainSpawnGimmick()
 	}
 
 	//Puzzle
-	CorrectGate = -1;
+	CorrectGate = 0;
 	CorrectPeopleCount = 2;
 	PuzzleActivateEnum = ELSInteractionEnum::Quest7;
 	DamageAmount = 10.f;
@@ -177,7 +177,7 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* Overlap
 		if (OverlapEndActor)
 		{
 			FTimerHandle Handle;
-			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([this, OverlapEndActor]
 				{
 					if (IsValid(OverlapEndActor))
 					{
@@ -193,6 +193,9 @@ void ALSTrainSpawnGimmick::OnSpawnTriggerEndOverlap(UPrimitiveComponent* Overlap
 			MulticastRPCSetBlockTriggerCollision(true);
 		}		
 	}
+
+	PannelMesh1->SetMaterial(0, PannelMaterials[0]);
+	PannelMesh2->SetMaterial(0, PannelMaterials[0]);
 }
 
 void ALSTrainSpawnGimmick::OnGateWaitTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -248,13 +251,18 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 		CorrectGate = FMath::RandRange(1, 6);
 		//LS_LOG(LogLSls, Log, TEXT("CorrectGate : %d"), CorrectGate);
 
-		float DelayTime = FMath::FRandRange(3.f, 6.f);
+		float DelayTime = 8.f;
 		//LS_LOG(LogLS, Log, TEXT("DelayTime : %f"), DelayTime);
-
-		MulticastRPCSetPannelMonitor();
 
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				MulticastRPCSetPannelMonitor();
+			}
+		), 3.0f, false);
+
+		FTimerHandle Handle1;
+		GetWorld()->GetTimerManager().SetTimer(Handle1, FTimerDelegate::CreateLambda([&]
 			{
 				FVector SpawnLocation = FVector(1000.0f, -290.0f, -6.2f);
 				FRotator SpawnRotation = FRotator(0.f, -90.f, 0.f);
@@ -275,7 +283,7 @@ void ALSTrainSpawnGimmick::SpawnTrain()
 					//OnTrainPuzzleCleared.AddUObject(LSTrain, &ALSTrain::MulticastStopTrain);
 				}
 			}
-		), 1.f, false, DelayTime);
+		), DelayTime, false);
 	}
 }
 

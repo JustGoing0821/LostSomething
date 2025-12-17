@@ -47,6 +47,9 @@ public:
 	FORCEINLINE virtual ELSCharacterChoice GetCharacterChoice() override { return CharacterChoice; }
 	FORCEINLINE virtual void SetCharacterChoice(ELSCharacterChoice InCharacterChoice) override { CharacterChoice = InCharacterChoice; }
 
+	UFUNCTION(Server, Reliable)
+	void ServerRPCSetClientCharacterChoiceFromGameInstance();
+
 protected:
 	UPROPERTY(EditAnywhere, Replicated)
 	ELSCharacterChoice CharacterChoice = ELSCharacterChoice::None;

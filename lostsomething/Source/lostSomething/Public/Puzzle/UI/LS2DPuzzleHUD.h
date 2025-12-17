@@ -39,6 +39,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class ULSInformationWidget> InformationWidget;
 
+public:
 	UFUNCTION()
 	void OnBtnExitClicked();
 

@@ -29,7 +29,7 @@ protected:
 
 //RPC
 public:
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCPuzzleCheck();
 
 };

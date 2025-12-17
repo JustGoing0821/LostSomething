@@ -32,7 +32,6 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FVector Center = ControllingPawn->GetActorLocation();
 	float DetectRadius = 400.0f;
 
-	// ê°ì????¤ë¸Œ?íŠ¸ ëª©ë¡
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(NAME_None, false, ControllingPawn);
 	bool bResult = World->OverlapMultiByChannel(

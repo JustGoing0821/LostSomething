@@ -11,6 +11,7 @@
 #include "Character/Players/LSPlayer.h"
 #include "Character/UI/LSChatWidget.h"
 #include "Game/LSGameMode.h"
+#include "Game/LSGameInstance.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/UI/LSHUDWidget.h"
 #include "Character/UI/LSScriptWidget.h"
@@ -141,9 +142,6 @@ void ALSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FInputModeGameOnly GameOnlyInputMode;
-	SetInputMode(GameOnlyInputMode);
-
 	if (IsLocalController() && LSHUDWidgetClass)
 	{
 		LSHUDWidget = CreateWidget<ULSHUDWidget>(this, LSHUDWidgetClass);
@@ -151,8 +149,6 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHUDWidget->AddToViewport();
 		}
-
-		
 	}
 
 
@@ -163,9 +159,6 @@ void ALSPlayerController::BeginPlay()
 		{
 			LSHpWidget->AddToViewport();
 		}
-
-		const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
-		LSHpWidget->SetProfileIsSiJae(bIsSiJae);
 	}
 
 	//chat
@@ -267,7 +260,7 @@ void ALSPlayerController::BeginPlay()
 	//	ServerRPCStartGame();
 	//}
 
-	SetInputMode(FInputModeGameOnly());
+	//SetInputMode(FInputModeGameOnly());
 
 	if (IsLocalController())
 	{
@@ -278,6 +271,19 @@ void ALSPlayerController::BeginPlay()
 	}
 
 	//LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("End"));
+}
+
+void ALSPlayerController::ServerRPCSetClientCharacterChoiceFromGameInstance_Implementation()
+{
+	LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Begin"));
+	ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GameInstance)
+	{
+		if (HasAuthority())
+		{
+			CharacterChoice = GameInstance->GetClientCharacterChoice();
+		}
+	}
 }
 
 void ALSPlayerController::Tick(float DeltaTime)
@@ -389,6 +395,14 @@ void ALSPlayerController::CallQuestClear()
 	if (IsLocalController())
 	{
 		QuestWidget->CallQuestClear();
+		if (bIs2DPuzzleActive)
+		{
+			if (LS2DPuzzleHUDWidget)
+			{
+				LS2DPuzzleHUDWidget->OnBtnExitClicked();
+			}
+			bIs2DPuzzleActive = false;
+		}
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 	else
@@ -729,6 +743,26 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 		StartBGM();
 	}
 
+	if (CharacterChoice == ELSCharacterChoice::None)
+	{
+		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("CharacterChoice is None!!"));
+		ULSGameInstance* GameInstance = Cast<ULSGameInstance>(UGameplayStatics::GetGameInstance(this));
+		if (GameInstance)
+		{
+			if (HasAuthority())
+			{
+				CharacterChoice = GameInstance->GetServerCharacterChoice();
+			}
+			else
+			{
+				LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("ServerRPC Call"));
+				ServerRPCSetClientCharacterChoiceFromGameInstance();
+			}
+		}
+	}
+	const bool bIsSiJae = (CharacterChoice == ELSCharacterChoice::SiJae);
+	if (LSHpWidget) LSHpWidget->SetProfileIsSiJae(bIsSiJae);
+	else LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("No LSHpWidget!"));
 
 	if (bIsMapStart && IsLocalController())
 	{
@@ -995,8 +1029,8 @@ void ALSPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	//엔터로 열고 ESC로 닫음
-	InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
-	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
+	//InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
+	//InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
 
 }
 
@@ -1080,6 +1114,14 @@ void ALSPlayerController::ClientRPCCallQuestClear_Implementation()
 	if (this->IsLocalController())
 	{
 		if(QuestWidget) QuestWidget->CallQuestClear();
+		if (bIs2DPuzzleActive)
+		{
+			if (LS2DPuzzleHUDWidget)
+			{
+				LS2DPuzzleHUDWidget->OnBtnExitClicked();
+			}
+			bIs2DPuzzleActive = false;
+		}
 		//LS_LOG(LogLS, Log, TEXT("%s UpdateQuestWidget Updated"), *EnumString);
 	}
 }

@@ -30,6 +30,6 @@ protected:
 
 //RPC Section
 public:
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerRPCQuestClear();
 };

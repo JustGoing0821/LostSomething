@@ -118,12 +118,12 @@ protected:
 
 //RPC Section
 public:
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCSetPannelMonitor();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCPuzzleActivate();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCSetBlockTriggerCollision(uint8 IsTriggerBlock);
 };

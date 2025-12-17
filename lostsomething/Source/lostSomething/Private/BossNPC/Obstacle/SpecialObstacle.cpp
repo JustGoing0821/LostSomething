@@ -23,13 +23,12 @@ ASpecialObstacle::ASpecialObstacle()
 	// 콜리전 컴포넌트 초기화
 	CollisionComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComp"));
 	//CollisionComp->InitSphereRadius(16.0f);
-	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	CollisionComp->SetCollisionProfileName(TEXT("OverlapAll"));
 	RootComponent = CollisionComp;
 
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ASpecialObstacle::OnOverlapBegin);
 	
 	ObstacleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObstacleMesh"));
 	ObstacleMesh->SetupAttachment(CollisionComp);
@@ -88,8 +87,6 @@ void ASpecialObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(8.5f);
-
 	// 시작 시 정면 방향을 기억 (Z는 고정)
 	MoveDirection = GetActorForwardVector();
 
@@ -112,7 +109,14 @@ void ASpecialObstacle::BeginPlay()
 		), 1.0f, false, 2.0f);
 	}
 	SO_ChangeVisible();
+
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &ASpecialObstacle::DisableAndDestroySO, 10.0f, false);
 	
+}
+
+void ASpecialObstacle::DisableAndDestroySO()
+{
+	Destroy();
 }
 
 void ASpecialObstacle::SO_ChangeVisible()
@@ -168,22 +172,4 @@ void ASpecialObstacle::Tick(float DeltaTime)
 	FVector NewLocation = GetActorLocation() + MoveDirection * MoveSpeed * DeltaTime;
 	SetActorLocation(NewLocation);
 
-}
-
-void ASpecialObstacle::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	/*if (OtherActor && OtherActor != this)
-	{
-		if (OtherActor && OtherActor != this)
-		{
-			ILSTakeDamageInterface* HitResult = Cast<ILSTakeDamageInterface>(OtherActor);
-			if (HitResult) // 꼭 체크!
-			{
-				FDamageEvent DamageEvent;
-				HitResult->TakeDamage(AttackDamage, DamageEvent, GetInstigatorController(), this);
-			}
-		}
-	}*/
-	
 }
