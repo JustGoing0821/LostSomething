@@ -416,6 +416,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	FName WeaponSocketName = TEXT("WeaponSocket"); 
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combine", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* PushSocket;
+
 	//액터 말고 컴포너늩로
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UStaticMeshComponent* EquippedWeaponMesh;
@@ -628,6 +631,13 @@ public:
 	// 합체 메시 갈아끼우기
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* CombinedMeshComp;
+
+
+	UFUNCTION()
+	void BeginCombine_Attach();
+
+	UFUNCTION()
+	void EndCombine_Detach();
 
 
 /*******************

@@ -228,6 +228,12 @@ ALSPlayer::ALSPlayer()
 
 	EquippedWeaponMesh->SetVisibility(false);
 
+
+	//push socket
+	PushSocket = CreateDefaultSubobject<USceneComponent>(TEXT("PushSocket"));
+	PushSocket->SetupAttachment(RootComponent); 
+	PushSocket->SetRelativeLocation(FVector(80.f, 0.f, 0.f)); 
+
 }
 
 void ALSPlayer::PostInitializeComponents()
@@ -323,11 +329,11 @@ void ALSPlayer::Tick(float DeltaTime)
 	if (bIsCombining)
 	{
 
-		if (CharacterChoice == ELSCharacterChoice::IJae)
-		{
-			// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
-			HandleCombinedIJaeMovement();
-		}
+		//if (CharacterChoice == ELSCharacterChoice::IJae)
+		//{
+		//	// 이제(IJae) 캐릭터가 밀리고 있는 상태라면 이동 처리
+		//	HandleCombinedIJaeMovement();
+		//}
 
 		CheckCombineDistance();
 	}
@@ -2132,6 +2138,31 @@ bool ALSPlayer::isCombining()
 
 void ALSPlayer::ChangeCombineState(uint8 InIsCombining)
 {
+	if (!HasAuthority()) return;
+
+	// 1) 모든 플레이어에게 상태만 적용 + 멀티캐스트
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+
+	for (AActor* Actor : FoundActors)
+	{
+		if (ALSPlayer* PlayerCharacter = Cast<ALSPlayer>(Actor))
+		{
+			PlayerCharacter->SetbIsCombining(InIsCombining);
+			PlayerCharacter->MulticastRPCApplyCombineState();
+		}
+	}
+
+	// 2) Attach/Detach는 서버에서 한 번만 실행
+	if (InIsCombining)
+	{
+		BeginCombine_Attach();
+	}
+	else
+	{
+		EndCombine_Detach();
+	}
+
 	//LS_LOG(LogLS, Log, TEXT("Begin : %d"), InIsPushing);
 
 	//제일 먼저 호출되는 함수.
@@ -2140,21 +2171,25 @@ void ALSPlayer::ChangeCombineState(uint8 InIsCombining)
 	//자동 풀림 (스테미나 고갈, 거리 멀어짐)일땐 서버 중 로컬 플레이어일때만 호출됨.
 	//공격받을때 풀리는건 서버로컬이 아닐 수도 있음.
 
-	if (HasAuthority())
-	{
-		//서버의 모든 플레이어 캐릭터(자기자신 포함) 순환
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
-		for (AActor* Actor : FoundActors)
-		{
-			ALSPlayer* PlayerCharacter = Cast<ALSPlayer>(Actor);
-			if (PlayerCharacter)
-			{
-				PlayerCharacter->SetbIsCombining(InIsCombining);		//bIsCombining는 Replicated가 되어있으므로 서버 플레이어만 호출함.
-				PlayerCharacter->MulticastRPCApplyCombineState();	//클라이언트까지 호출하기위해 멀티캐스트함수 호출
-			}
-		}
-	}
+	//if (HasAuthority())
+	//{
+	//	//서버의 모든 플레이어 캐릭터(자기자신 포함) 순환
+	//	TArray<AActor*> FoundActors;
+
+	//	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSPlayer::StaticClass(), FoundActors);
+	//	for (AActor* Actor : FoundActors)
+	//	{
+	//		ALSPlayer* PlayerCharacter = Cast<ALSPlayer>(Actor);
+	//		if (PlayerCharacter)
+	//		{
+	//			PlayerCharacter->SetbIsCombining(InIsCombining);	//bIsCombining는 Replicated가 되어있으므로 서버 플레이어만 호출함.
+	//			if (InIsCombining) BeginCombine_Attach();
+	//			else EndCombine_Detach();
+	//			
+	//			PlayerCharacter->MulticastRPCApplyCombineState();	//클라이언트까지 호출하기위해 멀티캐스트함수 호출
+	//		}
+	//	}
+	//}
 }
 
 void ALSPlayer::ApplyCombineState()
@@ -2313,36 +2348,36 @@ void ALSPlayer::HandleCombinedIJaeMovement()
 	//이제가 bIsCombining일때 Tick으로 호출되는 함수.
 	//호출되는 변수들의 변경은 있으나 구조는 똑같음.
 
-	if (CharacterChoice == ELSCharacterChoice::SiJae || !bIsCombining)
-		return;
+	//if (CharacterChoice == ELSCharacterChoice::SiJae || !bIsCombining)
+	//	return;
 
-	if (!PusherSiJaeCharacter)
-	{
-		LS_LOG(LogLS, Error, TEXT("No REFEC_PusherCharacter!!!"));
-		return;
-	}
+	//if (!PusherSiJaeCharacter)
+	//{
+	//	LS_LOG(LogLS, Error, TEXT("No REFEC_PusherCharacter!!!"));
+	//	return;
+	//}
 
-	FVector PusherLocation = PusherSiJaeCharacter->GetActorLocation();
-	FVector PusherForward = PusherSiJaeCharacter->GetActorForwardVector();
+	//FVector PusherLocation = PusherSiJaeCharacter->GetActorLocation();
+	//FVector PusherForward = PusherSiJaeCharacter->GetActorForwardVector();
 
-	if (!HasAuthority())
-	{
-		//클라이언트 이제인 경우 회전만 적용
-		FRotator NewRotation = PusherForward.Rotation();
-		NewRotation.Pitch = 0.0f;
-		SetActorRotation(NewRotation);
+	//if (!HasAuthority())
+	//{
+	//	//클라이언트 이제인 경우 회전만 적용
+	//	FRotator NewRotation = PusherForward.Rotation();
+	//	NewRotation.Pitch = 0.0f;
+	//	SetActorRotation(NewRotation);
 
-		return;
-	}
+	//	return;
+	//}
 
-	FVector TargetLocation = PusherLocation + (PusherForward * CombineDistance);
-	FVector CurrentLocation = GetActorLocation();
-	TargetLocation.Z = CurrentLocation.Z;
-	SetActorLocation(TargetLocation, true);
+	//FVector TargetLocation = PusherLocation + (PusherForward * CombineDistance);
+	//FVector CurrentLocation = GetActorLocation();
+	//TargetLocation.Z = CurrentLocation.Z;
+	//SetActorLocation(TargetLocation, true);
 
-	FRotator NewRotation = PusherForward.Rotation();
-	NewRotation.Pitch = 0.0f;
-	SetActorRotation(NewRotation);
+	//FRotator NewRotation = PusherForward.Rotation();
+	//NewRotation.Pitch = 0.0f;
+	//SetActorRotation(NewRotation);
 }
 
 void ALSPlayer::CheckCombineDistance()
@@ -2509,6 +2544,56 @@ void ALSPlayer::ClientRPCUpdateCombineStaminaWidget_Implementation(float InCurre
  ETC Section
 
 ********************/
+
+void ALSPlayer::BeginCombine_Attach()
+{
+	if (!HasAuthority()) return;               
+	if (!PusherSiJaeCharacter || !PushedIJaeCharacter) return;
+
+	ALSPlayer* SiJae = PusherSiJaeCharacter;
+	ALSPlayer* IJae = PushedIJaeCharacter;
+
+	
+	if (IJae->GetCharacterMovement())
+	{
+		IJae->GetCharacterMovement()->StopMovementImmediately();
+		IJae->GetCharacterMovement()->DisableMovement(); 
+	}
+
+	
+	IJae->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	
+	USceneComponent* AttachTarget = SiJae->PushSocket ? SiJae->PushSocket : SiJae->GetRootComponent();
+
+	IJae->AttachToComponent(
+		AttachTarget,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale
+	);
+
+	
+	IJae->SetActorRotation(SiJae->GetActorRotation());
+}
+
+void ALSPlayer::EndCombine_Detach()
+{
+	if (!HasAuthority()) return;
+	if (!PushedIJaeCharacter) return;
+
+	ALSPlayer* IJae = PushedIJaeCharacter;
+
+	
+	IJae->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+	
+	IJae->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	
+	if (IJae->GetCharacterMovement())
+	{
+		IJae->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+}
 
 bool ALSPlayer::IsActorName(AActor* InActor, const FString& InString) const
 {
