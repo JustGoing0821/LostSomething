@@ -28,11 +28,16 @@ public:
 
 	// 이동 관련
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 400.f;
+	float MoveSpeed = 300.f;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void DisableAndDestroySO();
+
+	// 타이머 핸들
+	FTimerHandle DestroyTimerHandle;
 
 	void SO_ChangeVisible();
 
@@ -51,16 +56,4 @@ protected:
 
 	FVector MoveDirection;
 
-	const float AttackDamage = 30.0f;
-
-	UFUNCTION()
-	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
-	
 };

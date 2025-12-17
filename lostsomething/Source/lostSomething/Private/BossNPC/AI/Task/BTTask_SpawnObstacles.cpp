@@ -30,9 +30,9 @@ void UBTTask_SpawnObstacles::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
 {
     TimeSinceLastSpawn += DeltaSeconds;
 
-    if (TimeSinceLastSpawn >= 0.7f)
+    if (TimeSinceLastSpawn >= 1.0f)
     {
-        if (CurrentSpawnCount < 10)
+        if (CurrentSpawnCount < 8)
         {
             ABossNPC* BossPawn = Cast<ABossNPC>(ControlledPawn.Get());
             BossPawn->ObsMontagePlay();
