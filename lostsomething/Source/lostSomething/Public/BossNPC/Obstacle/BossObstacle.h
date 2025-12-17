@@ -28,15 +28,20 @@ public:
 
 	// 이동 관련
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 400.f;
+	float MoveSpeed = 300.f;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void DisableAndDestroy();
+
+	// 타이머 핸들
+	FTimerHandle DestroyTimerHandle;
+
 	FVector MoveDirection;
 
-	const float AttackDamage = 50.0f;
+	const float AttackDamage = 25.0f;
 
 	UFUNCTION()
 	void OnOverlapBegin(
