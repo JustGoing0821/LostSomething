@@ -2690,11 +2690,18 @@ void ALSPlayer::ApplyCombineVisual(bool bCombined)
 	{
 		GetMesh()->SetVisibility(false);
 		CombinedMeshComp->SetVisibility(true);
+
+
+		EquippedWeaponMesh->SetStaticMesh(nullptr);
+		EquippedWeaponMesh->SetVisibility(false);
+
 	}
 	else
 	{
 		GetMesh()->SetVisibility(true);
 		CombinedMeshComp->SetVisibility(false);
+		EquippedWeaponMesh->SetStaticMesh(NewMesh);
+		EquippedWeaponMesh->SetVisibility(true);
 	}
 }
 
