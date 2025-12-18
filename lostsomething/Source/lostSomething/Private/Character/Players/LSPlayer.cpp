@@ -2692,16 +2692,16 @@ void ALSPlayer::ApplyCombineVisual(bool bCombined)
 		CombinedMeshComp->SetVisibility(true);
 
 
-		EquippedWeaponMesh->SetStaticMesh(nullptr);
-		EquippedWeaponMesh->SetVisibility(false);
+		//EquippedWeaponMesh->SetStaticMesh(nullptr);
+		//EquippedWeaponMesh->SetVisibility(false);
 
 	}
 	else
 	{
 		GetMesh()->SetVisibility(true);
 		CombinedMeshComp->SetVisibility(false);
-		EquippedWeaponMesh->SetStaticMesh(NewMesh);
-		EquippedWeaponMesh->SetVisibility(true);
+		//EquippedWeaponMesh->SetStaticMesh(NewMesh);
+		//EquippedWeaponMesh->SetVisibility(true);
 	}
 }
 
