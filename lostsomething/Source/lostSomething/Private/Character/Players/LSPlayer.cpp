@@ -551,6 +551,12 @@ void ALSPlayer::PerformLineTrace()
 		TickDectectResultColor = FColor::Yellow;
 		AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[2];
 	}
+	else if (bIsCombining && CharacterChoice == ELSCharacterChoice::IJae)
+	{
+		CurrentDectectActor = nullptr;
+		TickDectectResultColor = FColor::Yellow;
+		AimScript = "";
+	}
 	else
 	{
 		FHitResult HitResult;
@@ -882,73 +888,79 @@ void ALSPlayer::MeshHide()
 
 void ALSPlayer::Die()
 {
-	if (bIsDead) return; // 이미 죽었으면 리턴
+	if (bIsDead) return;
 
 	bIsDead = true;
-	//UE_LOG(LogTemp, Warning, TEXT("Player died"));
 
 	if (HasAuthority())
 	{
 		MultiDie();
-		// 모든 입력 차단
-		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
-		{
-			//PC->ShowDeathWidget();
-			//DisableInput(PC);
-		}
-
-		// 메시 숨기기
-		if (GetMesh())
-		{
-			/*GetMesh()->SetVisibility(false);
-			UE_LOG(LogTemp, Warning, TEXT("Player mesh hidden"));*/
-		}
-
-		// 충돌 비활성화
-		//SetActorEnableCollision(false);
-
-		// 이동 비활성화
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
 
-		// 5초 후 부활 타이머 시작
-		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ALSPlayer::Respawn, 5.0f, false);
+		GetWorld()->GetTimerManager().SetTimer(
+			RespawnTimerHandle,
+			this,
+			&ALSPlayer::Respawn,
+			RespawnTime,
+			false
+		);
 	}
 
 
 	if (!HasAuthority())
 	{
 		ServerDie();
+	}
+}
 
+void ALSPlayer::UpdateRespawnProgress()
+{
+	RespawnElapsedTime += 0.1f;
+	float RemainingTime = RespawnTime - RespawnElapsedTime;
+	RemainingTime = FMath::Max(0.0f, RemainingTime);
+
+	if (IsLocallyControlled())
+	{
+		if (ALSPlayerController* PC = Cast<ALSPlayerController>(GetController()))
+		{
+			if (ULSDeathWidget* DeathWidget = PC->GetLSDeathWidget())
+			{
+				DeathWidget->UpdateRespawnProgress(RemainingTime, RespawnTime);
+			}
+		}
 	}
 }
 
 void ALSPlayer::Respawn()
 {
-	if (!bIsDead) return; // 이미 살아있으면 리턴
+	if (!bIsDead) return;
 
 	bIsDead = false;
-	//UE_LOG(LogTemp, Warning, TEXT("Player respawned"));
 
 	ALSGameMode* GameMode = Cast<ALSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
 		FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
-		if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BossMap")
+		if (CurrentLevelName == "BossMap")
 		{
-			GameMode->TransferPlayerLocation(FVector(-145.421501, 487.230132, 114.334673), FVector(84.450062, 487.230132, 114.334674));
+			GameMode->TransferPlayerLocation(
+				FVector(-145.421501, 487.230132, 114.334673),
+				FVector(84.450062, 487.230132, 114.334674)
+			);
 		}
 	}
 
 	if (HasAuthority())
 	{
-		// HP 풀로 회복
 		if (HpComponent)
 		{
 			HpComponent->SetHp(100.0f);
 			CurrentHp = 100.0f;
 		}
-		// 타이머 클리어
+
 		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(RespawnUpdateTimerHandle);
+
 		MultiRespawn();
 	}
 }
@@ -993,6 +1005,16 @@ void ALSPlayer::MultiDie_Implementation()
 			DisableInput(PC);
 		}
 	}
+
+	RespawnElapsedTime = 0.0f;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		RespawnUpdateTimerHandle,
+		this,
+		&ALSPlayer::UpdateRespawnProgress,
+		0.1f,
+		true
+	);
 }
 
 void ALSPlayer::MultiRespawn_Implementation()
@@ -1676,6 +1698,16 @@ void ALSPlayer::StartThrowPreview()
 {
 	if (bIsDead) return;
 
+	if (bIsCombining)
+	{
+		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(GetController());
+		if (ScriptWidget)
+		{
+			ScriptWidget->UpdateScriptWidget(AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[6]);
+		}
+		return;
+	}
+
 	//궤적 초기화
 	bThrowPreview = true;
 	CachedPathPoints.Reset();
@@ -1938,7 +1970,7 @@ void ALSPlayer::Attack()
 		ILSScriptWidgetInterface* ScriptWidget = Cast<ILSScriptWidgetInterface>(GetController());
 		if (ScriptWidget)
 		{
-			ScriptWidget->UpdateScriptWidget("Decouple to Attack");
+			ScriptWidget->UpdateScriptWidget(AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[6]);
 		}
 		return;
 	}

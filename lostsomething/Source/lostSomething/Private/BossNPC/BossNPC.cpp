@@ -33,14 +33,14 @@ ABossNPC::ABossNPC()
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
         float YOffset = (i - 3) * 76.0f;
-        SpawnPoint->SetRelativeLocation(FVector(110.f, YOffset, 20.0f));
+        SpawnPoint->SetRelativeLocation(FVector(350.f, YOffset, -40.0f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
 
     CurrentHP = MaxHP;
 
     // AOE 관련 기본값 설정
-    AOEAttackInterval = 10.0f;
+    AOEAttackInterval = 15.0f;
     MaxAOECount = 2;
     AOESpawnRadius = 500.0f;
     CurrentPhase = 1;

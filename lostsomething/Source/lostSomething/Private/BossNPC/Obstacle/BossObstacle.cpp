@@ -58,11 +58,37 @@ void ABossObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(8.5f);
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &ABossObstacle::DisableAndDestroy, 10.0f, false);
 
 	// 시작 시 정면 방향을 기억 (Z는 고정)
 	MoveDirection = GetActorForwardVector();
 	
+}
+
+void ABossObstacle::DisableAndDestroy()
+{
+	// 1. 로그: 함수 시작 알림 (액터 이름과 함께)
+	UE_LOG(LogTemp, Warning, TEXT("[%s] DisableAndDestroy Called!"), *GetName());
+
+	PrimaryActorTick.SetTickFunctionEnable(false);
+
+	if (CollisionComp)
+	{
+		// 2. 로그: 콜리전 상태 변경 전 확인
+		UE_LOG(LogTemp, Log, TEXT("[%s] Disabling Collision..."), *GetName());
+
+		CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+		CollisionComp->UpdateOverlaps();
+
+		// 3. 로그: 콜리전 변경 완료
+		UE_LOG(LogTemp, Log, TEXT("[%s] Collision Disabled and Overlaps Updated."), *GetName());
+	}
+
+	// 4. 로그: 최종 파괴 직전
+	UE_LOG(LogTemp, Error, TEXT("[%s] Actor is being Destroyed now!"), *GetName());
+
+	Destroy();
 }
 
 // Called every frame
@@ -78,6 +104,8 @@ void ABossObstacle::Tick(float DeltaTime)
 void ABossObstacle::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!IsValid(this)) return;
+
 	if (OtherActor && OtherActor != this)
 	{
 		if (OtherActor && OtherActor != this)

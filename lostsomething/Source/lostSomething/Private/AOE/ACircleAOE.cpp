@@ -320,7 +320,7 @@ void ACircleAOE::StartAOE()
 
     MulticastStartWarning();
 
-    float Duration = (AOEType == EAOEType::Share) ? ShareWarningDuration : WarningDuration;
+    float Duration = ShareWarningDuration;
 
     GetWorld()->GetTimerManager().SetTimer(
         WarningTimerHandle,
