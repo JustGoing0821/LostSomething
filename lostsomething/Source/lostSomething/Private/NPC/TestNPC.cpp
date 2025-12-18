@@ -16,6 +16,7 @@
 #include "lostSomething.h"
 #include <Kismet/GameplayStatics.h>
 #include "Puzzle/MobThreashold/LSMobDeadThreashold.h"
+#include <EngineUtils.h>
 
 // Sets default values
 ATestNPC::ATestNPC()
@@ -52,10 +53,21 @@ ATestNPC::ATestNPC()
 void ATestNPC::BeginPlay()
 {
 	Super::BeginPlay();
-	if (ATestNPCAIController* PC = Cast<ATestNPCAIController>(GetController()))
+
+	if (HasAuthority())
 	{
-		SetOwner(PC);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				if (ATestNPCAIController* PC = Cast<ATestNPCAIController>(GetController()))
+				{
+					SetOwner(PC);
+				}
+			}
+		), 15.0f, false);
 	}
+
+	
 
 	// Dynamic Material Instance »ý¼º
 	if (GetMesh() && GetMesh()->GetMaterial(0))
