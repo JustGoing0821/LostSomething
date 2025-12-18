@@ -124,4 +124,18 @@ protected:
 
 	void SetPuzzleTimer();
 	void EndPuzzleTimer();
+
+// Sequence Skip
+private:
+	TMap<APlayerController*, bool> PlayerSkipStates;
+	bool bIsSequencePlaying = false;
+
+public:
+	void StartSequenceMode();
+
+	void OnPlayerSkipSequence(APlayerController* PC);
+
+	bool AreAllPlayersSkipped() const;
+
+	void ForceEndSequence();
 };

@@ -166,8 +166,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MouseWheelDownAction;
 
-
-
 /*******************
 
 Basic Section

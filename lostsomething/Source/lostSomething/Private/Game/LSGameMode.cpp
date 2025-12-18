@@ -622,3 +622,71 @@ void ALSGameMode::BroadcastChatMessage(const FString& Sender, const FString& Tex
 		}
 	}
 }
+
+// Sequence Skip
+void ALSGameMode::StartSequenceMode()
+{
+	bIsSequencePlaying = true;
+	PlayerSkipStates.Empty();
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC)
+		{
+			PlayerSkipStates.Add(PC, false);
+		}
+	}
+}
+
+void ALSGameMode::OnPlayerSkipSequence(APlayerController* PC)
+{
+	if (!bIsSequencePlaying) return;
+
+	if (PlayerSkipStates.Contains(PC))
+	{
+		PlayerSkipStates[PC] = true;
+
+		UE_LOG(LogTemp, Log, TEXT("Player %s skipped sequence"), *PC->GetName());
+
+		if (AreAllPlayersSkipped())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("All players skipped! Ending sequence..."));
+			ForceEndSequence();
+		}
+		else
+		{
+			ALSPlayerController* LSPC = Cast<ALSPlayerController>(PC);
+			if (LSPC)
+			{
+				LSPC->ClientRPCShowWaitingForOtherPlayer();
+			}
+		}
+	}
+}
+
+bool ALSGameMode::AreAllPlayersSkipped() const
+{
+	for (const auto& Pair : PlayerSkipStates)
+	{
+		if (!Pair.Value)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void ALSGameMode::ForceEndSequence()
+{
+	bIsSequencePlaying = false;
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ALSPlayerController* LSPC = Cast<ALSPlayerController>(It->Get());
+		if (LSPC)
+		{
+			LSPC->ClientRPCForceEndSequence();
+		}
+	}
+}

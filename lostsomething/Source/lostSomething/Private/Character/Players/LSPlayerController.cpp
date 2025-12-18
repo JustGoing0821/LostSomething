@@ -34,7 +34,6 @@
 #include "UserInterface/MenuWidget.h"
 #include "Runtime/MediaAssets/Public/FileMediaSource.h"
 
-
 ALSPlayerController::ALSPlayerController()
 {
 	//HUD
@@ -123,6 +122,13 @@ ALSPlayerController::ALSPlayerController()
 	if (WaitClientWidgetRef.Class)
 	{
 		WaitClientWidgetClass = WaitClientWidgetRef.Class;
+	}
+
+	//Sequence Skip
+	static ConstructorHelpers::FClassFinder<UUserWidget> SkipWidgetRef(TEXT("/Game/UI/Skip/WBP_SequenceSkipWidget.WBP_SequenceSkipWidget_C"));
+	if (SkipWidgetRef.Class)
+	{
+		SequenceSkipWidgetClass = SkipWidgetRef.Class;
 	}
 
 	bIs2DPuzzleActive = false;
@@ -323,6 +329,13 @@ void ALSPlayerController::Tick(float DeltaTime)
 				//LS_LOG(LogLS, Error, TEXT("No LS2DPuzzleHUDWidget"));
 			}
 		}
+	}
+
+	if (bIsHoldingSkip && bIsSequencePlaying)
+	{
+		SkipProgress += DeltaTime / SkipHoldTime;
+		SkipProgress = FMath::Clamp(SkipProgress, 0.0f, 1.0f);
+		UpdateSkipProgress(SkipProgress);
 	}
 }
 
@@ -674,10 +687,8 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 	StopKeyInput();
 	SetInputMode(FInputModeUIOnly());
 
-
 	ALSPlayer* LSPlayer = Cast<ALSPlayer>(GetPawn());
 	if (LSPlayer) LSPlayer->StartSequence();
-
 
 	if (IsLocalController())
 	{
@@ -688,15 +699,31 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 
 		StopBGM();
 
+		BeginSequenceSkipMode();
+		if (SequenceSkipWidget)
+		{
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(SequenceSkipWidget->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			SetInputMode(InputMode);
+		}
+
 		if (MediaPlayerWidgetClass)
 		{
-			UUserWidget* MediaPlayerWidget = CreateWidget<UUserWidget>(this, MediaPlayerWidgetClass);
-			if (MediaPlayerWidget)
+			if (CurrentMediaWidget)
 			{
-				UFunction* Func = MediaPlayerWidget->FindFunction(FName("SetMediaParams"));
+				CurrentMediaWidget->RemoveFromParent();
+				CurrentMediaWidget = nullptr;
+			}
+
+			CurrentMediaWidget = CreateWidget<UUserWidget>(this, MediaPlayerWidgetClass);
+
+			if (CurrentMediaWidget)
+			{
+				UFunction* Func = CurrentMediaWidget->FindFunction(FName("SetMediaParams"));
 				if (Func)
 				{
-					struct { 
+					struct {
 						bool bIsMapStart;
 						bool bisNeedQuestComplete;
 						UFileMediaSource* VideoSource;
@@ -707,10 +734,11 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 					Params.bisNeedQuestComplete = InNeedQuestComplete;
 					Params.VideoSource = InVideoSource;
 					Params.SoundSource = InSoundSource;
-					MediaPlayerWidget->ProcessEvent(Func, &Params);
+
+					CurrentMediaWidget->ProcessEvent(Func, &Params);
 				}
 
-				MediaPlayerWidget->AddToViewport();
+				CurrentMediaWidget->AddToViewport();
 			}
 		}
 		else
@@ -721,6 +749,15 @@ void ALSPlayerController::StartSequence(bool InIsMapStart, bool InNeedQuestCompl
 	else
 	{
 		LS_LOG(LogLSls, Error, TEXT("%s"), TEXT("Is Not Local Controller"));
+	}
+
+	if (HasAuthority())
+	{
+		ALSGameMode* GM = Cast<ALSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GM)
+		{
+			GM->StartSequenceMode();
+		}
 	}
 }
 
@@ -733,6 +770,14 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 
 	if (IsLocalController())
 	{
+		if (CurrentMediaWidget)
+		{
+			CurrentMediaWidget->RemoveFromParent();
+			CurrentMediaWidget = nullptr;
+		}
+
+		EndSequenceSkipMode();
+
 		if (LSHUDWidget)	 LSHUDWidget->SetVisibility(ESlateVisibility::Visible);
 		if (LSHpWidget) LSHpWidget->SetVisibility(ESlateVisibility::Visible);
 		if (QuestWidget) QuestWidget->SetVisibility(ESlateVisibility::Visible);
@@ -770,7 +815,6 @@ void ALSPlayerController::EndSequence(bool bIsMapStart, bool bisNeedQuestComplet
 			{
 				WaitClientWidget->SetVisibility(ESlateVisibility::Visible);
 				SetInputMode(FInputModeUIOnly());
-				//LS_LOG(LogLS, Log, TEXT("%s"), TEXT("WaitClientWidget WidgetSetted."));
 			}
 		}
 		else
@@ -1029,7 +1073,6 @@ void ALSPlayerController::SetupInputComponent()
 	//엔터로 열고 ESC로 닫음
 	//InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &ALSPlayerController::OpenChat);
 	//InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ALSPlayerController::CloseChat);
-
 }
 
 void ALSPlayerController::OpenChat()
@@ -1141,5 +1184,120 @@ void ALSPlayerController::ClientRPCStartSequence_Implementation(bool InIsMapStar
 	if (IsLocalController())
 	{
 		StartSequence(InIsMapStart, InNeedQuestComplete, InVideoSource, InSoundSource);
+	}
+}
+
+void ALSPlayerController::OnSkipPressed()
+{
+	if (!bIsSequencePlaying) return;
+
+	bIsHoldingSkip = true;
+	SkipProgress = 0.0f;
+
+	GetWorldTimerManager().SetTimer(
+		SkipTimerHandle,
+		this,
+		&ALSPlayerController::OnSkipComplete,
+		SkipHoldTime,
+		false
+	);
+
+	UE_LOG(LogTemp, Log, TEXT("Skip hold started"));
+}
+
+void ALSPlayerController::OnSkipReleased()
+{
+	if (!bIsHoldingSkip) return;
+
+	bIsHoldingSkip = false;
+	SkipProgress = 0.0f;
+
+	GetWorldTimerManager().ClearTimer(SkipTimerHandle);
+	UpdateSkipProgress(0.0f);
+
+	UE_LOG(LogTemp, Log, TEXT("Skip cancelled"));
+}
+
+void ALSPlayerController::OnSkipComplete()
+{
+	bIsHoldingSkip = false;
+	SkipProgress = 1.0f;
+	UpdateSkipProgress(1.0f);
+
+	UE_LOG(LogTemp, Warning, TEXT("Skip completed! Notifying server..."));
+
+	ServerNotifySkipComplete();
+}
+
+void ALSPlayerController::ServerNotifySkipComplete_Implementation()
+{
+	ALSGameMode* GM = Cast<ALSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GM)
+	{
+		GM->OnPlayerSkipSequence(this);
+	}
+}
+
+void ALSPlayerController::ClientRPCShowWaitingForOtherPlayer_Implementation()
+{
+	if (IsLocalController() && SequenceSkipWidget)
+	{
+		UFunction* Func = SequenceSkipWidget->FindFunction(FName("ShowWaitingMessage"));
+		if (Func)
+		{
+			SequenceSkipWidget->ProcessEvent(Func, nullptr);
+		}
+	}
+}
+
+void ALSPlayerController::ClientRPCForceEndSequence_Implementation()
+{
+	if (IsLocalController())
+	{
+		EndSequenceSkipMode();
+
+		OnSequenceSkipCompleted.Broadcast();
+	}
+}
+
+void ALSPlayerController::BeginSequenceSkipMode()
+{
+	bIsSequencePlaying = true;
+
+	if (IsLocalController() && SequenceSkipWidgetClass)
+	{
+		SequenceSkipWidget = CreateWidget<UUserWidget>(this, SequenceSkipWidgetClass);
+		if (SequenceSkipWidget)
+		{
+			SequenceSkipWidget->AddToViewport(100);
+			UE_LOG(LogTemp, Warning, TEXT("Skip Widget added!"));
+		}
+	}
+}
+
+void ALSPlayerController::EndSequenceSkipMode()
+{
+	bIsSequencePlaying = false;
+	bIsHoldingSkip = false;
+	GetWorldTimerManager().ClearTimer(SkipTimerHandle);
+
+	if (SequenceSkipWidget && SequenceSkipWidget->IsInViewport())
+	{
+		SequenceSkipWidget->RemoveFromParent();
+		SequenceSkipWidget = nullptr;
+	}
+}
+
+void ALSPlayerController::UpdateSkipProgress(float Progress)
+{
+	if (SequenceSkipWidget)
+	{
+		UFunction* Func = SequenceSkipWidget->FindFunction(FName("UpdateProgress"));
+		if (Func)
+		{
+			struct { float InProgress; } Params;
+			Params.InProgress = Progress;
+			SequenceSkipWidget->ProcessEvent(Func, &Params);
+		}
 	}
 }

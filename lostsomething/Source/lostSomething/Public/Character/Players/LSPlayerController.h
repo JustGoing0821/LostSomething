@@ -15,7 +15,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBGMStartDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBGMStopDelegate);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSequenceSkipCompleted);
 
 UCLASS()
 class LOSTSOMETHING_API ALSPlayerController : public APlayerController, public ILSCharacterChoiceInterface, public ILSScriptWidgetInterface, public ILSSiJaeCursorDragInterface, public ILS2DPuzzleControllerInterface, public ILSStopKeyInputInterface
@@ -299,6 +299,44 @@ protected:
 	void StartBGM();
 	void StopBGM();
 
+// Sequence Skip
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Sequence")
+	FOnSequenceSkipCompleted OnSequenceSkipCompleted;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sequence")
+	bool bIsSequencePlaying = false;
+
+	UPROPERTY(EditAnywhere, Category = "Sequence")
+	float SkipHoldTime = 5.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SequenceSkipWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* SequenceSkipWidget;
+
+private:
+	FTimerHandle SkipTimerHandle;
+	bool bIsHoldingSkip = false;
+	float SkipProgress = 0.0f;
+
+protected:
+	UFUNCTION(BlueprintCallable)
+	void OnSkipPressed();
+
+	UFUNCTION(BlueprintCallable)
+	void OnSkipReleased();
+
+	void OnSkipComplete();
+
+	UPROPERTY()
+	class UUserWidget* CurrentMediaWidget;
+
+public:
+	void BeginSequenceSkipMode();
+	void EndSequenceSkipMode();
+	void UpdateSkipProgress(float Progress);
 
 //RPC
 public:
@@ -349,4 +387,13 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientRPCStartSequence(bool InIsMapStart, bool InNeedQuestComplete, UFileMediaSource* InVideoSource, class USoundBase* InSoundSource);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCShowWaitingForOtherPlayer();
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCForceEndSequence();
+
+	UFUNCTION(Server, Reliable)
+	void ServerNotifySkipComplete();
 };
