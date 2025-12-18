@@ -65,20 +65,6 @@ void UTestNPCAnimIns::MontageStop(UAnimMontage* Montage, bool bInterrupted)
     Montage_Stop(0.25f, Montage);
 }
 
-void UTestNPCAnimIns::AttackMontagePlay()
-{
-    
-    if (AttackMontage && !Montage_IsPlaying(AttackMontage))
-    {
-        Montage_Play(AttackMontage);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("AttackMontage is nullptr in UTestNPCAnimIns"));
-    }
-
-}
-
 void UTestNPCAnimIns::DamageMontagePlay()
 {
     if (DamageMontage && !Montage_IsPlaying(DamageMontage))
