@@ -43,7 +43,7 @@ void ALSPlayerSiJae::BeginPlay()
 
             if (DarkWidgetInstance)
             {
-                DarkWidgetInstance->AddToViewport(20);
+                DarkWidgetInstance->AddToViewport(4);
                 //UE_LOG(LogTemp, Warning, TEXT("DarkWidget successfully added to viewport"));
             }
         }
