@@ -33,7 +33,7 @@ ABossNPC::ABossNPC()
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
         float YOffset = (i - 3) * 76.0f;
-        SpawnPoint->SetRelativeLocation(FVector(350.f, YOffset, -20.0f));
+        SpawnPoint->SetRelativeLocation(FVector(350.f, YOffset, -40.0f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
 
@@ -308,25 +308,36 @@ void ABossNPC::MultiHideGroupActor_Implementation(int32 InCurrentPhase)
         //LS_LOG(LogLSls, Log, TEXT("%s"), TEXT("Phase3Remove Begin"));
         TArray<AActor*> Phase2RemoveActors;
         UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Phase2Remove")), Phase2RemoveActors);
-        for (AActor* Actor : Phase2RemoveActors)
-        {
-            if (Actor)
-            {
-                Actor->SetActorHiddenInGame(true);
-                Actor->SetActorEnableCollision(false);
-            }
-        }
 
         TArray<AActor*> Phase3RemoveActors;
         UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Phase3Remove")), Phase3RemoveActors);
-        for (AActor* Actor : Phase3RemoveActors)
-        {
-            if (Actor)
+
+        FTimerHandle HideTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            HideTimerHandle,
+            [Phase2RemoveActors, Phase3RemoveActors]()
             {
-                Actor->SetActorHiddenInGame(true);
-                Actor->SetActorEnableCollision(false);
-            }
-        }
+                for (AActor* Actor : Phase2RemoveActors)
+                {
+                    if (IsValid(Actor))
+                    {
+                        Actor->SetActorHiddenInGame(true);
+                        Actor->SetActorEnableCollision(false);
+                    }
+                }
+
+                for (AActor* Actor : Phase3RemoveActors)
+                {
+                    if (IsValid(Actor))
+                    {
+                        Actor->SetActorHiddenInGame(true);
+                        Actor->SetActorEnableCollision(false);
+                    }
+                }
+            },
+            2.0f,
+            false
+        );
     }
 
     //for (AActor* Actor : FoundActors)
