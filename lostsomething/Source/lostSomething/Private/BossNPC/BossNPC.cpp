@@ -33,7 +33,7 @@ ABossNPC::ABossNPC()
         USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*Name);
         SpawnPoint->SetupAttachment(RootComponent);
         float YOffset = (i - 3) * 76.0f;
-        SpawnPoint->SetRelativeLocation(FVector(350.f, YOffset, -40.0f));
+        SpawnPoint->SetRelativeLocation(FVector(350.f, YOffset, -20.0f));
         ObstacleSpawnPoints.Add(SpawnPoint);
     }
 
