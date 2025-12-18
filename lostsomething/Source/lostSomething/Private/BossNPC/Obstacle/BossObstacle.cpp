@@ -68,25 +68,25 @@ void ABossObstacle::BeginPlay()
 void ABossObstacle::DisableAndDestroy()
 {
 	// 1. 로그: 함수 시작 알림 (액터 이름과 함께)
-	UE_LOG(LogTemp, Warning, TEXT("[%s] DisableAndDestroy Called!"), *GetName());
+	///UE_LOG(LogTemp, Warning, TEXT("[%s] DisableAndDestroy Called!"), *GetName());
 
 	PrimaryActorTick.SetTickFunctionEnable(false);
 
 	if (CollisionComp)
 	{
 		// 2. 로그: 콜리전 상태 변경 전 확인
-		UE_LOG(LogTemp, Log, TEXT("[%s] Disabling Collision..."), *GetName());
+		//UE_LOG(LogTemp, Log, TEXT("[%s] Disabling Collision..."), *GetName());
 
 		CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionComp->UpdateOverlaps();
 
 		// 3. 로그: 콜리전 변경 완료
-		UE_LOG(LogTemp, Log, TEXT("[%s] Collision Disabled and Overlaps Updated."), *GetName());
+		//UE_LOG(LogTemp, Log, TEXT("[%s] Collision Disabled and Overlaps Updated."), *GetName());
 	}
 
 	// 4. 로그: 최종 파괴 직전
-	UE_LOG(LogTemp, Error, TEXT("[%s] Actor is being Destroyed now!"), *GetName());
+	//UE_LOG(LogTemp, Error, TEXT("[%s] Actor is being Destroyed now!"), *GetName());
 
 	Destroy();
 }

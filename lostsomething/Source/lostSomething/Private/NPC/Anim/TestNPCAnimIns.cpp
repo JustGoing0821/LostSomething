@@ -3,6 +3,7 @@
 
 #include "NPC/Anim/TestNPCAnimIns.h"
 #include "NPC/TestNPC.h"
+#include "Components/CapsuleComponent.h"
 
 UTestNPCAnimIns::UTestNPCAnimIns()
 {
@@ -116,7 +117,10 @@ void UTestNPCAnimIns::AnimNotify_Despawn()
         UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Despawn : nullptr"));
         return;
     }
-    NPCCharacter->SetActorEnableCollision(false);
+
+    NPCCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NPCCharacter->GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+
     NPCCharacter->Destroy();
 }
 
