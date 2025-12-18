@@ -545,17 +545,11 @@ void ALSPlayer::PerformLineTrace()
 	FVector EndLocation = StartLocation + (ForwardVector * 300.0f);
 
 
-	if (bIsCombining && CharacterChoice == ELSCharacterChoice::SiJae)
+	if (bIsCombining)
 	{
 		CurrentDectectActor = nullptr;
 		TickDectectResultColor = FColor::Yellow;
 		AimScript = AimScriptData->GetInteractionScripts(ELSInteractionEnum::Quest0)[2];
-	}
-	else if (bIsCombining && CharacterChoice == ELSCharacterChoice::IJae)
-	{
-		CurrentDectectActor = nullptr;
-		TickDectectResultColor = FColor::Yellow;
-		AimScript = "";
 	}
 	else
 	{
@@ -663,7 +657,7 @@ void ALSPlayer::Interaction()
 		return;
 	}
 
-	if (CharacterChoice == ELSCharacterChoice::SiJae && bIsCombining)
+	if (bIsCombining)
 	{
 		if (HasAuthority())
 		{
