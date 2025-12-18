@@ -28,8 +28,6 @@
 #include "Interface/LSSijaeCursorPosInterface.h"
 #include "Interface/LS2DPuzzleGameModeInterface.h"
 #include "Interface/LSStartGameInterface.h"
-#include "Interface/LSStartGameInterface.h"
-#include "BossNPC/BMSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
 #include "UserInterface/MiniMap/MiniMapWidget.h"
@@ -451,7 +449,7 @@ void ALSPlayerController::UpdateQuestWidget(FLSQuestData InQuestData, ELSInterac
 		else
 			ClientMinimapWidget();
 	}
-	else if (InQuestData.CurrentQuestEnum == ELSInteractionEnum::Quest9)
+	else if (InQuestData.CurrentQuestEnum == ELSInteractionEnum::Quest10)
 	{
 		if (IsLocalController())
 			CreateMinimapWidget();
