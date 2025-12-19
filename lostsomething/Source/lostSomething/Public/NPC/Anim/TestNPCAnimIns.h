@@ -22,9 +22,6 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
-	void AttackMontagePlay();
-
-	UFUNCTION()
 	void DamageMontagePlay();
 
 	UFUNCTION()
