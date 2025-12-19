@@ -411,13 +411,13 @@ void ALSFindingPuzzle::SetVisibleSiJae()
 	//	), 2.0f, false);
 	//}
 
-	int32 MaxCount = SijaeTextures.Num();
+	int32 MaxCount = WrongTextures.Num();
 	if (MaxCount == 0)
 	{
 		LS_LOG(LogLSls, Warning, TEXT("%s"), TEXT("No SijaeTextures!!!"));
 		return;
 	}
-	Material->SetTextureParameterValue(TEXT("CartelImage"), SijaeTextures[FMath::RandRange(0, MaxCount - 1)]);
+	Material->SetTextureParameterValue(TEXT("CartelImage"), WrongTextures[FMath::RandRange(0, MaxCount - 1)]);
 }
 
 void ALSFindingPuzzle::SetVisibleIJae()
