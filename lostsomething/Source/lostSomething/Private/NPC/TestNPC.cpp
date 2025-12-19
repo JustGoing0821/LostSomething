@@ -111,7 +111,7 @@ float ATestNPC::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 void ATestNPC::AttackStart()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackByAI()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::AttackByAI()"));
 	ServerAttackStart();
 }
 
@@ -122,7 +122,7 @@ void ATestNPC::ServerAttackStart_Implementation()
 
 void ATestNPC::MultiAttackStart_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttack_Implementation()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ATestNPC::MultiAttack_Implementation()"));
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
@@ -288,6 +288,11 @@ void ATestNPC::MultiDespawn_Implementation()
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	UTestNPCAnimIns* NPCAnimInstance = Cast<UTestNPCAnimIns>(AnimInstance);
 	if (!NPCAnimInstance || !NPCAnimInstance->DespawnMontage) return;
+
+	if (ATestNPCAIController* PC = Cast<ATestNPCAIController>(GetController()))
+	{
+		PC->StopAI();
+	}
 
 	// 몽타주가 재생 중일 경우 섹션 이동, 아니라면 재생
 	if (NPCAnimInstance->DespawnMontage)
